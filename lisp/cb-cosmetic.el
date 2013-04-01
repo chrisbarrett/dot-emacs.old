@@ -23,15 +23,16 @@
 (cb:diminish 'lambda-mode "lambda-mode")
 (cb:diminish 'hs-minor-mode "hideshow")
 
+;(add-hook 'prog-mode-hook 'linum-on)
+
 (global-hl-line-mode t)
 (when (display-graphic-p) (fringe-mode '(2 . 0)))
-;(add-hook 'prog-mode-hook 'linum-on)
+(setq-default fill-column 80)
 (setq font-lock-maximum-decoration t
       color-theme-is-global        t
       ansi-color-for-comint-mode   t
       ring-bell-function           'ignore
       initial-scratch-message      nil)
-(setq-default fill-column 80)
 
 (defadvice kill-line (after kill-line-cleanup-whitespace activate compile)
   "Trim whitespace on kill-line"

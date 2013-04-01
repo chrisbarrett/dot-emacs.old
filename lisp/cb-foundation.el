@@ -2,9 +2,6 @@
 ;;;
 ;;; Basic configuration required for a sane editing environment.
 
-(cb:require-package 'dash)
-(cb:require-package 's)
-
 (cb:require-package 'smex)
 (smex-initialize)
 (global-set-key (kbd "M-x") 'smex)

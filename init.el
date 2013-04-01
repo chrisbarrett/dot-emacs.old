@@ -1,6 +1,5 @@
 ;;; For testing...
 (add-to-list 'load-path "~/dot-emacs-new/")
-(setq user-emacs-directory (expand-file-name "~/dot-emacs-new/"))
 
 ;;; Disable intrusive GUI elements.
 (scroll-bar-mode -1)
@@ -23,7 +22,12 @@
 (defun cb:require-package (pkg)
   (unless (package-installed-p pkg)
     (package-install pkg))
-  (require pkg))
+  (condition-case err
+      (require pkg)
+    (error (warn (error-message-string err)))))
+
+(cb:require-package 'dash)
+(cb:require-package 's)
 
 (require 'cl-lib)
 (require 'cb-load-path)
@@ -32,8 +36,9 @@
 (require 'cb-helm)
 (require 'cb-ido)
 (require 'cb-evil)
-(require 'cb-colour)
+(require 'cb-key-chord)
 (require 'cb-cosmetic)
+(require 'cb-colour)
 (require 'cb-ediff)
 (when (equal system-type 'darwin) (require 'cb-osx))
 (require 'cb-shell)
@@ -55,8 +60,15 @@
 (require 'cb-xml)
 (require 'cb-html)
 (require 'cb-magit)
+(require 'cb-paredit)
+(require 'cb-lisp)
+(require 'cb-clojure)
+;(require 'cb-overtone)
+(require 'cb-fsharp)
+(require 'cb-python)
+(require 'cb-ruby)
+(require 'cb-haskell)
 
 ;; Local Variables:
 ;; no-byte-compile: t
-;; lexical-binding: t
 ;; End:

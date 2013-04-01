@@ -51,7 +51,8 @@
   (set-face-foreground  'paren-face "grey20")
   (set-face-foreground  'show-paren-match-face "green")
   (set-face-bold        'show-paren-match-face t)
-  (set-face-background  'show-paren-match-face nil))
+  (set-face-background  'show-paren-match-face nil)
+  (set-face-underline   'hl-line-face nil))
 
 
 ;;; Set colour by time of day.
