@@ -1,0 +1,45 @@
+# Ignore filetypes
+
+sk-old
+*.dat
+*~
+*elc
+\#*
+.\#*
+*.cache
+session*
+
+# ignore individual items
+
+custom.el
+.DS_Store
+auto-save-list
+abbrev_defs
+loaddefs.el*
+site-file.el
+.smex-items
+ede-projects.el
+semanticdb
+.yas-compiled-snippets.el
+.mc-lists.el
+!/eshell/alias
+
+# ignore directories
+
+eshell
+backups
+elpa
+tmp
+bin
+url
+places
+thumbs
+oddmuse
+image-dired
+elim
+tramp
+swank
+
+# Ignore changes to lib
+
+lib
