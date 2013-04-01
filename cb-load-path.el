@@ -19,5 +19,6 @@
 (cb:define-path user-lib-dir  "lib/"  :create t)
 (cb:define-path user-lisp-dir "lisp/" :create t)
 (cb:define-path user-tmp-dir  "tmp/"  :create t)
+(cb:define-path user-etc-dir  "etc/"  :create t)
 
 (provide 'cb-load-path)

@@ -7,6 +7,11 @@
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 
+(defun cb:byte-compile-lisp ()
+  "Recompile all configuration files."
+  (interactive)
+  (byte-recompile-directory user-lisp-dir 0 t))
+
 ;; Initialize packages.
 (require 'package)
 
@@ -20,14 +25,38 @@
     (package-install pkg))
   (require pkg))
 
-(cb:require-package 'dash)
-(cb:require-package 's)
 (require 'cl-lib)
 (require 'cb-load-path)
 (require 'cb-macros)
 (require 'cb-foundation)
+(require 'cb-helm)
 (require 'cb-ido)
+(require 'cb-evil)
+(require 'cb-colour)
+(require 'cb-cosmetic)
+(require 'cb-ediff)
+(when (equal system-type 'darwin) (require 'cb-osx))
+(require 'cb-shell)
+(require 'cb-auto-complete)
+(require 'cb-google)
+(require 'cb-autopair)
+(require 'cb-languages)
+(require 'cb-indentation)
+(require 'cb-json)
+(require 'cb-lambda)
+(require 'cb-markdown)
+(require 'cb-compilation)
+(require 'cb-text)
+(require 'cb-flyspell)
+(require 'cb-flycheck)
+(require 'cb-yasnippet)
+(require 'cb-makefile)
+(require 'cb-shebang)
+(require 'cb-xml)
+(require 'cb-html)
+(require 'cb-magit)
 
 ;; Local Variables:
 ;; no-byte-compile: t
+;; lexical-binding: t
 ;; End:

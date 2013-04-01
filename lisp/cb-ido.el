@@ -7,6 +7,7 @@
 (cb:require-package 'idomenu)
 
 (add-to-list 'ido-ignore-buffers "*helm mini*")
+(add-to-list 'ido-ignore-files "\\.DS_Store")
 
 (ido-mode +1)
 (ido-ubiquitous-mode +1)

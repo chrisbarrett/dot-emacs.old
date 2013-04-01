@@ -2,6 +2,9 @@
 ;;;
 ;;; Basic configuration required for a sane editing environment.
 
+(cb:require-package 'dash)
+(cb:require-package 's)
+
 (cb:require-package 'smex)
 (smex-initialize)
 (global-set-key (kbd "M-x") 'smex)
@@ -81,6 +84,7 @@
       delete-by-moving-to-trash nil
       confirm-nonexistent-file-or-buffer nil
       initial-major-mode 'emacs-lisp-mode
+      initial-scratch-message nil
       x-select-enable-clipboard t)
 (set-default 'indent-tabs-mode nil)
 
@@ -90,10 +94,6 @@
 (set-keyboard-coding-system 'utf-8)
 (set-selection-coding-system 'utf-8)
 (prefer-coding-system 'utf-8)
-
-;;; Use unified diffs
-(setq diff-switches "-u"
-      ediff-window-setup-function 'ediff-setup-windows-plain)
 
 ;;; File-handling
 (add-hook 'before-save-hook 'whitespace-cleanup)
