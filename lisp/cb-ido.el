@@ -18,3 +18,5 @@
       ido-use-filename-at-point 'guess
       ido-max-prospects 10
       ido-default-file-method 'selected-window)
+
+(provide 'cb-ido)

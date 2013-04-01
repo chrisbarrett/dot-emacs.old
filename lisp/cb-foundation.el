@@ -37,7 +37,7 @@
 
 (require 'recentf)
 (recentf-mode +1)
-(setq recentf-save-file (concat (core/tmp-dir) "recentf")
+(setq recentf-save-file (concat user-tmp-dir "recentf")
       recentf-max-saved-items 200
       recentf-exclude '(".newsrc"
                         "ede-projects.el"
@@ -48,7 +48,7 @@
 (require 'savehist)
 (setq savehist-additional-variables '(search ring regexp-search-ring)
       savehist-autosave-interval 60
-      savehist-file (concat (core/tmp-dir) "savehist"))
+      savehist-file (concat user-tmp-dir "savehist"))
 (savehist-mode t)
 
 (cb:require-package 'undo-tree)
@@ -116,10 +116,12 @@ If this buffer is a member of `kill-buffer-ignored-list, bury it rather than kil
       (bury-buffer)
     (kill-buffer (current-buffer))))
 
-(global-set-key (kbd "C-x C-K") cb:kill-current-buffer)
+(global-set-key (kbd "C-x C-K") 'cb:kill-current-buffer)
 
 (defun sudo-edit (&optional arg)
   (interactive "p")
   (if (or arg (not buffer-file-name))
       (find-file (concat "/sudo:root@localhost:" (ido-read-file-name "File: ")))
     (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
+
+(provide 'cb-foundation)

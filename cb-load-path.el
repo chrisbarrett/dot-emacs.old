@@ -8,12 +8,13 @@
     (when (and create? (not (file-exists-p dir)))
       (make-directory dir))
     (add-to-list 'load-path dir)
+    (message "Added: %s" dir)
     dir))
 
 (cl-defmacro cb:define-path
     (sym path &key absolute? create? &allow-other-keys)
   "Define a directory that will be added to the lisp `load-path'."
-  `(defconst ,sym ,(cb:prepare-load-dir path absolute? create?)))
+  `(defconst ,sym (cb:prepare-load-dir ,path ,absolute? ,create?)))
 
 (cb:define-path user-lib-dir  "lib/"  :create t)
 (cb:define-path user-lisp-dir "lisp/" :create t)
