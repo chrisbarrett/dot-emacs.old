@@ -32,16 +32,16 @@
                             (* space)
                             (group (* (not space)))))
 
-(font-lock-add-keywords 'emacs-lisp-mode
-                        `((cb:match-lets 1 font-lock-keyword-face)
-                          (cb:match-defs 1 font-lock-keyword-face)
-                          (cb:match-fns  1 font-lock-function-name-face)))
-
 ;;; Hooks
 
 (defun cb:on-emacs-lisp-mode ()
   (local-set-key (kbd "C-c C-t") 'ert)
-  (elisp-slime-nav-mode t))
+  (elisp-slime-nav-mode t)
+  (font-lock-add-keywords
+   nil
+   `((cb:match-lets 1 font-lock-keyword-face)
+     (cb:match-defs 1 font-lock-keyword-face)
+     (cb:match-fns  1 font-lock-function-name-face))))
 
 (add-hook 'emacs-lisp-mode-hook 'cb:on-emacs-lisp-mode)
 (add-hook 'after-save-hook 'cb:byte-compile-elisp)

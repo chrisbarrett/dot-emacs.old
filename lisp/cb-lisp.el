@@ -10,7 +10,6 @@
 ;;; Configure lisps
 
 (defun cb:on-lisp-mode ()
-  ;; Flash sexp on eval.
   (eval-sexp-fu-flash-mode +1)
   (setq eval-sexp-fu-flash-duration 0.5)
   (volatile-highlights-mode +1)
@@ -26,7 +25,7 @@
     (eval-after-load mode
       `(font-lock-add-keywords ',mode '(("\\([()]\\)" . 'paren-face))))))
 
-(--each '(scheme-mode
+(-each '(scheme-mode
           emacs-lisp-mode
           lisp-mode
           common-lisp-mode

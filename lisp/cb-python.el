@@ -1,9 +1,9 @@
 ;;; cb-python.el
 
-(cb:require-package 'nose)
-(cb:require-package 'python)
-(cb:require-package 'pylint)
-(cb:require-package 'pep8)
+;;(cb:require-package 'python)
+;;(cb:require-package 'nose)
+;; (cb:require-package 'pylint)
+;; (cb:require-package 'pep8)
 ;; (cb:require-package 'pymacs)
 ;;(pymacs-load "ropemacs" "rope-")
 (require 'pylookup)
@@ -33,6 +33,6 @@
 ;; (add-hook 'inferior-python-mode-hook 'cb:python-ac-setup)
 ;; (add-hook 'rope-open-project-hook 'cb:python-ac-setup)
 ;; (add-hook 'python-mode-hook 'cb:python-ac-setup)
-(define-key python-mode-map (kbd "C-c C-t") 'nosetests-all)
+;; (define-key python-mode-map (kbd "C-c C-t") 'nosetests-all)
 
 (provide 'cb-python)
