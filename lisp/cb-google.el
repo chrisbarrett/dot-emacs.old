@@ -25,7 +25,4 @@ or the symbol at point."
         (w3m-browse-url url)
       (browse-url url))))
 
-(global-set-key (kbd "C-c C-/") 'google/search)
-(global-set-key (kbd "C-c C-_") 'google/search)
-
 (provide 'cb-google)

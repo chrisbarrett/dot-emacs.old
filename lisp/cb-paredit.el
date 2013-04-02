@@ -1,7 +1,5 @@
 ;;; cb-paredit.el
 
-(cb:require-package 'paredit)
-
 (defadvice paredit-mode (after disable-autopair activate)
   "Disable autopair while paredit is on."
   (if ad-return-value

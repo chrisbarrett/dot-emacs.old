@@ -8,9 +8,6 @@
 ;;(pymacs-load "ropemacs" "rope-")
 (require 'pylookup)
 
-(add-to-list 'ac-modes 'python-mode)
-(add-to-list 'ac-modes 'inferior-python-mode)
-
 ;;; Autocomplete using Ropemacs
 
 ;; (defun ac-ropemacs-candidates ()

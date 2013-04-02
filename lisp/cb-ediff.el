@@ -1,10 +1,5 @@
 ;;; cb-ediff
 
-(setq diff-switches "-u"
-      ediff-window-setup-function 'ediff-setup-windows-plain)
-
-(add-hook 'ediff-startup-hook 'turn-off-evil-mode)
-
 ;; Emacs as mergetool.
 ;; See http://stackoverflow.com/questions/1817370/using-ediff-as-git-mergetool
 

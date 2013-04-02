@@ -1,9 +1,9 @@
 ;;; cb-colour.el
 
 (require 'color-theme)
-(require 'hl-line)
-(cb:require-package 'color-theme-solarized)
-(cb:require-package 'ir-black-theme)
+
+(use-package color-theme-solarized)
+(use-package ir-black-theme)
 
 (defface paren-face
   '((((class color) (background dark))

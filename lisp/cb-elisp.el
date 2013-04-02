@@ -1,9 +1,5 @@
 ;;; cb-elisp.el
 
-(cb:require-package 'header2)
-(cb:require-package 'elisp-slime-nav-mode)
-(require 'ert)
-
 (defun eval-inplace
   (interactive)
   (backward-kill-sexp)
@@ -12,11 +8,6 @@
              (current-buffer))
     (error (message "Invalid expression")
            (insert (current-kill 0)))))
-
-(defun cb:byte-compile-elisp ()
-  (when (and (equal major-mode 'emacs-lisp-mode)
-             (buffer-file-name))
-    (byte-compile-file (buffer-file-name))))
 
 ;;; Font lock
 
@@ -32,18 +23,11 @@
                             (* space)
                             (group (* (not space)))))
 
-;;; Hooks
-
-(defun cb:on-emacs-lisp-mode ()
-  (local-set-key (kbd "C-c C-t") 'ert)
-  (elisp-slime-nav-mode t)
-  (font-lock-add-keywords
-   nil
-   `((cb:match-lets 1 font-lock-keyword-face)
-     (cb:match-defs 1 font-lock-keyword-face)
-     (cb:match-fns  1 font-lock-function-name-face))))
-
-(add-hook 'emacs-lisp-mode-hook 'cb:on-emacs-lisp-mode)
-(add-hook 'after-save-hook 'cb:byte-compile-elisp)
+;; (add-hook 'emacs-lisp-mode-hook
+;;           (lambda ()
+;;             (font-lock-add-keywords
+;;              nil '((cb:match-lets 1 font-lock-keyword-face)
+;;                    (cb:match-defs 1 font-lock-keyword-face)
+;;                    (cb:match-fns  1 font-lock-function-name-face)))))
 
 (provide 'cb-elisp)

@@ -1,73 +1,26 @@
 ;;; cb-haskell
 
-(cb:require-package 'haskell-mode)
-(cb:require-package 'ghc)
-(require 'haskell-edit)
-(require 'haskell-cabal)
-(require 'haskell-decl-scan)
-(require 'haskell-ac)
-(require 'haskell-doc)
-(require 'hs-lint)
-(require 'outline)
-
-(cb:auto-mode-on-match 'haskell-mode "\\.hs$")
-(cb:auto-mode-on-match 'haskell-c-mode "\\.hsc$")
-(cb:auto-mode-on-match 'haskell-cabal-mode "\\.cabal$")
-
-(add-to-list 'completion-ignored-extensions ".hi")
-(setq hs-lint-command (executable-find "hlint"))
-(setq scion-program (executable-find "scion-server"))
-(setq haskell-stylish-on-save t)
-(setq scion-log-events nil)
-
-;;; Auto Complete
-
-(--each '(haskell-mode
-          haskell-c-mode
-          haskell-cabal-mode
-          haskell-interactive-mode
-          inferior-haskell-mode
-          )
-  (add-to-list 'ac-modes it))
-
-(ac-define-source ghc-mod
-  '((depends ghc)
-    (candidates . (ghc-select-completion-symbol))
-    (symbol . "s")
-    (document . haskell-doc-sym-doc)
-    (cache)))
-
-(setq ac-sources (list 'ac-source-words-in-same-mode-buffers
-                       'ac-source-ghc-mod))
-
-;;; Hide mode lighters.
-
-(cb:diminish 'scion-mode)
-(cb:diminish 'haskell-indentation-mode)
-(cb:diminish 'haskell-doc-mode)
-(cb:diminish 'outline-minor-mode "outline")
-
 ;;; Testing
 
-(defun cb:project-root ()
+(defun cb:hs-project-root ()
   (let ((cabal (haskell-cabal-find-file)))
     (when cabal (file-name-directory cabal))))
 
-(defun cb:srcfile->testfile (fname)
+(defun cb:hs-srcfile->testfile (fname)
   (s-replace "/src/" "/test/"
              (replace-regexp-in-string "\\(.\\)l?hs$" "Tests." fname t nil 1)))
 
-(defun cb:testfile->srcfile (fname)
+(defun cb:hs-testfile->srcfile (fname)
   (s-replace "/test/" "/src/"
              (replace-regexp-in-string "\\(Tests\\).l?hs$" "" fname t nil 1)))
 
-(defun cb:test<->code ()
+(defun cb:hs-test<->code ()
   (interactive)
   (let* ((src-p (s-contains? "/src/" (buffer-file-name)))
          (file (if src-p
-                   (cb:srcfile->testfile (buffer-file-name))
-                 (cb:testfile->srcfile (buffer-file-name)))))
-    (when (_ project-root)
+                   (cb:hs-srcfile->testfile (buffer-file-name))
+                 (cb:hs-testfile->srcfile (buffer-file-name)))))
+    (when (_ cb:hs-project-root)
       (cond
        ((file-exists-p file) (find-file file))
        (src-p (error "No corresponding unit test file found."))
@@ -123,7 +76,7 @@
 
 (defconst cb:haskell-outline-regex "[^\t ].*\\|^.*[\t ]+\\(where\\|of\\|do\\|in\\|if\\|then\\|else\\|let\\|module\\|import\\|deriving\\|instance\\|class\\)[\t\n ]")
 
-(defun cb:outline-level ()
+(defun cb:hs-outline-level ()
   "Use spacing to determine outlining."
   (let (buffer-invisibility-spec)
     (save-excursion

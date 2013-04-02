@@ -1,12 +1,5 @@
 ;;; cb-lisp.el
 
-(cb:require-package 'highlight)
-(cb:require-package 'lively)
-(cb:require-package 'highlight-parentheses)
-(cb:require-package 'highlight-symbol)
-(cb:require-package 'volatile-highlights)
-(require 'eval-sexp-fu)
-
 ;;; Configure lisps
 
 (defun cb:on-lisp-mode ()
