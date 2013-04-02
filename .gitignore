@@ -40,7 +40,3 @@ image-dired
 elim
 tramp
 swank
-
-# Ignore changes to lib
-
-lib
