@@ -46,7 +46,7 @@
   (interactive)
   (require 'ir-black-theme)
   (load-theme 'ir-black 'no-confirm)
-  (set-face-foreground  'font-lock-doc-face "DarkOliveGreen4")
+  (set-face-foreground  'font-lock-doc-face "purple")
   (set-face-italic      'font-lock-doc-string-face t)
   (set-face-background  'linum "gray15")
   (set-face-foreground  'helm-selection "white")

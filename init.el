@@ -45,6 +45,13 @@
 
 ;;; ----------------------------------------------------------------------------
 ;;; Packages
+;;; Error navigation keybindings.
+
+(add-hook 'prog-mode-hook (lambda ()
+                            (local-set-key (kbd "M-N") 'next-error)
+                            (local-set-key (kbd "M-P") 'previous-error)))
+
+;;; ----------------------------------------------------------------------------
 
 (require 'use-package)
 
@@ -257,7 +264,7 @@
       (unless (and (boundp 'paredit-mode) paredit-mode)
         ad-do-it))))
 
-;; FIXME
+;; FIXME: redefine as a minor mode.
 (require 'cb-indentation)
 
 (use-package json-mode
@@ -297,12 +304,6 @@
                    (unless (string-match "exited abnormally" str)
                      (delete-windows-on (get-buffer-create "*compilation")))))))
 
-(defun cb:add-compilation-handler (mode handler &optional quitter)
-  "Register a set of compilation handlers for the given mode."
-  (if (boundp 'mode-compile-modes-alist)
-      (add-to-list 'mode-compile-modes-alist `(,mode . (,handler ,quitter)))
-    (error "cb:add-compilation-handler : nil variable")))
-
 (use-package flyspell-lazy
   :defines flyspell-lazy-mode
   :config
@@ -311,25 +312,17 @@
     (add-hook 'text-mode-hook 'flyspell-mode)
     (add-hook 'prog-mode-hook 'flyspell-prog-mode)))
 
-;;; Set error navigation keybindings.
-(defun cb:configure-error-nav ()
-  (local-set-key (kbd "M-N") 'next-error)
-  (local-set-key (kbd "M-P") 'previous-error))
-
-(add-hook 'prog-mode-hook 'cb:configure-error-nav)
-(add-hook 'text-mode-hook 'cb:configure-error-nav)
-
 (use-package flycheck
   :config
-  (progn
+  (let ((maybe-flycheck
+         (lambda ()
+           (when (flycheck-may-enable-mode)
+             (unless (equal major-mode 'emacs-lisp-mode)
+               (flycheck-mode t)))))
+        )
     (setq flycheck-highlighting-mode 'lines)
-    (add-hook 'prog-mode-hook 'cb:maybe-enable-flycheck)
-    (add-hook 'text-mode-hook 'cb:maybe-enable-flycheck)))
-
-(defun cb:maybe-enable-flycheck ()
-  (when (flycheck-may-enable-mode)
-    (unless (equal major-mode 'emacs-lisp-mode)
-      (flycheck-mode t))))
+    (add-hook 'prog-mode-hook maybe-flycheck)
+    (add-hook 'text-mode-hook maybe-flycheck)))
 
 (use-package yasnippet
   :diminish yas-minor-mode
@@ -480,9 +473,6 @@
         (paredit-mode +1)
         (local-set-key (kbd "C-c C-z") 'cb:switch-to-last-clj-buffer)
         (local-set-key (kbd "C-c C-f") 'cb:eval-last-clj-buffer)))))
-
-
-;; (require 'cb-overtone)
 
 (use-package fsharp-mode
   :commands (fsharp-mode)
