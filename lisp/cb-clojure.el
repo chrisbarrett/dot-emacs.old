@@ -3,7 +3,7 @@
 (require 'nrepl)
 (require 'clojure-mode)
 
-(defadvice nre
+(defadvice nrepl-switch-to-repl-buffer (after insert-at-end-of-nrepl-line activate)
   "Enter insertion mode at the end of the line when switching to nrepl."
   (when (and (boundp 'evil-mode)
              evil-mode
