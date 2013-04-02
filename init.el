@@ -59,6 +59,7 @@
 (use-package ido
   :config
   (progn
+    (use-package ido-hacks)
     (add-to-list 'ido-ignore-buffers "*helm mini*")
     (add-to-list 'ido-ignore-files "\\.DS_Store")
 
@@ -117,10 +118,10 @@
           recentf-exclude '(".newsrc"
                             "ede-projects.el"
                             ".ido.last"
+                            ".gz"
                             ".emacs.d/session."
                             "Map_Sym.txt"))
     (recentf-mode +1)))
-
 
 (use-package savehist
   :config
@@ -295,13 +296,15 @@
 
 (defun cb:add-compilation-handler (mode handler &optional quitter)
   "Register a set of compilation handlers for the given mode."
-  (add-to-list 'mode-compile-modes-alist `(,mode . (,handler ,quitter))))
+  (if (boundp 'mode-compile-modes-alist)
+      (add-to-list 'mode-compile-modes-alist `(,mode . (,handler ,quitter)))
+    (error "cb:add-compilation-handler : nil variable")))
 
 (use-package flyspell-lazy
+  :defines flyspell-lazy-mode
   :config
   (progn
     (flyspell-lazy-mode +1)
-    (setq flyspell-issue-message-flag nil)
     (add-hook 'text-mode-hook 'flyspell-mode)
     (add-hook 'prog-mode-hook 'flyspell-prog-mode)))
 
@@ -421,8 +424,9 @@
   :config
   (progn
     (use-package cb-elisp)
-    (use-package ert)
-    (hook-fn 'emacs-lisp-mode-hook (local-set-key (kbd "C-c C-t") 'ert))
+    (hook-fn 'emacs-lisp-mode-hook
+      (autoload 'ert "ert")
+      (local-set-key (kbd "C-c C-t") 'ert))
     (hook-fn 'after-save-hook
       "Byte compile elisp files on save."
       (when (and (equal major-mode 'emacs-lisp-mode)
@@ -584,5 +588,5 @@
                              'ac-source-ghc-mod)))))
 
 ;; Local Variables:
-;; no-byte-compile: t
+;; byte-compile-warnings: (not obsolete)
 ;; End:
