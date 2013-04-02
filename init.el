@@ -307,9 +307,15 @@
     (add-hook 'text-mode-hook 'flyspell-mode)
     (add-hook 'prog-mode-hook 'flyspell-prog-mode)))
 
+;;; Set error navigation keybindings.
+(defun cb:configure-error-nav ()
+  (local-set-key (kbd "M-N") 'next-error)
+  (local-set-key (kbd "M-P") 'previous-error))
+
+(add-hook 'prog-mode-hook 'cb:configure-error-nav)
+(add-hook 'text-mode-hook 'cb:configure-error-nav)
+
 (use-package flycheck
-  :bind (("M-N" . next-error)
-         ("M-P" . previous-error))
   :config
   (progn
     (setq flycheck-highlighting-mode 'lines)
@@ -343,15 +349,15 @@
 (use-package cb-shebang)
 
 (use-package nxml-mode
-  :bind     ("M-q" . cb:reformat-xml)
   :commands (nxml-mode)
-  :init
+  :config
   (add-hook 'find-file-hook
             (lambda ()
               "Enable nxml-mode if this is an XML file."
               (when (or (s-ends-with? ".xml" (buffer-file-name))
                         (s-starts-with? "<?xml " (buffer-string)))
-                (nxml-mode)))))
+                (nxml-mode)
+                (local-set-key (kbd "M-q") 'cb:reformat-xml)))))
 
 (use-package tagedit
   :commands (tagedit-add-paredit-like-keybindings)
@@ -417,11 +423,13 @@
 
 (use-package lisp-mode
   :commands (emacs-lisp-mode lisp-mode)
-  :bind     ("C-c C-t" . ert)
   :config
   (progn
     (use-package cb-elisp)
     (use-package ert)
+    (add-hook 'emac-lisp-mode-hook
+              (lambda ()
+                (local-set-key (kbd "C-c C-t") 'ert)))
     (add-hook 'after-save-hook
               (lambda ()
                 "Byte compile elisp files on save."
@@ -437,21 +445,17 @@
 (use-package clojure-mode
   :commands (clojure-mode)
   :mode     ("\\.cljs?$" . clojure-mode)
-  :bind
-  (("C-c C-z" . cb:switch-to-nrepl)
-   ("C-h f" . nrepl-doc)
-   ("C-c C-f" . repl-eval-buffer))
   :config
-  (use-package midje-mode
-    :commands (midje-mode)
-    :diminish midje-mode
-    :config   (add-hook 'clojure-mode-hook 'midje-mode)))
+  (progn
+    (use-package midje-mode
+      :commands (midje-mode)
+      :diminish midje-mode
+      :config   (add-hook 'clojure-mode-hook 'midje-mode))
+    (add-hook 'clojure-mode-hook
+              (lambda () (local-set-key (kbd "C-c C-z") 'cb:switch-to-nrepl)))))
 
 (use-package nrepl
   :commands (nrepl-jack-in)
-  :bind
-  (("C-c C-z" . cb:switch-to-last-clj-buffer)
-   ("C-c C-f" . cb:eval-last-clj-buffer))
   :config
   (progn
     (use-package ac-nrepl)
@@ -462,9 +466,18 @@
     (set-face-attribute 'nrepl-error-highlight-face t :inherit 'error)
     (set-face-underline 'nrepl-error-highlight-face nil)
 
+    (add-hook 'clojure-mode-hook
+              (lambda ()
+                (local-set-key (kbd "C-c C-z") 'cb:switch-to-nrepl)
+                (local-set-key (kbd "C-h f")   'nrepl-doc)
+                (local-set-key (kbd "C-c C-f") 'nrepl-eval-buffer)))
+
     (--each '(nrepl-mode-hook nrepl-interaction-mode-hook)
-      (add-hook it 'enable-paredit-mode)
-      (add-hook it 'nrepl-turn-on-eldoc-mode))))
+      (add-hook it (lambda ()
+                     (nrepl-turn-on-eldoc-mode)
+                     (paredit-mode +1)
+                     (local-set-key (kbd "C-c C-z") 'cb:switch-to-last-clj-buffer)
+                     (local-set-key (kbd "C-c C-f") 'cb:eval-last-clj-buffer))))))
 
 ;; (require 'cb-overtone)
 
