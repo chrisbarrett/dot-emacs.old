@@ -1,7 +1,10 @@
 ;;; cb-colour.el
 
-(use-package color-theme-solarized)
-(use-package ir-black-theme)
+(use-package color-theme-solarized
+  :defer t)
+
+(use-package ir-black-theme
+  :defer t)
 
 (defface paren-face
   '((((class color) (background dark))
@@ -42,7 +45,6 @@
 
 (defun ir-black ()
   (interactive)
-  (require 'ir-black-theme)
   (load-theme 'ir-black 'no-confirm)
   (set-face-foreground  'font-lock-doc-face "purple")
   (set-face-italic      'font-lock-doc-string-face t)
