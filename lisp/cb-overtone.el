@@ -27,7 +27,4 @@ references overtone."
   (nrepl-eval "(stop)")
   (message "Synthesis stopped."))
 
-(add-hook 'clojure-mode-hook 'turn-on-overtone-mode)
-(add-hook 'after-save-hook 'turn-on-overtone-mode)
-
 (provide 'cb-overtone)

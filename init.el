@@ -264,8 +264,8 @@
       (unless (and (boundp 'paredit-mode) paredit-mode)
         ad-do-it))))
 
-;; FIXME: redefine as a minor mode.
-(require 'cb-indentation)
+(use-package cb-indentation
+  :commands (rigid-indentation-mode))
 
 (use-package json-mode
   :config
