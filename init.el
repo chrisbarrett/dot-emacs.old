@@ -154,6 +154,9 @@
   :config (fringe-mode '(2 . 0)))
 
 (use-package transpose-frame
+  :bind (("s-t" . transpose-frame)
+         ("s-r" . rotate-frame))
+
   :commands
   (transpose-frame
    flip-frame
@@ -443,11 +446,15 @@
   :mode     ("\\.cljs?$" . clojure-mode)
   :config
   (progn
+    (use-package cb-overtone
+      :bind     ("s-." . cb:stop-overtone)
+      :commands (maybe-enable-overtone-mode cb:stop-overtone))
     (use-package midje-mode
       :commands (midje-mode)
-      :diminish midje-mode
+      :diminish (midje-mode)
       :config   (add-hook 'clojure-mode-hook 'midje-mode))
     (hook-fn 'clojure-mode-hook
+      (maybe-enable-overtone-mode)
       (local-set-key (kbd "C-c C-z") 'cb:switch-to-nrepl))))
 
 (use-package nrepl
@@ -473,6 +480,7 @@
         (paredit-mode +1)
         (local-set-key (kbd "C-c C-z") 'cb:switch-to-last-clj-buffer)
         (local-set-key (kbd "C-c C-f") 'cb:eval-last-clj-buffer)))))
+
 
 ;; (require 'cb-overtone)
 
