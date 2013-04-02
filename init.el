@@ -217,14 +217,12 @@
 (use-package shell
   :commands (shell)
   :config
-  (add-hook 'window-configuration-change-hook
-            (lambda ()
-              "Change process window size."
-              (when (derived-mode-p 'comint-mode)
-                (set-process-window-size (get-buffer-process (current-buffer))
-                                         (window-height)
-                                         (window-width))))
-            nil t))
+  (hook-fn 'window-configuration-change-hook
+    "Change process window size."
+    (when (derived-mode-p 'comint-mode)
+      (set-process-window-size (get-buffer-process (current-buffer))
+                               (window-height)
+                               (window-width)))))
 
 (use-package cb-ediff
   :commands (cb:handle-git-merge))
@@ -238,7 +236,8 @@
     (ac-flyspell-workaround)
     (ac-linum-workaround)
     (require 'cb-auto-complete)
-    (add-hook 'text-mode-hook (lambda () (auto-complete-mode -1)))))
+    (hook-fn 'text-mode-hook
+      (auto-complete-mode -1))))
 
 (use-package cb-google
   :commands (google/search)
@@ -335,37 +334,35 @@
     (add-to-list 'yas-snippet-dirs cb:yasnippet-dir)
     (yas--initialize)
     (yas-global-mode t)
-    (add-hook 'yasnippet-mode-hook (lambda () (setq require-final-newline nil)))))
+    (hook-fn 'yasnippet-mode-hook
+      (setq require-final-newline nil))))
 
 (use-package make-mode
   :config
   (progn
     (add-to-list 'ac-modes 'makefile-mode)
-    (add-hook 'makefile-mode-hook
-              (lambda ()
-                (auto-complete-mode t)
-                (setq indent-tabs-mode t)))))
+    (hook-fn 'makefile-mode-hook
+      (auto-complete-mode t)
+      (setq indent-tabs-mode t))))
 
 (use-package cb-shebang)
 
 (use-package nxml-mode
   :commands (nxml-mode)
   :config
-  (add-hook 'find-file-hook
-            (lambda ()
-              "Enable nxml-mode if this is an XML file."
-              (when (or (s-ends-with? ".xml" (buffer-file-name))
-                        (s-starts-with? "<?xml " (buffer-string)))
-                (nxml-mode)
-                (local-set-key (kbd "M-q") 'cb:reformat-xml)))))
+  (hook-fn 'find-file-hook
+    "Enable nxml-mode if this is an XML file."
+    (when (or (s-ends-with? ".xml" (buffer-file-name))
+              (s-starts-with? "<?xml " (buffer-string)))
+      (nxml-mode)
+      (local-set-key (kbd "M-q") 'cb:reformat-xml))))
 
 (use-package tagedit
   :commands (tagedit-add-paredit-like-keybindings)
   :config
-  (add-hook 'html-mode-hook
-            (lambda ()
-              (tagedit-add-paredit-like-keybindings)
-              (setq sgml-xml-mode +1))))
+  (hook-fn 'html-mode-hook
+    (tagedit-add-paredit-like-keybindings)
+    (setq sgml-xml-mode +1)))
 
 (use-package magit
   :bind ("C-c g" . magit-status)
@@ -383,11 +380,10 @@
         (kill-buffer)
         (jump-to-register :magit-fullscreen)))
 
-    (add-hook 'magit-log-edit-mode-hook
-              (lambda ()
-                "Enter insertion mode."
-                (when (and (boundp 'evil-mode) evil-mode)
-                  (evil-append-line nil))))
+    (hook-fn 'magit-log-edit-mode-hook
+      "Enter insertion mode."
+      (when (and (boundp 'evil-mode) evil-mode)
+        (evil-append-line nil)))
 
     (add-hook 'magit-mode-hook 'magit-load-config-extensions)))
 
@@ -427,15 +423,12 @@
   (progn
     (use-package cb-elisp)
     (use-package ert)
-    (add-hook 'emac-lisp-mode-hook
-              (lambda ()
-                (local-set-key (kbd "C-c C-t") 'ert)))
-    (add-hook 'after-save-hook
-              (lambda ()
-                "Byte compile elisp files on save."
-                (when (and (equal major-mode 'emacs-lisp-mode)
-                           (buffer-file-name))
-                  (byte-compile-file (buffer-file-name)))))))
+    (hook-fn 'emacs-lisp-mode-hook (local-set-key (kbd "C-c C-t") 'ert))
+    (hook-fn 'after-save-hook
+      "Byte compile elisp files on save."
+      (when (and (equal major-mode 'emacs-lisp-mode)
+                 (buffer-file-name))
+        (byte-compile-file (buffer-file-name))))))
 
 (use-package cb-lisp
   :commands ())
@@ -451,8 +444,8 @@
       :commands (midje-mode)
       :diminish midje-mode
       :config   (add-hook 'clojure-mode-hook 'midje-mode))
-    (add-hook 'clojure-mode-hook
-              (lambda () (local-set-key (kbd "C-c C-z") 'cb:switch-to-nrepl)))))
+    (hook-fn 'clojure-mode-hook
+      (local-set-key (kbd "C-c C-z") 'cb:switch-to-nrepl))))
 
 (use-package nrepl
   :commands (nrepl-jack-in)
@@ -466,18 +459,17 @@
     (set-face-attribute 'nrepl-error-highlight-face t :inherit 'error)
     (set-face-underline 'nrepl-error-highlight-face nil)
 
-    (add-hook 'clojure-mode-hook
-              (lambda ()
-                (local-set-key (kbd "C-c C-z") 'cb:switch-to-nrepl)
-                (local-set-key (kbd "C-h f")   'nrepl-doc)
-                (local-set-key (kbd "C-c C-f") 'nrepl-eval-buffer)))
+    (hook-fn 'clojure-mode-hook
+      (local-set-key (kbd "C-c C-z") 'cb:switch-to-nrepl)
+      (local-set-key (kbd "C-h f")   'nrepl-doc)
+      (local-set-key (kbd "C-c C-f") 'nrepl-eval-buffer))
 
     (--each '(nrepl-mode-hook nrepl-interaction-mode-hook)
-      (add-hook it (lambda ()
-                     (nrepl-turn-on-eldoc-mode)
-                     (paredit-mode +1)
-                     (local-set-key (kbd "C-c C-z") 'cb:switch-to-last-clj-buffer)
-                     (local-set-key (kbd "C-c C-f") 'cb:eval-last-clj-buffer))))))
+      (hook-fn it
+        (nrepl-turn-on-eldoc-mode)
+        (paredit-mode +1)
+        (local-set-key (kbd "C-c C-z") 'cb:switch-to-last-clj-buffer)
+        (local-set-key (kbd "C-c C-f") 'cb:eval-last-clj-buffer)))))
 
 ;; (require 'cb-overtone)
 
@@ -587,11 +579,10 @@
         (document . haskell-doc-sym-doc)
         (cache)))
 
-    (add-hook 'haskell-mode-hook
-              (lambda ()
-                "Configure haskell auto-complete sources."
-                (setq ac-sources (list 'ac-source-words-in-same-mode-buffers
-                                       'ac-source-ghc-mod))))))
+    (hook-fn 'haskell-mode-hook
+      "Configure haskell auto-complete sources."
+      (setq ac-sources (list 'ac-source-words-in-same-mode-buffers
+                             'ac-source-ghc-mod)))))
 
 ;; Local Variables:
 ;; no-byte-compile: t
