@@ -235,7 +235,6 @@
     (global-auto-complete-mode t)
     (ac-flyspell-workaround)
     (ac-linum-workaround)
-    (require 'cb-auto-complete)
     (hook-fn 'text-mode-hook
       (auto-complete-mode -1))))
 
