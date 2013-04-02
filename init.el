@@ -6,7 +6,7 @@
 (defun cb:byte-compile-lisp ()
   "Recompile all configuration files."
   (interactive)
-  (byte-recompile-directory cb:lisp-dir 0 t))
+  (byte-recompile-directory user-emacs-directory 0 t))
 
 (defun cb:auto-mode-on-match (mode &rest regexes)
   "Use the provided major mode for files matching the given regex."
@@ -33,6 +33,7 @@
 (add-to-list 'load-path (concat user-emacs-directory "lib"))
 (add-to-list 'load-path user-emacs-directory)
 (cb:require-package 'dash)
+(require 'cl-lib)
 (require 'cb-load-path)
 
 (cb:define-path cb:lib-dir  "lib/")
@@ -44,20 +45,17 @@
 (cb:define-path cb:rsense-home "bin/rsense-0.3/")
 
 ;;; ----------------------------------------------------------------------------
-;;; Packages
 ;;; Error navigation keybindings.
 
-(add-hook 'prog-mode-hook (lambda ()
-                            (local-set-key (kbd "M-N") 'next-error)
-                            (local-set-key (kbd "M-P") 'previous-error)))
+(global-set-key (kbd "M-N") 'next-error)
+(global-set-key (kbd "M-P") 'previous-error)
 
 ;;; ----------------------------------------------------------------------------
+;;; Packages
 
 (require 'use-package)
 
 (use-package s)
-
-(use-package cl-lib)
 
 (use-package cb-macros)
 
@@ -66,12 +64,12 @@
 (use-package ido
   :config
   (progn
+    (ido-mode +1)
     (use-package ido-hacks)
+    (use-package ido-ubiquitous
+      :config (ido-ubiquitous-mode +1))
     (add-to-list 'ido-ignore-buffers "*helm mini*")
     (add-to-list 'ido-ignore-files "\\.DS_Store")
-
-    (ido-mode +1)
-    (ido-ubiquitous-mode +1)
     (icomplete-mode +1)
 
     (setq ido-enable-prefix nil
@@ -205,6 +203,8 @@
     (evil-mode +1)))
 
 (use-package cb-osx :if (equal system-type 'darwin))
+
+(use-package color-theme)
 
 (use-package cb-colour)
 

@@ -1,7 +1,5 @@
 ;;; cb-colour.el
 
-(require 'color-theme)
-
 (use-package color-theme-solarized)
 (use-package ir-black-theme)
 
