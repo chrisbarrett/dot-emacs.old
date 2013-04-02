@@ -29,11 +29,12 @@ otherwise execute ELSE forms without bindings."
   `(let ((,var ,form))
      (if ,var ,then ,@else)))
 
-(defmacro hook-fn (hook &rest body)
+(defmacro hook-fn (hook &optional docstring &rest body)
   "Execute BODY forms when HOOK is called. The arguments passed
 to the hook function are bound to the symbol 'args'."
   (declare (indent 1) (doc-string 2))
-  `(add-hook ,hook (lambda (&rest args) ,@body)))
+  `(add-hook ,hook (lambda (&rest args)
+                     ,@(cons docstring body))))
 
 
 (provide 'cb-macros)
