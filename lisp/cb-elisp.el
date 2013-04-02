@@ -11,23 +11,37 @@
 
 ;;; Font lock
 
-(defconst cb:match-lets (rx "(" (group (* (not space)) (or "-let" )) word-end))
-(defconst cb:match-defs (rx bol (* space) "(" (group
-                                               (or "cb:def" "def" "cl-def")
-                                               (* (not space)))))
-(defconst cb:match-cl   (rx bol (* space) "("
-                            (group "cl-def" (or "macro" "un"))
-                            (+ space)))
-(defconst cb:match-fns  (rx bol (* space) "(" (or "cb:def" "def" "cl-def")
-                            (or "n" "un" "macro") (* (not space))
-                            (* space)
-                            (group (* (not space)))))
+(font-lock-add-keywords
+ 'emacs-lisp-mode
+ `(
+   ;; -let forms.
 
-;; (add-hook 'emacs-lisp-mode-hook
-;;           (lambda ()
-;;             (font-lock-add-keywords
-;;              nil '((cb:match-lets 1 font-lock-keyword-face)
-;;                    (cb:match-defs 1 font-lock-keyword-face)
-;;                    (cb:match-fns  1 font-lock-function-name-face)))))
+   (,(rx "(" (group (* (not space)) "-let") symbol-end)
+    (1 font-lock-keyword-face))
+
+   ;; cl-definition forms.
+
+   (,(rx "(" (group (or "cl-defun" "cl-defmacro" "cb:def")
+                    (* (not space)))
+         (+ space)
+         (group (+ (regex "\[^ )\n\]"))))
+    (1 font-lock-keyword-face)
+    (2 font-lock-function-name-face))
+
+   ;; cl-struct.
+
+   (,(rx "(" (group "cl-defstruct")
+         (+ space)
+         (group (+ (regex "\[^ )\n\]"))))
+    (1 font-lock-keyword-face)
+    (2 font-lock-type-face))
+
+   ;; use-package macro.
+
+   (,(rx "(" (group "use-package")
+         (+ space)
+         (group (+ (regex "\[^ )\n\]"))))
+    (1 font-lock-keyword-face)
+    (2 font-lock-constant-face))))
 
 (provide 'cb-elisp)
