@@ -8,11 +8,6 @@
   (interactive)
   (byte-recompile-directory user-emacs-directory 0 t))
 
-(defun cb:auto-mode-on-match (mode &rest regexes)
-  "Use the provided major mode for files matching the given regex."
-  (--each regexes
-    (add-to-list 'auto-mode-alist `(,it . ,mode))))
-
 ;;; ----------------------------------------------------------------------------
 ;;; Initialize packages.
 
