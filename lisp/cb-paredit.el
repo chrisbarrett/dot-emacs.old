@@ -1,22 +1,5 @@
 ;;; cb-paredit.el
 
-(defadvice paredit-mode (after disable-autopair activate)
-  "Disable autopair while paredit is on."
-  (if ad-return-value
-      (autopair-mode nil)
-    (autopair-on)))
-
-(defun cb:activate-paredit-on-eval-expression ()
-  (when (eq this-command 'eval-expression)
-    (paredit-mode t)))
-
-(add-hook 'minibuffer-setup-hook 'cb:activate-paredit-on-eval-expression)
-(add-hook 'inferior-lisp-mode-hook 'paredit-mode)
-(add-hook 'repl-mode-hook 'paredit-mode)
-
-(defun cb:no-space-on-open-round (endp delimiter)
-  (not (equal (char-syntax delimiter) ?\()))
-
 (defun cb:paredit-next-top-level-form ()
   (interactive)
   (while (ignore-errors (paredit-backward-up) t))

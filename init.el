@@ -254,15 +254,18 @@
   :bind     (("C-c C-/" . google/search)
              ("C-c C-_" . google/search)))
 
-(use-package autopair
+(use-package smartparens
+  :init
+  (defadvice smartparens-mode (around cb:inhibit-on-paredit activate)
+    "Prevent smartparens from being used if paredit is active."
+    (unless (and (boundp 'paredit-mode) paredit-mode)
+      ad-do-it))
   :config
   (progn
-    (setq autopair-autowrap t)
-    (autopair-global-mode t)
-    (defadvice autopair-mode (around cb:inhibit-on-paredit activate)
-      "Prevent autopair from being used if paredit is active."
-      (unless (and (boundp 'paredit-mode) paredit-mode)
-        ad-do-it))))
+    (sp-pair "'" nil :unless '(sp-point-after-word-p))
+    (sp-local-tag '(sgml-mode html-mode) "<" "<_>" "</_>"
+                  :transform 'sp-match-sgml-tags)
+    (smartparens-global-mode +1)))
 
 (use-package cb-indentation
   :commands (rigid-indentation-mode))
@@ -393,7 +396,22 @@
 
 (use-package paredit
   :commands (paredit-mode enable-paredit-mode disable-paredit-mode)
-  :config   (use-package cb-paredit))
+  :config
+  (progn
+    (use-package cb-paredit)
+    (add-hook 'inferior-lisp-mode-hook 'paredit-mode)
+    (add-hook 'repl-mode-hook 'paredit-mode)
+
+    (hook-fn 'minibuffer-setup-hook
+      "Use paredit in the minibuffer."
+      (when (eq this-command 'eval-expression)
+        (paredit-mode t)))
+
+    (defadvice paredit-mode (after disable-smartparens activate)
+      "Disable smartparens while paredit is on."
+      (if ad-return-value
+          (smartparens-mode -1)
+        (smartparens-mode +1)))))
 
 (use-package highlight)
 
