@@ -379,20 +379,17 @@
   (progn
     (flyspell-lazy-mode +1)
     (add-hook 'text-mode-hook 'flyspell-mode)
-    (add-hook 'prog-mode-hook 'flyspell-prog-mode)))
+    (add-hook 'prog-mode-hook 'flyspell-prog-mode)
+    (hook-fn 'flyspell-mode-hook
+      (diminish 'flyspell-mode))))
 
 (use-package flycheck
   :ensure t
   :config
-  (let ((maybe-flycheck
-         (lambda ()
-           (when (flycheck-may-enable-mode)
-             (unless (equal major-mode 'emacs-lisp-mode)
-               (flycheck-mode t)))))
-        )
+  (progn
     (setq flycheck-highlighting-mode 'lines)
-    (add-hook 'prog-mode-hook maybe-flycheck)
-    (add-hook 'text-mode-hook maybe-flycheck)))
+    (add-hook 'prog-mode-hook 'flycheck-mode)
+    (add-hook 'text-mode-hook 'flycheck-mode)))
 
 (use-package yasnippet
   :ensure t
@@ -699,6 +696,9 @@
 (global-set-key (kbd "M-N") 'next-error)
 (global-set-key (kbd "M-P") 'previous-error)
 
+
 ;; Local Variables:
 ;; byte-compile-warnings: (not obsolete)
 ;; End:
+
+;;; init.el ends here
