@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: elisp file footer
+# key: ftr
+# --
+;;; `(file-name-nondirectory buffer-file-name)` ends here

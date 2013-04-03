@@ -132,7 +132,7 @@
 (use-package saveplace
   :config
   (progn
-    (setq save-place-file (concat cb:tmp-dir "places"))
+    (setq save-place-file (concat cb:tmp-dir "saved-places"))
     (setq-default save-place t)))
 
 (use-package paren
