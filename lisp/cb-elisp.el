@@ -1,6 +1,6 @@
 ;;; cb-elisp.el
 
-(defun eval-inplace
+(defun eval-and-replace ()
   (interactive)
   (backward-kill-sexp)
   (condition-case nil

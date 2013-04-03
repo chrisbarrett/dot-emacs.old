@@ -161,8 +161,8 @@
   :config (fringe-mode '(2 . 0)))
 
 (use-package transpose-frame
-  :bind (("s-t" . transpose-frame)
-         ("s-r" . rotate-frame))
+  :bind (("C-x t" . transpose-frame)
+         ("C-x f" . rotate-frame))
 
   :commands
   (transpose-frame
@@ -172,7 +172,8 @@
    rotate-frame-clockwise
    rotate-frame-anticlockwise))
 
-(use-package ansi-color)
+(use-package ansi-color
+  :config (ansi-color-for-comint-mode-on))
 
 (use-package key-chord
   :config
@@ -203,6 +204,12 @@
                 (define-key evil-normal-state-map (kbd "+") 'evil-numbers/dec-at-pt)))
     (use-package cb-evil)
     (evil-mode +1)))
+
+(use-package exec-path-from-shell
+  :if (and (equal system-type 'darwin)
+           (window-system))
+  :config
+  (exec-path-from-shell-initialize))
 
 (use-package cb-osx :if (equal system-type 'darwin))
 
@@ -253,11 +260,27 @@
 (use-package auto-complete
   :config
   (progn
-    (require 'auto-complete-config)
-    (ac-config-default)
+    (use-package fuzzy)
+    (use-package auto-complete-config
+      :config (ac-config-default))
+
+    (setq ac-auto-show-menu t
+          ac-dwim t
+          ac-use-menu-map t
+          ac-quick-help-delay 1
+          ac-quick-help-height 60
+          ac-disable-inline t
+          ac-show-menu-immediately-on-auto-complete t
+          ac-auto-start 2
+          ac-candidate-menu-min 0
+          ac-comphist-file (concat cb:tmp-dir "ac-comphist.dat"))
     (global-auto-complete-mode t)
     (ac-flyspell-workaround)
     (ac-linum-workaround)
+    (define-key ac-completing-map (kbd "C-n") 'ac-next)
+    (define-key ac-completing-map (kbd "C-p") 'ac-previous)
+    (define-key ac-completing-map "\t" 'ac-complete)
+    (define-key ac-completing-map (kbd "M-RET") 'ac-help)
     (hook-fn 'text-mode-hook
       (auto-complete-mode -1))))
 
@@ -379,7 +402,7 @@
     (setq sgml-xml-mode +1)))
 
 (use-package magit
-  :bind ("C-c g" . magit-status)
+  :bind ("C-x g" . magit-status)
   :config
   (progn
     (defadvice magit-status (around magit-fullscreen activate)
@@ -448,7 +471,10 @@
   :commands (emacs-lisp-mode lisp-mode)
   :config
   (progn
-    (use-package cb-elisp)
+    (use-package cb-elisp
+      :config
+      (hook-fn 'emacs-lisp-mode-hook
+        (local-set-key (kbd "C-c e") 'eval-and-replace)))
     (hook-fn 'emacs-lisp-mode-hook
       (autoload 'ert "ert")
       (local-set-key (kbd "C-c C-t") 'ert))

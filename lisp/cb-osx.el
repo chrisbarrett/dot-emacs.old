@@ -7,14 +7,8 @@
 
       system-name (car (split-string system-name "\\.")))
 
-;;; Load shell variables in GUI session.
-(when (display-graphic-p)
-  (let ((path (shell-command-to-string "source $HOME/.zshrc && printf $PATH")))
-    (setenv "PATH" path)
-    (setq exec-path (split-string (getenv "PATH") ":"))))
-
 ;; Configure cut & paste in terminal.
-(unless (display-graphic-p)
+(unless (window-system)
 
   (defun cb:paste ()
     (shell-command-to-string "pbpaste"))
