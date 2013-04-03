@@ -59,6 +59,12 @@
   (unless (bolp)
     (delete-region (point) (progn (skip-chars-forward " \t") (point)))))
 
+(defadvice whitespace-cleanup (around whitespace-cleanup-indent-tab activate)
+  "Fix whitespace-cleanup indent-tabs-mode bug."
+  (let ((whitespace-indent-tabs-mode indent-tabs-mode)
+        (whitespace-tab-width tab-width))
+    ad-do-it))
+
 ;;; Buffers
 
 (defvar cb:kill-buffer-ignored-list '("*scratch*" "*Messages*" "*GROUP*"))

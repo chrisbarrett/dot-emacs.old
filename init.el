@@ -4,9 +4,16 @@
 (tool-bar-mode   -1)
 
 (defun cb:byte-compile-lisp ()
-  "Recompile all configuration files."
+  "Recompile all lisp files in `user-emacs-directory'."
   (interactive)
   (byte-recompile-directory user-emacs-directory 0 t))
+
+(defun cb:byte-compile-config ()
+  "Recompile all configuration files."
+  (interactive)
+  (byte-recompile-file (concat user-emacs-directory "init.el") 0 t)
+  (byte-recompile-directory cb:lisp-dir 0 t)
+  (byte-recompile-directory cb:lib-dir 0 t))
 
 ;;; ----------------------------------------------------------------------------
 ;;; Initialize packages.
