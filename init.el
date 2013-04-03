@@ -620,6 +620,7 @@
       (hook-fn it
         (nrepl-turn-on-eldoc-mode)
         (paredit-mode +1)
+        (local-set-key (kbd "C-c l")   'nrepl-clear-buffer)
         (local-set-key (kbd "C-c C-z") 'cb:switch-to-last-clj-buffer)
         (local-set-key (kbd "C-c C-f") 'cb:eval-last-clj-buffer)))))
 
