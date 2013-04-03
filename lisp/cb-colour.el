@@ -1,9 +1,11 @@
 ;;; cb-colour.el
 
 (use-package color-theme-solarized
+  :ensure t
   :defer t)
 
 (use-package ir-black-theme
+  :ensure t
   :defer t)
 
 (defface paren-face

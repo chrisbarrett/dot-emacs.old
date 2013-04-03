@@ -49,6 +49,8 @@
     (cb:define-path cb:etc-dir  "etc/")
     (cb:define-path cb:bin-dir  "bin/")
     (cb:define-path cb:yasnippet-dir "snippets/")
+    (cb:define-path cb:backups-dir   "backups/")
+    (cb:define-path cb:autosaves-dir "tmp/autosaves/")
     (cb:define-path cb:rsense-home "bin/rsense-0.3/")))
 
 (use-package helm
@@ -58,6 +60,9 @@
   :ensure t
   :config
   (progn
+
+    (ido-mode +1)
+    (icomplete-mode +1)
     (use-package ido-hacks
       :ensure t)
 
@@ -75,11 +80,7 @@
           ido-create-new-buffer 'always
           ido-use-filename-at-point 'guess
           ido-max-prospects 10
-          ido-default-file-method 'selected-window)
-
-    (ido-mode +1)
-    (icomplete-mode +1)))
-
+          ido-default-file-method 'selected-window)))
 
 (use-package smex
   :ensure t
@@ -166,8 +167,10 @@
   :if     (display-graphic-p)
   :config (fringe-mode '(2 . 0)))
 
+(use-package ansi-color
+  :config (ansi-color-for-comint-mode-on))
+
 (use-package transpose-frame
-  :ensure t
   :bind (("C-x t" . transpose-frame)
          ("C-x f" . rotate-frame))
 
@@ -178,9 +181,6 @@
    rotate-frame
    rotate-frame-clockwise
    rotate-frame-anticlockwise))
-
-(use-package ansi-color
-  :config (ansi-color-for-comint-mode-on))
 
 (use-package key-chord
   :ensure t
@@ -215,6 +215,17 @@
                 (define-key evil-normal-state-map (kbd "+") 'evil-numbers/dec-at-pt)))
     (use-package cb-evil)
     (evil-mode +1)))
+
+(use-package backup-dir
+  :config
+  (setq auto-save-file-name-transforms `((".*" ,(concat cb:autosaves-dir "\\1") t))
+        backup-by-copying        t
+        backup-directory-alist   `((".*" . ,cb:backups-dir))
+        auto-save-list-file-name (concat cb:autosaves-dir "autosave-list")
+        delete-old-versions      t
+        kept-new-versions        6
+        kept-old-versions        2
+        version-control          t))
 
 (use-package exec-path-from-shell
   :ensure t
@@ -478,14 +489,15 @@
   :ensure t)
 
 (use-package highlight-parentheses
+  :ensure t
   :diminish highlight-parentheses-mode)
 
 (use-package highlight-symbol
   :ensure t)
 
 (use-package volatile-highlights
-  :diminish volatile-highlights-mode
-  :ensure t)
+  :ensure t
+  :diminish volatile-highlights-mode)
 
 (use-package eval-sexp-fu)
 
