@@ -190,7 +190,9 @@
 
 (use-package transpose-frame
   :bind (("C-x t" . transpose-frame)
-         ("C-x f" . rotate-frame))
+         ("s-t"   . transpose-frame)
+         ("C-x f" . rotate-frame)
+         ("s-r"   . rotate-frame))
 
   :commands
   (transpose-frame
@@ -435,6 +437,12 @@
     (hook-fn 'snippet-mode-hook
       (setq require-final-newline nil))))
 
+(use-package eproject
+  :ensure t
+  :diminish eproject-minor-mode
+  :config
+  (add-hook 'prog-mode-hook 'eproject-maybe-turn-on))
+
 (use-package make-mode
   :config
   (progn
@@ -443,20 +451,18 @@
       (auto-complete-mode t)
       (setq indent-tabs-mode t))))
 
-(use-package ctags
-  :ensure t
-  :bind ("M-RET" . ctags-search)
-  :config
+(use-package cb-tags
+  :bind (("C-]" . cb:find-tag)
+         ("C-c C-r" . cb:build-ctags))
+  :init
   (progn
-    (use-package ctags-update
-      :ensure t
-      :bind ("C-c C-e" . ctags-update)
-      :config
-      (add-hook 'emacs-lisp-mode-hook 'turn-on-ctags-update-mode))
-    (setq tags-revert-without-query t)
-    (add-hook 'emacs-lisp-mode-hook 'ctags-set-tags-file)))
+    (use-package etags-select
+      :ensure t)
+    ;; Ensure tags searches are case-sensitive.
+    (setq tags-case-fold-search nil)))
 
-(use-package cb-shebang)
+(use-package cb-shebang
+  :commands (insert-shebang))
 
 (use-package nxml-mode
   :commands (nxml-mode)
@@ -748,12 +754,10 @@
   (byte-recompile-directory cb:lib-dir 0 t)
   (byte-recompile-directory cb:lisp-dir 0 t))
 
-(defun cb:byte-compile-lisp ()
+(defun cb:byte-compile-elpa ()
   "Recompile all lisp files in `user-emacs-directory'."
   (interactive)
-  (byte-recompile-directory (concat user-emacs-directory "elpa") 0 t)
-  (cb:byte-compile-config)
-  (ctags-create-or-update-tags-table))
+  (byte-recompile-directory (concat user-emacs-directory "elpa") 0 t))
 
 ;; Local Variables:
 ;; byte-compile-warnings: (not obsolete)

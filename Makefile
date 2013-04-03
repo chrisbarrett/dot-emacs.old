@@ -1,10 +1,21 @@
-emacs = emacs
+emacs      = emacs
+emacs_exec = $(emacs) --batch -nw -l init.el -f
+
+# ----------------------------------------------------------------------------
+
+.PHONY: conf elpa tags all clean clean-elc clean-backups
+
+all: conf elpa tags
 
 conf:
-	$(emacs) --batch -nw -l init.el -f 'cb:byte-compile-conf'
+	$(emacs_exec) 'cb:byte-compile-conf'
 
-all:
-	$(emacs) --batch -nw -l init.el -f 'cb:byte-compile-lisp'
+elpa:
+	$(emacs_exec) 'cb:byte-compile-elpa'
+
+tags:
+	$(emacs_exec) 'build-ctags'
+
 
 clean: clean-elc clean-backups clean-flycheck
 
@@ -19,6 +30,6 @@ clean-backups:
 	rm -f lib/*~
 
 clean-flycheck:
-	rm -f flycheck-*-
-	rm -f lisp/flycheck-*-
-	rm -f lib/flycheck-*-
+	rm -f flycheck-*
+	rm -f lisp/flycheck-*
+	rm -f lib/flycheck-*
