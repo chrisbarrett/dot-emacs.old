@@ -344,7 +344,11 @@
 (use-package cb-google
   :commands (google/search)
   :bind     (("C-c C-/" . google/search)
-             ("C-c C-_" . google/search)))
+             ("C-c C-_" . google/search))
+  :config
+  (use-package w3m
+    :ensure t
+    :commands (w3m-browse-url)))
 
 (use-package smartparens
   :ensure t
