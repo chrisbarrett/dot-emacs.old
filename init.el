@@ -452,14 +452,17 @@
       (setq indent-tabs-mode t))))
 
 (use-package cb-tags
-  :bind (("C-]" . cb:find-tag)
-         ("C-c C-r" . cb:build-ctags))
-  :init
-  (progn
-    (use-package etags-select
-      :ensure t)
-    ;; Ensure tags searches are case-sensitive.
-    (setq tags-case-fold-search nil)))
+  :commands (cb:find-tag cb:load-ctags cb:build-ctags)
+  :bind (("C-]"     . cb:find-tag)
+         ("C-c C-r" . cb:load-ctags))
+  :config
+  ;; Ensure tags searches are case-sensitive.
+  (setq tags-case-fold-search nil))
+
+(use-package etags-select
+  :ensure t
+  :commands (etags-select-find-tag-at-point
+             etags-select-find-tag))
 
 (use-package cb-shebang
   :commands (insert-shebang))
@@ -750,7 +753,7 @@
 (defun cb:byte-compile-conf ()
   "Recompile all configuration files."
   (interactive)
-  (byte-recompile-file (concat user-emacs-directory "init.el") 0 t)
+  (byte-recompile-file (concat user-emacs-directory "init.el") t 0)
   (byte-recompile-directory cb:lib-dir 0 t)
   (byte-recompile-directory cb:lisp-dir 0 t))
 

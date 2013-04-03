@@ -31,6 +31,11 @@
 (defvar cb:ctags-excludes
   "--exclude=db --exclude=test --exclude=.git --exclude=public")
 
+(defun cb:load-ctags ()
+  "Create a tags file at the root of the current project, then load it."
+  (interactive)
+  (and (cb:build-ctags) (cb:visit-project-tags)))
+
 (defun cb:build-ctags ()
   "Create a tags file at the root of the current project."
   (interactive)
@@ -43,8 +48,7 @@
                       tags)))
     (if (not (equal 0 (shell-command cmd)))
         (error "Failed to create tags")
-      (message "Tags written to \"%s\"" tags)
-      (cb:visit-project-tags))))
+      (message "Tags written to \"%s\"" tags))))
 
 (defun cb:visit-project-tags ()
   "Visit the tags file at the root of the current project."

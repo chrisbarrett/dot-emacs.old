@@ -14,7 +14,7 @@ elpa:
 	$(emacs_exec) 'cb:byte-compile-elpa'
 
 tags:
-	$(emacs_exec) 'build-ctags'
+	$(emacs_exec) 'cb:build-ctags'
 
 
 clean: clean-elc clean-backups clean-flycheck
