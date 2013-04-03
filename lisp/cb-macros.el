@@ -36,4 +36,41 @@ to the hook function are bound to the symbol 'args'."
   `(add-hook ,hook (lambda (&rest args)
                      ,@(cons docstring body))))
 
+;;; ----------------------------------------------------------------------------
+
+(defun directory-p (f)
+  (and (file-directory-p f)
+       (not (string-match "/[.]+$" f))))
+
+(defun directory-subfolders (path)
+  (->> (directory-files path)
+    (--map (concat path it))
+    (-filter 'directory-p)))
+
+(defun cb:prepare-load-dir (dir)
+  (let ((dir (concat user-emacs-directory dir)))
+    (unless (file-exists-p dir) (make-directory dir))
+    (--each (cons dir (directory-subfolders dir))
+      (add-to-list 'load-path it))
+    dir))
+
+(defmacro cb:define-path (sym path)
+  "Define a directory that will be added to the lisp `load-path'."
+  `(defconst ,sym (cb:prepare-load-dir ,path)))
+
+;;; ----------------------------------------------------------------------------
+
+(defun cb:ensure-package (pkg)
+  (unless (package-installed-p pkg)
+    (package-install pkg)))
+
+(defmacro cb:use-package (name &rest args)
+  (cl-assert (symbolp name))
+  (let ((args* (cl-gensym)))
+    `(eval-and-compile
+       (let ((,args* ,args))
+         (when-let (pkg (plist-get ,args* ))
+           (cb:ensure-package ,name))
+         (use-package ,name ,@args)))))
+
 (provide 'cb-macros)

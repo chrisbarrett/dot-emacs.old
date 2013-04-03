@@ -24,69 +24,71 @@
 (package-initialize)
 (unless package-archive-contents (package-refresh-contents))
 
-(defun cb:require-package (pkg)
-  (unless (package-installed-p pkg)
-    (package-install pkg))
-  (require pkg))
+(add-to-list 'load-path (concat user-emacs-directory "lib/use-package/"))
+(add-to-list 'load-path (concat user-emacs-directory "lisp"))
 
 ;;; ----------------------------------------------------------------------------
-;;; Load path
-
-(add-to-list 'load-path (concat user-emacs-directory "lib"))
-(add-to-list 'load-path user-emacs-directory)
-(cb:require-package 'dash)
-(require 'cl-lib)
-(require 'cb-load-path)
-
-(cb:define-path cb:lib-dir  "lib/")
-(cb:define-path cb:lisp-dir "lisp/")
-(cb:define-path cb:tmp-dir  "tmp/")
-(cb:define-path cb:etc-dir  "etc/")
-(cb:define-path cb:bin-dir  "bin/")
-(cb:define-path cb:yasnippet-dir "snippets/")
-(cb:define-path cb:rsense-home "bin/rsense-0.3/")
-
-;;; ----------------------------------------------------------------------------
-;;; Error navigation keybindings.
-
-(global-set-key (kbd "M-N") 'next-error)
-(global-set-key (kbd "M-P") 'previous-error)
-
-;;; ----------------------------------------------------------------------------
-;;; Packages
+;;; Load packages.
 
 (require 'use-package)
 
-(use-package s)
+(use-package cl-lib)
 
-(use-package cb-macros)
+(use-package s
+  :ensure t)
 
-(use-package helm)
+(use-package dash
+  :ensure t)
+
+(use-package cb-macros
+  :init
+  (progn
+    (cb:define-path cb:lib-dir  "lib/")
+    (cb:define-path cb:lisp-dir "lisp/")
+    (cb:define-path cb:tmp-dir  "tmp/")
+    (cb:define-path cb:etc-dir  "etc/")
+    (cb:define-path cb:bin-dir  "bin/")
+    (cb:define-path cb:yasnippet-dir "snippets/")
+    (cb:define-path cb:rsense-home "bin/rsense-0.3/")))
+
+(use-package helm
+  :ensure t)
 
 (use-package ido
+  :ensure t
   :config
   (progn
-    (ido-mode +1)
-    (use-package ido-hacks)
+    (use-package ido-hacks
+      :ensure t)
+
     (use-package ido-ubiquitous
+      :ensure t
       :config (ido-ubiquitous-mode +1))
+
+    (use-package idomenu)
+
     (add-to-list 'ido-ignore-buffers "*helm mini*")
     (add-to-list 'ido-ignore-files "\\.DS_Store")
-    (icomplete-mode +1)
 
     (setq ido-enable-prefix nil
           ido-enable-flex-matching t
           ido-create-new-buffer 'always
           ido-use-filename-at-point 'guess
           ido-max-prospects 10
-          ido-default-file-method 'selected-window)))
+          ido-default-file-method 'selected-window)
+
+    (ido-mode +1)
+    (icomplete-mode +1)))
+
 
 (use-package smex
+  :ensure t
   :config (smex-initialize)
   :bind   (("M-x" . smex)
            ("M-X" . smex-major-mode-commands)))
 
 (use-package popwin
+  :ensure t
   :config
   (setq display-buffer-function 'popwin:display-buffer
         popwin:special-display-config
@@ -139,18 +141,22 @@
     (savehist-mode +1)))
 
 (use-package undo-tree
+  :ensure t
   :diminish undo-tree-mode
   :config   (global-undo-tree-mode +1))
 
 (use-package window-number
+  :ensure t
   :config (window-number-meta-mode t))
 
 (use-package winner
   :config (winner-mode +1))
 
 (use-package volatile-highlights)
+:ensure t
 
 (use-package diminish
+  :ensure t
   :commands (diminish))
 
 (use-package hl-line
@@ -161,6 +167,7 @@
   :config (fringe-mode '(2 . 0)))
 
 (use-package transpose-frame
+  :ensure t
   :bind (("C-x t" . transpose-frame)
          ("C-x f" . rotate-frame))
 
@@ -176,6 +183,7 @@
   :config (ansi-color-for-comint-mode-on))
 
 (use-package key-chord
+  :ensure t
   :config
   (progn
     ;; Global keys
@@ -194,11 +202,14 @@
 (use-package cb-foundation)
 
 (use-package evil
+  :ensure t
   :config
   (progn
     (use-package surround
+      :ensure t
       :config (global-surround-mode +1))
     (use-package evil-numbers
+      :ensure t
       :config (progn
                 (define-key evil-normal-state-map (kbd "-") 'evil-numbers/inc-at-pt)
                 (define-key evil-normal-state-map (kbd "+") 'evil-numbers/dec-at-pt)))
@@ -206,6 +217,7 @@
     (evil-mode +1)))
 
 (use-package exec-path-from-shell
+  :ensure t
   :if (and (equal system-type 'darwin)
            (window-system))
   :config
@@ -258,9 +270,11 @@
   :commands (cb:handle-git-merge))
 
 (use-package auto-complete
+  :ensure t
   :config
   (progn
-    (use-package fuzzy)
+    (use-package fuzzy
+      :ensure t)
     (use-package auto-complete-config
       :config (ac-config-default))
 
@@ -290,6 +304,7 @@
              ("C-c C-_" . google/search)))
 
 (use-package smartparens
+  :ensure t
   :commands (smartparens-mode smartparens-global-mode)
   :defer t
   :init
@@ -308,6 +323,7 @@
   :commands (rigid-indentation-mode))
 
 (use-package json-mode
+  :ensure t
   :config
   (progn
     (add-to-list 'ac-modes 'json-mode)
@@ -325,10 +341,12 @@
     (add-hook 'slime-repl-mode-hook    'lambda-mode)))
 
 (use-package markdown-mode
+  :ensure t
   :mode (("\\.md$"          . mardown-mode)
          ("\\.[mM]arkdown$" . markdown-mode)))
 
 (use-package mode-compile
+  :ensure t
   :bind (("C-c C-k" . mode-compile-kill)
          ("C-c C-c" . mode-compile))
   :config
@@ -344,6 +362,7 @@
                      (delete-windows-on (get-buffer-create "*compilation")))))))
 
 (use-package flyspell-lazy
+  :ensure t
   :defines flyspell-lazy-mode
   :config
   (progn
@@ -352,6 +371,7 @@
     (add-hook 'prog-mode-hook 'flyspell-prog-mode)))
 
 (use-package flycheck
+  :ensure t
   :config
   (let ((maybe-flycheck
          (lambda ()
@@ -364,6 +384,7 @@
     (add-hook 'text-mode-hook maybe-flycheck)))
 
 (use-package yasnippet
+  :ensure t
   :diminish yas-minor-mode
   :config
   (progn
@@ -395,6 +416,7 @@
       (local-set-key (kbd "M-q") 'cb:reformat-xml))))
 
 (use-package tagedit
+  :ensure t
   :commands (tagedit-add-paredit-like-keybindings)
   :config
   (hook-fn 'html-mode-hook
@@ -402,6 +424,7 @@
     (setq sgml-xml-mode +1)))
 
 (use-package magit
+  :ensure t
   :bind ("C-x g" . magit-status)
   :config
   (progn
@@ -429,6 +452,7 @@
          (".gitmodules$" . conf-mode)))
 
 (use-package paredit
+  :ensure t
   :commands (paredit-mode enable-paredit-mode disable-paredit-mode)
   :config
   (progn
@@ -447,17 +471,21 @@
           (smartparens-mode -1)
         (smartparens-mode +1)))))
 
-(use-package highlight)
+(use-package highlight
+  :ensure t)
 
-(use-package lively)
+(use-package lively
+  :ensure t)
 
 (use-package highlight-parentheses
   :diminish highlight-parentheses-mode)
 
-(use-package highlight-symbol)
+(use-package highlight-symbol
+  :ensure t)
 
 (use-package volatile-highlights
-  :diminish volatile-highlights-mode)
+  :diminish volatile-highlights-mode
+  :ensure t)
 
 (use-package eval-sexp-fu)
 
@@ -475,19 +503,21 @@
       :config
       (hook-fn 'emacs-lisp-mode-hook
         (local-set-key (kbd "C-c e") 'eval-and-replace)))
+
     (hook-fn 'emacs-lisp-mode-hook
       (autoload 'ert "ert")
       (local-set-key (kbd "C-c C-t") 'ert))
+
     (hook-fn 'after-save-hook
       "Byte compile elisp files on save."
       (when (and (equal major-mode 'emacs-lisp-mode)
                  (buffer-file-name))
         (byte-compile-file (buffer-file-name))))))
 
-(use-package cb-lisp
-  :commands ())
+(use-package cb-lisp)
 
 (use-package clojure-mode
+  :ensure t
   :commands (clojure-mode)
   :mode     ("\\.cljs?$" . clojure-mode)
   :config
@@ -496,6 +526,7 @@
       :bind     ("s-." . cb:stop-overtone)
       :commands (maybe-enable-overtone-mode cb:stop-overtone))
     (use-package midje-mode
+      :ensure t
       :commands (midje-mode)
       :diminish (midje-mode)
       :config   (add-hook 'clojure-mode-hook 'midje-mode))
@@ -505,6 +536,7 @@
       (local-set-key (kbd "C-c C-z") 'cb:switch-to-nrepl))))
 
 (use-package nrepl
+  :ensure t
   :commands (nrepl-jack-in)
   :config
   (progn
@@ -529,6 +561,7 @@
         (local-set-key (kbd "C-c C-f") 'cb:eval-last-clj-buffer)))))
 
 (use-package fsharp-mode
+  :ensure t
   :commands (fsharp-mode)
   :mode ("\\.fs[ixly]?$" . fsharp-mode)
   :config
@@ -540,6 +573,7 @@
     (add-hook 'fsharp-mode-hook 'electric-layout-mode)))
 
 (use-package python
+  :ensure t
   :commands (python-mode)
   :config
   (progn
@@ -547,6 +581,7 @@
     (add-to-list 'ac-modes 'inferior-python-mode)))
 
 (use-package ruby-mode
+  :ensure t
   :modes (("\\.rake$"    . ruby-mode)
           ("Rakefile$"   . ruby-mode)
           ("\\.gemspec$" . ruby-mode))
@@ -555,6 +590,7 @@
   (progn
 
     (use-package ruby-electric
+      :ensure t
       :diminish ruby-electric-mode
       :config
       (progn
@@ -562,6 +598,7 @@
         (add-hook 'ruby-mode-hook 'ruby-electric-mode)))
 
     (use-package rsense
+      :ensure t
       :config
       (progn
         (setq rsense-home cb:rsense-home)
@@ -570,6 +607,7 @@
         (add-to-list 'ac-sources 'ac-source-rsense-constant)))
 
     (use-package inf-ruby
+      :ensure t
       :config
       (progn
         (add-hook 'ruby-mode-hook 'ruby-electric-mode)
@@ -587,7 +625,8 @@
   :config
   (progn
 
-    (use-package ghc)
+    (use-package ghc
+      :ensure t)
 
     (use-package haskell-edit)
 
@@ -610,6 +649,7 @@
       (setq hs-lint-command (executable-find "hlint")))
 
     (use-package scion
+      :ensure t
       :diminish scion-mode
       :config
       (progn
@@ -640,6 +680,12 @@
       "Configure haskell auto-complete sources."
       (setq ac-sources (list 'ac-source-words-in-same-mode-buffers
                              'ac-source-ghc-mod)))))
+
+;;; ----------------------------------------------------------------------------
+;;; Error navigation keybindings.
+
+(global-set-key (kbd "M-N") 'next-error)
+(global-set-key (kbd "M-P") 'previous-error)
 
 ;; Local Variables:
 ;; byte-compile-warnings: (not obsolete)
