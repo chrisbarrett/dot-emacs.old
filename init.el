@@ -277,7 +277,7 @@
     (cond
      ((not (display-graphic-p))     (solarized-light))
      ((and (<= 0 hour) (>= 6 hour)) (ir-black))
-     ((and (< 20 hour) (> 9 hour))  (solarized-dark))
+     ((or  (< 20 hour) (> 9 hour))  (solarized-dark))
      (t                             (solarized-light)))))
 
 (use-package ediff
