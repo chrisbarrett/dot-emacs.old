@@ -201,7 +201,17 @@
 
 (use-package color-theme)
 
-(use-package cb-colour)
+(use-package cb-colour
+  :config
+  ;; Set colour by time of day.
+  (let ((hour (string-to-number (substring (current-time-string) 11 13))))
+    (cond
+     ((and (display-graphic-p) (<= 0 hour) (>= 6 hour))
+      (ir-black))
+     ((or (< 20 hour) (> 9 hour))
+      (solarized-dark))
+     (t
+      (solarized-light)))))
 
 (use-package ediff
   :commands (ediff ediff-merge-files-with-ancestor)
@@ -250,6 +260,8 @@
              ("C-c C-_" . google/search)))
 
 (use-package smartparens
+  :commands (smartparens-mode smartparens-global-mode)
+  :defer t
   :init
   (defadvice smartparens-mode (around cb:inhibit-on-paredit activate)
     "Prevent smartparens from being used if paredit is active."
@@ -291,11 +303,10 @@
          ("C-c C-c" . mode-compile))
   :config
   (progn
-    (setq mode-compile-expert-p t
+    (setq mode-compile-expert-p             t
           mode-compile-always-save-buffer-p t
-          compilation-window-height 12
-          compilation-scroll-output 'first-error)
-
+          compilation-window-height         12
+          compilation-scroll-output         'first-error)
     (add-to-list 'compilation-finish-functions
                  (lambda (buf str)
                    "Close compilation buffer if compilation succeeded."
@@ -443,8 +454,6 @@
 (use-package cb-lisp
   :commands ())
 
-(use-package cb-clojure)
-
 (use-package clojure-mode
   :commands (clojure-mode)
   :mode     ("\\.cljs?$" . clojure-mode)
@@ -457,6 +466,7 @@
       :commands (midje-mode)
       :diminish (midje-mode)
       :config   (add-hook 'clojure-mode-hook 'midje-mode))
+    (use-package cb-clojure)
     (hook-fn 'clojure-mode-hook
       (maybe-enable-overtone-mode)
       (local-set-key (kbd "C-c C-z") 'cb:switch-to-nrepl))))
@@ -507,6 +517,7 @@
   :modes (("\\.rake$"    . ruby-mode)
           ("Rakefile$"   . ruby-mode)
           ("\\.gemspec$" . ruby-mode))
+  :defer t
   :config
   (progn
 
@@ -535,6 +546,7 @@
     (add-to-list 'completion-ignored-extensions ".rbc")))
 
 (use-package haskell-mode
+  :commands (haskell-mode haskell-c-mode haskell-cabal-mode)
   :mode
   (("\\.hs"     . haskell-mode)
    ("\\.hsc$"   . haskell-c-mode)

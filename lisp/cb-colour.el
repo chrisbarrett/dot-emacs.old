@@ -59,17 +59,4 @@
   (set-face-background  'show-paren-match-face nil)
   (set-face-underline   'hl-line nil))
 
-
-;;; Set colour by time of day.
-(let ((hour (string-to-number (substring (current-time-string) 11 13))))
-  (cond
-   ((and (display-graphic-p) (<= 0 hour) (>= 6 hour))
-    (ir-black))
-
-   ((or (< 20 hour) (> 9 hour))
-    (solarized-dark))
-
-   (t
-    (solarized-light))))
-
 (provide 'cb-colour)
