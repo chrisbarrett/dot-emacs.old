@@ -8,9 +8,11 @@ sk-old
 .\#*
 *.cache
 session*
+flycheck-*-
 
 # ignore individual items
 
+TAGS
 custom.el
 .DS_Store
 auto-save-list

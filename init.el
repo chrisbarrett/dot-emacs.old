@@ -242,7 +242,7 @@
   :config
   (setq auto-save-file-name-transforms `((".*" ,(concat cb:autosaves-dir "\\1") t))
         backup-by-copying        t
-        backup-directory-alist   `((".*" . ,cb:backups-dir))
+        bkup-backup-directory-info `((".*" ,cb:backups-dir ok-create))
         auto-save-list-file-name (concat cb:autosaves-dir "autosave-list")
         delete-old-versions      t
         kept-new-versions        6
@@ -442,6 +442,19 @@
     (hook-fn 'makefile-mode-hook
       (auto-complete-mode t)
       (setq indent-tabs-mode t))))
+
+(use-package ctags
+  :ensure t
+  :bind ("M-RET" . ctags-search)
+  :config
+  (progn
+    (use-package ctags-update
+      :ensure t
+      :bind ("C-c C-e" . ctags-update)
+      :config
+      (add-hook 'emacs-lisp-mode-hook 'turn-on-ctags-update-mode))
+    (setq tags-revert-without-query t)
+    (add-hook 'emacs-lisp-mode-hook 'ctags-set-tags-file)))
 
 (use-package cb-shebang)
 
@@ -739,8 +752,8 @@
   "Recompile all lisp files in `user-emacs-directory'."
   (interactive)
   (byte-recompile-directory (concat user-emacs-directory "elpa") 0 t)
-  (cb:byte-compile-config))
-
+  (cb:byte-compile-config)
+  (ctags-create-or-update-tags-table))
 
 ;; Local Variables:
 ;; byte-compile-warnings: (not obsolete)
