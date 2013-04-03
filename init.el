@@ -1,19 +1,36 @@
+;;; init --- My emacs configuration
+
+;; Copyright (C) 2013 Chris Barrett
+
+;; Author: Chris Barrett <chris.d.barrett@me.com>
+
+;; This program is free software; you can redistribute it and/or
+;; modify it under the terms of the GNU General Public License as
+;; published by the Free Software Foundation; either version 2, or (at
+;; your option) any later version.
+
+;; This program is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;; General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with GNU Emacs; see the file COPYING.  If not, write to the
+;; Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+;; Boston, MA 02111-1307, USA.
+
+;;; Commentary:
+
+;;; Code:
+
 ;;; Disable intrusive GUI elements.
 (scroll-bar-mode -1)
 (menu-bar-mode   -1)
 (tool-bar-mode   -1)
 
-(defun cb:byte-compile-lisp ()
-  "Recompile all lisp files in `user-emacs-directory'."
-  (interactive)
-  (byte-recompile-directory user-emacs-directory 0 t))
-
-(defun cb:byte-compile-config ()
-  "Recompile all configuration files."
-  (interactive)
-  (byte-recompile-file (concat user-emacs-directory "init.el") 0 t)
-  (byte-recompile-directory cb:lisp-dir 0 t)
-  (byte-recompile-directory cb:lib-dir 0 t))
+;;; Describe me.
+(setq user-full-name    "Chris Barrett"
+      user-mail-address "chris.d.barrett@me.com")
 
 ;;; ----------------------------------------------------------------------------
 ;;; Initialize packages.
@@ -24,13 +41,13 @@
 (package-initialize)
 (unless package-archive-contents (package-refresh-contents))
 
-(add-to-list 'load-path (concat user-emacs-directory "lib/use-package/"))
 (add-to-list 'load-path (concat user-emacs-directory "lisp"))
 
 ;;; ----------------------------------------------------------------------------
 ;;; Load packages.
 
-(require 'use-package)
+(require 'bind-key (concat user-emacs-directory "lib/use-package/bind-key.el"))
+(require 'use-package (concat user-emacs-directory "lib/use-package/use-package.el"))
 
 (use-package cl-lib)
 
@@ -60,9 +77,17 @@
   :ensure t
   :config
   (progn
+    (setq ido-enable-prefix nil
+          ido-save-directory-list-file (concat cb:tmp-dir "ido.last")
+          ido-enable-flex-matching t
+          ido-create-new-buffer 'always
+          ido-use-filename-at-point 'guess
+          ido-max-prospects 10
+          ido-default-file-method 'selected-window)
 
     (ido-mode +1)
     (icomplete-mode +1)
+
     (use-package ido-hacks
       :ensure t)
 
@@ -73,14 +98,7 @@
     (use-package idomenu)
 
     (add-to-list 'ido-ignore-buffers "*helm mini*")
-    (add-to-list 'ido-ignore-files "\\.DS_Store")
-
-    (setq ido-enable-prefix nil
-          ido-enable-flex-matching t
-          ido-create-new-buffer 'always
-          ido-use-filename-at-point 'guess
-          ido-max-prospects 10
-          ido-default-file-method 'selected-window)))
+    (add-to-list 'ido-ignore-files "\\.DS_Store")))
 
 (use-package smex
   :ensure t
@@ -205,14 +223,18 @@
   :ensure t
   :config
   (progn
+
     (use-package surround
       :ensure t
       :config (global-surround-mode +1))
+
     (use-package evil-numbers
       :ensure t
-      :config (progn
-                (define-key evil-normal-state-map (kbd "-") 'evil-numbers/inc-at-pt)
-                (define-key evil-normal-state-map (kbd "+") 'evil-numbers/dec-at-pt)))
+      :config
+      (progn
+        (define-key evil-normal-state-map (kbd "-") 'evil-numbers/inc-at-pt)
+        (define-key evil-normal-state-map (kbd "+") 'evil-numbers/dec-at-pt)))
+
     (use-package cb-evil)
     (evil-mode +1)))
 
@@ -238,17 +260,23 @@
 
 (use-package color-theme)
 
+(use-package color-theme-solarized
+  :ensure t
+  :defer t)
+
+(use-package ir-black-theme
+  :ensure t
+  :defer t)
+
 (use-package cb-colour
   :config
   ;; Set colour by time of day.
-  (let ((hour (string-to-number (substring (current-time-string) 11 13))))
+  (let ((hour (string-to-number (format-time-string "%H"))))
     (cond
-     ((and (display-graphic-p) (<= 0 hour) (>= 6 hour))
-      (ir-black))
-     ((or (< 20 hour) (> 9 hour))
-      (solarized-dark))
-     (t
-      (solarized-light)))))
+     ((not (display-graphic-p))     (solarized-light))
+     ((and (<= 0 hour) (>= 6 hour)) (ir-black))
+     ((and (< 20 hour) (> 9 hour))  (solarized-dark))
+     (t                             (solarized-light)))))
 
 (use-package ediff
   :commands (ediff ediff-merge-files-with-ancestor)
@@ -400,7 +428,7 @@
     (add-to-list 'yas-snippet-dirs cb:yasnippet-dir)
     (yas--initialize)
     (yas-global-mode t)
-    (hook-fn 'yasnippet-mode-hook
+    (hook-fn 'snippet-mode-hook
       (setq require-final-newline nil))))
 
 (use-package make-mode
@@ -695,6 +723,18 @@
 
 (global-set-key (kbd "M-N") 'next-error)
 (global-set-key (kbd "M-P") 'previous-error)
+
+(defun cb:byte-compile-lisp ()
+  "Recompile all lisp files in `user-emacs-directory'."
+  (interactive)
+  (byte-recompile-directory user-emacs-directory 0 t))
+
+(defun cb:byte-compile-config ()
+  "Recompile all configuration files."
+  (interactive)
+  (byte-recompile-file (concat user-emacs-directory "init.el") 0 t)
+  (byte-recompile-directory cb:lisp-dir 0 t)
+  (byte-recompile-directory cb:lib-dir 0 t))
 
 
 ;; Local Variables:

@@ -1,6 +1,32 @@
-;;; cb-macros.el
-;;;
-;;; Common macros for emacs configuration.
+;;; cb-macros --- Common macros used in my emacs config.
+
+;; Copyright (C) 2013 Chris Barrett
+
+;; Author: Chris Barrett <chris.d.barrett@me.com>
+
+;; This program is free software; you can redistribute it and/or
+;; modify it under the terms of the GNU General Public License as
+;; published by the Free Software Foundation; either version 2, or (at
+;; your option) any later version.
+
+;; This program is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;; General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with GNU Emacs; see the file COPYING.  If not, write to the
+;; Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+;; Boston, MA 02111-1307, USA.
+
+;;; Commentary:
+
+;; Common macros used in my emacs config.
+
+;;; Code:
+
+(require 'dash)
+(require 'cl-lib)
 
 (defun macro-boundp (symbol)
   "Test whether SYMBOL is bound as a macro."
@@ -30,8 +56,13 @@ otherwise execute ELSE forms without bindings."
      (if ,var ,then ,@else)))
 
 (defmacro hook-fn (hook &optional docstring &rest body)
-  "Execute BODY forms when HOOK is called. The arguments passed
-to the hook function are bound to the symbol 'args'."
+  "Execute forms when a given hook is called.
+The arguments passed to the hook function are bound to the symbol 'args'.
+
+HOOK is the name of the hook.
+DOCSTRING optionally documents the forms.  Otherwise,
+it is evaluated as part of BODY.
+BODY is a list of forms to evaluate when the hook is run."
   (declare (indent 1) (doc-string 2))
   `(add-hook ,hook (lambda (&rest args)
                      ,@(cons docstring body))))
@@ -39,10 +70,12 @@ to the hook function are bound to the symbol 'args'."
 ;;; ----------------------------------------------------------------------------
 
 (defun directory-p (f)
+  "Test whether F is a directory.  Return nil for '.' and '..'."
   (and (file-directory-p f)
        (not (string-match "/[.]+$" f))))
 
 (defun directory-subfolders (path)
+  "Return a flat list of all subfolders of PATH."
   (->> (directory-files path)
     (--map (concat path it))
     (-filter 'directory-p)))
@@ -74,3 +107,5 @@ to the hook function are bound to the symbol 'args'."
          (use-package ,name ,@args)))))
 
 (provide 'cb-macros)
+
+;;; cb-macros.el ends here
