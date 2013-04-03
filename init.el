@@ -153,8 +153,8 @@
 (use-package winner
   :config (winner-mode +1))
 
-(use-package volatile-highlights)
-:ensure t
+(use-package volatile-highlights
+  :ensure t)
 
 (use-package diminish
   :ensure t
