@@ -414,10 +414,14 @@
 (use-package flycheck
   :ensure t
   :config
-  (progn
+  (let ((maybe-enable-flycheck
+         (lambda ()
+           (when (flycheck-may-enable-mode)
+             (flycheck-mode +1)))))
+
     (setq flycheck-highlighting-mode 'lines)
-    (add-hook 'prog-mode-hook 'flycheck-mode)
-    (add-hook 'text-mode-hook 'flycheck-mode)))
+    (add-hook 'prog-mode-hook maybe-enable-flycheck)
+    (add-hook 'text-mode-hook maybe-enable-flycheck)))
 
 (use-package yasnippet
   :ensure t
@@ -724,17 +728,18 @@
 (global-set-key (kbd "M-N") 'next-error)
 (global-set-key (kbd "M-P") 'previous-error)
 
-(defun cb:byte-compile-lisp ()
-  "Recompile all lisp files in `user-emacs-directory'."
-  (interactive)
-  (byte-recompile-directory user-emacs-directory 0 t))
-
-(defun cb:byte-compile-config ()
+(defun cb:byte-compile-conf ()
   "Recompile all configuration files."
   (interactive)
   (byte-recompile-file (concat user-emacs-directory "init.el") 0 t)
-  (byte-recompile-directory cb:lisp-dir 0 t)
-  (byte-recompile-directory cb:lib-dir 0 t))
+  (byte-recompile-directory cb:lib-dir 0 t)
+  (byte-recompile-directory cb:lisp-dir 0 t))
+
+(defun cb:byte-compile-lisp ()
+  "Recompile all lisp files in `user-emacs-directory'."
+  (interactive)
+  (byte-recompile-directory (concat user-emacs-directory "elpa") 0 t)
+  (cb:byte-compile-config))
 
 
 ;; Local Variables:
