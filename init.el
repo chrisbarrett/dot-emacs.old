@@ -387,8 +387,6 @@
   :mode ((".gitignore$" . conf-mode)
          (".gitmodules$" . conf-mode)))
 
-(use-package cb-magit)
-
 (use-package paredit
   :commands (paredit-mode enable-paredit-mode disable-paredit-mode)
   :config
