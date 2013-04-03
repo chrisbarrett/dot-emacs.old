@@ -8,7 +8,7 @@ sk-old
 .\#*
 *.cache
 session*
-flycheck-*-
+flycheck-*
 
 # ignore individual items
 

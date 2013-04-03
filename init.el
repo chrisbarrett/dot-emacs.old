@@ -95,7 +95,9 @@
       :ensure t
       :config (ido-ubiquitous-mode +1))
 
-    (use-package idomenu)
+    (use-package idomenu
+      :ensure t
+      :commands (idomenu))
 
     (add-to-list 'ido-ignore-buffers "*helm mini*")
     (add-to-list 'ido-ignore-files "\\.DS_Store")))
@@ -288,6 +290,9 @@
           ediff-window-setup-function 'ediff-setup-windows-plain)
     (add-hook 'ediff-startup-hook 'turn-off-evil-mode)))
 
+(use-package cb-ediff
+  :commands (cb:handle-git-merge))
+
 (use-package eshell
   :commands (eshell eshell/pwd)
   :config
@@ -306,9 +311,6 @@
       (set-process-window-size (get-buffer-process (current-buffer))
                                (window-height)
                                (window-width)))))
-
-(use-package cb-ediff
-  :commands (cb:handle-git-merge))
 
 (use-package auto-complete
   :ensure t
@@ -347,7 +349,6 @@
 (use-package smartparens
   :ensure t
   :commands (smartparens-mode smartparens-global-mode)
-  :defer t
   :init
   (defadvice smartparens-mode (around cb:inhibit-on-paredit activate)
     "Prevent smartparens from being used if paredit is active."
