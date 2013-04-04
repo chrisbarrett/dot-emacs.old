@@ -26,6 +26,7 @@
 ;;; Code:
 
 (require 's)
+(require 'cl-lib)
 (require 'cb-macros)
 
 (defun cb:goto-first-match (regex)
