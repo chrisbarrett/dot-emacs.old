@@ -89,11 +89,24 @@ ARGLIST is its argument list."
         (name (s-trim name)))
     (save-excursion
       (cb:goto-open-round)
-      (paredit-kill)
+      (kill-sexp)
       (insert (cb:format-function-call name args))
       (beginning-of-defun)
       (cb:insert-above (cb:format-defun name args (car kill-ring)))
       ;; Revert kill-ring pointer.
+      (setq kill-ring (cdr kill-ring)))))
+
+(defun extract-special-variable (name)
+  "Extract a form as the argument to a defvar named NAME."
+  (interactive "sName: ")
+  (cl-assert (not (s-blank? name)) t "Name must not be blank")
+  (let ((name (s-trim name)))
+    (save-excursion
+      (cb:goto-open-round)
+      (kill-sexp)
+      (insert name)
+      (beginning-of-defun)
+      (cb:insert-above (format "(defvar %s %s)" name (car kill-ring)))
       (setq kill-ring (cdr kill-ring)))))
 
 (defun eval-and-replace ()
