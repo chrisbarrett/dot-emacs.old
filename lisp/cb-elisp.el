@@ -27,7 +27,7 @@
 
 (require 's)
 (require 'cl-lib)
-(require 'cb-macros)
+(eval-when-compile '(require 'cb-macros))
 
 (defun cb:goto-first-match (regex)
   (save-match-data
@@ -60,7 +60,7 @@ See `autoload' for details."
   (save-excursion
     (let ((form  (format "(autoload '%s \"%s\")" function file)))
       (if (cb:goto-first-match "^(autoload ")
-          (progn (newline) (insert form))
+          (progn (forward-line 1) (end-of-line) (newline) (insert form))
         (beginning-of-defun)
         (cb:insert-above form)))))
 
@@ -134,7 +134,7 @@ ARGLIST is its argument list."
   (cb:extracting-form
     (let ((str (prin1-to-string (eval (read (car kill-ring))))))
       (insert str)
-      (message str))))
+      (indent-for-tab-command))))
 
 (defun cb:refactor-options ()
   (--filter (not (null it))
