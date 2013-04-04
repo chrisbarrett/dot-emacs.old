@@ -1,0 +1,3 @@
+[submodule "lib/elisp-refactor"]
+	path = lib/elisp-refactor
+	url = git://github.com/chrisbarrett/elisp-refactor.git

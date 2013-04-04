@@ -60,7 +60,7 @@
   (set-face-background  'error "Firebrick4")
   (set-face-foreground  'error "gray40")
   (set-face-background  'warning "DarkBlue")
-  (set-face-foreground  'error "gray80"))
+  (set-face-foreground  'warning "gray80"))
 
 (defun ir-black ()
   (interactive)

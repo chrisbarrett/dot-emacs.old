@@ -583,15 +583,15 @@
   :commands (eldoc-mode)
   :diminish (eldoc-mode))
 
+(use-package cb-elisp)
+
+(use-package elisp-refactor
+  :bind ("M-RET" . elr/show-refactor-menu))
+
 (use-package lisp-mode
   :commands (emacs-lisp-mode lisp-mode)
   :config
   (progn
-    (use-package cb-elisp
-      :config
-      (hook-fn 'emacs-lisp-mode-hook
-        (local-set-key (kbd "C-c e") 'eval-and-replace)
-        (local-set-key (kbd "M-RET") 'cb:refactor-menu)))
 
     (hook-fn 'emacs-lisp-mode-hook
       (autoload 'ert "ert")
@@ -602,8 +602,6 @@
       (when (and (equal major-mode 'emacs-lisp-mode)
                  (buffer-file-name))
         (byte-compile-file (buffer-file-name))))))
-
-(use-package cb-lisp)
 
 (use-package clojure-mode
   :ensure t
@@ -744,7 +742,7 @@
     (use-package cb-haskell)
 
     (use-package hideshow
-      :diminish hideshow)
+      :diminish hs-minor-mode)
 
     (add-to-list 'completion-ignored-extensions ".hi")
     (setq haskell-stylish-on-save t)
