@@ -27,28 +27,37 @@
 ;;; Code:
 
 (autoload 'eproject-root "eproject")
+(require 's)
 
-(defvar cb:ctags-excludes
-  "--exclude=db --exclude=test --exclude=.git --exclude=public")
+(defvar cb:ctags-exclude-patterns '("db" "test" ".git" "public"))
 
 (defun cb:load-ctags ()
   "Create a tags file at the root of the current project, then load it."
   (interactive)
   (and (cb:build-ctags) (cb:visit-project-tags)))
 
+(defun cb:format-tags-excludes ()
+  (let ((sep " --exclude="))
+    (concat sep (s-join sep cb:ctags-exclude-patterns))))
+
+(defun cb:build-tags-at (tags)
+  (shell-command (format "%s -e -R --extra=+fq %s -f %s"
+                         (executable-find "ctags")
+                         (cb:format-tags-excludes)
+                         tags)))
+
+(defun cb:tags-project-root ()
+  (or (ignore-errors (eproject-root))
+      (s-chop-prefix "Directory " (pwd))))
+
 (defun cb:build-ctags ()
   "Create a tags file at the root of the current project."
   (interactive)
   (message "Building project tags...")
-  (let* ((root (eproject-root))
-         (tags (concat root "TAGS"))
-         (cmd (format "%s -e -R --extra=+fq %s -f %s"
-                      (executable-find "ctags")
-                      cb:ctags-excludes
-                      tags)))
-    (if (not (equal 0 (shell-command cmd)))
-        (error "Failed to create tags")
-      (message "Tags written to \"%s\"" tags))))
+  (let ((tags (concat (cb:tags-project-root) "TAGS")))
+    (if (equal 0 (cb:build-tags-at tags))
+        (message "Tags written to \"%s\"" tags)
+      (error "Failed to create tags"))))
 
 (defun cb:visit-project-tags ()
   "Visit the tags file at the root of the current project."
