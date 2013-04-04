@@ -145,11 +145,11 @@
     (setq recentf-save-file (concat cb:tmp-dir "recentf")
           recentf-max-saved-items 200
           recentf-exclude '(".newsrc"
-                            "ede-projects.el"
+                            "-autoloads.el"
+                            "recentf"
                             ".ido.last"
-                            ".gz"
-                            ".emacs.d/session."
-                            "Map_Sym.txt"))
+                            "TAGS"
+                            ".gz"))
     (recentf-mode +1)))
 
 (use-package savehist
