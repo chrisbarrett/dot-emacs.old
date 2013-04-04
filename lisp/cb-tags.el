@@ -47,14 +47,26 @@
                          tags)))
 
 (defun cb:tags-project-root ()
+  "Return the root of the current project or the current directory."
   (or (ignore-errors (eproject-root))
       (s-chop-prefix "Directory " (pwd))))
+
+(defun cb:home-subfolder? (dir)
+  "Return true if DIR is a subfolder of the user home folder."
+  (let* ((home (expand-file-name "~"))
+         (dir  (s-chop-suffix "/" (expand-file-name dir))))
+    (and (not (equal home dir))
+         (s-matches? home dir))))
 
 (defun cb:build-ctags ()
   "Create a tags file at the root of the current project."
   (interactive)
   (message "Building project tags...")
-  (let ((tags (concat (cb:tags-project-root) "TAGS")))
+  (let* ((dir  (cb:tags-project-root))
+         (tags (concat dir "TAGS")))
+    (unless (or (cb:home-subfolder? dir)
+                (y-or-n-p (format "Really create tags in \"%s\"? " dir)))
+      (error "Tags not created"))
     (if (equal 0 (cb:build-tags-at tags))
         (message "Tags written to \"%s\"" tags)
       (error "Failed to create tags"))))
