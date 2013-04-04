@@ -389,8 +389,20 @@
 
 (use-package markdown-mode
   :ensure t
-  :mode (("\\.md$"          . mardown-mode)
+  :mode (("\\.md$"          . markdown-mode)
          ("\\.[mM]arkdown$" . markdown-mode)))
+
+(use-package md-readme
+  :config
+  (progn
+    (dir-locals-set-class-variables
+     'generate-README-with-md-readme
+     '((emacs-lisp-mode . ((mdr-generate-readme . t)))))
+    (dolist (dir '("~/Projects/elisp-refactor/"))
+      (dir-locals-set-directory-class
+       dir 'generate-README-with-md-readme))
+    (hook-fn 'after-save-hook
+      (if (boundp 'mdr-generate-readme) (mdr-generate)))))
 
 (use-package mode-compile
   :ensure t
@@ -465,6 +477,12 @@
   :config
   ;; Ensure tags searches are case-sensitive.
   (setq tags-case-fold-search nil))
+
+(use-package ctags-update
+  :ensure t
+  :diminish ctags-auto-update-mode
+  :config
+  (add-hook 'prog-mode-hook 'turn-on-ctags-auto-update-mode))
 
 (use-package etags-select
   :ensure t
@@ -725,6 +743,9 @@
 
     (use-package cb-haskell)
 
+    (use-package hideshow
+      :diminish hideshow)
+
     (add-to-list 'completion-ignored-extensions ".hi")
     (setq haskell-stylish-on-save t)
 
@@ -781,8 +802,20 @@
   (interactive)
   (byte-recompile-directory (concat user-emacs-directory "elpa") 0 t))
 
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(safe-local-variable-values (quote ((mdr-generate-readme . t)))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
 ;; Local Variables:
-;; byte-compile-warnings: (not obsolete)
+;; byte-compile-warnings: (not free-vars obsolete)
 ;; End:
 
 ;;; init.el ends here
