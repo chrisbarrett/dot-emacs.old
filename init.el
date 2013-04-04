@@ -686,6 +686,7 @@
     (add-to-list 'completion-ignored-extensions ".rbc")))
 
 (use-package haskell-mode
+  :ensure t
   :commands (haskell-mode haskell-c-mode haskell-cabal-mode)
   :mode
   (("\\.hs"     . haskell-mode)
@@ -700,10 +701,12 @@
     (use-package haskell-edit)
 
     (use-package haskell-indentation
-      :diminish haskell-indentation-mode)
+      :diminish haskell-indentation-mode
+      :config (add-hook 'haskell-mode-hook 'haskell-indentation-mode))
 
     (use-package haskell-doc
-      :diminish haskell-doc-mode)
+      :diminish haskell-doc-mode
+      :config (add-hook 'haskell-mode-hook 'haskell-doc-mode))
 
     (use-package haskell-decl-scan)
 
@@ -717,13 +720,7 @@
       :config
       (setq hs-lint-command (executable-find "hlint")))
 
-    (use-package scion
-      :ensure t
-      :diminish scion-mode
-      :config
-      (progn
-        (setq scion-log-events nil
-              scion-program    (executable-find "scion-server"))))
+    (use-package cb-haskell)
 
     (add-to-list 'completion-ignored-extensions ".hi")
     (setq haskell-stylish-on-save t)
@@ -746,7 +743,20 @@
         (cache)))
 
     (hook-fn 'haskell-mode-hook
-      "Configure haskell auto-complete sources."
+      (setq evil-shift-width     4
+            tab-width            4
+            haskell-tags-on-save t)
+      (ignore-errors (paredit-mode +1))
+      ;; Set key bindings.
+      (local-set-key (kbd "C-c C-c") 'haskell-process-cabal-build)
+      (local-set-key (kbd "C-c h")   'hoogle)
+      (local-set-key (kbd "C-c l")   'hs-lint)
+      (local-set-key (kbd "C-c j")   'haskell-test<->code)
+      ;; Configure outlining.
+      (setq outline-regexp cb:haskell-outline-regex
+            outline-level 'cb:hs-outline-level)
+      (outline-minor-mode t)
+      ;; Configure auto-complete sources.
       (setq ac-sources (list 'ac-source-words-in-same-mode-buffers
                              'ac-source-ghc-mod)))))
 

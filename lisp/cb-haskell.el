@@ -1,6 +1,34 @@
-;;; cb-haskell
+;;; cb-haskell --- Haskell editing commands and advice.
+
+;; Copyright (C) 2013 Chris Barrett
+
+;; Author: Chris Barrett <chris.d.barrett@me.com>
+
+;; This program is free software; you can redistribute it and/or
+;; modify it under the terms of the GNU General Public License as
+;; published by the Free Software Foundation; either version 2, or (at
+;; your option) any later version.
+
+;; This program is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;; General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with GNU Emacs; see the file COPYING.  If not, write to the
+;; Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+;; Boston, MA 02111-1307, USA.
+
+;;; Commentary:
+
+;; Haskell editing commands and advice.
+
+;;; Code:
 
 ;;; Testing
+
+(autoload 'haskell-cabal-find-file "haskell-cabal")
+(require 's)
 
 (defun cb:hs-project-root ()
   (let ((cabal (haskell-cabal-find-file)))
@@ -20,12 +48,11 @@
          (file (if src-p
                    (cb:hs-srcfile->testfile (buffer-file-name))
                  (cb:hs-testfile->srcfile (buffer-file-name)))))
-    (when (_ cb:hs-project-root)
+    (when (cb:hs-project-root)
       (cond
        ((file-exists-p file) (find-file file))
-       (src-p (error "No corresponding unit test file found."))
-       (t     (error "No corresponding source file found."))))))
-
+       (src-p (error "No corresponding unit test file found"))
+       (t     (error "No corresponding source file found"))))))
 
 ;;; Checkers
 
@@ -48,17 +75,17 @@
 
 (push 'haskell-ghc flycheck-checkers)
 
-(flycheck-declare-checker haskell-hdevtools
-  "Haskell checker using hdevtools"
-  :command '("hdevtools"
-             "check"
-             "-g" "-Wall"
-             "-g" "-i/../src"
-             source-inplace)
-  :error-patterns cb:haskell-checker-regexes
-  :modes 'haskell-mode)
+;; (flycheck-declare-checker haskell-hdevtools
+;;   "Haskell checker using hdevtools"
+;;   :command '("hdevtools"
+;;              "check"
+;;              "-g" "-Wall"
+;;              "-g" "-i/../src"
+;;              source-inplace)
+;;   :error-patterns cb:haskell-checker-regexes
+;;   :modes 'haskell-mode)
 
-(push 'haskell-hdevtools flycheck-checkers)
+;; (push 'haskell-hdevtools flycheck-checkers)
 
 (flycheck-declare-checker haskell-hlint
   "Haskell checker using hlint"
@@ -83,6 +110,7 @@
       (skip-chars-forward "\t ")
       (current-column))))
 
+;;; Use greek lambda symbol.
 (font-lock-add-keywords 'haskell-mode
  `((,(concat "\\s (?\\(\\\\\\)\\s *\\(\\w\\|_\\|(.*)\\).*?\\s *->")
     (0 (progn (compose-region (match-beginning 1) (match-end 1)
@@ -91,51 +119,12 @@
 
 ;;; Editing Advice
 
-;; HACK: Use advice to override paredit comment dwim in Haskell mode.
-;; It would be better to get this working with key bindings.
 (defadvice paredit-comment-dwim (around haskell-override-comment-char activate)
+  "Override paredit-dwim so that haskell comment chars are used."
   (if (derived-mode-p 'haskell-mode)
       (comment-dwim nil)
     ad-do-it))
 
-;;; Modes
-
-(defun cb:haskell-common-setup ()
-  "Perform setup common to all Haskell-related modes."
-  (add-to-list 'ac-sources my/ac-source-haskell)
-  (yas-minor-mode nil)
-  (haskell-doc-mode t)
-  (scion-mode t)
-  (cb:haskell-prettify-lambda)
-
-  ;; Paredit setup. Override paredit defaults that are unsuitable for
-  ;; editing Haskell.
-  (ignore-errors (paredit-mode t))
-
-  (local-set-key (kbd "C-c h") 'hoogle))
-
-(defun cb:on-haskell-mode ()
-  (cb:haskell-common-setup)
-  (scion-mode t)
-
-  ;; Outlining
-  (setq outline-regexp haskell-outline-regex)
-  (setq outline-level 'haskell-outline-level)
-  (setq evil-shift-width 4)
-  (outline-minor-mode t)
-
-  (haskell-indentation-mode t)
-  (setq haskell-tags-on-save t)
-  (setq tab-width 4)
-
-  (local-set-key (kbd "C-c C-c") 'haskell-process-cabal-build)
-  (local-set-key (kbd "C-c h") 'hoogle)
-  (local-set-key (kbd "C-c l") 'hs-lint)
-  (local-set-key (kbd "C-c C-s") 'scion-load)
-  (local-set-key (kbd "C-c j") 'haskell-test<->code))
-
-(add-hook 'haskell-mode-hook 'cb:on-haskell-mode)
-(add-hook 'inferior-haskell-hook 'cb:haskell-common-setup)
-(add-hook 'haskell-cabal-mode-hook 'cb:on-haskell-mode)
-
 (provide 'cb-haskell)
+
+;;; cb-haskell.el ends here
