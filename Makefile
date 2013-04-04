@@ -5,8 +5,6 @@ emacs_exec = $(emacs) --batch -nw -l init.el -f
 
 .PHONY: conf elpa tags all clean clean-elc clean-backups
 
-all: conf elpa tags
-
 conf:
 	$(emacs_exec) 'cb:byte-compile-conf'
 
@@ -16,6 +14,7 @@ elpa:
 tags:
 	$(emacs_exec) 'cb:build-ctags'
 
+all: conf elpa tags
 
 clean: clean-elc clean-backups clean-flycheck
 
