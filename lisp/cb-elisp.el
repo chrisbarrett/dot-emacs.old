@@ -67,17 +67,30 @@ See `autoload' for details."
 (defun cb:goto-open-round ()
   (unless (thing-at-point-looking-at "(")
     (beginning-of-sexp)
-    (forward-char -1)))
+    (forward-char -1)
+    (unless (thing-at-point-looking-at "(")
+      (search-backward "("))))
 
 (defun cb:format-function-call (name arglist)
   (format "(%s%s)" name (if (s-blank? arglist) "" (concat " " arglist))))
 
-(defun cb:format-defun (name args body)
+(defun cb:format-defun (name arglist body)
   (with-temp-buffer
     (lisp-mode-variables)
-    (insert (format "(defun %s (%s) \n%s)" name args body))
+    (insert (format "(defun %s (%s) \n%s)" name arglist body))
     (indent-region (point-min) (point-max))
     (buffer-string)))
+
+(defmacro cb:extracting-form (&rest body)
+  "Kill the sexp near point then perform BODY."
+  (declare (indent 0))
+  `(save-excursion
+     (cb:goto-open-round)
+     (kill-sexp)
+     (unwind-protect
+         (progn ,@body)
+       ;; Revert kill-ring pointer.
+       (setq kill-ring (cdr kill-ring)))))
 
 (defun extract-function (name arglist)
   "Extract a function from the sexp beginning at point.
@@ -87,37 +100,72 @@ ARGLIST is its argument list."
   (cl-assert (not (s-blank? name)) t "Name must not be blank")
   (let ((args (s-trim arglist))
         (name (s-trim name)))
-    (save-excursion
-      (cb:goto-open-round)
-      (kill-sexp)
+    (cb:extracting-form
       (insert (cb:format-function-call name args))
       (beginning-of-defun)
-      (cb:insert-above (cb:format-defun name args (car kill-ring)))
-      ;; Revert kill-ring pointer.
-      (setq kill-ring (cdr kill-ring)))))
+      (cb:insert-above (cb:format-defun name args (car kill-ring))))))
 
-(defun extract-special-variable (name)
+(defun cb:format-sexp (&rest args)
+  (concat "(" (s-trim (s-join " " args)) ")"))
+
+(defun extract-variable (name)
   "Extract a form as the argument to a defvar named NAME."
   (interactive "sName: ")
   (cl-assert (not (s-blank? name)) t "Name must not be blank")
   (let ((name (s-trim name)))
-    (save-excursion
-      (cb:goto-open-round)
-      (kill-sexp)
+    (cb:extracting-form
       (insert name)
       (beginning-of-defun)
-      (cb:insert-above (format "(defvar %s %s)" name (car kill-ring)))
-      (setq kill-ring (cdr kill-ring)))))
+      (cb:insert-above (cb:format-sexp "defvar" name (car kill-ring))))))
+
+(defun extract-constant (name)
+  "Extract a form as the argument to a defconst named NAME."
+  (interactive "sName: ")
+  (cl-assert (not (s-blank? name)) t "Name must not be blank")
+  (let ((name (s-trim name)))
+    (cb:extracting-form
+      (insert name)
+      (beginning-of-defun)
+      (cb:insert-above (cb:format-sexp "defconst" name (car kill-ring))))))
 
 (defun eval-and-replace ()
-  "Replace the form behind point with its value."
+  "Replace the form at point with its value."
   (interactive)
-  (backward-kill-sexp)
-  (condition-case _
-      (prin1 (eval (read (current-kill 0)))
-             (current-buffer))
-    (error (message "Invalid expression")
-           (insert (current-kill 0)))))
+  (cb:extracting-form
+    (let ((str (prin1-to-string (eval (read (car kill-ring))))))
+      (insert str)
+      (message str))))
+
+(defun cb:refactor-options ()
+  (--filter (not (null it))
+            (list
+             (popup-make-item "function"
+                              :value 'extract-function
+                              :summary "defun")
+
+             (popup-make-item "variable"
+                              :value 'extract-variable
+                              :summary "defvar")
+
+             (popup-make-item "constant"
+                              :value 'extract-constant
+                              :summary "defconst")
+
+             (when (functionp (symbol-at-point))
+               (popup-make-item "autoload"
+                                :value 'extract-autoload
+                                :summary "autoload"))
+
+             (popup-make-item "eval"
+                              :value 'eval-and-replace
+                              :summary "value"))))
+
+(defun cb:refactor-menu ()
+  "Show the extraction menu at point."
+  (interactive)
+  (if-let (action (popup-menu* (cb:refactor-options) :isearch t))
+    (call-interactively action)
+    (error "No refactorings available")))
 
 ;;; ----------------------------------------------------------------------------
 ;;; Font lock
@@ -138,6 +186,11 @@ ARGLIST is its argument list."
          (group (+ (regex "\[^ )\n\]"))))
     (1 font-lock-keyword-face)
     (2 font-lock-function-name-face))
+
+   ;; cb:extracting-form
+
+   (,(rx "(" (group "cb:extracting-form") (or space eol))
+    (1 font-lock-keyword-face))
 
    ;; cl-struct.
 

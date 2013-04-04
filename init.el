@@ -570,7 +570,8 @@
     (use-package cb-elisp
       :config
       (hook-fn 'emacs-lisp-mode-hook
-        (local-set-key (kbd "C-c e") 'eval-and-replace)))
+        (local-set-key (kbd "C-c e") 'eval-and-replace)
+        (local-set-key (kbd "M-RET") 'cb:refactor-menu)))
 
     (hook-fn 'emacs-lisp-mode-hook
       (autoload 'ert "ert")
