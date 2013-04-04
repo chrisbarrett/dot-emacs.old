@@ -63,12 +63,11 @@
     (cb:define-path cb:lib-dir  "lib/")
     (cb:define-path cb:lisp-dir "lisp/")
     (cb:define-path cb:tmp-dir  "tmp/")
-    (cb:define-path cb:etc-dir  "etc/")
     (cb:define-path cb:bin-dir  "bin/")
     (cb:define-path cb:yasnippet-dir "snippets/")
     (cb:define-path cb:backups-dir   "backups/")
     (cb:define-path cb:autosaves-dir "tmp/autosaves/")
-    (cb:define-path cb:rsense-home "bin/rsense-0.3/")))
+    (cb:define-path cb:rsense-home   "bin/rsense-0.3/")))
 
 (use-package helm
   :ensure t)
