@@ -446,7 +446,8 @@
   :ensure t
   :diminish eproject-minor-mode
   :config
-  (add-hook 'prog-mode-hook 'eproject-maybe-turn-on))
+  (hook-fn 'prog-mode-hook
+    (ignore-errors (eproject-maybe-turn-on))))
 
 (use-package make-mode
   :config

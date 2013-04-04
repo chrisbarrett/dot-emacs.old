@@ -25,6 +25,9 @@
 
 ;;; Code:
 
+(require 's)
+(require 'cb-macros)
+
 (defun cb:goto-first-match (regex)
   (save-match-data
     (when (string-match regex (buffer-string) 0)
@@ -60,11 +63,43 @@ See `autoload' for details."
         (beginning-of-defun)
         (cb:insert-above form)))))
 
+(defun cb:goto-open-round ()
+  (unless (thing-at-point-looking-at "(")
+    (beginning-of-sexp)
+    (forward-char -1)))
+
+(defun cb:format-function-call (name arglist)
+  (format "(%s%s)" name (if (s-blank? arglist) "" (concat " " arglist))))
+
+(defun cb:format-defun (name args body)
+  (with-temp-buffer
+    (lisp-mode-variables)
+    (insert (format "(defun %s (%s) \n%s)" name args body))
+    (indent-region (point-min) (point-max))
+    (buffer-string)))
+
+(defun extract-function (name arglist)
+  "Extract a function from the sexp beginning at point.
+NAME is the name of the new function.
+ARGLIST is its argument list."
+  (interactive "sName: \nsArglist: ")
+  (cl-assert (not (s-blank? name)) t "Name must not be blank")
+  (let ((args (s-trim arglist))
+        (name (s-trim name)))
+    (save-excursion
+      (cb:goto-open-round)
+      (paredit-kill)
+      (insert (cb:format-function-call name args))
+      (beginning-of-defun)
+      (cb:insert-above (cb:format-defun name args (car kill-ring)))
+      ;; Revert kill-ring pointer.
+      (setq kill-ring (cdr kill-ring)))))
+
 (defun eval-and-replace ()
   "Replace the form behind point with its value."
   (interactive)
   (backward-kill-sexp)
-  (condition-case nil
+  (condition-case _
       (prin1 (eval (read (current-kill 0)))
              (current-buffer))
     (error (message "Invalid expression")
