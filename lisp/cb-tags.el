@@ -29,7 +29,8 @@
 (autoload 'eproject-root "eproject")
 (require 's)
 
-(defvar cb:ctags-exclude-patterns '("db" "test" ".git" "public"))
+(defvar cb:ctags-exclude-patterns
+  '("db" "test" ".git" "public" "flycheck-"))
 
 (defun cb:load-ctags ()
   "Create a tags file at the root of the current project, then load it."
@@ -74,15 +75,14 @@
 (defun cb:visit-project-tags ()
   "Visit the tags file at the root of the current project."
   (interactive)
-  (let ((tags (concat (eproject-root) "TAGS")))
-    (if (not (file-exists-p tags))
-        (error "Unable to load tags.  \"%s\" does not exist" tags)
-      (visit-tags-table tags)
-      (message (concat "Loaded " tags)))))
+  (let ((tags-revert-without-query t))
+    (visit-tags-table (cb:tags-project-root))
+    (message (concat "Loaded " tags-file-name))))
 
 (defun cb:find-tag ()
+  "Find the tags at point, creating a tags file if none exists."
   (interactive)
-  (if (file-exists-p (concat (eproject-root) "TAGS"))
+  (if (file-exists-p (concat (cb:tags-project-root) "TAGS"))
       (cb:visit-project-tags)
     (cb:build-ctags))
   (etags-select-find-tag-at-point))
