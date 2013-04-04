@@ -1,6 +1,29 @@
-;;; cb-foundation.el
-;;;
-;;; Basic configuration required for a sane editing environment.
+;;; cb-foundation --- Basic configuration
+
+;; Copyright (C) 2013 Chris Barrett
+
+;; Author: Chris Barrett <chris.d.barrett@me.com>
+
+;; This program is free software; you can redistribute it and/or
+;; modify it under the terms of the GNU General Public License as
+;; published by the Free Software Foundation; either version 2, or (at
+;; your option) any later version.
+
+;; This program is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;; General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with GNU Emacs; see the file COPYING.  If not, write to the
+;; Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+;; Boston, MA 02111-1307, USA.
+
+;;; Commentary:
+
+;; Basic configuration required for a sane editing environment.
+
+;;; Code:
 
 ;;; Disable vc modes.
 (remove-hook 'find-file-hooks 'vc-find-file-hook)
@@ -8,10 +31,11 @@
   '(remove-hook 'find-file-hooks 'vc-find-file-hook))
 
 ;;; Use unique buffer names based on file path.
-(setq uniquify-buffer-name-style 'forward
-      uniquify-separator "/"
-      uniquify-after-kill-buffer-p t
-      uniquify-ignore-buffers-re "^\\*")
+(eval-after-load 'uniquify
+  '(setq uniquify-buffer-name-style 'forward
+         uniquify-separator "/"
+         uniquify-after-kill-buffer-p t
+         uniquify-ignore-buffers-re "^\\*"))
 
 (auto-compression-mode +1)
 (setq
@@ -27,8 +51,6 @@
  initial-scratch-message      nil
  x-select-enable-clipboard    t
  font-lock-maximum-decoration t
- color-theme-is-global        t
- ansi-color-for-comint-mode   t
  ring-bell-function           'ignore
  initial-scratch-message      nil
  truncate-partial-width-windows     nil
@@ -51,23 +73,24 @@
 
 (defadvice save-buffers-kill-emacs (around no-query-kill-emacs activate)
   "Suppress \"Active processes exist\" query when exiting Emacs."
-  (cl-flet ((process-list ()))
+  (flet ((process-list ()))
     ad-do-it))
 
 (defadvice kill-line (after kill-line-cleanup-whitespace activate compile)
-  "Trim whitespace on kill-line"
+  "Trim whitespace on `kill-line'."
   (unless (bolp)
     (delete-region (point) (progn (skip-chars-forward " \t") (point)))))
 
 (defadvice whitespace-cleanup (around whitespace-cleanup-indent-tab activate)
-  "Fix whitespace-cleanup indent-tabs-mode bug."
+  "Fix `whitespace-cleanup' bug when using `indent-tabs-mode'."
   (let ((whitespace-indent-tabs-mode indent-tabs-mode)
         (whitespace-tab-width tab-width))
     ad-do-it))
 
 ;;; Buffers
 
-(defvar cb:kill-buffer-ignored-list '("*scratch*" "*Messages*" "*GROUP*"))
+(defvar cb:kill-buffer-ignored-list
+  '("*scratch*" "*Messages*" "*GROUP*" "*shell*" "*eshell*"))
 
 (defun cb:kill-current-buffer ()
   "Kill the current buffer.
@@ -80,6 +103,7 @@ If this buffer is a member of `kill-buffer-ignored-list, bury it rather than kil
 (global-set-key (kbd "C-x C-K") 'cb:kill-current-buffer)
 
 (defun sudo-edit (&optional arg)
+  "Edit a file with elevated privileges."
   (interactive "p")
   (if (or arg (not buffer-file-name))
       (find-file (concat "/sudo:root@localhost:" (ido-read-file-name "File: ")))
@@ -93,3 +117,5 @@ If this buffer is a member of `kill-buffer-ignored-list, bury it rather than kil
 (add-hook 'find-file-hook 'cb:hide-dos-eol)
 
 (provide 'cb-foundation)
+
+;;; cb-foundation.el ends here

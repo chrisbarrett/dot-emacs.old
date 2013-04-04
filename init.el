@@ -261,7 +261,9 @@
 
 (use-package cb-osx :if (equal system-type 'darwin))
 
-(use-package color-theme)
+(use-package color-theme
+  :config
+  (setq color-theme-is-global t))
 
 (use-package color-theme-solarized
   :ensure t
