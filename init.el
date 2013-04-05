@@ -220,7 +220,9 @@
          (key-chord-define paredit-mode-map "qm" 'paredit-forward-barf-sexp)))
     (key-chord-mode +1)))
 
-(use-package cb-foundation)
+(use-package cb-foundation
+  :bind (("s-f"     . cb:rotate-buffers)
+         ("C-x C-K" . cb:kill-current-buffer)))
 
 (use-package evil
   :ensure t
