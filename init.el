@@ -223,7 +223,13 @@
 (use-package cb-foundation
   :defer nil
   :bind (("s-f"     . cb:rotate-buffers)
-         ("C-x C-K" . cb:kill-current-buffer))
+         ("C-x C-k" . cb:kill-current-buffer)
+         ("C-x C-o" . other-window))
+  :config
+  (defadvice cb:rotate-buffers (after select-largest-window activate)
+    "Switch to the largest window if using a 2-up window configuration."
+    (when (= 2 (length (window-list)))
+      (cb:select-largest-window)))
   :init
   (progn
     (auto-compression-mode +1)
@@ -263,9 +269,9 @@
 (use-package uniquify
   :config
   (setq uniquify-buffer-name-style   'forward
-	uniquify-separator           "/"
-	uniquify-after-kill-buffer-p t
-	uniquify-ignore-buffers-re   "^\\*"))
+        uniquify-separator           "/"
+        uniquify-after-kill-buffer-p t
+        uniquify-ignore-buffers-re   "^\\*"))
 
 
 

@@ -48,6 +48,21 @@
 
 ;;; Buffers
 
+(defun cb:larger-window (win1 win2)
+  (let ((x1 (window-width win1))
+        (x2 (window-width win2))
+        (y1 (window-height win1))
+        (y2 (window-height win2)))
+    ;; Select tallest if same width.
+    (if (= x1 x2)
+        (if (> y1 y2) win1 win2)
+      ;; Select widest.
+      (if (> x1 x2) win1 win2))))
+
+(defun cb:select-largest-window ()
+  (interactive)
+  (select-window (-reduce 'cb:larger-window (window-list))))
+
 (defun cb:rotate-buffers ()
   "Rotate active buffers, retaining the window layout. Changes
 the selected buffer."
