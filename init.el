@@ -221,8 +221,53 @@
     (key-chord-mode +1)))
 
 (use-package cb-foundation
+  :defer nil
   :bind (("s-f"     . cb:rotate-buffers)
-         ("C-x C-K" . cb:kill-current-buffer)))
+         ("C-x C-K" . cb:kill-current-buffer))
+  :init
+  (progn
+    (auto-compression-mode +1)
+    (setq
+     redisplay-dont-pause         t
+     column-number-mode           t
+     echo-keystrokes              0.02
+     inhibit-startup-message      t
+     transient-mark-mode          t
+     shift-select-mode            nil
+     require-final-newline        t
+     delete-by-moving-to-trash    nil
+     initial-major-mode           'emacs-lisp-mode
+     initial-scratch-message      nil
+     x-select-enable-clipboard    t
+     font-lock-maximum-decoration t
+     ring-bell-function           'ignore
+     initial-scratch-message      nil
+     truncate-partial-width-windows     nil
+     confirm-nonexistent-file-or-buffer nil
+     )
+    (setq-default
+     indent-tabs-mode             nil
+     fill-column                  80)
+
+    ;; Encodings
+    (setq locale-coding-system   'utf-8)
+    (set-terminal-coding-system  'utf-8)
+    (set-keyboard-coding-system  'utf-8)
+    (set-selection-coding-system 'utf-8)
+    (prefer-coding-system        'utf-8)
+
+    ;; File-handling
+    (add-hook 'before-save-hook 'whitespace-cleanup)
+    (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)))
+
+(use-package uniquify
+  :config
+  (setq uniquify-buffer-name-style   'forward
+	uniquify-separator           "/"
+	uniquify-after-kill-buffer-p t
+	uniquify-ignore-buffers-re   "^\\*"))
+
+
 
 (use-package evil
   :ensure t

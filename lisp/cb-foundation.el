@@ -30,47 +30,6 @@
 (eval-after-load "vc"
   '(remove-hook 'find-file-hooks 'vc-find-file-hook))
 
-;;; Use unique buffer names based on file path.
-(eval-after-load 'uniquify
-  '(setq uniquify-buffer-name-style 'forward
-         uniquify-separator "/"
-         uniquify-after-kill-buffer-p t
-         uniquify-ignore-buffers-re "^\\*"))
-
-(auto-compression-mode +1)
-(setq
- redisplay-dont-pause         t
- column-number-mode           t
- echo-keystrokes              0.02
- inhibit-startup-message      t
- transient-mark-mode          t
- shift-select-mode            nil
- require-final-newline        t
- delete-by-moving-to-trash    nil
- initial-major-mode           'emacs-lisp-mode
- initial-scratch-message      nil
- x-select-enable-clipboard    t
- font-lock-maximum-decoration t
- ring-bell-function           'ignore
- initial-scratch-message      nil
- truncate-partial-width-windows     nil
- confirm-nonexistent-file-or-buffer nil
- )
-(setq-default
- indent-tabs-mode             nil
- fill-column                  80)
-
-;;; Encodings
-(setq locale-coding-system   'utf-8)
-(set-terminal-coding-system  'utf-8)
-(set-keyboard-coding-system  'utf-8)
-(set-selection-coding-system 'utf-8)
-(prefer-coding-system        'utf-8)
-
-;;; File-handling
-(add-hook 'before-save-hook 'whitespace-cleanup)
-(add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
-
 (defadvice save-buffers-kill-emacs (around no-query-kill-emacs activate)
   "Suppress \"Active processes exist\" query when exiting Emacs."
   (flet ((process-list ()))
@@ -90,7 +49,8 @@
 ;;; Buffers
 
 (defun cb:rotate-buffers ()
-  "Rotate active buffers, retaining the window layout."
+  "Rotate active buffers, retaining the window layout. Changes
+the selected buffer."
   (interactive)
   (cond
    ((not (> (count-windows) 1))
