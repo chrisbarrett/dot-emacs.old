@@ -35,10 +35,11 @@
    (,(rx "(" (group (* (not space)) "-let") symbol-end)
     (1 font-lock-keyword-face))
 
-   ;; cl-definition forms.
+   ;; definition forms.
 
-   (,(rx "(" (group (or "cl-defun" "cl-defmacro" "cb:def")
-                    (* (not space)))
+   (,(rx "("
+         (group (* (not space)) (or "cl-" "--" "/" ":") "def"
+                (* (not space)))
          (+ space)
          (group (+ (regex "\[^ )\n\]"))))
     (1 font-lock-keyword-face)
@@ -64,6 +65,22 @@
          (group (+ (regex "\[^ )\n\]"))))
     (1 font-lock-keyword-face)
     (2 font-lock-constant-face))))
+
+(defun cb:switch-to-ielm ()
+  (interactive)
+  (flet ((switch-to-buffer (buf) (switch-to-buffer-other-window buf)))
+    (ielm)))
+
+(defun cb:last-elisp-buffer ()
+  (--first (with-current-buffer it
+             (equal 'emacs-lisp-mode major-mode))
+           (buffer-list)))
+
+(defun cb:switch-to-elisp ()
+  "Switch to the last active elisp buffer."
+  (interactive)
+  (when-let (buf (cb:last-elisp-buffer))
+    (switch-to-buffer-other-window buf)))
 
 (provide 'cb-elisp)
 

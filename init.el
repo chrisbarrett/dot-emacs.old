@@ -583,7 +583,12 @@
   :commands (eldoc-mode)
   :diminish (eldoc-mode))
 
-(use-package cb-elisp)
+(use-package cb-elisp
+  :config
+  (progn
+    (require 'ielm)
+    (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'cb:switch-to-ielm)
+    (define-key ielm-map (kbd "C-c C-z") 'cb:switch-to-elisp)))
 
 (use-package elisp-refactor
   :bind ("M-RET" . elr/show-refactor-menu))
