@@ -307,17 +307,6 @@
         kept-old-versions        2
         version-control          t))
 
-(use-package workgroups
-  :ensure t
-  :diminish workgroups-mode
-  :config
-  (progn
-    (workgroups-mode +1)
-    (ignore-errors (wg-load (concat cb:etc-dir "workgroups.el")))
-    (setq wg-prefix-key (kbd "C-c w"))
-    (define-key wg-map [wg-prefix-key "w"] 'wg-switch-to-workgroup)))
-
-
 (use-package exec-path-from-shell
   :ensure t
   :if (and (equal system-type 'darwin)
@@ -650,6 +639,7 @@
   :diminish (eldoc-mode))
 
 (use-package cb-elisp
+  :defer nil
   :config
   (progn
     (require 'ielm)
@@ -852,6 +842,22 @@
       ;; Configure auto-complete sources.
       (setq ac-sources (list 'ac-source-words-in-same-mode-buffers
                              'ac-source-ghc-mod)))))
+
+(use-package workgroups
+  :bind (("s-1" . wg-switch-to-index-0)
+         ("s-2" . wg-switch-to-index-1))
+  :defines workgroups-mode
+  :ensure t
+  :diminish workgroups-mode
+  :config
+  (progn
+    (workgroups-mode +1)
+    (ignore-errors (wg-load (concat cb:etc-dir "workgroups.el")))
+    (setq wg-prefix-key (kbd "C-c w"))))
+
+(hook-fn 'after-init-hook
+  (require 'workgroups)
+  (workgroups-mode +1))
 
 ;;; ----------------------------------------------------------------------------
 ;;; Error navigation keybindings.
