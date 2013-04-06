@@ -852,7 +852,7 @@
   :config
   (progn
     (workgroups-mode +1)
-    (ignore-errors (wg-load (concat cb:etc-dir "workgroups.el")))
+    (ignore-errors (wg-load (concat cb:etc-dir "workgroups")))
     (setq wg-prefix-key (kbd "C-c w"))))
 
 (hook-fn 'after-init-hook
