@@ -60,8 +60,8 @@
 (use-package cb-macros
   :init
   (progn
-    (cb:define-path cb:lib-dir  "lib/")
-    (cb:define-path cb:lisp-dir "lisp/")
+    (cb:define-path cb:lib-dir  "lib/" t)
+    (cb:define-path cb:lisp-dir "lisp/" t)
     (cb:define-path cb:tmp-dir  "tmp/")
     (cb:define-path cb:bin-dir  "bin/")
     (cb:define-path cb:etc-dir  "etc/")
@@ -312,9 +312,11 @@
   :diminish workgroups-mode
   :config
   (progn
+    (workgroups-mode +1)
     (ignore-errors (wg-load (concat cb:etc-dir "workgroups.el")))
     (setq wg-prefix-key (kbd "C-c w"))
-    (workgroups-mode +1)))
+    (define-key wg-map [wg-prefix-key "w"] 'wg-switch-to-workgroup)))
+
 
 (use-package exec-path-from-shell
   :ensure t

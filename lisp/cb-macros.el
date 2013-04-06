@@ -80,16 +80,18 @@ BODY is a list of forms to evaluate when the hook is run."
     (--map (concat path it))
     (-filter 'directory-p)))
 
-(defun cb:prepare-load-dir (dir)
+(defun cb:prepare-load-dir (dir add-path)
   (let ((dir (concat user-emacs-directory dir)))
     (unless (file-exists-p dir) (make-directory dir))
-    (--each (cons dir (directory-subfolders dir))
-      (add-to-list 'load-path it))
+    (when add-path
+      (--each (cons dir (directory-subfolders dir))
+        (add-to-list 'load-path it)))
     dir))
 
-(defmacro cb:define-path (sym path)
-  "Define a directory that will be added to the lisp `load-path'."
-  `(defconst ,sym (cb:prepare-load-dir ,path)))
+(defmacro cb:define-path (sym path &optional add-path)
+  "Define a subfolder of the `user-emacs-directory'.
+This directory tree will be added to the load path if ADD-PATH is non-nil"
+  `(defconst ,sym (cb:prepare-load-dir ,path ,add-path)))
 
 ;;; ----------------------------------------------------------------------------
 

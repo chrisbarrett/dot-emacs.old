@@ -11,15 +11,16 @@
     (--map (concat path it))
     (-filter 'directory-p)))
 
-(defun cb:prepare-load-dir (dir)
+(defun cb:prepare-load-dir (dir add-to-path?)
   (let ((dir (concat user-emacs-directory dir)))
     (unless (file-exists-p dir) (make-directory dir))
-    (--each (cons dir (directory-subfolders dir))
-      (add-to-list 'load-path it))
+    (when add-to-path?
+      (--each (cons dir (directory-subfolders dir))
+        (add-to-list 'load-path it)))
     dir))
 
-(defmacro cb:define-path (sym path)
+(cl-defmacro cb:define-path (sym path :optional (add-to-path? t))
   "Define a directory that will be added to the lisp `load-path'."
-  `(defconst ,sym (cb:prepare-load-dir ,path)))
+  `(defconst ,sym (cb:prepare-load-dir ,path ,add-to-path?)))
 
 (provide 'cb-load-path)
