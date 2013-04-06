@@ -64,6 +64,7 @@
     (cb:define-path cb:lisp-dir "lisp/")
     (cb:define-path cb:tmp-dir  "tmp/")
     (cb:define-path cb:bin-dir  "bin/")
+    (cb:define-path cb:etc-dir  "etc/")
     (cb:define-path cb:yasnippet-dir "snippets/")
     (cb:define-path cb:backups-dir   "backups/")
     (cb:define-path cb:autosaves-dir "tmp/autosaves/")
@@ -311,6 +312,7 @@
   :diminish workgroups-mode
   :config
   (progn
+    (ignore-errors (wg-load (concat cb:etc-dir "workgroups.el")))
     (setq wg-prefix-key (kbd "C-c w"))
     (workgroups-mode +1)))
 
