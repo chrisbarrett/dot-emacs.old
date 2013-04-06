@@ -273,8 +273,6 @@
         uniquify-after-kill-buffer-p t
         uniquify-ignore-buffers-re   "^\\*"))
 
-
-
 (use-package evil
   :ensure t
   :config
@@ -644,7 +642,7 @@
     (define-key ielm-map (kbd "C-c C-z") 'cb:switch-to-elisp)))
 
 (use-package elisp-refactor
-  :bind ("M-RET" . elr/show-refactor-menu))
+  :bind ("M-RET" . elr-show-refactor-menu))
 
 (use-package lisp-mode
   :commands (emacs-lisp-mode lisp-mode)
