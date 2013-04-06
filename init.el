@@ -167,7 +167,10 @@
 
 (use-package window-number
   :ensure t
-  :config (window-number-meta-mode t))
+  :config
+  (progn
+    (window-number-meta-mode +1)
+    (window-number-mode +1)))
 
 (use-package winner
   :config (winner-mode +1))
@@ -302,6 +305,14 @@
         kept-new-versions        6
         kept-old-versions        2
         version-control          t))
+
+(use-package workgroups
+  :ensure t
+  :diminish workgroups-mode
+  :config
+  (progn
+    (setq wg-prefix-key (kbd "C-c w"))
+    (workgroups-mode +1)))
 
 (use-package exec-path-from-shell
   :ensure t
