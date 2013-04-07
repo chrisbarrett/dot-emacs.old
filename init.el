@@ -28,6 +28,9 @@
 (menu-bar-mode   -1)
 (tool-bar-mode   -1)
 
+;;; Fully-qualify.
+(setq user-emacs-directory (expand-file-name user-emacs-directory))
+
 ;;; Describe me.
 (setq user-full-name    "Chris Barrett"
       user-mail-address "chris.d.barrett@me.com")
@@ -494,9 +497,10 @@
   :config
   (let ((maybe-enable-flycheck
          (lambda ()
+           "Do not enable flycheck for /src and /elpa."
            (when (and (flycheck-may-enable-mode))
-             (unless (s-contains? (expand-file-name cb:elpa-dir)
-                                  (or (buffer-file-name) ""))
+             (unless (or (s-contains? cb:elpa-dir (or (buffer-file-name) ""))
+                         (s-contains? cb:src-dir  (or (buffer-file-name) "")))
                (flycheck-mode +1))))))
 
     (setq flycheck-highlighting-mode 'lines)
