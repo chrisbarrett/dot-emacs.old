@@ -60,15 +60,21 @@
 (use-package cb-macros
   :init
   (progn
-    (cb:define-path cb:lib-dir  "lib/" t)
-    (cb:define-path cb:lisp-dir "lisp/" t)
-    (cb:define-path cb:tmp-dir  "tmp/")
-    (cb:define-path cb:bin-dir  "bin/")
-    (cb:define-path cb:etc-dir  "etc/")
+    (cb:define-path cb:lib-dir       "lib/" t)
+    (cb:define-path cb:lisp-dir      "lisp/" t)
+    (cb:define-path cb:src-dir       "src")
+    (cb:define-path cb:tmp-dir       "tmp/")
+    (cb:define-path cb:bin-dir       "bin/")
+    (cb:define-path cb:etc-dir       "etc/")
     (cb:define-path cb:yasnippet-dir "snippets/")
     (cb:define-path cb:backups-dir   "backups/")
     (cb:define-path cb:autosaves-dir "tmp/autosaves/")
-    (cb:define-path cb:rsense-home   "bin/rsense-0.3/")))
+    (cb:define-path cb:rsense-home   "bin/rsense-0.3/")
+
+    ;; Emacs C-source path.
+    (setq source-directory (format "%s/emacs-%s.%s" cb:src-dir
+                                   emacs-major-version
+                                   emacs-minor-version))))
 
 (use-package helm
   :ensure t)

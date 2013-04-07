@@ -42,6 +42,7 @@
     (concat sep (s-join sep cb:ctags-exclude-patterns))))
 
 (defun cb:build-tags-at (tags)
+  (interactive "DDirectory: ")
   (shell-command (format "%s -e -R --extra=+fq %s -f %s"
                          (executable-find "ctags")
                          (cb:format-tags-excludes)
