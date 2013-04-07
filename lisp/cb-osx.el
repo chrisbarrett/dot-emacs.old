@@ -2,11 +2,6 @@
 
 (add-to-list 'default-frame-alist '(font . "Menlo-11"))
 
-(setq Info-default-directory-list
-      (--remove (equal "/Applications/Emacs.app" it) Info-default-directory-list)
-
-      system-name (car (split-string system-name "\\.")))
-
 ;; Configure cut & paste in terminal.
 (unless (window-system)
 

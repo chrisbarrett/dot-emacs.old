@@ -75,10 +75,11 @@
     (cb:define-path cb:autosaves-dir "tmp/autosaves/")
     (cb:define-path cb:rsense-home   "bin/rsense-0.3/")
 
-    ;; Emacs C-source path.
+    ;; Use the version of emacs in /src for info and source.
     (setq source-directory (format "%s/emacs-%s.%s" cb:src-dir
                                    emacs-major-version
-                                   emacs-minor-version))))
+                                   emacs-minor-version))
+    (setenv "INFOPATH" (concat source-directory "/info/"))))
 
 (use-package helm
   :ensure t)
