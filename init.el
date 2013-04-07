@@ -540,7 +540,8 @@
          ("C-c C-r" . cb:load-ctags))
   :config
   ;; Ensure tags searches are case-sensitive.
-  (setq tags-case-fold-search nil))
+  (setq tags-case-fold-search nil)
+  (global-set-key (kbd "M-.") 'find-tag))
 
 (use-package ctags-update
   :ensure t
