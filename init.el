@@ -64,6 +64,7 @@
     (cb:define-path cb:lisp-dir      "lisp/" t)
     (cb:define-path cb:src-dir       "src")
     (cb:define-path cb:tmp-dir       "tmp/")
+    (cb:define-path cb:elpa-dir      "elpa/")
     (cb:define-path cb:bin-dir       "bin/")
     (cb:define-path cb:etc-dir       "etc/")
     (cb:define-path cb:yasnippet-dir "snippets/")
@@ -497,12 +498,14 @@
   :config
   (let ((maybe-enable-flycheck
          (lambda ()
-           (when (flycheck-may-enable-mode)
-             (flycheck-mode +1)))))
+           (when (and (flycheck-may-enable-mode))
+             (unless (s-contains? (expand-file-name cb:elpa-dir)
+                                  (or (buffer-file-name) ""))
+               (flycheck-mode +1))))))
 
     (setq flycheck-highlighting-mode 'lines)
-    (add-hook 'prog-mode-hook maybe-enable-flycheck)
-    (add-hook 'text-mode-hook maybe-enable-flycheck)))
+    (add-hook 'text-mode-hook maybe-enable-flycheck)
+    (add-hook 'prog-mode-hook maybe-enable-flycheck)))
 
 (use-package yasnippet
   :ensure t
@@ -643,6 +646,11 @@
 (use-package eldoc
   :commands (eldoc-mode)
   :diminish (eldoc-mode))
+
+(use-package c-eldoc
+  :ensure t
+  :config
+  (add-hook 'c-mode-hook 'c-turn-on-eldoc-mode))
 
 (use-package cb-elisp
   :defer nil
@@ -897,6 +905,7 @@
  )
 ;; Local Variables:
 ;; byte-compile-warnings: (not free-vars obsolete)
+;; lexical-binding: t
 ;; End:
 
 ;;; init.el ends here
