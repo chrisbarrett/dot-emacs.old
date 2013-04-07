@@ -26,7 +26,7 @@
 ;;; Code:
 
 (when (and (<= emacs-major-version 24)
-           (< emacs-minor-version 4))
+           (< emacs-minor-version 3))
   (defalias 'set-face-bold 'set-face-bold-p))
 
 (defface paren-face
