@@ -416,11 +416,7 @@
 (use-package smartparens
   :ensure t
   :commands (smartparens-mode smartparens-global-mode)
-  :init
-  (defadvice smartparens-mode (around cb:inhibit-on-paredit activate)
-    "Prevent smartparens from being used if paredit is active."
-    (unless (and (boundp 'paredit-mode) paredit-mode)
-      ad-do-it))
+  :defer nil
   :config
   (progn
     (sp-pair "'" nil :unless '(sp-point-after-word-p))
@@ -521,7 +517,7 @@
 
 (use-package eproject
   :ensure t
-  :diminish eproject-minor-mode
+  :diminish eproject-mode
   :config
   (hook-fn 'prog-mode-hook
     (ignore-errors (eproject-maybe-turn-on))))
@@ -611,16 +607,14 @@
     (add-hook 'inferior-lisp-mode-hook 'paredit-mode)
     (add-hook 'repl-mode-hook 'paredit-mode)
 
+    (hook-fn 'paredit-mode-hook
+      (when (featurep 'smartparens)
+        (turn-off-smartparens-mode)))
+
     (hook-fn 'minibuffer-setup-hook
       "Use paredit in the minibuffer."
       (when (eq this-command 'eval-expression)
-        (paredit-mode t)))
-
-    (defadvice paredit-mode (after disable-smartparens activate)
-      "Disable smartparens while paredit is on."
-      (if ad-return-value
-          (smartparens-mode -1)
-        (smartparens-mode +1)))))
+        (paredit-mode t)))))
 
 (use-package highlight
   :ensure t)
@@ -905,7 +899,6 @@
  )
 ;; Local Variables:
 ;; byte-compile-warnings: (not free-vars obsolete)
-;; lexical-binding: t
 ;; End:
 
 ;;; init.el ends here
