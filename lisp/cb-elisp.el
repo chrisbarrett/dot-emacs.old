@@ -67,11 +67,14 @@
     (2 font-lock-constant-face))))
 
 (defun cb:switch-to-ielm ()
+  "Start up or switch to an Inferior Emacs Lisp buffer."
   (interactive)
+  ;; HACK: rebind switch-to-buffer so ielm opens in another window.
   (flet ((switch-to-buffer (buf) (switch-to-buffer-other-window buf)))
     (ielm)))
 
 (defun cb:last-elisp-buffer ()
+  "Find the last active Elisp buffer."
   (--first (with-current-buffer it
              (equal 'emacs-lisp-mode major-mode))
            (buffer-list)))

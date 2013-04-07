@@ -20,7 +20,7 @@
 ;; Boston, MA 02111-1307, USA.
 
 ;;; Commentary:
-
+
 ;;; Code:
 
 ;;; Disable intrusive GUI elements.

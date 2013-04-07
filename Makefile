@@ -12,7 +12,7 @@ emacs_src_dir = $(src)/emacs-$(emacs_version)
 
 default : conf elpa tags
 
-all : $(emacs_src_dir) byte-compile-all tags
+all : emacs-source byte-compile-all tags
 
 # Build tags file.
 tags :; $(emacs_exec) 'cb:build-ctags'
