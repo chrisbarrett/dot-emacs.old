@@ -90,6 +90,8 @@
   (interactive)
   (load-theme 'ir-black 'no-confirm)
 
+  (set-face-foreground  'mode-line "gray50")
+
   (set-face-foreground  'font-lock-doc-face "purple")
   (set-face-italic      'font-lock-doc-string-face t)
   (set-face-foreground  'default "grey50")
