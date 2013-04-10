@@ -71,7 +71,10 @@
   (interactive)
   ;; HACK: rebind switch-to-buffer so ielm opens in another window.
   (flet ((switch-to-buffer (buf) (switch-to-buffer-other-window buf)))
-    (ielm)))
+    (ielm)
+    (goto-char (point-max))
+    (when (fboundp 'evil-append-line)
+      (evil-append-line 1))))
 
 (defun cb:last-elisp-buffer ()
   "Find the last active Elisp buffer."

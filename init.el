@@ -454,18 +454,6 @@
   :mode (("\\.md$"          . markdown-mode)
          ("\\.[mM]arkdown$" . markdown-mode)))
 
-(use-package md-readme
-  :config
-  (progn
-    (dir-locals-set-class-variables
-     'generate-README-with-md-readme
-     '((emacs-lisp-mode . ((mdr-generate-readme . t)))))
-    (dolist (dir '("~/Projects/elisp-refactor/"))
-      (dir-locals-set-directory-class
-       dir 'generate-README-with-md-readme))
-    (hook-fn 'after-save-hook
-      (if (boundp 'mdr-generate-readme) (mdr-generate)))))
-
 (use-package mode-compile
   :ensure t
   :bind (("C-c C-k" . mode-compile-kill)
@@ -487,6 +475,7 @@
   :defines flyspell-lazy-mode
   :config
   (progn
+    (setq ispell-dictionary "english")
     (flyspell-lazy-mode +1)
     (add-hook 'text-mode-hook 'flyspell-mode)
     (add-hook 'prog-mode-hook 'flyspell-prog-mode)
@@ -660,7 +649,7 @@
     (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'cb:switch-to-ielm)
     (define-key ielm-map (kbd "C-c C-z") 'cb:switch-to-elisp)))
 
-(use-package elisp-refactor
+(use-package elr
   :bind ("M-RET" . elr-show-refactor-menu))
 
 (use-package lisp-mode
@@ -859,7 +848,8 @@
 
 (use-package workgroups
   :bind (("s-1" . wg-switch-to-index-0)
-         ("s-2" . wg-switch-to-index-1))
+         ("s-2" . wg-switch-to-index-1)
+         ("s-3" . wg-switch-to-index-2))
   :defines workgroups-mode
   :ensure t
   :diminish workgroups-mode
