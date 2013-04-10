@@ -94,7 +94,9 @@
 
   (set-face-foreground  'font-lock-doc-face "purple")
   (set-face-italic      'font-lock-doc-string-face t)
-  (set-face-foreground  'default "grey50")
+  (set-face-foreground  'default "grey60")
+  (set-face-foreground  'font-lock-comment-delimiter-face"grey30")
+  (set-face-foreground  'font-lock-comment-face "grey30")
 
   (when (featurep 'workgroups)
     (set-face-foreground 'wg-divider-face "light slate grey")
