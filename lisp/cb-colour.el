@@ -41,10 +41,6 @@
   (interactive)
   (load-theme 'solarized-light 'no-confirm)
 
-  (when (featurep 'workgroups)
-    (set-face-foreground 'wg-divider-face "light slate grey")
-    (set-face-foreground 'wg-mode-line-face "light slate grey"))
-
   (when (featurep 'helm)
     (set-face-background  'helm-selection "white")
     (set-face-underline   'helm-selection nil)
@@ -64,10 +60,6 @@
 (defun solarized-dark ()
   (interactive)
   (load-theme 'solarized-dark 'no-confirm)
-
-  (when (featurep 'workgroups)
-    (set-face-foreground 'wg-divider-face "light slate grey")
-    (set-face-foreground 'wg-mode-line-face "light slate grey"))
 
   (when (featurep 'helm)
     (set-face-background  'helm-selection "black")
@@ -97,10 +89,6 @@
   (set-face-foreground  'default "grey60")
   (set-face-foreground  'font-lock-comment-delimiter-face"grey30")
   (set-face-foreground  'font-lock-comment-face "grey30")
-
-  (when (featurep 'workgroups)
-    (set-face-foreground 'wg-divider-face "light slate grey")
-    (set-face-foreground 'wg-mode-line-face "light slate grey"))
 
   (when (featurep 'linum)
     (set-face-background  'linum "gray15"))

@@ -855,7 +855,12 @@
   :diminish workgroups-mode
   :config
   (progn
+
+    (set-face-foreground 'wg-divider-face "light slate grey")
+    (set-face-foreground 'wg-mode-line-face "light slate grey")
+
     (workgroups-mode +1)
+
     (ignore-errors (wg-load (concat cb:etc-dir "workgroups")))
     (setq wg-prefix-key (kbd "C-c w"))))
 
