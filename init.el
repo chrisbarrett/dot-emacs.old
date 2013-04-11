@@ -425,8 +425,9 @@
   (progn
     (sp-pair "'" nil :unless '(sp-point-after-word-p))
     (sp-local-tag '(sgml-mode html-mode) "<" "<_>" "</_>"
-                  :transform 'sp-match-sgml-tags)
-    (smartparens-global-mode +1)))
+                  :transform 'sp-match-sgml-tags)))
+
+(smartparens-global-mode +1)
 
 (use-package cb-indentation
   :commands (rigid-indentation-mode))
@@ -649,8 +650,8 @@
     (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'cb:switch-to-ielm)
     (define-key ielm-map (kbd "C-c C-z") 'cb:switch-to-elisp)))
 
-(use-package elr
-  :bind ("M-RET" . elr-show-refactor-menu))
+(use-package emr
+  :bind ("M-RET" . emr-show-refactor-menu))
 
 (use-package lisp-mode
   :commands (emacs-lisp-mode lisp-mode)
@@ -767,6 +768,11 @@
 
     (add-to-list 'ac-modes 'ruby-mode)
     (add-to-list 'completion-ignored-extensions ".rbc")))
+
+(use-package yaml-mode
+  :ensure t
+  :modes (("\\.yaml$" . yaml-mode)
+          ("\\.yml$" . yaml-mode)))
 
 (use-package haskell-mode
   :ensure t
