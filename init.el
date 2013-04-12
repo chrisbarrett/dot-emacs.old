@@ -312,6 +312,11 @@
 
     (require 'cb-evil)
 
+    (use-package evil-paredit
+      :ensure t
+      :config
+      (add-hook 'paredit-mode-hook 'evil-paredit-mode))
+
     (use-package surround
       :ensure t
       :config (global-surround-mode +1))
@@ -463,7 +468,11 @@
   (progn
     (sp-pair "'" nil :unless '(sp-point-after-word-p))
     (sp-local-tag '(sgml-mode html-mode) "<" "<_>" "</_>"
-                  :transform 'sp-match-sgml-tags)))
+                  :transform 'sp-match-sgml-tags)
+    ;; Don't use this for lisps.
+    (add-hook 'emacs-lisp-mode-hook 'turn-off-smartparens-mode)
+    (add-hook 'clojure-mode-hook 'turn-off-smartparens-mode)
+    (add-hook 'lisp-mode-hook 'turn-off-smartparens-mode)))
 
 (smartparens-global-mode +1)
 
