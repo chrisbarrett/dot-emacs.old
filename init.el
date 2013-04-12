@@ -630,20 +630,21 @@
 (use-package paredit
   :ensure t
   :commands (paredit-mode enable-paredit-mode disable-paredit-mode)
+  :init
+  (progn
+    (hook-fn 'minibuffer-setup-hook
+      "Use paredit in the minibuffer."
+      (when (eq this-command 'eval-expression)
+        (paredit-mode t)))
+    (hook-fn 'paredit-mode-hook
+      "Turn off smart parens."
+      (when (featurep 'smartparens)
+        (turn-off-smartparens-mode))))
   :config
   (progn
     (use-package cb-paredit)
     (add-hook 'inferior-lisp-mode-hook 'paredit-mode)
-    (add-hook 'repl-mode-hook 'paredit-mode)
-
-    (hook-fn 'paredit-mode-hook
-      (when (featurep 'smartparens)
-        (turn-off-smartparens-mode)))
-
-    (hook-fn 'minibuffer-setup-hook
-      "Use paredit in the minibuffer."
-      (when (eq this-command 'eval-expression)
-        (paredit-mode t)))))
+    (add-hook 'repl-mode-hook 'paredit-mode)))
 
 (use-package highlight
   :ensure t)
@@ -682,7 +683,6 @@
     (require 'ielm)
     (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'cb:switch-to-ielm)
     (define-key ielm-map (kbd "C-c C-z") 'cb:switch-to-elisp)))
-
 
 (use-package litable
   :ensure t
