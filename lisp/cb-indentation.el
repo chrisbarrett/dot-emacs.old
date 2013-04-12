@@ -32,8 +32,8 @@
 
 (defadvice self-insert-command (around indent-rigidly-on-insert activate)
   "Indent aggressively when `rigid-indentation-mode' is active."
-  (if (and (boundp 'rigid-indentantion-mode)
-           rigid-indentantion-mode
+  (if (and (boundp 'rigid-indentation-mode)
+           rigid-indentation-mode
            (not (or (active-minibuffer-window) cursor-in-echo-area)))
       (progn (indent-according-to-mode)
              ad-do-it
