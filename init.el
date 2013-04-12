@@ -243,7 +243,6 @@
 (use-package cb-foundation
   :defer nil
   :bind (("s-f"     . cb:rotate-buffers)
-         ("C-x C-k" . cb:kill-current-buffer)
          ("C-x C-o" . other-window))
   :config
   (defadvice cb:rotate-buffers (after select-largest-window activate)
@@ -295,6 +294,11 @@
         uniquify-after-kill-buffer-p t
         uniquify-ignore-buffers-re   "^\\*"))
 
+(use-package ace-jump-mode
+  :ensure t
+  :bind (("C-x j" . ace-jump-line-mode)
+         ("C-x k" . ace-jump-word-mode)))
+
 (defun cb:evil-undefine ()
       "Temporarily undefine a key for Evil minor mode."
       (interactive)
@@ -305,6 +309,8 @@
   :ensure t
   :config
   (progn
+
+    (require 'cb-evil)
 
     (use-package surround
       :ensure t
