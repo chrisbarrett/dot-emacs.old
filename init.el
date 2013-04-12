@@ -279,7 +279,9 @@
 
     ;; File-handling
     (add-hook 'before-save-hook 'whitespace-cleanup)
-    (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)))
+    (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
+
+    (require 'cb-foundation)))
 
 (use-package uniquify
   :config
