@@ -296,8 +296,8 @@
 
 (use-package ace-jump-mode
   :ensure t
-  :bind (("C-x j" . ace-jump-line-mode)
-         ("C-x k" . ace-jump-word-mode)))
+  :bind (("C-L" . ace-jump-line-mode)
+         ("C-SPC" . ace-jump-word-mode)))
 
 (defun cb:evil-undefine ()
       "Temporarily undefine a key for Evil minor mode."
