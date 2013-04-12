@@ -702,6 +702,7 @@
   (progn
     (require 'ielm)
     (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'cb:switch-to-ielm)
+    (define-key emacs-lisp-mode-map (kbd "C-c C-b") 'eval-buffer)
     (define-key ielm-map (kbd "C-c C-z") 'cb:switch-to-elisp)))
 
 (use-package litable
