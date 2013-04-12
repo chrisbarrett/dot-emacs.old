@@ -463,18 +463,17 @@
 (use-package smartparens
   :ensure t
   :commands (smartparens-mode smartparens-global-mode)
-  :defer nil
+  :init
+  (progn
+    ;; Don't enable smartparents mode for lisps.
+    (hook-fn 'prog-mode-hook
+      (unless (s-matches? (rx (or "lisp" "clojure")) (symbol-name major-mode))
+        (smartparens-mode +1))))
   :config
   (progn
     (sp-pair "'" nil :unless '(sp-point-after-word-p))
     (sp-local-tag '(sgml-mode html-mode) "<" "<_>" "</_>"
-                  :transform 'sp-match-sgml-tags)
-    ;; Don't use this for lisps.
-    (add-hook 'emacs-lisp-mode-hook 'turn-off-smartparens-mode)
-    (add-hook 'clojure-mode-hook 'turn-off-smartparens-mode)
-    (add-hook 'lisp-mode-hook 'turn-off-smartparens-mode)))
-
-(smartparens-global-mode +1)
+                  :transform 'sp-match-sgml-tags)))
 
 (use-package cb-indentation
   :commands (rigid-indentation-mode)
@@ -700,6 +699,11 @@
   :defer nil
   :config
   (progn
+    (defadvice eval-buffer (before buffer-evaluated-feedback activate)
+      "Message that the buffer has been evaluated.
+This has to be BEFORE advice because `eval-buffer' doesn't return anything."
+      (messag "Buffer evaluated."))
+
     (require 'ielm)
     (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'cb:switch-to-ielm)
     (define-key emacs-lisp-mode-map (kbd "C-c C-b") 'eval-buffer)
