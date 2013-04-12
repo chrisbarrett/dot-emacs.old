@@ -288,6 +288,12 @@
         uniquify-after-kill-buffer-p t
         uniquify-ignore-buffers-re   "^\\*"))
 
+(defun cb:evil-undefine ()
+      "Temporarily undefine a key for Evil minor mode."
+      (interactive)
+      (let ((evil-mode-map-alist))
+        (call-interactively (key-binding (this-command-keys)))))
+
 (use-package evil
   :ensure t
   :config
@@ -304,7 +310,26 @@
         (define-key evil-normal-state-map (kbd "-") 'evil-numbers/inc-at-pt)
         (define-key evil-normal-state-map (kbd "+") 'evil-numbers/dec-at-pt)))
 
-    (use-package cb-evil)
+    (define-key evil-normal-state-map (kbd "C-z") 'cb:evil-undefine)
+    (define-key evil-normal-state-map (kbd "SPC") 'evil-toggle-fold)
+    (define-key evil-insert-state-map (kbd "C-z") 'cb:evil-undefine)
+    (define-key evil-visual-state-map (kbd "C-z") 'cb:evil-undefine)
+
+    ;; Use ESC as quit command in most situations.
+    (--each '(evil-normal-state-map
+              evil-visual-state-map
+              minibuffer-local-map
+              minibuffer-local-ns-map
+              minibuffer-local-completion-map
+              minibuffer-local-must-match-map
+              minibuffer-local-isearch-map)
+      (define-key (eval it) [escape] 'keyboard-quit))
+
+    (setq evil-want-visual-char-semi-exclusive t
+          evil-toggle-key                      (kbd "M-z")
+          evil-default-cursor                  t)
+    (setq-default evil-shift-width 2)
+
     (evil-mode +1)))
 
 (use-package backup-dir
@@ -650,6 +675,13 @@
     (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'cb:switch-to-ielm)
     (define-key ielm-map (kbd "C-c C-z") 'cb:switch-to-elisp)))
 
+
+(use-package litable
+  :ensure t
+  :commands (litable-mode)
+  :init
+  (define-key emacs-lisp-mode-map (kbd "C-c C-l") 'litable-mode))
+
 (use-package emr
   :bind ("M-RET" . emr-show-refactor-menu)
   :config
@@ -879,8 +911,9 @@
 ;;; ----------------------------------------------------------------------------
 ;;; Error navigation keybindings.
 
-(global-set-key (kbd "M-N") 'next-error)
-(global-set-key (kbd "M-P") 'previous-error)
+(hook-fn 'prog-mode-hook
+  (local-set-key (kbd "M-N") 'next-error)
+  (local-set-key (kbd "M-P") 'previous-error))
 
 (defun cb:byte-compile-conf ()
   "Recompile all configuration files."
