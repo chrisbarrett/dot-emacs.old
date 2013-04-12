@@ -99,8 +99,13 @@
     (ido-mode +1)
     (icomplete-mode +1)
 
-    (use-package ido-hacks
+    (use-package ido-yes-or-no
       :ensure t)
+
+    (use-package ido-hacks
+      :ensure t
+      :config
+      (ido-hacks-mode +1))
 
     (use-package ido-ubiquitous
       :ensure t
