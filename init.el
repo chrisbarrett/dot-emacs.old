@@ -297,7 +297,9 @@
 (use-package ace-jump-mode
   :ensure t
   :bind (("C-L" . ace-jump-line-mode)
-         ("C-SPC" . ace-jump-word-mode)))
+         ("C-SPC" . ace-jump-word-mode))
+  :config
+  (require 'ace-jump-mode))
 
 (defun cb:evil-undefine ()
       "Temporarily undefine a key for Evil minor mode."
@@ -702,7 +704,7 @@
     (defadvice eval-buffer (before buffer-evaluated-feedback activate)
       "Message that the buffer has been evaluated.
 This has to be BEFORE advice because `eval-buffer' doesn't return anything."
-      (messag "Buffer evaluated."))
+      (message "Buffer evaluated."))
 
     (require 'ielm)
     (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'cb:switch-to-ielm)
