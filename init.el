@@ -477,15 +477,6 @@
     (sp-local-tag '(sgml-mode html-mode) "<" "<_>" "</_>"
                   :transform 'sp-match-sgml-tags)))
 
-(use-package cb-indentation
-  :commands (rigid-indentation-mode)
-  :init
-  (progn
-    (hook-fn 'common-lisp-mode-hook 'rigid-indentation-mode)
-    (hook-fn 'clojure-mode-hook 'rigid-indentation-mode)
-    (hook-fn 'emacs-lisp-mode-hook 'rigid-indentation-mode)
-    (hook-fn 'lisp-mode-hook 'rigid-indentation-mode)))
-
 (use-package json-mode
   :ensure t
   :config

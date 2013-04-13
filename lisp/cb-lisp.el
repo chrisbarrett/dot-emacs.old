@@ -2,7 +2,6 @@
 
 (defun cb:configure-lisp-hook (mode)
   (hook-fn (intern (concat (symbol-name mode) "-hook"))
-    (rigid-indentation-mode +1)
     (eval-sexp-fu-flash-mode +1)
     (setq eval-sexp-fu-flash-duration 0.5)
     (volatile-highlights-mode +1)

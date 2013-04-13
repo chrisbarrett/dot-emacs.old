@@ -1,4 +1,7 @@
 src        = ./src
+backups    = ./backups
+lib        = ./lib
+lisp       = ./lisp
 emacs      = emacs
 emacs_exec = $(emacs) --batch -nw -l init.el -f
 
@@ -38,20 +41,20 @@ clean : clean-elc clean-backups clean-flycheck
 # Remove compiled elisp files.
 clean-elc :
 	rm -f *.elc
-	rm -f lisp/*.elc
-	rm -f lib/*.elc
+	rm -f $(lisp)/*.elc
+	rm -f $(lib)/*.elc
 
-# Remove backup files created outside backups directory.
+# Remove backup files.
 clean-backups :
 	rm -f *~
-	rm -f lisp/*~
-	rm -f lib/*~
+	rm -f $(lisp)/*~
+	rm -f $(lib)/*~
 
 # Remove temporary flycheck files.
 clean-flycheck :
 	rm -f flycheck-*
-	rm -f lisp/flycheck-*
-	rm -f lib/flycheck-*
+	rm -f $(lisp)/flycheck-*
+	rm -f $(lib)/flycheck-*
 
 # ----------------------------------------------------------------------------
 # Fetching Emacs source.
