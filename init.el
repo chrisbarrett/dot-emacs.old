@@ -1,4 +1,4 @@
-;;; init --- My emacs configuration
+;;; init --- My emacs configuration.
 
 ;; Copyright (C) 2013 Chris Barrett
 
@@ -20,6 +20,8 @@
 ;; Boston, MA 02111-1307, USA.
 
 ;;; Commentary:
+
+;; My emacs configuration.
 
 ;;; Code:
 
@@ -86,6 +88,7 @@
 
 (use-package ido
   :ensure t
+  :defer nil
   :config
   (progn
     (setq ido-enable-prefix nil
