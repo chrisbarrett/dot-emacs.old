@@ -379,7 +379,7 @@
   :config
   (setq color-theme-is-global t))
 
-(use-package color-theme-solarized
+(use-package solarized-theme
   :ensure t
   :defer t)
 
