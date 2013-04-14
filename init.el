@@ -678,7 +678,11 @@
   :ensure t
   :diminish volatile-highlights-mode)
 
-(use-package eval-sexp-fu)
+(use-package parenface-plus
+  :ensure t)
+
+(use-package eval-sexp-fu
+  :commands (eval-sexp-fu-flash-mode))
 
 (defun cb:configure-lisp-hook (mode)
   (hook-fn (intern (concat (symbol-name mode) "-hook"))
