@@ -37,5 +37,4 @@ $0
 ;; lexical-binding: t
 ;; End:
 
-
 ;;; `(file-name-nondirectory buffer-file-name)` ends here

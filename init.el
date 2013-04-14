@@ -330,8 +330,8 @@
       :ensure t
       :config
       (progn
-        (define-key evil-normal-state-map (kbd "-") 'evil-numbers/inc-at-pt)
-        (define-key evil-normal-state-map (kbd "+") 'evil-numbers/dec-at-pt)))
+        (define-key evil-normal-state-map (kbd "-") 'evil-numbers/dec-at-pt)
+        (define-key evil-normal-state-map (kbd "+") 'evil-numbers/inc-at-pt)))
 
     (define-key evil-normal-state-map (kbd "C-z") 'cb:evil-undefine)
     (define-key evil-normal-state-map (kbd "SPC") 'evil-toggle-fold)
@@ -722,6 +722,9 @@
 This has to be BEFORE advice because `eval-buffer' doesn't return anything."
       (message "Buffer evaluated."))
 
+    (autoload 'ert-background-mode "ert-background-mode")
+    (add-hook 'emacs-lisp-mode-hook 'ert-background-mode)
+
     (require 'ielm)
     (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'cb:switch-to-ielm)
     (define-key emacs-lisp-mode-map (kbd "C-c C-b") 'eval-buffer)
@@ -895,9 +898,6 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
       (setq hs-lint-command (executable-find "hlint")))
 
     (use-package cb-haskell)
-
-    (use-package hideshow
-      :diminish hs-minor-mode)
 
     (add-to-list 'completion-ignored-extensions ".hi")
     (setq haskell-stylish-on-save t)
