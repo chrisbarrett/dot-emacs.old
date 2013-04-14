@@ -25,11 +25,6 @@
 
 ;;; Code:
 
-;;; Disable vc modes.
-(remove-hook 'find-file-hooks 'vc-find-file-hook)
-(eval-after-load "vc"
-  '(remove-hook 'find-file-hooks 'vc-find-file-hook))
-
 (defadvice save-buffers-kill-emacs (around no-query-kill-emacs activate)
   "Suppress \"Active processes exist\" query when exiting Emacs."
   (flet ((process-list ()))

@@ -41,6 +41,8 @@
   (interactive)
   (load-theme 'solarized-light 'no-confirm)
 
+  (set-face-underline 'hl-line-face nil)
+
   (when (featurep 'helm)
     (set-face-background  'helm-selection "white")
     (set-face-underline   'helm-selection nil)
@@ -55,6 +57,8 @@
 (defun solarized-dark ()
   (interactive)
   (load-theme 'solarized-dark 'no-confirm)
+
+  (set-face-underline 'hl-line-face nil)
 
   (when (featurep 'helm)
     (set-face-background  'helm-selection "black")
@@ -72,6 +76,7 @@
   (interactive)
   (load-theme 'ir-black 'no-confirm)
 
+  (set-face-underline 'hl-line-face nil)
   (set-face-foreground  'mode-line "gray50")
 
   (set-face-foreground  'font-lock-doc-face "purple")

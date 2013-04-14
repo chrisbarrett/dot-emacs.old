@@ -243,6 +243,12 @@
          (key-chord-define paredit-mode-map "qm" 'paredit-forward-barf-sexp)))
     (key-chord-mode +1)))
 
+;;; Disable vc modes.
+(setq vc-handled-backends nil)
+(remove-hook 'find-file-hooks 'vc-find-file-hook)
+(eval-after-load "vc"
+  '(remove-hook 'find-file-hooks 'vc-find-file-hook))
+
 (use-package cb-foundation
   :defer nil
   :bind (("s-f"     . cb:rotate-buffers)
