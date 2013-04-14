@@ -310,6 +310,9 @@
   :config
   (require 'ace-jump-mode))
 
+(use-package hideshow
+  :diminish hs-minor-mode)
+
 (defun cb:evil-undefine ()
       "Temporarily undefine a key for Evil minor mode."
       (interactive)
