@@ -50,12 +50,7 @@
     (set-face-foreground  'show-paren-match-face "black")
     (set-face-bold        'show-paren-match-face t))
 
-  (set-face-foreground  'paren-face (if (display-graphic-p) "grey80" "blue"))
-
-  (set-face-background  'error "LightPink")
-  (set-face-foreground  'error "black")
-  (set-face-background  'warning "LightBlue")
-  (set-face-foreground  'warning "black"))
+  (set-face-foreground  'paren-face (if (display-graphic-p) "grey80" "blue")))
 
 (defun solarized-dark ()
   (interactive)
@@ -71,12 +66,7 @@
     (set-face-bold        'show-paren-match-face t)
     (set-face-background  'show-paren-match-face nil))
 
-  (set-face-foreground  'paren-face (if (display-graphic-p) "grey30" "blue"))
-
-  (set-face-background  'error "Firebrick4")
-  (set-face-foreground  'error "gray40")
-  (set-face-background  'warning "DarkBlue")
-  (set-face-foreground  'warning "gray80"))
+  (set-face-foreground  'paren-face (if (display-graphic-p) "grey30" "blue")))
 
 (defun ir-black ()
   (interactive)
