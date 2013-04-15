@@ -480,9 +480,11 @@
   :init
   (progn
     (add-hook 'text-mode-hook 'smartparens-mode)
-    ;; Don't enable smartparents mode for lisps.
+    ;; Don't enable smartparents mode for lisps. Make doubly-sure Paredit is
+    ;; used.
     (hook-fn 'prog-mode-hook
-      (unless (s-matches? (rx (or "lisp" "clojure")) (symbol-name major-mode))
+      (if (s-matches? (rx (or "lisp" "clojure")) (symbol-name major-mode))
+          (paredit-mode +1)
         (smartparens-mode +1))))
   :config
   (progn

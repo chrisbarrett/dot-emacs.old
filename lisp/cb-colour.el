@@ -41,7 +41,7 @@
   (interactive)
   (load-theme 'solarized-light 'no-confirm)
 
-  (set-face-underline 'hl-line-face nil)
+  (set-face-underline 'hl-line nil)
 
   (when (featurep 'helm)
     (set-face-background  'helm-selection "white")
@@ -58,7 +58,7 @@
   (interactive)
   (load-theme 'solarized-dark 'no-confirm)
 
-  (set-face-underline 'hl-line-face nil)
+  (set-face-underline 'hl-line nil)
 
   (when (featurep 'helm)
     (set-face-background  'helm-selection "black")
@@ -76,7 +76,7 @@
   (interactive)
   (load-theme 'ir-black 'no-confirm)
 
-  (set-face-underline 'hl-line-face nil)
+  (set-face-underline 'hl-line nil)
   (set-face-foreground  'mode-line "gray50")
 
   (set-face-foreground  'font-lock-doc-face "purple")
