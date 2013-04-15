@@ -479,6 +479,7 @@
   :commands (smartparens-mode smartparens-global-mode)
   :init
   (progn
+    (add-hook text-mode-hook 'smartparens-mode)
     ;; Don't enable smartparents mode for lisps.
     (hook-fn 'prog-mode-hook
       (unless (s-matches? (rx (or "lisp" "clojure")) (symbol-name major-mode))
