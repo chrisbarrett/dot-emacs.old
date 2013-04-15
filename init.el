@@ -732,8 +732,8 @@
 This has to be BEFORE advice because `eval-buffer' doesn't return anything."
       (message "Buffer evaluated."))
 
-    (autoload 'ert-background-mode "ert-background-mode")
-    (add-hook 'emacs-lisp-mode-hook 'ert-background-mode)
+    (autoload 'ert-modeline-mode "ert-modeline")
+    (add-hook 'emacs-lisp-mode-hook 'ert-modeline-mode)
 
     (require 'ielm)
     (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'cb:switch-to-ielm)

@@ -1,6 +1,6 @@
 [submodule "lib/elisp-refactor"]
 	path = lib/elisp-refactor
 	url = git://github.com/chrisbarrett/elisp-refactor.git
-[submodule "lib/ert-background-mode"]
-	path = lib/ert-background-mode
-	url = git://github.com/chrisbarrett/ert-background-mode.git
+[submodule "lib/ert-modeline"]
+	path = lib/ert-modeline
+	url = git://github.com/chrisbarrett/ert-modeline.git
