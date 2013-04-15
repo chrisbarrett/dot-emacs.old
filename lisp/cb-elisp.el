@@ -30,6 +30,12 @@
 (font-lock-add-keywords
  'emacs-lisp-mode
  `(
+   (,(rx "(" (group (or "use-package"
+                        "cl-destructuring-bind"
+                        "cl-defstruct"))
+         word-end)
+    (1 font-lock-keyword-face))
+
    ;; -let forms.
 
    (,(rx "(" (group (* (not space)) "-let") symbol-end)
@@ -52,18 +58,17 @@
 
    ;; cl-struct.
 
-   (,(rx "(" (group "cl-defstruct")
+   (,(rx "(cl-defstruct"
          (+ space)
          (group (+ (regex "\[^ )\n\]"))))
-    (1 font-lock-keyword-face)
-    (2 font-lock-type-face))
+
+    (1 font-lock-type-face))
 
    ;; use-package macro.
 
    (,(rx "(" (group "use-package")
          (+ space)
          (group (+ (regex "\[^ )\n\]"))))
-    (1 font-lock-keyword-face)
     (2 font-lock-constant-face))))
 
 (defun cb:switch-to-ielm ()
