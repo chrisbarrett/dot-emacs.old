@@ -93,7 +93,7 @@
   (progn
     (setq ido-enable-prefix            nil
           ido-save-directory-list-file (concat cb:tmp-dir "ido.last")
-          ido-enable-flex-matching     nil
+          ido-enable-flex-matching     t
           ido-create-new-buffer        'always
           ido-use-filename-at-point    'guess
           ido-max-prospects            10
