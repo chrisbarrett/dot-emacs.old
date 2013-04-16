@@ -98,6 +98,7 @@
           ido-use-filename-at-point    'guess
           ido-max-prospects            10
           ido-default-file-method      'selected-window)
+    (ido-mode +1)
 
     (use-package idomenu
       :ensure t
@@ -121,7 +122,6 @@
 
     (use-package ido-speed-hack)
 
-    (ido-mode +1)
     (add-to-list 'ido-ignore-buffers "*helm mini*")
     (add-to-list 'ido-ignore-files "\\.DS_Store")))
 

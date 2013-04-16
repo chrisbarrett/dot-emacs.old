@@ -28,6 +28,7 @@
 (require 'nrepl)
 (require 'clojure-mode)
 (require 'dash)
+(require 's)
 
 (defadvice nrepl-switch-to-repl-buffer (after insert-at-end-of-nrepl-line activate)
   "Enter insertion mode at the end of the line when switching to nrepl."
