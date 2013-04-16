@@ -123,9 +123,13 @@
 
 (use-package smex
   :ensure t
-  :config (smex-initialize)
   :bind   (("M-x" . smex)
-           ("M-X" . smex-major-mode-commands)))
+           ("M-X" . smex-major-mode-commands))
+  :config
+  (progn
+    (setq smex-save-file (concat cb:tmp-dir "smex-items")
+          smex-key-advice-ignore-menu-bar t)
+    (smex-initialize)))
 
 (use-package popwin
   :ensure t
@@ -735,6 +739,22 @@
   :defer nil
   :config
   (progn
+
+    (bind-key (kbd "C-c e b") 'eval-buffer)
+    (bind-key (kbd "C-c e e") 'toggle-debug-on-error)
+    (bind-key (kbd "C-c e f") 'emacs-lisp-byte-compile-and-load)
+    (bind-key (kbd "C-c e r") 'eval-region)
+    (bind-key (kbd "C-c e s") 'scratch)
+
+    (define-prefix-command 'lisp-find-map)
+    (bind-key (kbd "C-h e") 'lisp-find-map)
+    (bind-key (kbd "C-h e e") 'view-echo-area-messages)
+    (bind-key (kbd "C-h e f") 'find-function)
+    (bind-key (kbd "C-h e k") 'find-function-on-key)
+    (bind-key (kbd "C-h e l") 'find-library)
+    (bind-key (kbd "C-h e v") 'find-variable)
+    (bind-key (kbd "C-h e V") 'apropos-value)
+
     (defadvice eval-buffer (before buffer-evaluated-feedback activate)
       "Message that the buffer has been evaluated.
 This has to be BEFORE advice because `eval-buffer' doesn't return anything."
@@ -744,9 +764,9 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
     (add-hook 'emacs-lisp-mode-hook 'ert-modeline-mode)
     (add-hook 'after-save-hook 'check-parens)
 
+    ;; Switching back-and-forth from IELM.
     (require 'ielm)
     (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'cb:switch-to-ielm)
-    (define-key emacs-lisp-mode-map (kbd "C-c C-b") 'eval-buffer)
     (define-key ielm-map (kbd "C-c C-z") 'cb:switch-to-elisp)))
 
 (use-package litable
