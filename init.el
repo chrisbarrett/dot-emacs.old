@@ -203,6 +203,7 @@
   :commands (diminish))
 
 (use-package hl-line
+  :if (display-graphic-p)
   :config (global-hl-line-mode t))
 
 (use-package fringe
@@ -248,6 +249,10 @@
 (remove-hook 'find-file-hooks 'vc-find-file-hook)
 (eval-after-load "vc"
   '(remove-hook 'find-file-hooks 'vc-find-file-hook))
+
+;;; Buffer menu only shows files on disk.
+(hook-fn 'Buffer-menu-mode-hook
+  (Buffer-menu-toggle-files-only +1))
 
 (use-package cb-foundation
   :defer nil
@@ -397,6 +402,7 @@
   :defer t)
 
 (use-package cb-colour
+  :if (display-graphic-p)
   :config
   ;; Set colour by time of day.
   (let ((hour (string-to-number (format-time-string "%H"))))
@@ -736,6 +742,7 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
 
     (autoload 'ert-modeline-mode "ert-modeline")
     (add-hook 'emacs-lisp-mode-hook 'ert-modeline-mode)
+    (add-hook 'after-save-hook 'check-parens)
 
     (require 'ielm)
     (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'cb:switch-to-ielm)
