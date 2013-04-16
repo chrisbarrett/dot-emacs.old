@@ -99,37 +99,35 @@
           ido-max-prospects 10
           ido-default-file-method 'selected-window)
 
-    (ido-mode +1)
-    (icomplete-mode +1)
-
-    (use-package ido-yes-or-no
-      :ensure t)
+    (use-package idomenu
+      :ensure t
+      :commands (idomenu))
 
     (use-package ido-hacks
       :ensure t
-      :config
-      (ido-hacks-mode +1))
+      :config (ido-hacks-mode +1))
 
     (use-package ido-ubiquitous
       :ensure t
       :config (ido-ubiquitous-mode +1))
 
-    (use-package idomenu
-      :ensure t
-      :commands (idomenu))
+    (use-package ido-yes-or-no
+      :ensure t)
+
+    (ido-mode +1)
+    (icomplete-mode +1)
+
+    (require 'ido-hacks)
+    (ido-yes-or-no-mode +1)
 
     (add-to-list 'ido-ignore-buffers "*helm mini*")
     (add-to-list 'ido-ignore-files "\\.DS_Store")))
 
 (use-package smex
   :ensure t
+  :config (smex-initialize)
   :bind   (("M-x" . smex)
-           ("M-X" . smex-major-mode-commands))
-  :config
-  (progn
-    (setq smex-save-file (concat cb:tmp-dir "smex-items")
-          smex-key-advice-ignore-menu-bar t)
-    (smex-initialize)))
+           ("M-X" . smex-major-mode-commands)))
 
 (use-package popwin
   :ensure t
@@ -305,6 +303,21 @@
 
     (require 'cb-foundation)))
 
+(define-prefix-command 'help-find-map)
+(bind-key (kbd "C-h e") 'help-find-map)
+(bind-key (kbd "C-h e e") 'view-echo-area-messages)
+(bind-key (kbd "C-h e f") 'find-function)
+(bind-key (kbd "C-h e k") 'find-function-on-key)
+(bind-key (kbd "C-h e l") 'find-library)
+(bind-key (kbd "C-h e p") 'find-library)
+(bind-key (kbd "C-h e v") 'find-variable)
+(bind-key (kbd "C-h e V") 'apropos-value)
+
+
+(use-package scratch
+  :ensure t
+  :commands (scrach))
+
 (use-package uniquify
   :config
   (setq uniquify-buffer-name-style   'forward
@@ -323,10 +336,10 @@
   :diminish hs-minor-mode)
 
 (defun cb:evil-undefine ()
-      "Temporarily undefine a key for Evil minor mode."
-      (interactive)
-      (let ((evil-mode-map-alist))
-        (call-interactively (key-binding (this-command-keys)))))
+  "Temporarily undefine a key for Evil minor mode."
+  (interactive)
+  (let ((evil-mode-map-alist))
+    (call-interactively (key-binding (this-command-keys)))))
 
 (use-package evil
   :ensure t
@@ -737,6 +750,12 @@
 
 (use-package cb-elisp
   :defer nil
+  :init
+  (progn
+    (autoload 'ert-modeline-mode "ert-modeline")
+    (add-hook 'emacs-lisp-mode-hook 'ert-modeline-mode)
+    (add-hook 'after-save-hook 'check-parens)
+    (add-to-list 'auto-mode-alist '("Carton$" . emacs-lisp-mode)))
   :config
   (progn
 
@@ -746,28 +765,43 @@
     (bind-key (kbd "C-c e r") 'eval-region)
     (bind-key (kbd "C-c e s") 'scratch)
 
-    (define-prefix-command 'lisp-find-map)
-    (bind-key (kbd "C-h e") 'lisp-find-map)
-    (bind-key (kbd "C-h e e") 'view-echo-area-messages)
-    (bind-key (kbd "C-h e f") 'find-function)
-    (bind-key (kbd "C-h e k") 'find-function-on-key)
-    (bind-key (kbd "C-h e l") 'find-library)
-    (bind-key (kbd "C-h e v") 'find-variable)
-    (bind-key (kbd "C-h e V") 'apropos-value)
-
     (defadvice eval-buffer (before buffer-evaluated-feedback activate)
       "Message that the buffer has been evaluated.
 This has to be BEFORE advice because `eval-buffer' doesn't return anything."
-      (message "Buffer evaluated."))
-
-    (autoload 'ert-modeline-mode "ert-modeline")
-    (add-hook 'emacs-lisp-mode-hook 'ert-modeline-mode)
-    (add-hook 'after-save-hook 'check-parens)
+      (when (buffer-file-name)
+        (message "Buffer evaluated.")))
 
     ;; Switching back-and-forth from IELM.
     (require 'ielm)
     (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'cb:switch-to-ielm)
     (define-key ielm-map (kbd "C-c C-z") 'cb:switch-to-elisp)))
+
+(use-package redshank
+  :ensure t
+  :diminish redshank-mode
+  :config
+  (progn
+    (define-prefix-command 'redshank-refactoring-keys)
+    (bind-key (kbd "C-c r l") 'redshank-letify-form-up)
+    (bind-key (kbd "C-c r c") 'redshank-condify-form)
+    (bind-key (kbd "C-c r L") 'redshank-enclose-form-with-lambda)
+    (bind-key (kbd "C-c r n") 'redshank-rewrite-negated-predicate)
+    (bind-key (kbd "C-c r p") 'redshank-maybe-splice-progn)
+    (bind-key (kbd "C-c r x") 'redshank-extract-to-defun)
+
+    (add-hook 'emacs-lisp-mode-hook 'redshank-mode)))
+
+(use-package macrostep
+  :ensure t
+  :bind ("C-c e m" . macrostep-expand)
+  :config
+  (evil-add-hjkl-bindings macrostep-mode-map 'motion))
+
+(use-package elisp-slime-nav
+  :ensure t
+  :diminish elisp-slime-nav-mode
+  :config
+  (add-hook 'emacs-lisp-mode-hook 'elisp-slime-nav-mode))
 
 (use-package litable
   :ensure t
@@ -792,7 +826,8 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
     (hook-fn 'after-save-hook
       "Byte compile elisp files on save."
       (when (and (equal major-mode 'emacs-lisp-mode)
-                 (buffer-file-name))
+                 (buffer-file-name)
+                 (not (equal "Carton" (file-name-nondirectory (buffer-file-name)))))
         (byte-compile-file (buffer-file-name))))))
 
 (use-package clojure-mode
