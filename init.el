@@ -91,13 +91,13 @@
   :defer nil
   :config
   (progn
-    (setq ido-enable-prefix nil
+    (setq ido-enable-prefix            nil
           ido-save-directory-list-file (concat cb:tmp-dir "ido.last")
-          ido-enable-flex-matching t
-          ido-create-new-buffer 'always
-          ido-use-filename-at-point 'guess
-          ido-max-prospects 10
-          ido-default-file-method 'selected-window)
+          ido-enable-flex-matching     nil
+          ido-create-new-buffer        'always
+          ido-use-filename-at-point    'guess
+          ido-max-prospects            10
+          ido-default-file-method      'selected-window)
 
     (use-package idomenu
       :ensure t
@@ -112,14 +112,14 @@
       :config (ido-ubiquitous-mode +1))
 
     (use-package ido-yes-or-no
-      :ensure t)
+      :ensure t
+      :config (ido-yes-or-no-mode +1))
+
+    (use-package ido-better-flex
+      :ensure t
+      :config (ido-better-flex/enable))
 
     (ido-mode +1)
-    (icomplete-mode +1)
-
-    (require 'ido-hacks)
-    (ido-yes-or-no-mode +1)
-
     (add-to-list 'ido-ignore-buffers "*helm mini*")
     (add-to-list 'ido-ignore-files "\\.DS_Store")))
 
