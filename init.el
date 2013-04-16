@@ -119,6 +119,8 @@
       :ensure t
       :config (ido-better-flex/enable))
 
+    (use-package ido-speed-hack)
+
     (ido-mode +1)
     (add-to-list 'ido-ignore-buffers "*helm mini*")
     (add-to-list 'ido-ignore-files "\\.DS_Store")))

@@ -1,6 +1,9 @@
 [submodule "lib/elisp-refactor"]
-	path = lib/elisp-refactor
-	url = git://github.com/chrisbarrett/elisp-refactor.git
+        path = lib/elisp-refactor
+        url = git://github.com/chrisbarrett/elisp-refactor.git
 [submodule "lib/ert-modeline"]
-	path = lib/ert-modeline
-	url = git://github.com/chrisbarrett/ert-modeline.git
+        path = lib/ert-modeline
+        url = git://github.com/chrisbarrett/ert-modeline.git
+[submodule "lib/ido-speed-hack"]
+	path = lib/ido-speed-hack
+	url = git://github.com/orfelyus/ido-speed-hack.git
