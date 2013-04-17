@@ -748,15 +748,13 @@
 
 (use-package eval-sexp-fu
   :commands (eval-sexp-fu-flash-mode)
-  :config
-  (progn
-    (setq eval-sexp-fu-flash-duration 0.2)
-    (add-hook 'cb:lisp-mode-hook 'turn-on-eval-sexp-fu-flash-mode)))
+  :init     (add-hook 'cb:lisp-mode-hook 'eval-sexp-fu-flash-mode)
+  :config   (setq eval-sexp-fu-flash-duration 0.2))
 
 (use-package eldoc
   :commands (eldoc-mode)
   :diminish (eldoc-mode)
-  :config (add-hook 'cb:lisp-mode-hook 'turn-on-eldoc-mode))
+  :config   (add-hook 'cb:lisp-mode-hook 'turn-on-eldoc-mode))
 
 (use-package c-eldoc
   :ensure t
