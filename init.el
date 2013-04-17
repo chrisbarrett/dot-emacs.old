@@ -1003,7 +1003,7 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
       (setq evil-shift-width     4
             tab-width            4
             haskell-tags-on-save t)
-      (ignore-errors (paredit-mode +1))
+
       ;; Set key bindings.
       (local-set-key (kbd "C-c C-c") 'haskell-process-cabal-build)
       (local-set-key (kbd "C-c h")   'hoogle)
