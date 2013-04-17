@@ -782,16 +782,7 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
   :ensure t
   :diminish redshank-mode
   :config
-  (progn
-    (define-prefix-command 'redshank-refactoring-keys)
-    (bind-key (kbd "C-c r l") 'redshank-letify-form-up)
-    (bind-key (kbd "C-c r c") 'redshank-condify-form)
-    (bind-key (kbd "C-c r L") 'redshank-enclose-form-with-lambda)
-    (bind-key (kbd "C-c r n") 'redshank-rewrite-negated-predicate)
-    (bind-key (kbd "C-c r p") 'redshank-maybe-splice-progn)
-    (bind-key (kbd "C-c r x") 'redshank-extract-to-defun)
-
-    (add-hook 'emacs-lisp-mode-hook 'redshank-mode)))
+  (add-hook 'emacs-lisp-mode-hook 'turn-on-redshank-mode))
 
 (use-package macrostep
   :ensure t
