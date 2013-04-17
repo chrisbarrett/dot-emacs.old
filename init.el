@@ -48,7 +48,7 @@
 
 (add-to-list 'load-path (concat user-emacs-directory "lisp"))
 
-;;; ----------------------------------------------------------------------------
+;;; ============================================================================
 ;;; Load packages.
 
 (require 'bind-key (concat user-emacs-directory "lib/use-package/bind-key.el"))
@@ -82,6 +82,28 @@
                                    emacs-major-version
                                    emacs-minor-version))
     (setenv "INFOPATH" (concat source-directory "/info/"))))
+
+;;; ----------------------------------------------------------------------------
+
+(defvar cb:lisp-modes
+  '(scheme-mode
+    emacs-lisp-mode
+    lisp-mode
+    common-lisp-mode
+    repl-mode
+    clojure-mode
+    clojurescript-mode
+    ielm-mode)
+  "List of language modes that should be treated as Lisps.")
+
+(defvar cb:lisp-mode-hook '()
+  "Run after setup for all lispy languages.")
+
+(--each cb:lisp-modes
+ (hook-fn (intern (concat (symbol-name it) "-hook"))
+   (run-hooks 'cb:lisp-mode-hook)))
+
+;;; ----------------------------------------------------------------------------
 
 (use-package helm
   :ensure t)
@@ -200,7 +222,8 @@
   :config (winner-mode +1))
 
 (use-package volatile-highlights
-  :ensure t)
+  :ensure t
+  :config (add-hook 'cb:lisp-mode-hook 'volatile-highlights-mode))
 
 (use-package diminish
   :ensure t
@@ -480,6 +503,9 @@
           ac-auto-start 2
           ac-candidate-menu-min 0
           ac-comphist-file (concat cb:tmp-dir "ac-comphist.dat"))
+
+    (--each cb:lisp-modes (add-to-list 'ac-modes it))
+
     (global-auto-complete-mode t)
     (ac-flyspell-workaround)
     (ac-linum-workaround)
@@ -695,6 +721,7 @@
   :config
   (progn
     (use-package cb-paredit)
+    (add-hook 'cb:lisp-mode-hook 'enable-paredit-mode)
     (add-hook 'inferior-lisp-mode-hook 'paredit-mode)
     (add-hook 'repl-mode-hook 'paredit-mode)))
 
@@ -706,7 +733,8 @@
 
 (use-package highlight-parentheses
   :ensure t
-  :diminish highlight-parentheses-mode)
+  :diminish highlight-parentheses-mode
+  :config (add-hook 'cb:lisp-hook 'highlight-parentheses-mode))
 
 (use-package highlight-symbol
   :ensure t)
@@ -719,31 +747,16 @@
   :ensure t)
 
 (use-package eval-sexp-fu
-  :commands (eval-sexp-fu-flash-mode))
-
-(defun cb:configure-lisp-hook (mode)
-  (hook-fn (intern (concat (symbol-name mode) "-hook"))
-    (eval-sexp-fu-flash-mode +1)
-    (setq eval-sexp-fu-flash-duration 0.5)
-    (volatile-highlights-mode +1)
-    (turn-on-eldoc-mode)
-    (paredit-mode +1)
-    (auto-complete-mode +1)
-    (highlight-parentheses-mode +1)))
-
-(-each '(scheme-mode
-         emacs-lisp-mode
-         lisp-mode
-         common-lisp-mode
-         repl-mode
-         clojure-mode
-         clojurescript-mode
-         ielm-mode)
-       'cb:configure-lisp-hook)
+  :commands (eval-sexp-fu-flash-mode)
+  :config
+  (progn
+    (setq eval-sexp-fu-flash-duration 0.2)
+    (add-hook 'cb:lisp-mode-hook 'turn-on-eval-sexp-fu-flash-mode)))
 
 (use-package eldoc
   :commands (eldoc-mode)
-  :diminish (eldoc-mode))
+  :diminish (eldoc-mode)
+  :config (add-hook 'cb:lisp-mode-hook 'turn-on-eldoc-mode))
 
 (use-package c-eldoc
   :ensure t
@@ -1008,9 +1021,10 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
   :bind (("s-1" . wg-switch-to-index-0)
          ("s-2" . wg-switch-to-index-1)
          ("s-3" . wg-switch-to-index-2))
-  :defines workgroups-mode
-  :ensure t
+  :defines  workgroups-mode
+  :ensure   t
   :diminish workgroups-mode
+  :init     (hook-fn 'after-init-hook 'workgroups-mode)
   :config
   (progn
 
@@ -1021,10 +1035,6 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
 
     (ignore-errors (wg-load (concat cb:etc-dir "workgroups")))
     (setq wg-prefix-key (kbd "C-c w"))))
-
-(hook-fn 'after-init-hook
-  (require 'workgroups)
-  (workgroups-mode +1))
 
 ;;; ----------------------------------------------------------------------------
 ;;; Error navigation keybindings.
