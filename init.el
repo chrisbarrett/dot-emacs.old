@@ -278,10 +278,6 @@
 (use-package winner
   :config (winner-mode +1))
 
-(use-package volatile-highlights
-  :ensure t
-  :config (add-hook 'cb:lisp-mode-hook 'volatile-highlights-mode))
-
 (use-package diminish
   :ensure t
   :commands diminish)
@@ -357,8 +353,15 @@
 (use-package cb-commands
   :bind (("s-f"     . cb:rotate-buffers)
          ("C-x C-o" . other-window))
-  :commands (sudo-edit cb:hide-dos-eol cb:kill-current-buffer)
+
+  :commands (sudo-edit
+             cb:hide-dos-eol
+             cb:kill-current-buffer
+             insert-timestamp
+             cb:last-buffer-for-mode)
+
   :init     (add-hook 'find-file-hook 'cb:hide-dos-eol)
+
   :config
   (defadvice cb:rotate-buffers (after select-largest-window activate)
     "Switch to the largest window if using a 2-up window configuration."
@@ -403,6 +406,8 @@
 
 (use-package evil
   :ensure t
+  :init
+  (hook-fn 'comint-mode-hook 'evil-append-line)
   :config
   (progn
 
@@ -940,12 +945,27 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
     (add-hook 'fsharp-mode-hook 'electric-indent-mode)
     (add-hook 'fsharp-mode-hook 'electric-layout-mode)))
 
+(defun cb:comma-then-space ()
+  (interactive)
+  (atomic-change-group
+    (insert-char ?\,)
+    (just-one-space)))
+
+(defun cb:switch-to-python ()
+  "Switch to the last active Python buffer."
+  (interactive)
+  (when-let (buf (cb:last-buffer-for-mode 'python-mode))
+    (pop-to-buffer buf)))
+
 (use-package python
   :ensure   t
   :commands python-mode
   :mode     ("\\.py$" . python-mode)
   :config
   (progn
+    (define-key python-mode-map (kbd ",") 'cb:comma-then-space)
+    (define-key inferior-python-mode-map (kbd ",") 'cb:comma-then-space)
+    (define-key inferior-python-mode-map (kbd "C-c C-z") 'cb:switch-to-python)
     (add-to-list 'ac-modes 'python-mode)
     (add-to-list 'ac-modes 'inferior-python-mode)))
 
@@ -953,9 +973,10 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
   :ensure   t
   :commands jedi:setup
   :init
-  (hook-fn 'python-mode-hook
+  (progn
     (setq jedi:setup-keys t)
-    (jedi:setup)))
+    (add-hook 'inferior-python-mode-hook 'jedi:setup)
+    (add-hook 'python-mode-hook 'jedi:setup)))
 
 (use-package ruby-mode
   :ensure t

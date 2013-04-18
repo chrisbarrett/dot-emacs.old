@@ -50,19 +50,16 @@
     (nrepl-switch-to-repl-buffer buf)
     (nrepl-jack-in)))
 
-(defun cb:last-clj-buffer ()
-  (--first (s-ends-with? ".clj" (buffer-name it)) (buffer-list)))
-
 (defun cb:switch-to-last-clj-buffer ()
   "Switch to the last active clojure buffer."
   (interactive)
-  (when-let (buf (cb:last-clj-buffer))
+  (when-let (buf (cb:last-buffer-for-mode 'clojure-mode))
     (pop-to-buffer buf)))
 
 (defun cb:eval-last-clj-buffer ()
   "Evaluate that last active clojure buffer without leaving the repl."
   (interactive)
-  (when-let (buf (cb:last-clj-buffer))
+  (when-let (buf (cb:last-buffer-for-mode 'clojure-mode))
     (with-current-buffer buf
       (nrepl-eval-buffer))))
 

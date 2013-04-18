@@ -90,6 +90,19 @@ If this buffer is a member of `kill-buffer-ignored-list, bury it rather than kil
   (aset buffer-display-table ?\^M [])
   (aset buffer-display-table ?\^L []))
 
+(defun cb:last-buffer-for-mode (mode)
+  "Return the previous buffer with major mode MODE."
+  (->> (buffer-list) (--first (with-current-buffer it
+                                (equal mode major-mode)))))
+
+(defun cb:timestamp ()
+  (format-time-string "%Y%m%d.%H%M" nil t))
+
+(defun insert-timestamp ()
+  "Insert a package-conformant timestamp, of the format YYYYMMDD.HHMM at point."
+  (interactive)
+  (insert (cb:timestamp)))
+
 (provide 'cb-commands)
 
 ;;; cb-commands.el ends here
