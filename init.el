@@ -574,6 +574,7 @@
   :init
   (progn
     (add-hook 'text-mode-hook 'smartparens-mode)
+    (add-hook 'comint-mode-hook 'smartparens-mode)
     ;; Don't enable smartparents mode for lisps. Make doubly-sure Paredit is
     ;; used.
     (hook-fn 'prog-mode-hook
@@ -585,6 +586,27 @@
     (sp-pair "'" nil :unless '(sp-point-after-word-p))
     (sp-local-tag '(sgml-mode html-mode) "<" "<_>" "</_>"
                   :transform 'sp-match-sgml-tags)))
+
+(use-package smart-operator
+  :ensure t
+  :commands smart-insert-operator-hook
+  :init
+  (progn
+    (hook-fn 'python-mode-hook
+      (smart-insert-operator-hook)
+      (local-unset-key (kbd "."))
+      (local-unset-key (kbd ":")))
+
+    (hook-fn 'inferior-python-mode-hook
+      (smart-insert-operator-hook)
+      (local-unset-key (kbd "."))
+      (local-unset-key (kbd ":")))
+
+    (hook-fn 'c-mode-common-hook
+      (smart-insert-operator-hook)
+      (local-unset-key (kbd "."))
+      (local-unset-key (kbd ":"))
+      (local-set-key (kbd "*") 'c-electric-star))))
 
 (use-package json-mode
   :ensure t
