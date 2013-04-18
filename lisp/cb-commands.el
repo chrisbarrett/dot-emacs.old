@@ -1,4 +1,4 @@
-;;; cb-foundation --- Basic configuration
+;;; cb-commands --- Basic configuration
 
 ;; Copyright (C) 2013 Chris Barrett
 
@@ -24,22 +24,6 @@
 ;; Basic configuration required for a sane editing environment.
 
 ;;; Code:
-
-(defadvice save-buffers-kill-emacs (around no-query-kill-emacs activate)
-  "Suppress \"Active processes exist\" query when exiting Emacs."
-  (flet ((process-list ()))
-    ad-do-it))
-
-(defadvice kill-line (after kill-line-cleanup-whitespace activate compile)
-  "Trim whitespace on `kill-line'."
-  (unless (bolp)
-    (delete-region (point) (progn (skip-chars-forward " \t") (point)))))
-
-(defadvice whitespace-cleanup (around whitespace-cleanup-indent-tab activate)
-  "Fix `whitespace-cleanup' bug when using `indent-tabs-mode'."
-  (let ((whitespace-indent-tabs-mode indent-tabs-mode)
-        (whitespace-tab-width tab-width))
-    ad-do-it))
 
 ;;; Buffers
 
@@ -106,20 +90,6 @@ If this buffer is a member of `kill-buffer-ignored-list, bury it rather than kil
   (aset buffer-display-table ?\^M [])
   (aset buffer-display-table ?\^L []))
 
-(add-hook 'find-file-hook 'cb:hide-dos-eol)
+(provide 'cb-commands)
 
-(defun delete-file-and-buffer ()
-  "Kill the current buffer and deletes the file it is visiting."
-  (interactive)
-  (let ((filename (buffer-file-name)))
-    (when filename
-      (if (vc-backend filename)
-          (vc-delete-file filename)
-        (progn
-          (delete-file filename)
-          (message "Deleted file %s" filename)
-          (kill-buffer))))))
-
-(provide 'cb-foundation)
-
-;;; cb-foundation.el ends here
+;;; cb-commands.el ends here

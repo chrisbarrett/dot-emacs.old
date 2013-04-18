@@ -63,8 +63,6 @@
    (ace-jump-mode 5)
    (forward-char -1)))
 
-(add-hook 'ace-jump-mode-end-hook 'exit-recursive-edit)
-
 ;; different jumps for different visual modes
 
 (defadvice evil-visual-line (before spc-for-line-jump activate)

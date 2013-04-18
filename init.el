@@ -37,6 +37,57 @@
 (setq user-full-name    "Chris Barrett"
       user-mail-address "chris.d.barrett@me.com")
 
+(auto-compression-mode +1)
+(setq
+ redisplay-dont-pause         t
+ column-number-mode           t
+ echo-keystrokes              0.02
+ inhibit-startup-message      t
+ transient-mark-mode          t
+ shift-select-mode            nil
+ require-final-newline        t
+ delete-by-moving-to-trash    nil
+ initial-major-mode           'emacs-lisp-mode
+ initial-scratch-message      nil
+ x-select-enable-clipboard    t
+ font-lock-maximum-decoration t
+ ring-bell-function           'ignore
+ initial-scratch-message      nil
+ truncate-partial-width-windows     nil
+ confirm-nonexistent-file-or-buffer nil
+ )
+(setq-default
+ indent-tabs-mode             nil
+ fill-column                  80)
+
+;; Encodings
+(setq locale-coding-system   'utf-8)
+(set-terminal-coding-system  'utf-8)
+(set-keyboard-coding-system  'utf-8)
+(set-selection-coding-system 'utf-8)
+(prefer-coding-system        'utf-8)
+
+;; File-handling
+(add-hook 'before-save-hook 'whitespace-cleanup)
+(add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
+
+;; Error navigation keybindings.
+(hook-fn 'prog-mode-hook
+  (local-set-key (kbd "M-N") 'next-error)
+  (local-set-key (kbd "M-P") 'previous-error))
+
+(defun cb:byte-compile-conf ()
+  "Recompile all configuration files."
+  (interactive)
+  (byte-recompile-file (concat user-emacs-directory "init.el") t 0)
+  (byte-recompile-directory cb:lib-dir 0 t)
+  (byte-recompile-directory cb:lisp-dir 0 t))
+
+(defun cb:byte-compile-elpa ()
+  "Recompile all lisp files in `user-emacs-directory'."
+  (interactive)
+  (byte-recompile-directory (concat user-emacs-directory "elpa") 0 t))
+
 ;;; ----------------------------------------------------------------------------
 ;;; Initialize packages.
 
@@ -123,7 +174,7 @@
 
 (use-package ido
   :ensure t
-  :defer nil
+  :defer  nil
   :config
   (progn
     (setq ido-enable-prefix            nil
@@ -216,14 +267,13 @@
     (savehist-mode +1)))
 
 (use-package undo-tree
-  :ensure t
+  :ensure   t
   :diminish undo-tree-mode
   :config   (global-undo-tree-mode +1))
 
 (use-package window-number
   :ensure t
-  :config
-  (window-number-meta-mode +1))
+  :config (window-number-meta-mode +1))
 
 (use-package winner
   :config (winner-mode +1))
@@ -234,7 +284,7 @@
 
 (use-package diminish
   :ensure t
-  :commands (diminish))
+  :commands diminish)
 
 (use-package hl-line
   :if (display-graphic-p)
@@ -288,52 +338,32 @@
 (hook-fn 'Buffer-menu-mode-hook
   (Buffer-menu-toggle-files-only +1))
 
-(use-package cb-foundation
-  :defer nil
+(defadvice save-buffers-kill-emacs (around no-query-kill-emacs activate)
+  "Suppress \"Active processes exist\" query when exiting Emacs."
+  (flet ((process-list ()))
+    ad-do-it))
+
+(defadvice kill-line (after kill-line-cleanup-whitespace activate compile)
+  "Trim whitespace on `kill-line'."
+  (unless (bolp)
+    (delete-region (point) (progn (skip-chars-forward " \t") (point)))))
+
+(defadvice whitespace-cleanup (around whitespace-cleanup-indent-tab activate)
+  "Fix `whitespace-cleanup' bug when using `indent-tabs-mode'."
+  (let ((whitespace-indent-tabs-mode indent-tabs-mode)
+        (whitespace-tab-width tab-width))
+    ad-do-it))
+
+(use-package cb-commands
   :bind (("s-f"     . cb:rotate-buffers)
          ("C-x C-o" . other-window))
+  :commands (sudo-edit cb:hide-dos-eol)
+  :init     (add-hook 'find-file-hook 'cb:hide-dos-eol)
   :config
   (defadvice cb:rotate-buffers (after select-largest-window activate)
     "Switch to the largest window if using a 2-up window configuration."
     (when (= 2 (length (window-list)))
-      (cb:select-largest-window)))
-  :init
-  (progn
-    (auto-compression-mode +1)
-    (setq
-     redisplay-dont-pause         t
-     column-number-mode           t
-     echo-keystrokes              0.02
-     inhibit-startup-message      t
-     transient-mark-mode          t
-     shift-select-mode            nil
-     require-final-newline        t
-     delete-by-moving-to-trash    nil
-     initial-major-mode           'emacs-lisp-mode
-     initial-scratch-message      nil
-     x-select-enable-clipboard    t
-     font-lock-maximum-decoration t
-     ring-bell-function           'ignore
-     initial-scratch-message      nil
-     truncate-partial-width-windows     nil
-     confirm-nonexistent-file-or-buffer nil
-     )
-    (setq-default
-     indent-tabs-mode             nil
-     fill-column                  80)
-
-    ;; Encodings
-    (setq locale-coding-system   'utf-8)
-    (set-terminal-coding-system  'utf-8)
-    (set-keyboard-coding-system  'utf-8)
-    (set-selection-coding-system 'utf-8)
-    (prefer-coding-system        'utf-8)
-
-    ;; File-handling
-    (add-hook 'before-save-hook 'whitespace-cleanup)
-    (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
-
-    (require 'cb-foundation)))
+      (cb:select-largest-window))))
 
 (define-prefix-command 'help-find-map)
 (bind-key (kbd "C-h e") 'help-find-map)
@@ -344,7 +374,6 @@
 (bind-key (kbd "C-h e p") 'find-library)
 (bind-key (kbd "C-h e v") 'find-variable)
 (bind-key (kbd "C-h e V") 'apropos-value)
-
 
 (use-package scratch
   :ensure t
@@ -361,8 +390,7 @@
   :ensure t
   :bind (("C-L" . ace-jump-line-mode)
          ("C-SPC" . ace-jump-word-mode))
-  :config
-  (require 'ace-jump-mode))
+  :config (add-hook 'ace-jump-mode-end-hook 'exit-recursive-edit))
 
 (use-package hideshow
   :diminish hs-minor-mode)
@@ -431,16 +459,13 @@
 
 (use-package exec-path-from-shell
   :ensure t
-  :if (and (equal system-type 'darwin)
-           (window-system))
-  :config
-  (exec-path-from-shell-initialize))
+  :if (and (equal system-type 'darwin) (window-system))
+  :config (exec-path-from-shell-initialize))
 
 (use-package cb-osx :if (equal system-type 'darwin))
 
 (use-package color-theme
-  :config
-  (setq color-theme-is-global t))
+  :config (setq color-theme-is-global t))
 
 (use-package solarized-theme
   :ensure t
@@ -470,10 +495,10 @@
     (add-hook 'ediff-startup-hook 'turn-off-evil-mode)))
 
 (use-package cb-ediff
-  :commands (cb:handle-git-merge))
+  :commands cb:handle-git-merge)
 
 (use-package eshell
-  :commands (eshell eshell/pwd)
+  :commands eshell
   :config
   (setq eshell-prompt-function
         (lambda ()
@@ -482,7 +507,7 @@
                   (if (= (user-uid) 0) " # " " % ")))))
 
 (use-package shell
-  :commands (shell)
+  :commands shell
   :config
   (hook-fn 'window-configuration-change-hook
     "Change process window size."
@@ -493,7 +518,7 @@
 
 (use-package auto-complete
   :ensure t
-  :diminish (auto-complete-mode)
+  :diminish auto-complete-mode
   :config
   (progn
     (use-package fuzzy
@@ -525,17 +550,17 @@
       (auto-complete-mode -1))))
 
 (use-package cb-google
-  :commands (google/search)
+  :commands google/search
   :bind     (("C-c C-/" . google/search)
-             ("C-c C-_" . google/search))
-  :config
-  (use-package w3m
-    :ensure t
-    :commands (w3m-browse-url)))
+             ("C-c C-_" . google/search)))
+
+(use-package w3m
+  :ensure t
+  :commands w3m-browse-url)
 
 (use-package smartparens
   :ensure t
-  :diminish (smartparens-mode)
+  :diminish smartparens-mode
   :commands (smartparens-mode smartparens-global-mode)
   :init
   (progn
@@ -649,7 +674,7 @@
       (setq indent-tabs-mode t))))
 
 (use-package cb-tags
-  :commands (cb:find-tag cb:load-ctags cb:build-ctags)
+  :commands (cb:build-ctags)
   :bind (("C-]"     . cb:find-tag)
          ("C-c C-r" . cb:load-ctags))
   :config
@@ -668,10 +693,10 @@
   :commands (etags-select-find-tag-at-point etags-select-find-tag))
 
 (use-package cb-shebang
-  :commands (insert-shebang))
+  :commands insert-shebang)
 
 (use-package nxml-mode
-  :commands (nxml-mode)
+  :commands nxml-mode
   :config
   (hook-fn 'find-file-hook
     "Enable nxml-mode if this is an XML file."
@@ -681,7 +706,7 @@
       (local-set-key (kbd "M-q") 'cb:reformat-xml))))
 
 (use-package tagedit
-  :ensure t
+  :ensure   t
   :commands (tagedit-add-paredit-like-keybindings)
   :config
   (hook-fn 'html-mode-hook
@@ -690,7 +715,7 @@
 
 (use-package magit
   :ensure t
-  :bind ("C-x g" . magit-status)
+  :bind   ("C-x g" . magit-status)
   :config
   (progn
     (defadvice magit-status (around magit-fullscreen activate)
@@ -717,8 +742,8 @@
          (".gitmodules$" . conf-mode)))
 
 (use-package paredit
-  :ensure t
-  :diminish (paredit-mode)
+  :ensure   t
+  :diminish paredit-mode
   :commands (paredit-mode enable-paredit-mode disable-paredit-mode)
   :init
   (progn
@@ -746,21 +771,21 @@
   :config (add-hook 'prog-mode-hook 'highlight-parentheses-mode))
 
 (use-package highlight-symbol
-  :ensure t
-  :diminish (highlight-symbol-mode)
-  :commands (highlight-symbol-mode)
-  :init (add-hook 'prog-mode-hook 'highlight-symbol-mode))
+  :ensure   t
+  :diminish highlight-symbol-mode
+  :commands highlight-symbol-mode
+  :init     (add-hook 'prog-mode-hook 'highlight-symbol-mode))
 
 (use-package volatile-highlights
   :ensure t
-  :commands (volatile-highlights-mode)
+  :commands volatile-highlights-mode
   :diminish volatile-highlights-mode)
 
 (use-package parenface-plus
   :ensure t)
 
 (use-package eval-sexp-fu
-  :commands (eval-sexp-fu-flash-mode)
+  :commands eval-sexp-fu-flash-mode
   :init     (add-hook 'cb:lisp-mode-hook 'eval-sexp-fu-flash-mode)
   :config   (setq eval-sexp-fu-flash-duration 0.2))
 
@@ -771,7 +796,7 @@
 
 (use-package c-eldoc
   :ensure   t
-  :commands (c-turn-on-eldoc-mode)
+  :commands c-turn-on-eldoc-mode
   :init     (add-hook 'c-mode-hook 'c-turn-on-eldoc-mode))
 
 (use-package cb-elisp
@@ -814,11 +839,15 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
 (use-package elisp-slime-nav
   :ensure   t
   :diminish elisp-slime-nav-mode
-  :config   (add-hook 'emacs-lisp-mode-hook 'elisp-slime-nav-mode))
+  :init
+  (progn
+    (hook-fn 'emacs-lisp-mode-hook
+      (elisp-slime-nav-mode +1)
+      (local-set-key (kbd "M-.") 'elisp-slime-nav-find-elisp-thing-at-point))))
 
 (use-package litable
   :ensure   t
-  :commands (litable-mode)
+  :commands litable-mode
   :init     (define-key emacs-lisp-mode-map (kbd "C-c C-l") 'litable-mode))
 
 (use-package emr
@@ -861,8 +890,8 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
       (local-set-key (kbd "C-c C-z") 'cb:switch-to-nrepl))))
 
 (use-package nrepl
-  :ensure t
-  :commands (nrepl-jack-in)
+  :ensure   t
+  :commands nrepl-jack-in
   :config
   (progn
     (use-package ac-nrepl)
@@ -887,8 +916,8 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
         (local-set-key (kbd "C-c C-f") 'cb:eval-last-clj-buffer)))))
 
 (use-package fsharp-mode
-  :ensure t
-  :commands (fsharp-mode)
+  :ensure   t
+  :commands fsharp-mode
   :mode ("\\.fs[ixly]?$" . fsharp-mode)
   :config
   (progn
@@ -899,9 +928,9 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
     (add-hook 'fsharp-mode-hook 'electric-layout-mode)))
 
 (use-package python
-  :ensure t
-  :commands (python-mode)
-  :mode ("\\.py$" . python-mode)
+  :ensure   t
+  :commands python-mode
+  :mode     ("\\.py$" . python-mode)
   :config
   (progn
     (add-to-list 'ac-modes 'python-mode)
@@ -1027,10 +1056,9 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
   :bind (("s-1" . wg-switch-to-index-0)
          ("s-2" . wg-switch-to-index-1)
          ("s-3" . wg-switch-to-index-2))
-  :defines  workgroups-mode
   :ensure   t
+  :commands workgroups-mode
   :diminish workgroups-mode
-  :init     (hook-fn 'after-init-hook 'workgroups-mode)
   :config
   (progn
 
@@ -1041,25 +1069,6 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
 
     (ignore-errors (wg-load (concat cb:etc-dir "workgroups")))
     (setq wg-prefix-key (kbd "C-c w"))))
-
-;;; ----------------------------------------------------------------------------
-;;; Error navigation keybindings.
-
-(hook-fn 'prog-mode-hook
-  (local-set-key (kbd "M-N") 'next-error)
-  (local-set-key (kbd "M-P") 'previous-error))
-
-(defun cb:byte-compile-conf ()
-  "Recompile all configuration files."
-  (interactive)
-  (byte-recompile-file (concat user-emacs-directory "init.el") t 0)
-  (byte-recompile-directory cb:lib-dir 0 t)
-  (byte-recompile-directory cb:lisp-dir 0 t))
-
-(defun cb:byte-compile-elpa ()
-  "Recompile all lisp files in `user-emacs-directory'."
-  (interactive)
-  (byte-recompile-directory (concat user-emacs-directory "elpa") 0 t))
 
 ;; Local Variables:
 ;; byte-compile-warnings: (not free-vars obsolete)
