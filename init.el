@@ -821,8 +821,8 @@
   :config   (setq eval-sexp-fu-flash-duration 0.2))
 
 (use-package eldoc
-  :commands (eldoc-mode)
-  :diminish (eldoc-mode)
+  :commands eldoc-mode
+  :diminish eldoc-mode
   :init     (add-hook 'cb:lisp-mode-hook 'turn-on-eldoc-mode))
 
 (use-package c-eldoc
