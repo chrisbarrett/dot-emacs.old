@@ -406,13 +406,14 @@
 
 (use-package evil
   :ensure t
-  :init
-  (hook-fn 'comint-mode-hook 'evil-append-line)
+  :init   (hook-fn 'comint-mode-hook 'evil-append-line)
   :config
   (progn
 
     (require 'cb-evil)
 
+    (define-key evil-normal-state-map (kbd "M-z") 'evil-emacs-state)
+    (define-key evil-emacs-state-map  (kbd "M-z") 'evil-normal-state)
     (define-key evil-normal-state-map (kbd "C-z") 'cb:evil-undefine)
     (define-key evil-normal-state-map (kbd "SPC") 'evil-toggle-fold)
     (define-key evil-insert-state-map (kbd "C-z") 'cb:evil-undefine)
