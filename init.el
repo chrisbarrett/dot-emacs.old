@@ -108,6 +108,19 @@
 (use-package helm
   :ensure t)
 
+(use-package imenu
+  :config
+  (hook-fn 'emacs-lisp-mode-hook
+    "Display section headings."
+    (setq imenu-prev-index-position-function nil)
+    (add-to-list 'imenu-generic-expression
+                 `("SECTION"
+                   ;; Match sections.
+                   ,(rx bol ";;;" (* space) (+ "-") (? "\n")
+                        ";;;" (* space)
+                        (group (1+ nonl))
+                        (* "-") eol) 1) t)))
+
 (use-package ido
   :ensure t
   :defer nil
@@ -121,10 +134,6 @@
           ido-max-prospects            10
           ido-default-file-method      'selected-window)
     (ido-mode +1)
-
-    (use-package idomenu
-      :ensure t
-      :commands (idomenu))
 
     (use-package ido-hacks
       :ensure t
@@ -259,7 +268,7 @@
     ;; Global keys
     (key-chord-define-global "dh" 'helm-mini)
     (key-chord-define-global "x;" 'cb:kill-current-buffer)
-    (key-chord-define-global "fh" 'idomenu)
+    (key-chord-define-global "fh" 'helm-imenu)
     (eval-after-load 'paredit
       '(progn
          (key-chord-define paredit-mode-map "qj" 'paredit-backward-slurp-sexp)
