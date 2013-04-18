@@ -214,9 +214,7 @@
 (use-package window-number
   :ensure t
   :config
-  (progn
-    (window-number-meta-mode +1)
-    (window-number-mode +1)))
+  (window-number-meta-mode +1))
 
 (use-package winner
   :config (winner-mode +1))
@@ -341,7 +339,7 @@
 
 (use-package scratch
   :ensure t
-  :commands (scrach))
+  :commands (scratch))
 
 (use-package uniquify
   :config
@@ -486,6 +484,7 @@
 
 (use-package auto-complete
   :ensure t
+  :diminish (auto-complete-mode)
   :config
   (progn
     (use-package fuzzy
@@ -527,6 +526,7 @@
 
 (use-package smartparens
   :ensure t
+  :diminish (smartparens-mode)
   :commands (smartparens-mode smartparens-global-mode)
   :init
   (progn
@@ -707,6 +707,7 @@
 
 (use-package paredit
   :ensure t
+  :diminish (paredit-mode)
   :commands (paredit-mode enable-paredit-mode disable-paredit-mode)
   :init
   (progn
