@@ -27,6 +27,8 @@
 
 ;;; Font lock
 
+(autoload 'ielm "ielm")
+
 (font-lock-add-keywords
  'emacs-lisp-mode
  `(

@@ -554,6 +554,8 @@
 
 (use-package json-mode
   :ensure t
+  :commands json-mode
+  :mode ("\\.json$" . json-mode)
   :config
   (progn
     (add-to-list 'ac-modes 'json-mode)
@@ -605,7 +607,8 @@
 
 (use-package flycheck
   :ensure t
-  :config
+  :commands (flycheck-may-enable-mode flycheck-mode)
+  :init
   (let ((maybe-enable-flycheck
          (lambda ()
            "Do not enable flycheck for /src and /elpa."
@@ -650,20 +653,19 @@
   :bind (("C-]"     . cb:find-tag)
          ("C-c C-r" . cb:load-ctags))
   :config
-  ;; Ensure tags searches are case-sensitive.
-  (setq tags-case-fold-search nil)
-  (global-set-key (kbd "M-.") 'find-tag))
+  (progn
+    ;; Ensure tags searches are case-sensitive.
+    (setq tags-case-fold-search nil)
+    (global-set-key (kbd "M-.") 'find-tag)))
 
 (use-package ctags-update
-  :ensure t
+  :ensure   t
   :diminish ctags-auto-update-mode
-  :config
-  (add-hook 'prog-mode-hook 'turn-on-ctags-auto-update-mode))
+  :config   (add-hook 'prog-mode-hook 'turn-on-ctags-auto-update-mode))
 
 (use-package etags-select
-  :ensure t
-  :commands (etags-select-find-tag-at-point
-             etags-select-find-tag))
+  :ensure   t
+  :commands (etags-select-find-tag-at-point etags-select-find-tag))
 
 (use-package cb-shebang
   :commands (insert-shebang))
@@ -720,14 +722,17 @@
   :commands (paredit-mode enable-paredit-mode disable-paredit-mode)
   :init
   (progn
+
     (hook-fn 'minibuffer-setup-hook
       "Use paredit in the minibuffer."
       (when (eq this-command 'eval-expression)
         (paredit-mode t)))
+
     (hook-fn 'paredit-mode-hook
       "Turn off smart parens."
       (when (featurep 'smartparens)
         (turn-off-smartparens-mode))))
+
   :config
   (progn
     (use-package cb-paredit)
@@ -735,22 +740,20 @@
     (add-hook 'inferior-lisp-mode-hook 'paredit-mode)
     (add-hook 'repl-mode-hook 'paredit-mode)))
 
-(use-package highlight
-  :ensure t)
-
-(use-package lively
-  :ensure t)
-
 (use-package highlight-parentheses
   :ensure t
   :diminish highlight-parentheses-mode
-  :config (add-hook 'cb:lisp-hook 'highlight-parentheses-mode))
+  :config (add-hook 'prog-mode-hook 'highlight-parentheses-mode))
 
 (use-package highlight-symbol
-  :ensure t)
+  :ensure t
+  :diminish (highlight-symbol-mode)
+  :commands (highlight-symbol-mode)
+  :init (add-hook 'prog-mode-hook 'highlight-symbol-mode))
 
 (use-package volatile-highlights
   :ensure t
+  :commands (volatile-highlights-mode)
   :diminish volatile-highlights-mode)
 
 (use-package parenface-plus
@@ -764,23 +767,21 @@
 (use-package eldoc
   :commands (eldoc-mode)
   :diminish (eldoc-mode)
-  :config   (add-hook 'cb:lisp-mode-hook 'turn-on-eldoc-mode))
+  :init     (add-hook 'cb:lisp-mode-hook 'turn-on-eldoc-mode))
 
 (use-package c-eldoc
-  :ensure t
-  :config
-  (add-hook 'c-mode-hook 'c-turn-on-eldoc-mode))
+  :ensure   t
+  :commands (c-turn-on-eldoc-mode)
+  :init     (add-hook 'c-mode-hook 'c-turn-on-eldoc-mode))
 
 (use-package cb-elisp
-  :defer nil
+  :commands (cb:switch-to-ielm cb:switch-to-elisp)
   :init
   (progn
     (autoload 'ert-modeline-mode "ert-modeline")
     (add-hook 'emacs-lisp-mode-hook 'ert-modeline-mode)
     (add-hook 'after-save-hook 'check-parens)
-    (add-to-list 'auto-mode-alist '("Carton$" . emacs-lisp-mode)))
-  :config
-  (progn
+    (add-to-list 'auto-mode-alist '("Carton$" . emacs-lisp-mode))
 
     (bind-key (kbd "C-c e b") 'eval-buffer)
     (bind-key (kbd "C-c e e") 'toggle-debug-on-error)
@@ -788,45 +789,41 @@
     (bind-key (kbd "C-c e r") 'eval-region)
     (bind-key (kbd "C-c e s") 'scratch)
 
+    ;; Switching back-and-forth from IELM.
+    (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'cb:switch-to-ielm)
+    (hook-fn 'ielm-mode-hook
+      (local-set-key (kbd "C-c C-z") 'cb:switch-to-elisp)))
+  :config
+  (progn
     (defadvice eval-buffer (before buffer-evaluated-feedback activate)
       "Message that the buffer has been evaluated.
 This has to be BEFORE advice because `eval-buffer' doesn't return anything."
       (when (buffer-file-name)
-        (message "Buffer evaluated.")))
-
-    ;; Switching back-and-forth from IELM.
-    (require 'ielm)
-    (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'cb:switch-to-ielm)
-    (define-key ielm-map (kbd "C-c C-z") 'cb:switch-to-elisp)))
+        (message "Buffer evaluated.")))))
 
 (use-package redshank
-  :ensure t
+  :ensure   t
   :diminish redshank-mode
-  :config
-  (add-hook 'emacs-lisp-mode-hook 'turn-on-redshank-mode))
+  :config   (add-hook 'emacs-lisp-mode-hook 'turn-on-redshank-mode))
 
 (use-package macrostep
   :ensure t
-  :bind ("C-c e m" . macrostep-expand)
-  :config
-  (evil-add-hjkl-bindings macrostep-mode-map 'motion))
+  :bind   ("C-c e m" . macrostep-expand)
+  :config (evil-add-hjkl-bindings macrostep-mode-map 'motion))
 
 (use-package elisp-slime-nav
-  :ensure t
+  :ensure   t
   :diminish elisp-slime-nav-mode
-  :config
-  (add-hook 'emacs-lisp-mode-hook 'elisp-slime-nav-mode))
+  :config   (add-hook 'emacs-lisp-mode-hook 'elisp-slime-nav-mode))
 
 (use-package litable
-  :ensure t
+  :ensure   t
   :commands (litable-mode)
-  :init
-  (define-key emacs-lisp-mode-map (kbd "C-c C-l") 'litable-mode))
+  :init     (define-key emacs-lisp-mode-map (kbd "C-c C-l") 'litable-mode))
 
 (use-package emr
   :bind ("M-RET" . emr-show-refactor-menu)
-  :config
-  (require 'emr-elisp))
+  :config (require 'emr-elisp))
 
 (use-package lisp-mode
   :commands (emacs-lisp-mode lisp-mode)
@@ -904,6 +901,7 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
 (use-package python
   :ensure t
   :commands (python-mode)
+  :mode ("\\.py$" . python-mode)
   :config
   (progn
     (add-to-list 'ac-modes 'python-mode)
@@ -911,9 +909,9 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
 
 (use-package ruby-mode
   :ensure t
-  :modes (("\\.rake$"    . ruby-mode)
-          ("Rakefile$"   . ruby-mode)
-          ("\\.gemspec$" . ruby-mode))
+  :mode (("\\.rake$"    . ruby-mode)
+         ("Rakefile$"   . ruby-mode)
+         ("\\.gemspec$" . ruby-mode))
   :defer t
   :config
   (progn
@@ -947,14 +945,14 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
 
 (use-package yaml-mode
   :ensure t
-  :modes (("\\.yaml$" . yaml-mode)
-          ("\\.yml$" . yaml-mode)))
+  :mode (("\\.yaml$" . yaml-mode)
+         ("\\.yml$" . yaml-mode)))
 
 (use-package haskell-mode
   :ensure t
   :commands (haskell-mode haskell-c-mode haskell-cabal-mode)
   :mode
-  (("\\.hs"     . haskell-mode)
+  (("\\.hs$"    . haskell-mode)
    ("\\.hsc$"   . haskell-c-mode)
    ("\\.cabal$" . haskell-cabal-mode))
   :config
