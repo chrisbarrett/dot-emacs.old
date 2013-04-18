@@ -652,13 +652,15 @@
 
 (use-package yasnippet
   :ensure t
+  :commands (yas-global-mode yas-minor-mode)
   :diminish yas-minor-mode
+  :init
+  (add-hook 'prog-mode-hook 'yas-minor-mode)
   :config
   (progn
     (setq yas/trigger-key (kbd "RET"))
     (add-to-list 'yas-snippet-dirs cb:yasnippet-dir)
-    (yas--initialize)
-    (yas-global-mode t)
+    (yas/global-mode t)
     (hook-fn 'snippet-mode-hook
       (setq require-final-newline nil))))
 
