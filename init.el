@@ -949,6 +949,14 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
     (add-to-list 'ac-modes 'python-mode)
     (add-to-list 'ac-modes 'inferior-python-mode)))
 
+(use-package jedi
+  :ensure   t
+  :commands jedi:setup
+  :init
+  (hook-fn 'python-mode-hook
+    (setq jedi:setup-keys t)
+    (jedi:setup)))
+
 (use-package ruby-mode
   :ensure t
   :mode (("\\.rake$"    . ruby-mode)

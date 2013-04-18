@@ -83,4 +83,4 @@ epc        :; pip install epc
 virtualenv :; pip install virtualenv
 argparse   :; pip install argparse
 jedi : virtualenv epc argparse
-	pip install jedi>=0.5b4
+	pip install jedi
