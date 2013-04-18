@@ -410,8 +410,8 @@
 
     (use-package evil-paredit
       :ensure t
-      :config
-      (add-hook 'paredit-mode-hook 'evil-paredit-mode))
+      :commands evil-paredit-mode
+      :config (add-hook 'paredit-mode-hook 'evil-paredit-mode))
 
     (use-package surround
       :ensure t
@@ -419,6 +419,7 @@
 
     (use-package evil-numbers
       :ensure t
+      :commands (evil-numbers/dec-at-pt evil-numbers/inc-at-pt)
       :config
       (progn
         (define-key evil-normal-state-map (kbd "-") 'evil-numbers/dec-at-pt)
@@ -460,7 +461,10 @@
 (use-package exec-path-from-shell
   :ensure t
   :if (and (equal system-type 'darwin) (window-system))
-  :config (exec-path-from-shell-initialize))
+  :config
+  (progn
+    (setenv "INSIDE_EMACS" "1")
+    (exec-path-from-shell-initialize)))
 
 (use-package cb-osx :if (equal system-type 'darwin))
 
@@ -801,6 +805,7 @@
 
 (use-package cb-elisp
   :commands (cb:switch-to-ielm cb:switch-to-elisp)
+  :defer nil
   :init
   (progn
     (autoload 'ert-modeline-mode "ert-modeline")
@@ -817,7 +822,11 @@
     ;; Switching back-and-forth from IELM.
     (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'cb:switch-to-ielm)
     (hook-fn 'ielm-mode-hook
-      (local-set-key (kbd "C-c C-z") 'cb:switch-to-elisp)))
+      (local-set-key (kbd "C-c C-z") 'cb:switch-to-elisp))
+
+    (hook-fn 'emacs-lisp-mode-hook
+      (require 'cb-elisp)))
+
   :config
   (progn
     (defadvice eval-buffer (before buffer-evaluated-feedback activate)
@@ -876,15 +885,19 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
   :mode     ("\\.cljs?$" . clojure-mode)
   :config
   (progn
+
     (use-package cb-overtone
       :bind     ("s-." . cb:stop-overtone)
       :commands (maybe-enable-overtone-mode cb:stop-overtone))
+
     (use-package midje-mode
       :ensure t
       :commands (midje-mode)
       :diminish (midje-mode)
       :config   (add-hook 'clojure-mode-hook 'midje-mode))
+
     (use-package cb-clojure)
+
     (hook-fn 'clojure-mode-hook
       (maybe-enable-overtone-mode)
       (local-set-key (kbd "C-c C-z") 'cb:switch-to-nrepl))))
