@@ -71,11 +71,6 @@
 (add-hook 'before-save-hook 'whitespace-cleanup)
 (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
 
-;; Error navigation keybindings.
-(hook-fn 'prog-mode-hook
-  (local-set-key (kbd "M-N") 'next-error)
-  (local-set-key (kbd "M-P") 'previous-error))
-
 (defun cb:byte-compile-conf ()
   "Recompile all configuration files."
   (interactive)
@@ -155,6 +150,11 @@
    (run-hooks 'cb:lisp-mode-hook)))
 
 ;;; ----------------------------------------------------------------------------
+
+;; Error navigation keybindings.
+(hook-fn 'prog-mode-hook
+  (local-set-key (kbd "M-N") 'next-error)
+  (local-set-key (kbd "M-P") 'previous-error))
 
 (use-package helm
   :ensure t)
