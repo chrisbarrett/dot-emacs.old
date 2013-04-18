@@ -72,3 +72,15 @@ $(emacs_src_dir) :| $(emacs_gz)
 
 # Create source directory.
 $(src) :;  mkdir $(src)
+
+# ----------------------------------------------------------------------------
+# Python
+
+python : jedi
+
+# Install Jedia for python auto-completion.
+epc        :; pip install epc
+virtualenv :; pip install virtualenv
+argparse   :; pip install argparse
+jedi : virtualenv epc argparse
+	pip install jedi>=0.5b4
