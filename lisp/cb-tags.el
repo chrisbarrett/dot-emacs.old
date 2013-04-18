@@ -27,6 +27,7 @@
 ;;; Code:
 
 (autoload 'eproject-root "eproject")
+
 (require 's)
 
 (defvar cb:ctags-exclude-patterns

@@ -175,37 +175,37 @@
 (use-package ido
   :ensure t
   :defer  nil
+  :init
+  (setq ido-enable-prefix            nil
+        ido-save-directory-list-file (concat cb:tmp-dir "ido.last")
+        ido-enable-flex-matching     t
+        ido-create-new-buffer        'always
+        ido-use-filename-at-point    'guess
+        ido-max-prospects            10
+        ido-default-file-method      'selected-window)
   :config
   (progn
-    (setq ido-enable-prefix            nil
-          ido-save-directory-list-file (concat cb:tmp-dir "ido.last")
-          ido-enable-flex-matching     t
-          ido-create-new-buffer        'always
-          ido-use-filename-at-point    'guess
-          ido-max-prospects            10
-          ido-default-file-method      'selected-window)
     (ido-mode +1)
-
-    (use-package ido-hacks
-      :ensure t
-      :config (ido-hacks-mode +1))
-
-    (use-package ido-ubiquitous
-      :ensure t
-      :config (ido-ubiquitous-mode +1))
-
-    (use-package ido-yes-or-no
-      :ensure t
-      :config (ido-yes-or-no-mode +1))
-
-    (use-package ido-better-flex
-      :ensure t
-      :config (ido-better-flex/enable))
-
-    (use-package ido-speed-hack)
-
     (add-to-list 'ido-ignore-buffers "*helm mini*")
     (add-to-list 'ido-ignore-files "\\.DS_Store")))
+
+(use-package ido-hacks
+  :ensure t
+  :config (ido-hacks-mode +1))
+
+(use-package ido-ubiquitous
+  :ensure t
+  :config (ido-ubiquitous-mode +1))
+
+(use-package ido-yes-or-no
+  :ensure t
+  :config (ido-yes-or-no-mode +1))
+
+(use-package ido-better-flex
+  :ensure t
+  :config (ido-better-flex/enable))
+
+(use-package ido-speed-hack)
 
 (use-package smex
   :ensure t
@@ -357,7 +357,7 @@
 (use-package cb-commands
   :bind (("s-f"     . cb:rotate-buffers)
          ("C-x C-o" . other-window))
-  :commands (sudo-edit cb:hide-dos-eol)
+  :commands (sudo-edit cb:hide-dos-eol cb:kill-current-buffer)
   :init     (add-hook 'find-file-hook 'cb:hide-dos-eol)
   :config
   (defadvice cb:rotate-buffers (after select-largest-window activate)
@@ -408,23 +408,6 @@
 
     (require 'cb-evil)
 
-    (use-package evil-paredit
-      :ensure t
-      :commands evil-paredit-mode
-      :config (add-hook 'paredit-mode-hook 'evil-paredit-mode))
-
-    (use-package surround
-      :ensure t
-      :config (global-surround-mode +1))
-
-    (use-package evil-numbers
-      :ensure t
-      :commands (evil-numbers/dec-at-pt evil-numbers/inc-at-pt)
-      :config
-      (progn
-        (define-key evil-normal-state-map (kbd "-") 'evil-numbers/dec-at-pt)
-        (define-key evil-normal-state-map (kbd "+") 'evil-numbers/inc-at-pt)))
-
     (define-key evil-normal-state-map (kbd "C-z") 'cb:evil-undefine)
     (define-key evil-normal-state-map (kbd "SPC") 'evil-toggle-fold)
     (define-key evil-insert-state-map (kbd "C-z") 'cb:evil-undefine)
@@ -441,11 +424,28 @@
       (define-key (eval it) [escape] 'keyboard-quit))
 
     (setq evil-want-visual-char-semi-exclusive t
-          evil-toggle-key                      (kbd "M-z")
-          evil-default-cursor                  t)
+          evil-toggle-key (kbd "M-z")
+          evil-default-cursor t)
     (setq-default evil-shift-width 2)
 
     (evil-mode +1)))
+
+(use-package evil-paredit
+  :ensure t
+  :commands evil-paredit-mode
+  :config (add-hook 'paredit-mode-hook 'evil-paredit-mode))
+
+(use-package surround
+  :ensure t
+  :config (global-surround-mode +1))
+
+(use-package evil-numbers
+  :ensure t
+  :commands (evil-numbers/dec-at-pt evil-numbers/inc-at-pt)
+  :config
+  (progn
+    (define-key evil-normal-state-map (kbd "-") 'evil-numbers/dec-at-pt)
+    (define-key evil-normal-state-map (kbd "+") 'evil-numbers/inc-at-pt)))
 
 (use-package backup-dir
   :config
@@ -485,7 +485,6 @@
   ;; Set colour by time of day.
   (let ((hour (string-to-number (format-time-string "%H"))))
     (cond
-     ((not (display-graphic-p))     (solarized-light))
      ((and (<= 0 hour) (>= 6 hour)) (ir-black))
      ((or  (< 20 hour) (> 9 hour))  (solarized-dark))
      (t                             (solarized-light)))))
@@ -525,11 +524,6 @@
   :diminish auto-complete-mode
   :config
   (progn
-    (use-package fuzzy
-      :ensure t)
-    (use-package auto-complete-config
-      :config (ac-config-default))
-
     (setq ac-auto-show-menu t
           ac-dwim t
           ac-use-menu-map t
@@ -545,13 +539,19 @@
 
     (global-auto-complete-mode t)
     (ac-flyspell-workaround)
-    (ac-linum-workaround)
+
     (define-key ac-completing-map (kbd "C-n") 'ac-next)
     (define-key ac-completing-map (kbd "C-p") 'ac-previous)
     (define-key ac-completing-map "\t" 'ac-complete)
     (define-key ac-completing-map (kbd "M-RET") 'ac-help)
     (hook-fn 'text-mode-hook
       (auto-complete-mode -1))))
+
+(use-package fuzzy
+  :ensure t)
+
+(use-package auto-complete-config
+  :config (ac-config-default))
 
 (use-package cb-google
   :commands google/search
@@ -664,6 +664,7 @@
 
 (use-package eproject
   :ensure t
+  :commands eproject-maybe-turn-on
   :diminish eproject-mode
   :config
   (hook-fn 'prog-mode-hook
@@ -678,7 +679,7 @@
       (setq indent-tabs-mode t))))
 
 (use-package cb-tags
-  :commands (cb:build-ctags)
+  :commands cb:build-ctags
   :bind (("C-]"     . cb:find-tag)
          ("C-c C-r" . cb:load-ctags))
   :config
@@ -778,12 +779,8 @@
   :ensure   t
   :diminish highlight-symbol-mode
   :commands highlight-symbol-mode
-  :init     (add-hook 'prog-mode-hook 'highlight-symbol-mode))
-
-(use-package volatile-highlights
-  :ensure t
-  :commands volatile-highlights-mode
-  :diminish volatile-highlights-mode)
+  :init     (add-hook 'prog-mode-hook 'highlight-symbol-mode)
+  :config   (setq highlight-symbol-idle-delay 0.5))
 
 (use-package parenface-plus
   :ensure t)
@@ -837,8 +834,9 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
 
 (use-package redshank
   :ensure   t
+  :commands turn-on-redshank-mode
   :diminish redshank-mode
-  :config   (add-hook 'emacs-lisp-mode-hook 'turn-on-redshank-mode))
+  :init    (add-hook 'emacs-lisp-mode-hook 'turn-on-redshank-mode))
 
 (use-package macrostep
   :ensure t
