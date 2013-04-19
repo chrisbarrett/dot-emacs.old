@@ -588,6 +588,15 @@
     (sp-local-tag '(sgml-mode html-mode) "<" "<_>" "</_>"
                   :transform 'sp-match-sgml-tags)))
 
+(defun cb:python-smart-equals ()
+  "Insert an '=' char padded by spaces, except in function arglists."
+  (interactive)
+  (if (string-match-p
+       (rx (* space) "def ")
+       (buffer-substring (line-beginning-position) (line-end-position)))
+      (insert-string "=")
+    (smart-insert-operator "=")))
+
 (use-package smart-operator
   :ensure t
   :commands smart-insert-operator-hook
@@ -595,6 +604,7 @@
   (progn
     (hook-fn 'python-mode-hook
       (smart-insert-operator-hook)
+      (local-set-key (kbd "=") 'cb:python-smart-equals)
       (local-unset-key (kbd "."))
       (local-unset-key (kbd ":")))
 
