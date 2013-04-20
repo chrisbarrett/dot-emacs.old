@@ -990,11 +990,13 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
   :commands sclang-mode
   :mode ("\\.sc$" . sclang-mode)
   :config
-  (progn
-    (setq sclang-auto-scroll-post-buffer t
-          sclang-eval-line-forward nil
-          sclang-help-path (quote ("/Applications/SuperCollider/Help")))
-    (add-to-list 'ac-modes 'sclang-mode)
+  (let ((app-resources (concat "/Applications/SuperCollider/"
+                               "SuperCollider.app/Contents/Resources/")))
+    (setq sclang-runtime-directory (concat app-resources "SCClassLibrary")
+          sclang-program           (concat app-resources "sclang")
+          sclang-help-path         (concat app-resources "HelpSource")
+          sclang-auto-scroll-post-buffer t
+          sclang-eval-line-forward nil)
     (add-hook 'sclang-mode-hook 'smartparens-mode)))
 
 (use-package fsharp-mode
