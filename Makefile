@@ -63,11 +63,11 @@ clean-flycheck :
 emacs-source : $(emacs_src_dir)
 
 # Download sources for this Emacs version to ./src
-$(emacs_gz) :| $(src)
+$(emacs_gz) : $(src)
 	curl $(emacs_ftp) -o $(emacs_gz)
 
 # Perform expansion of Emacs source files.
-$(emacs_src_dir) :| $(emacs_gz)
+$(emacs_src_dir) : $(emacs_gz)
 	tar xfz $(emacs_gz) --directory=$(src)
 
 # Create source directory.
@@ -78,9 +78,21 @@ $(src) :;  mkdir $(src)
 
 python : jedi
 
-# Install Jedia for python auto-completion.
+# Install Jedi for python auto-completion.
+jedi       : virtualenv epc argparse ; pip install jedi
 epc        :; pip install epc
 virtualenv :; pip install virtualenv
 argparse   :; pip install argparse
-jedi : virtualenv epc argparse
-	pip install jedi
+
+# ----------------------------------------------------------------------------
+# SuperCollider
+
+sc_app_support = ~/Library/Application\ Support/SuperCollider
+sc_ext         = $(sc_app_support)/Extensions
+sc_github      = git://github.com/supercollider/supercollider.git
+sc_src         = ~/src/SuperCollider
+
+# Install SuperCollider emacs extensions.
+supercollider   : $(sc_src) $(sc_ext) ; cp -r $(sc_src)/editors/scel/sc/* $(sc_ext)
+$(sc_ext)       :; mkdir -p $(sc_ext)
+$(sc_src)       :; git clone $(sc_github) $(sc_src)
