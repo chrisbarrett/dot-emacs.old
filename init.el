@@ -986,6 +986,17 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
         (local-set-key (kbd "C-c C-z") 'cb:switch-to-last-clj-buffer)
         (local-set-key (kbd "C-c C-f") 'cb:eval-last-clj-buffer)))))
 
+(use-package sclang
+  :commands sclang-mode
+  :mode ("\\.sc$" . sclang-mode)
+  :config
+  (progn
+    (setq sclang-auto-scroll-post-buffer t
+          sclang-eval-line-forward nil
+          sclang-help-path (quote ("/Applications/SuperCollider/Help")))
+    (add-to-list 'ac-modes 'sclang-mode)
+    (add-hook 'sclang-mode-hook 'smartparens-mode)))
+
 (use-package fsharp-mode
   :ensure   t
   :commands fsharp-mode
@@ -1160,7 +1171,6 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
     (set-face-foreground 'wg-mode-line-face "light slate grey")
     (ignore-errors (wg-load (concat cb:etc-dir "workgroups")))
     (setq wg-prefix-key (kbd "C-c w"))))
-
 
 (workgroups-mode +1)
 
