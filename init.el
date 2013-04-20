@@ -406,10 +406,9 @@
 
 (use-package evil
   :ensure t
-  :init   (hook-fn 'comint-mode-hook 'evil-append-line)
+  :init  (hook-fn 'comint-mode-hook 'evil-append-line)
   :config
   (progn
-
     (require 'cb-evil)
 
     (define-key evil-normal-state-map (kbd "M-z") 'evil-emacs-state)
@@ -418,6 +417,17 @@
     (define-key evil-normal-state-map (kbd "SPC") 'evil-toggle-fold)
     (define-key evil-insert-state-map (kbd "C-z") 'cb:evil-undefine)
     (define-key evil-visual-state-map (kbd "C-z") 'cb:evil-undefine)
+
+    ;; Ensure undo-tree commands are remapped. The referenced keymap is in
+    ;; evil-integration is incorrect.
+    (define-key undo-tree-visualizer-mode-map [remap evil-backward-char]
+      'undo-tree-visualize-switch-branch-left)
+    (define-key undo-tree-visualizer-mode-map [remap evil-forward-char]
+      'undo-tree-visualize-switch-branch-right)
+    (define-key undo-tree-visualizer-mode-map [remap evil-next-line]
+      'undo-tree-visualize-redo)
+    (define-key undo-tree-visualizer-mode-map [remap evil-previous-line]
+      'undo-tree-visualize-undo)
 
     ;; Use ESC as quit command in most situations.
     (--each '(evil-normal-state-map
