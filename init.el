@@ -929,9 +929,9 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
       :commands (maybe-enable-overtone-mode cb:stop-overtone))
 
     (use-package midje-mode
-      :ensure t
-      :commands (midje-mode)
-      :diminish (midje-mode)
+      :ensure   t
+      :commands midje-mode
+      :diminish midje-mode
       :config   (add-hook 'clojure-mode-hook 'midje-mode))
 
     (use-package cb-clojure)
@@ -945,11 +945,21 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
   :commands nrepl-jack-in
   :config
   (progn
-    (use-package ac-nrepl)
+
+    (use-package ac-nrepl
+      :ensure t
+      :commands (ac-nrepl-setup ac-nrepl-doc)
+      :init
+      (progn
+        (add-hook 'nrepl-mode-hook 'ac-nrepl-setup)
+        (add-hook 'nrepl-interaction-mode-hook 'ac-nrepl-setup)
+        (add-to-list 'ac-modes 'nrepl-mode))
+      :config
+      (define-key nrepl-interaction-mode-map (kbd "C-c C-d") 'ac-nrepl-popup-doc))
+
     (setq nrepl-popup-stacktraces    nil
           nrepl-hide-special-buffers t)
 
-    (add-to-list 'ac-modes 'nrepl-mode)
     (set-face-attribute 'nrepl-error-highlight-face t :inherit 'error)
     (set-face-underline 'nrepl-error-highlight-face nil)
 
@@ -1136,14 +1146,13 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
   :diminish workgroups-mode
   :config
   (progn
-
     (set-face-foreground 'wg-divider-face "light slate grey")
     (set-face-foreground 'wg-mode-line-face "light slate grey")
-
-    (workgroups-mode +1)
-
     (ignore-errors (wg-load (concat cb:etc-dir "workgroups")))
     (setq wg-prefix-key (kbd "C-c w"))))
+
+
+(workgroups-mode +1)
 
 ;; Local Variables:
 ;; byte-compile-warnings: (not free-vars obsolete)
