@@ -612,6 +612,10 @@
   :commands smart-insert-operator-hook
   :init
   (progn
+    (hook-fn 'sclang-mode-hook
+      (smart-insert-operator-hook)
+      (local-unset-key (kbd ".")))
+
     (hook-fn 'python-mode-hook
       (smart-insert-operator-hook)
       (local-set-key (kbd "=") 'cb:python-smart-equals)
@@ -987,7 +991,7 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
         (local-set-key (kbd "C-c C-f") 'cb:eval-last-clj-buffer)))))
 
 (use-package sclang
-  :commands sclang-mode
+  :commands (sclang-mode sclang-start)
   :mode ("\\.sc$" . sclang-mode)
   :config
   (let ((app-resources (concat "/Applications/SuperCollider/"
@@ -997,7 +1001,11 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
           sclang-help-path         (concat app-resources "HelpSource")
           sclang-auto-scroll-post-buffer t
           sclang-eval-line-forward nil)
-    (add-hook 'sclang-mode-hook 'smartparens-mode)))
+    (hook-fn 'sclang-mode-hook
+      (local-set-key (kbd "s-.") 'sclang-main-stop)
+      (smartparens-mode +1)
+      (unless (sclang-server-running-p)
+        (sclang-server-boot)))))
 
 (use-package fsharp-mode
   :ensure   t
