@@ -1226,7 +1226,7 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
 
 (use-package smtpmail
   :commands smtpmail-send-it
-  :config
+  :init
   (setq
    smtpmail-mail-address user-mail-address
    smtpmail-smtp-server "smtp.mail.me.com"
@@ -1244,6 +1244,16 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
              (nnimap-server-port 587)
              (nnimap-stream ssl)
              (nnimap-authenticator login)))))
+
+;;; ----------------------------------------------------------------------------
+
+(use-package org
+  :ensure t
+  :defer t
+  :config
+  (progn
+    (define-key org-mode-map (kbd "M-p") 'org-metaup)
+    (define-key org-mode-map (kbd "M-n") 'org-metadown)))
 
 ;; Local Variables:
 ;; byte-compile-warnings: (not free-vars obsolete)
