@@ -21,7 +21,7 @@ all : emacs-source byte-compile-all tags
 tags :; $(emacs_exec) 'cb:build-ctags'
 
 # ----------------------------------------------------------------------------
-# Byte-compilation tasks.
+# Byte-compilation
 
 # Byte-compile files in ./lisp
 conf :; $(emacs_exec) 'cb:byte-compile-conf'
@@ -33,7 +33,7 @@ elpa :; $(emacs_exec) 'cb:byte-compile-elpa'
 byte-compile-all : conf elpa tags
 
 # ----------------------------------------------------------------------------
-# Cleaning tasks.
+# Cleaning
 
 # Perform all cleaning tasks.
 clean : clean-elc clean-backups clean-flycheck
@@ -57,17 +57,11 @@ clean-flycheck :
 	rm -f $(lib)/flycheck-*
 
 # ----------------------------------------------------------------------------
-# Fetching Emacs source.
+# Emacs source
 
 # Download and extract the emacs source files for this emacs version.
-emacs-source : $(emacs_src_dir)
-
-# Download sources for this Emacs version to ./src
-$(emacs_gz) : $(src)
+emacs-source : $(src)
 	curl $(emacs_ftp) -o $(emacs_gz)
-
-# Perform expansion of Emacs source files.
-$(emacs_src_dir) : $(emacs_gz)
 	tar xfz $(emacs_gz) --directory=$(src)
 
 # Create source directory.
