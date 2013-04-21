@@ -1198,7 +1198,7 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
 ;;; ----------------------------------------------------------------------------
 ;;; Mail configuration
 
-(setq mail-signature "\nCheers,\n\nChris Barrett"
+(setq mail-signature (concat "\nCheers,\n\n" user-full-name)
       send-mail-function 'smtpmail-send-it
       message-send-mail-function 'smtpmail-send-it)
 
