@@ -402,7 +402,13 @@
          ("C-SPC" . ace-jump-word-mode)
          ;; Needed for terminal.
          ("C-@" . ace-jump-word-mode))
-  :config (add-hook 'ace-jump-mode-end-hook 'exit-recursive-edit))
+  :config
+  (progn
+    (add-hook 'ace-jump-mode-end-hook 'exit-recursive-edit)
+
+    ;; Use ESC to quit ace-jump.
+    (--each '(ace-jump-line-mode ace-jump-word-mode ace-jump-char-mode)
+      (hook-fn it (local-set-key (kbd "ESC") 'keyboard-quit)))))
 
 (use-package hideshow
   :diminish hs-minor-mode)
