@@ -576,7 +576,7 @@
 
 (use-package w3m
   :ensure t
-  :commands w3m-browse-url)
+  :commands (w3m-find-file w3m-browse-url))
 
 (use-package smartparens
   :ensure t
@@ -994,13 +994,24 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
   :commands (sclang-mode sclang-start)
   :mode ("\\.sc$" . sclang-mode)
   :config
-  (let ((app-resources (concat "/Applications/SuperCollider/"
-                               "SuperCollider.app/Contents/Resources/")))
-    (setq sclang-runtime-directory (concat app-resources "SCClassLibrary")
-          sclang-program           (concat app-resources "sclang")
-          sclang-help-path         (concat app-resources "HelpSource")
-          sclang-auto-scroll-post-buffer t
+  (progn
+    (setq sclang-auto-scroll-post-buffer t
           sclang-eval-line-forward nil)
+
+    ;; Configure paths.
+    (let* ((bundle "/Applications/SuperCollider/SuperCollider.app")
+           (app-resources (concat bundle "/Contents/Resources"))
+           (help-path     (concat app-resources "/HelpSource")))
+      (setq
+       sclang-runtime-directory (concat app-resources "/SCClassLibrary")
+
+       sclang-program (concat app-resources "/sclang")
+
+       sclang-extension-path
+       (list "~/Library/Application Support/SuperCollider/Extensions")
+
+       sclang-help-path (list help-path (concat help-path "/Classes"))))
+
     (hook-fn 'sclang-mode-hook
       (local-set-key (kbd "s-.") 'sclang-main-stop)
       (smartparens-mode +1)
@@ -1183,6 +1194,34 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
     (setq wg-prefix-key (kbd "C-c w"))))
 
 (workgroups-mode +1)
+
+;;; ----------------------------------------------------------------------------
+;;; Mail configuration
+
+(setq mail-signature "\nCheers,\n\nChris Barrett"
+      send-mail-function 'smtpmail-send-it
+      message-send-mail-function 'smtpmail-send-it)
+
+(use-package smtpmail
+  :commands smtpmail-send-it
+  :config
+  (setq
+   smtpmail-mail-address user-mail-address
+   smtpmail-smtp-server "smtp.mail.me.com"
+   smtpmail-smtp-service 587))
+
+(use-package gnus
+  :commands gnus
+  :config
+  (setq
+   gnus-select-method '(nnml "mail")
+   gnus-secondary-select-methods
+   `((nnimap "mail"
+             (nnimap-address ,smtpmail-smtp-server)
+             (nnimap-list-pattern ("INBOX" "mail/*"))
+             (nnimap-server-port 587)
+             (nnimap-stream ssl)
+             (nnimap-authenticator login)))))
 
 ;; Local Variables:
 ;; byte-compile-warnings: (not free-vars obsolete)
