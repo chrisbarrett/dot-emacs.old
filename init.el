@@ -602,30 +602,34 @@
 (use-package auto-complete
   :ensure t
   :diminish auto-complete-mode
+  :commands auto-complete-mode
+
+  :init
+  (progn
+    (add-hook 'prog-mode-hook 'auto-complete-mode)
+    (add-hook 'comint-mode-hook 'auto-complete-mode))
+
   :config
   (progn
-    (setq ac-auto-show-menu t
-          ac-dwim t
-          ac-use-menu-map t
-          ac-quick-help-delay 1
-          ac-quick-help-height 60
-          ac-disable-inline t
-          ac-show-menu-immediately-on-auto-complete t
-          ac-auto-start 2
-          ac-candidate-menu-min 0
-          ac-comphist-file (concat cb:tmp-dir "ac-comphist.dat"))
-
     (--each cb:lisp-modes (add-to-list 'ac-modes it))
+    (setq
+     ac-auto-show-menu t
+     ac-dwim t
+     ac-use-menu-map t
+     ac-quick-help-delay 1
+     ac-quick-help-height 60
+     ac-disable-inline t
+     ac-show-menu-immediately-on-auto-complete t
+     ac-auto-start 2
+     ac-candidate-menu-min 0
+     ac-comphist-file (concat cb:tmp-dir "ac-comphist.dat"))
 
-    (global-auto-complete-mode t)
     (ac-flyspell-workaround)
 
     (define-key ac-completing-map (kbd "C-n") 'ac-next)
     (define-key ac-completing-map (kbd "C-p") 'ac-previous)
     (define-key ac-completing-map "\t" 'ac-complete)
-    (define-key ac-completing-map (kbd "M-RET") 'ac-help)
-    (hook-fn 'text-mode-hook
-      (auto-complete-mode -1))))
+    (define-key ac-completing-map (kbd "M-RET") 'ac-help)))
 
 (use-package fuzzy
   :ensure t)
