@@ -30,7 +30,7 @@
 (menu-bar-mode   -1)
 (tool-bar-mode   -1)
 
-;;; Fully-qualify.
+;;; Fully-qualify `user-emacs-directory'.
 (setq user-emacs-directory (expand-file-name user-emacs-directory))
 
 ;;; Describe me.
@@ -60,6 +60,7 @@
  fill-column                  80)
 
 ;; Encodings
+
 (setq locale-coding-system   'utf-8)
 (set-terminal-coding-system  'utf-8)
 (set-keyboard-coding-system  'utf-8)
@@ -67,9 +68,58 @@
 (prefer-coding-system        'utf-8)
 
 ;; File-handling
+
 (auto-compression-mode +1)
 (add-hook 'before-save-hook 'whitespace-cleanup)
 (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
+
+
+(require 'bind-key (concat user-emacs-directory "lib/use-package/bind-key.el"))
+(require 'use-package (concat user-emacs-directory "lib/use-package/use-package.el"))
+
+;;; Help commands
+(define-prefix-command 'help-find-map)
+(bind-key (kbd "C-h e") 'help-find-map)
+(bind-key (kbd "C-h e e") 'view-echo-area-messages)
+(bind-key (kbd "C-h e f") 'find-function)
+(bind-key (kbd "C-h e k") 'find-function-on-key)
+(bind-key (kbd "C-h e l") 'find-library)
+(bind-key (kbd "C-h e p") 'find-library)
+(bind-key (kbd "C-h e v") 'find-variable)
+(bind-key (kbd "C-h e V") 'apropos-value)
+
+;;; Disable vc modes
+
+(setq vc-handled-backends nil)
+(remove-hook 'find-file-hooks 'vc-find-file-hook)
+(eval-after-load "vc"
+  '(remove-hook 'find-file-hooks 'vc-find-file-hook))
+
+;;; Editing Advice
+
+(defadvice ido-find-file (after find-file-sudo activate)
+  "Find file as root if necessary."
+  (unless (and buffer-file-name
+               (file-writable-p buffer-file-name))
+    (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
+
+(defadvice save-buffers-kill-emacs (around no-query-kill-emacs activate)
+  "Suppress \"Active processes exist\" query when exiting Emacs."
+  (flet ((process-list ()))
+    ad-do-it))
+
+(defadvice kill-line (after kill-line-cleanup-whitespace activate compile)
+  "Trim whitespace on `kill-line'."
+  (unless (bolp)
+    (delete-region (point) (progn (skip-chars-forward " \t") (point)))))
+
+(defadvice whitespace-cleanup (around whitespace-cleanup-indent-tab activate)
+  "Fix `whitespace-cleanup' bug when using `indent-tabs-mode'."
+  (let ((whitespace-indent-tabs-mode indent-tabs-mode)
+        (whitespace-tab-width tab-width))
+    ad-do-it))
+
+;;; Byte compilation commands
 
 (defun cb:byte-compile-conf ()
   "Recompile all configuration files."
@@ -79,7 +129,7 @@
   (byte-recompile-directory cb:lisp-dir 0 t))
 
 (defun cb:byte-compile-elpa ()
-  "Recompile all lisp files in `user-emacs-directory'."
+  "Recompile all lisp files in the package directory."
   (interactive)
   (byte-recompile-directory (concat user-emacs-directory "elpa") 0 t))
 
@@ -96,9 +146,6 @@
 
 ;;; ============================================================================
 ;;; Load packages.
-
-(require 'bind-key (concat user-emacs-directory "lib/use-package/bind-key.el"))
-(require 'use-package (concat user-emacs-directory "lib/use-package/use-package.el"))
 
 (use-package cl-lib)
 
@@ -331,38 +378,15 @@
 
     (key-chord-mode +1)))
 
-;;; Disable vc modes.
-(setq vc-handled-backends nil)
-(remove-hook 'find-file-hooks 'vc-find-file-hook)
-(eval-after-load "vc"
-  '(remove-hook 'find-file-hooks 'vc-find-file-hook))
-
 ;;; Buffer menu only shows files on disk.
 (hook-fn 'Buffer-menu-mode-hook
   (Buffer-menu-toggle-files-only +1))
-
-(defadvice save-buffers-kill-emacs (around no-query-kill-emacs activate)
-  "Suppress \"Active processes exist\" query when exiting Emacs."
-  (flet ((process-list ()))
-    ad-do-it))
-
-(defadvice kill-line (after kill-line-cleanup-whitespace activate compile)
-  "Trim whitespace on `kill-line'."
-  (unless (bolp)
-    (delete-region (point) (progn (skip-chars-forward " \t") (point)))))
-
-(defadvice whitespace-cleanup (around whitespace-cleanup-indent-tab activate)
-  "Fix `whitespace-cleanup' bug when using `indent-tabs-mode'."
-  (let ((whitespace-indent-tabs-mode indent-tabs-mode)
-        (whitespace-tab-width tab-width))
-    ad-do-it))
 
 (use-package cb-commands
   :bind (("s-f"     . cb:rotate-buffers)
          ("C-x C-o" . other-window))
 
-  :commands (sudo-edit
-             cb:hide-dos-eol
+  :commands (cb:hide-dos-eol
              cb:kill-current-buffer
              insert-timestamp
              cb:last-buffer-for-mode)
@@ -374,16 +398,6 @@
     "Switch to the largest window if using a 2-up window configuration."
     (when (= 2 (length (window-list)))
       (cb:select-largest-window))))
-
-(define-prefix-command 'help-find-map)
-(bind-key (kbd "C-h e") 'help-find-map)
-(bind-key (kbd "C-h e e") 'view-echo-area-messages)
-(bind-key (kbd "C-h e f") 'find-function)
-(bind-key (kbd "C-h e k") 'find-function-on-key)
-(bind-key (kbd "C-h e l") 'find-library)
-(bind-key (kbd "C-h e p") 'find-library)
-(bind-key (kbd "C-h e v") 'find-variable)
-(bind-key (kbd "C-h e V") 'apropos-value)
 
 (use-package scratch
   :ensure t
