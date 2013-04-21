@@ -1,24 +1,49 @@
-;; see also
-;; http://www.enigmacurry.com/2009/01/21/autocompleteel-python-code-completion-in-emacs/
-;; about auto-complete-mode for python-mode
-(defconst my/haskell-reserved-keywords
-  (sort 
+;;; haskell-ac --- Completion source for Haskell.
+
+;; Copyright (C) 2013 ikegami
+
+;; Author: ikegami: http://madscientist.jp/~ikegami/diary/20090215.html#p01
+
+;; This file is not part of GNU Emacs.
+
+;; This program is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;; Completion source for Haskell, from:
+;; http://madscientist.jp/~ikegami/diary/20090215.html#p01
+
+;;; Code:
+
+(defconst ac-haskell/reserved-keywords
+  (sort
    (list "case" "class" "data" "default" "deriving" "do" "else" "if" "import" "in" "infix"
    "infixl" "infixr" "instance" "let" "module" "newtype" "of" "then" "type" "where" "as"
    "qualified" "hiding")
    #'(lambda (a b) (> (length a) (length b))))
   "Reserved keywords in Haskell.")
-  
-(defconst my/haskell-defined-types
-  (sort 
+
+(defconst ac-haskell/defined-types
+  (sort
    (list "Bool" "False" "True" "Char" "String" "IO" "IOError" "Maybe" "Just" "Nothing"
    "Either" "Right" "Left" "Ordering" "LT" "EQ" "GT" "Integer" "Int" "Ratio" "Float"
    "Double" "Complex")
    #'(lambda (a b) (> (length a) (length b))))
   "Defined types in Haskell.")
-  
-(defconst my/haskell-defined-classes
-  (sort 
+
+(defconst ac-haskell/defined-classes
+  (sort
    (list "Eq" "==" "/=" "Ord" "compare" "max" "min" "<=" ">=" "ReadS" "ShowS" "Read"
    "read" "readsPrec" "readList" "showsPrec" "show" "showList" "Enum" "succ" "toEnum"
    "fromEnum" "enumFrom" "enumFromThen" "enumFromTo" "enumFromThenTo" "Functor" "fmap"
@@ -32,28 +57,28 @@
    "isNegativeZero" "isIEEE" "atan2" "gcd" "lcm" "^^" "fromIntegral" "realtoFrac")
    #'(lambda (a b) (> (length a) (length b))))
   "Defined classes in Haskell.")
-  
-(defconst my/haskell-prelude-functions
+
+(defconst ac-haskell/prelude-functions
   (sort
    (list ; "&&" "||"
          "not" "otherwise" "maybe" "either" "fst" "snd" "curry" "uncurry" "pred"
-	 "round" "subtract" "odd" "mapM" "mapM_" "sequence" "sequence_" "=<<" "id" "const"
-	 "flip" "until" "asTypeOf" "error" "undefined" "$!" "seq" "map" "++" "filter"
-	 "head" "last" "tail" "init" "null" "length" "!!" "reverse" "fold" "fold1" "foldr"
-	 "foldr1" "and" "or" "any" "all" "sum" "product" "concat" "concatMap" "maximum"
-	 "minimum" "scanl" "scanl1" "scanr" "scanr1" "iterate" "repeat" "replicate"
-	 "cycle" "take" "drop" "splitAt" "takeWhile" "dropWhile" "span" "break" "elem"
-	 "notElem" "lookup" "zip" "zip3" "zipWith" "zipWith3" "unzip" "unzip3" "lines"
-	 "words" "unlines" "unwords" "shows" "showChar" "showString" "showParen" "reads"
-	 "readParen" "lex" "putChar" "putStr" "putStrLn" "print" "getChar" "getLine"
-	 "getContents" "intract" "FilePath" "readFile" "writeFile" "appendFile" "readIO"
-	 "readLn" "IOException" "ioError" "userError" "catch")
+         "round" "subtract" "odd" "mapM" "mapM_" "sequence" "sequence_" "=<<" "id" "const"
+         "flip" "until" "asTypeOf" "error" "undefined" "$!" "seq" "map" "++" "filter"
+         "head" "last" "tail" "init" "null" "length" "!!" "reverse" "fold" "fold1" "foldr"
+         "foldr1" "and" "or" "any" "all" "sum" "product" "concat" "concatMap" "maximum"
+         "minimum" "scanl" "scanl1" "scanr" "scanr1" "iterate" "repeat" "replicate"
+         "cycle" "take" "drop" "splitAt" "takeWhile" "dropWhile" "span" "break" "elem"
+         "notElem" "lookup" "zip" "zip3" "zipWith" "zipWith3" "unzip" "unzip3" "lines"
+         "words" "unlines" "unwords" "shows" "showChar" "showString" "showParen" "reads"
+         "readParen" "lex" "putChar" "putStr" "putStrLn" "print" "getChar" "getLine"
+         "getContents" "intract" "FilePath" "readFile" "writeFile" "appendFile" "readIO"
+         "readLn" "IOException" "ioError" "userError" "catch")
    #'(lambda (a b) (> (length a) (length b))))
   "Defined functions in GHC Prelude.")
-  
-(defconst my/haskell-ghc-modules
-  (sort 
-   (list 
+
+(defconst ac-haskell/ghc-modules
+  (sort
+   (list
    "Control.Applicative" "Control.Arrow" "Control.Category" "Control.Concurrent"
    "Control.Concurrent.MVar" "Control.Concurrent.QSem" "Control.Concurrent.QSemN"
    "Control.Concurrent.STM" "Control.Concurrent.STM.TArray" "Control.Concurrent.STM.TChan"
@@ -68,7 +93,7 @@
    "Control.Monad.State" "Control.Monad.State.Class" "Control.Monad.State.Lazy"
    "Control.Monad.State.Strict" "Control.Monad.Trans" "Control.Monad.Writer"
    "Control.Monad.Writer.Class" "Control.Monad.Writer.Lazy" "Control.Monad.Writer.Strict"
-   "Control.OldException" "Control.Parallel" "Control.Parallel.Strategies" 
+   "Control.OldException" "Control.Parallel" "Control.Parallel.Strategies"
    "Data.Array" "Data.Array.Diff" "Data.Array.IArray" "Data.Array.IO"
    "Data.Array.IO.Internals" "Data.Array.MArray" "Data.Array.Paralell"
    "Data.Array.Paralell.Arr" "Data.Array.Paralell.Base" "Data.Array.Paralell.Lifted"
@@ -92,7 +117,7 @@
    "Data.Time.Calendar.OrdinalDate" "Data.Time.Calendar.WeekDate" "Data.Time.Clock"
    "Data.Time.Clock.POSIX" "Data.Time.Clock.TAI" "Data.Time.Format" "Data.Time.LocalTime"
    "Data.Traversable" "Data.Tree" "Data.Tuple" "Data.Typeable" "Data.Unique"
-   "Data.Version" "Data.Word" "Debug.Trace" 
+   "Data.Version" "Data.Word" "Debug.Trace"
    "Distribution.Compat.ReadP" "Distribution.Compiler" "Distribution.InstalledPackageInfo"
    "Distribution.License" "Distribution.Make" "Distribution.ModuleName"
    "Distribution.Package" "Distribution.PackageDescription"
@@ -122,7 +147,7 @@
    "Language.Haskell.ParseUtils" "Language.Haskell.Parser" "Language.Haskell.Pretty"
    "Language.Haskell.Syntax" "Language.Haskell.TH" "Language.Haskell.TH.Lib"
    "Language.Haskell.TH.Ppr" "Language.Haskell.TH.PprLib" "Language.Haskell.TH.Quote"
-   "Language.Haskell.TH.Syntax" 
+   "Language.Haskell.TH.Syntax"
    "Network" "Network.BSD" "Network.Socket" "Network.URI" "Numeric"
    "Prelude"
    "System.CPUTime" "System.Cmd" "System.Console.Editline" "System.Console.Readline"
@@ -137,7 +162,7 @@
    "System.Posix.SharedMem" "System.Posix.Signals" "System.Posix.Signals.Exts"
    "System.Posix.Temp" "System.Posix.Terminal" "System.Posix.Time" "System.Posix.Types"
    "System.Posix.Unistd" "System.Posix.User" "System.Process" "System.Random"
-   "System.Time" "System.Timeout" 
+   "System.Time" "System.Timeout"
    "Test.HUnit" "Test.HUnit.Base" "Test.HUnit.Lang" "Test.HUnit.Terminal"
    "Test.HUnit.Text" "Test.QuickCheck" "Test.QuickCheck.Batch" "Test.QuickCheck.Poly"
    "Test.QuickCheck.Utils" "Text.Html" "Text.Html.BlockTable"
@@ -153,55 +178,59 @@
    "Text.Regex.Posix.Wrap" "Text.Show" "Text.Show.Functions" "Text.XHtml"
    "Text.XHtml.Debug" "Text.XHtml.Frameset" "Text.XHtml.Strict" "Text.XHtml.Table"
    "Text.XHtml.Transitional" "Trace.Hpc.Mix" "Trace.Hpc.Reflect" "Trace.Hpc.Tix"
-   "Trace.Hpc.Util" 
+   "Trace.Hpc.Util"
    "Unsafe.Coerce") #'(lambda (a b) (> (length a) (length b))))
   "GHC modules.")
-  
-;; see also the latest GHC manual 
+
+;; see also the latest GHC manual
 ;; http://www.haskell.org/ghc/docs/latest/html/users_guide/pragmas.html
-(defconst my/haskell-ghc-pragmas
-  (sort 
+(defconst ac-haskell/ghc-pragmas
+  (sort
    (list "LANGUAGE" "OPTIONS_GHC" "INCLUDE" "WARNING" "DEPRECATED" "INLINE" "NOINLINE"
    "LINE" "RULES" "SPECIALIZE" "UNPACK" "SOURCE")
    #'(lambda (a b) (> (length a) (length b))))
   "GHC pragmas.")
-  
-;; see also the latest GHC manual 
+
+;; see also the latest GHC manual
 ;; http://www.haskell.org/ghc/docs/latest/html/users_guide/flag-reference.html#id2631364
-(defvar my/haskell-ghc-options
+(defvar ac-haskell/ghc-options
   (list "OverlappingInstances" "IncoherentInstances" "UndecidableInstances" "Arrows"
-	"ForeignFunctionInterface" "Generics" "ImplicitParams" "ImplicitPrelude"
-	"MonomorphismRestriction" "MonoPatBinds" "RelaxedPolyRec" "ExtendedDefaultRules"
-	"OverloadedStrings" "GADTs" "TypeFamilies" "ScopedTypeVariables" "TemplateHaskell"
-	"QuasiQuotes" "BangPatterns" "CPP" "PatternGuards" "ViewPatterns" "UnicodeSyntax"
-	"MagicHash" "NewQualifiedOperators" "PolymorphicComponents" "Rank2Types"
-	"RankNTypes" "ImpredicativeTypes" "ExistentialQuantification" "KindSignatures"
-	"EmptyDataDecls" "ParallelListComp" "TransformListComp" "UnliftedFFITypes"
-	"LiberalTypeSynonyms" "TypeOperators" "RecursiveDo" "PArr" "RecordWildCards"
-	"NamedFieldPuns" "DisambiguateRecordFields" "UnboxedTuples" "StandaloneDeriving"
-	"DeriveDataTypeable" "GeneralizedNewtypeDeriving" "TypeSynonymInstances"
-	"FlexibleContexts" "FlexibleInstances" "ConstrainedClassMethods"
-	"MultiParamTypeClasses" "FunctionnalDependencies" "PackageImports"))
-(defvar my/haskell-ghc-no-options
-      (mapcar '(lambda (n) (concat "No" n)) my/haskell-ghc-options))
-(defvar my/haskell-ghc-language-options
-  (sort (append nil my/haskell-ghc-options my/haskell-ghc-no-options)
-	#'(lambda (a b) (> (length a) (length b))))
+        "ForeignFunctionInterface" "Generics" "ImplicitParams" "ImplicitPrelude"
+        "MonomorphismRestriction" "MonoPatBinds" "RelaxedPolyRec" "ExtendedDefaultRules"
+        "OverloadedStrings" "GADTs" "TypeFamilies" "ScopedTypeVariables" "TemplateHaskell"
+        "QuasiQuotes" "BangPatterns" "CPP" "PatternGuards" "ViewPatterns" "UnicodeSyntax"
+        "MagicHash" "NewQualifiedOperators" "PolymorphicComponents" "Rank2Types"
+        "RankNTypes" "ImpredicativeTypes" "ExistentialQuantification" "KindSignatures"
+        "EmptyDataDecls" "ParallelListComp" "TransformListComp" "UnliftedFFITypes"
+        "LiberalTypeSynonyms" "TypeOperators" "RecursiveDo" "PArr" "RecordWildCards"
+        "NamedFieldPuns" "DisambiguateRecordFields" "UnboxedTuples" "StandaloneDeriving"
+        "DeriveDataTypeable" "GeneralizedNewtypeDeriving" "TypeSynonymInstances"
+        "FlexibleContexts" "FlexibleInstances" "ConstrainedClassMethods"
+        "MultiParamTypeClasses" "FunctionnalDependencies" "PackageImports"))
+
+(defvar ac-haskell/ghc-no-options
+  (mapcar #'(lambda (n) (concat "No" n)) ac-haskell/ghc-options))
+
+(defvar ac-haskell/ghc-language-options
+  (sort (append nil ac-haskell/ghc-options ac-haskell/ghc-no-options)
+        #'(lambda (a b) (> (length a) (length b))))
   "GHC Language options.")
-  
-(defvar my/ac-source-haskell
-  '((candidates 
-     . (lambda () 
-         (all-completions ac-target 
-                          (append nil 
-                                  my/haskell-defined-types
-                                  my/haskell-defined-classes
-                                  my/haskell-reserved-keywords
-                                  my/haskell-prelude-functions
-                                  my/haskell-ghc-modules
-                                  my/haskell-ghc-pragmas
-                                  my/haskell-ghc-language-options
+
+(defvar ac-source-haskell
+  '((candidates
+     . (lambda ()
+         (all-completions ac-target
+                          (append nil
+                                  ac-haskell/defined-types
+                                  ac-haskell/defined-classes
+                                  ac-haskell/reserved-keywords
+                                  ac-haskell/prelude-functions
+                                  ac-haskell/ghc-modules
+                                  ac-haskell/ghc-pragmas
+                                  ac-haskell/ghc-language-options
                                   '("-fglasgow-exts"))))))
   "Sources for Haskell keywords.")
-  
+
 (provide 'haskell-ac)
+
+;;; haskell-ac.el ends here

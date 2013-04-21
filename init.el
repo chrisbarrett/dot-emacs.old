@@ -196,6 +196,23 @@
     (setenv "INFOPATH" (concat source-directory "/info/"))))
 
 ;;; ----------------------------------------------------------------------------
+;;; Combined hooks.
+;;;
+;;; These hooks are used to configure similar modes that do not have derivation
+;;; relationships. e.g. language families.
+
+(defmacro define-combined-hook (name modes)
+  "Define a hook named NAME to be run after each of the setup hooks for MODES."
+  `(progn
+     ;; Define hook variable.
+     (defvar ,name)
+     ;; Add hook for each mode.
+     (--each ,modes
+       (hook-fn (intern (concat (symbol-name it) "-hook"))
+         (run-hooks ',name)))
+     ',name))
+
+;;; Lisp hooks
 
 (defvar cb:lisp-modes
   '(scheme-mode
@@ -205,15 +222,18 @@
     repl-mode
     clojure-mode
     clojurescript-mode
-    ielm-mode)
-  "List of language modes that should be treated as Lisps.")
+    ielm-mode))
 
-(defvar cb:lisp-mode-hook '()
-  "Run after setup for all lispy languages.")
+(define-combined-hook cb:lisp-shared-hook cb:lisp-modes)
 
-(--each cb:lisp-modes
- (hook-fn (intern (concat (symbol-name it) "-hook"))
-   (run-hooks 'cb:lisp-mode-hook)))
+;;; Haskell hooks.
+
+(define-combined-hook cb:haskell-shared-hook
+  '(haskell-mode
+    inferior-haskell-mode
+    haskell-interactive-mode
+    haskell-c-mode
+    haskell-cabal-mode))
 
 ;;; ----------------------------------------------------------------------------
 
@@ -617,7 +637,7 @@
 (use-package auto-complete
   :ensure t
   :diminish auto-complete-mode
-  :commands auto-complete-mode
+  :commands (global-auto-complete-mode auto-complete-mode)
 
   :init
   (progn
@@ -626,6 +646,11 @@
 
   :config
   (progn
+
+    ;; Enable for everything except text modes.
+    (global-auto-complete-mode +1)
+    (hook-fn 'text-mode-hook
+      (auto-complete-mode -1))
 
     (use-package auto-complete-config
       :config (ac-config-default))
@@ -684,7 +709,7 @@
 
 (use-package smart-operator
   :ensure t
-  :commands smart-insert-operator-hook
+  :commands (smart-insert-operator smart-insert-operator-hook)
   :init
   (progn
 
@@ -702,6 +727,11 @@
       (local-set-key (kbd "=") 'cb:python-smart-equals)
       (local-unset-key (kbd "."))
       (local-unset-key (kbd ":")))
+
+    (hook-fn 'cb:haskell-shared-hook
+      (smart-insert-operator-hook)
+      (local-unset-key (kbd ":"))
+      (local-unset-key (kbd ".")))
 
     (hook-fn 'sclang-mode-hook
       (smart-insert-operator-hook)
@@ -917,7 +947,7 @@
   :config
   (progn
     (use-package cb-paredit)
-    (add-hook 'cb:lisp-mode-hook 'enable-paredit-mode)
+    (add-hook 'cb:lisp-shared-hook 'enable-paredit-mode)
     (add-hook 'inferior-lisp-mode-hook 'paredit-mode)
     (add-hook 'repl-mode-hook 'paredit-mode)))
 
@@ -938,7 +968,7 @@
 
 (use-package eval-sexp-fu
   :commands eval-sexp-fu-flash-mode
-  :init     (add-hook 'cb:lisp-mode-hook 'eval-sexp-fu-flash-mode)
+  :init     (add-hook 'cb:lisp-shared-hook 'eval-sexp-fu-flash-mode)
   :config   (setq eval-sexp-fu-flash-duration 0.2))
 
 (use-package eldoc
@@ -946,7 +976,7 @@
   :diminish eldoc-mode
   :init
   (progn
-    (add-hook 'cb:lisp-mode-hook 'turn-on-eldoc-mode)
+    (add-hook 'cb:lisp-shared-hook 'turn-on-eldoc-mode)
     (add-hook 'ielm-mode-hook 'turn-on-eldoc-mode)))
 
 (use-package c-eldoc
@@ -1074,9 +1104,8 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
 
     (defadvice nrepl-switch-to-repl-buffer (after insert-at-end-of-nrepl-line activate)
       "Enter insertion mode at the end of the line when switching to nrepl."
-      (when (and (boundp 'evil-mode)
-                 evil-mode
-                 (not (evil-insert-state-p)))
+      (when (and (boundp 'evil-mode) evil-mode)
+        (evil-goto-line)
         (evil-append-line 0)))
 
     (defadvice back-to-indentation (around move-to-nrepl-bol activate)
@@ -1298,10 +1327,12 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
         (require 'cb-haskell)
         (local-set-key (kbd "C-c j") 'haskell-test<->code)))
 
-    (use-package ghc
-      :ensure   t
-      :commands ghc-init
-      :init     (add-hook 'haskell-mode-hook 'ghc-init))
+    (use-package haskell-ac
+      :init
+      (hook-fn 'cb:haskell-shared-hook
+        (add-to-list 'ac-modes major-mode)
+        (add-to-list 'ac-sources 'ac-source-words-in-same-mode-buffers)
+        (add-to-list 'ac-sources 'ac-source-haskell)))
 
     (use-package haskell-edit
       :commands (haskell-find-type-signature
@@ -1314,7 +1345,7 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
     (use-package haskell-doc
       :diminish haskell-doc-mode
       :commands haskell-doc-mode
-      :init     (add-hook 'haskell-mode-hook 'haskell-doc-mode))
+      :init     (add-hook 'cb:haskell-shared-hook 'haskell-doc-mode))
 
     (use-package haskell-decl-scan
       :commands turn-on-haskell-decl-scan
@@ -1328,20 +1359,17 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
         (hook-fn 'haskell-mode-hook
           (local-set-key (kbd "C-c l") 'hs-lint))))
 
+    (defadvice switch-to-haskell (after insert-at-end-of-line activate)
+      "Enter insertion mode at the end of the line when switching to inferior haskell."
+      (when (and (boundp 'evil-mode) evil-mode)
+        (evil-goto-line)
+        (evil-append-line 0)))
+
     (add-to-list 'completion-ignored-extensions ".hi")
 
-    ;; Configure auto-complete
-
-    (--each '(haskell-mode haskell-c-mode haskell-cabal-mode
-                           haskell-interactive-mode inferior-haskell-mode)
-      (add-to-list 'ac-modes it))
-
-    (ac-define-source ghc
-      '((depends ghc)
-        (candidates . (ghc-select-completion-symbol))
-        (symbol . "s")
-        (document . haskell-doc-sym-doc)
-        (cache)))
+    (hook-fn 'cb:haskell-shared-hook
+      (subword-mode +1)
+      (local-set-key (kbd "C-c h") 'hoogle))
 
     (defun cb:switch-to-haskell ()
       "Switch to the last active Haskell buffer."
@@ -1350,52 +1378,15 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
         (pop-to-buffer buf)))
 
     (hook-fn 'inferior-haskell-mode-hook
-      (subword-mode +1)
-      ;; Set key bindings.
-      (local-set-key (kbd "C-c h") 'hoogle)
-      (local-set-key (kbd "C-c C-z") 'cb:switch-to-haskell)
-      ;; Configure auto-complete sources.
-      (add-to-list 'ac-sources 'ac-complete-ghc)
-      (add-to-list 'ac-sources 'ac-source-words-in-same-mode-buffers))
+      (local-set-key (kbd "C-c C-z") 'cb:switch-to-haskell))
 
     (hook-fn 'haskell-mode-hook
-      (subword-mode +1)
       (setq
        evil-shift-width     4
        tab-width            4
        haskell-tags-on-save t
        haskell-stylish-on-save t)
-      ;; Set key bindings.
-      (local-set-key (kbd "C-c C-c") 'haskell-process-cabal-build)
-      (local-set-key (kbd "C-c h")   'hoogle)
-      ;; Configure auto-complete sources.
-      (add-to-list 'ac-sources 'ac-complete-ghc)
-      (add-to-list 'ac-sources 'ac-source-words-in-same-mode-buffers))))
-
-(use-package outline
-  :commands (outline-mode)
-  :diminish outline-mode
-  :init
-  (hook-fn 'haskell-mode-hook
-    "Configure outlining on common keywords and spacing."
-    (setq
-     outline-regexp
-     (rx (or (group (not space) (* nonl))
-             (group bol (* nonl) (+ space)
-                    (or  "where" "of" "do" "in" "if"
-                         "then" "else" "let" "module"
-                         "import" "deriving" "instance" "class")
-                    space)))
-
-     outline-level
-     (lambda ()
-       "Use spacing to determine outlining."
-       (let (buffer-invisibility-spec)
-         (save-excursion
-           (skip-chars-forward "\t ")
-           (current-column))))
-     )
-    (outline-minor-mode +1)))
+      (local-set-key (kbd "C-c C-c") 'haskell-process-cabal-build))))
 
 (use-package workgroups
   :if       (display-graphic-p)
