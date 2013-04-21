@@ -37,7 +37,6 @@
 (setq user-full-name    "Chris Barrett"
       user-mail-address "chris.d.barrett@me.com")
 
-(auto-compression-mode +1)
 (setq
  redisplay-dont-pause         t
  column-number-mode           t
@@ -47,7 +46,7 @@
  shift-select-mode            nil
  require-final-newline        t
  delete-by-moving-to-trash    nil
- initial-major-mode           'emacs-lisp-mode
+ initial-major-mode           'fundamental-mode
  initial-scratch-message      nil
  x-select-enable-clipboard    t
  font-lock-maximum-decoration t
@@ -68,6 +67,7 @@
 (prefer-coding-system        'utf-8)
 
 ;; File-handling
+(auto-compression-mode +1)
 (add-hook 'before-save-hook 'whitespace-cleanup)
 (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
 
@@ -215,26 +215,30 @@
 
 (use-package popwin
   :ensure t
+  :defer nil
   :config
-  (setq display-buffer-function 'popwin:display-buffer
-        popwin:special-display-config
-        '(("*Help*"  :height 30 :stick t)
-          ("*Completions*" :noselect t)
-          ("*compilation*" :noselect t)
-          ("*Messages*" :height 30)
-          ("*Occur*" :noselect t)
-          ("\\*Slime Description.*" :noselect t :regexp t :height 30)
-          ("*magit-commit*" :noselect t :height 40 :width 80)
-          ("*magit-diff*" :noselect t :height 40 :width 80)
-          ("*magit-edit-log*" :noselect t :height 15 :width 80)
-          ("\\*Slime Inspector.*" :regexp t :height 30)
-          ("*Ido Completions*" :noselect t :height 30)
-          ("*eshell*" :height 30)
-          ("\\*ansi-term\\*.*" :regexp t :height 30)
-          ("*shell*" :height 30)
-          (".*overtone.log" :regexp t :height 30)
-          ("*gists*" :height 30)
-          ("*sldb.*":regexp t :height 30))))
+  (progn
+    (setq display-buffer-function 'popwin:display-buffer
+          popwin:special-display-config
+          '(("*Help*"  :height 30 :stick t)
+            ("*Completions*" :noselect t)
+            ("*compilation*" :noselect t)
+            ("*Messages*" :height 30)
+            ("*Occur*" :noselect t)
+            ("\\*Slime Description.*" :noselect t :regexp t :height 30)
+            ("*magit-commit*" :noselect t :height 40 :width 80)
+            ("*magit-diff*" :noselect t :height 40 :width 80)
+            ("*magit-edit-log*" :noselect t :height 15 :width 80)
+            ("\\*Slime Inspector.*" :regexp t :height 30)
+            ("*Ido Completions*" :noselect t :height 30)
+            ("*eshell*" :height 30)
+            ("\\*ansi-term\\*.*" :regexp t :height 30)
+            ("*shell*" :height 30)
+            (".*overtone.log" :regexp t :height 30)
+            ("*gists*" :height 30)
+            ("*sldb.*":regexp t :height 30)))
+
+    (popwin-mode +1)))
 
 (use-package saveplace
   :config
@@ -311,10 +315,12 @@
   :ensure t
   :config
   (progn
-    ;; Global keys
+    ;; Global keys.
     (key-chord-define-global "dh" 'helm-mini)
     (key-chord-define-global "x;" 'cb:kill-current-buffer)
     (key-chord-define-global "fh" 'helm-imenu)
+
+    ;; Paredit keys.
     (eval-after-load 'paredit
       '(progn
          (key-chord-define paredit-mode-map "qj" 'paredit-backward-slurp-sexp)
@@ -322,6 +328,7 @@
          (key-chord-define paredit-mode-map "ql" 'paredit-splice-sexp-killing-backward)
          (key-chord-define paredit-mode-map "qn" 'paredit-backward-barf-sexp)
          (key-chord-define paredit-mode-map "qm" 'paredit-forward-barf-sexp)))
+
     (key-chord-mode +1)))
 
 ;;; Disable vc modes.
