@@ -1219,13 +1219,6 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
   :config
   (progn
 
-    (use-package ruby-electric
-      :ensure   t
-      :commands ruby-electric-mode
-      :diminish ruby-electric-mode
-      :init     (add-hook 'ruby-mode-hook 'ruby-electric-mode)
-      :config   (setq ruby-electric-expand-delimiters-list '(39 96 124)))
-
     (use-package rsense
       :ensure t
       :config
@@ -1257,6 +1250,7 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
       :commands inf-ruby-mode
       :config
       (hook-fn 'inf-ruby-mode
+        (ruby-electric-mode -1)
         (subword-mode +1)
         ;; Stop IRB from echoing input.
         (setq comint-process-echoes t)
@@ -1264,17 +1258,22 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
 
     (use-package ruby-tools
       :ensure   t
+      :diminish ruby-tools-mode
       :commands ruby-tools-mode
       :init     (add-hook 'ruby-mode-hook 'ruby-tools-mode))
 
     (use-package ruby-end
       :ensure   t
+      :diminish ruby-end-mode
       :commands ruby-end-mode
       :init     (add-hook 'ruby-mode-hook 'ruby-end-mode))
 
     (add-to-list 'ac-modes 'ruby-mode)
     (add-to-list 'completion-ignored-extensions ".rbc")
-    (add-hook 'ruby-mode-hook 'subword-mode)))
+
+    (hook-fn 'ruby-mode-hook
+      (ruby-electric-mode -1)
+      (subword-mode +1))))
 
 (use-package yaml-mode
   :ensure   t
