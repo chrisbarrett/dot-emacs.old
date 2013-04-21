@@ -87,8 +87,10 @@
     (add-to-list 'exec-path (concat home "/.carton/bin"))
     (add-to-list 'exec-path (concat home "/bin"))
     (add-to-list 'exec-path (concat home "/.cabal/bin"))
-    (add-to-list 'exec-path (concat home "/opt/local/bin"))
-    (add-to-list 'exec-path (concat home "/opt/local/sbin"))))
+    (add-to-list 'exec-path "/opt/local/bin")
+    (add-to-list 'exec-path "/opt/local/sbin"))
+
+  (setenv "PATH" (mapconcat 'identity exec-path ":")))
 
 
 (require 'bind-key (concat user-emacs-directory "lib/use-package/bind-key.el"))
@@ -1334,7 +1336,7 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
                            haskell-interactive-mode inferior-haskell-mode)
       (add-to-list 'ac-modes it))
 
-    (ac-define-source ghc-mod
+    (ac-define-source ghc
       '((depends ghc)
         (candidates . (ghc-select-completion-symbol))
         (symbol . "s")
@@ -1355,8 +1357,8 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
       (local-set-key (kbd "C-c h")   'hoogle)
 
       ;; Configure auto-complete sources.
-      (setq ac-sources (list 'ac-source-words-in-same-mode-buffers
-                             'ac-source-ghc-mod)))))
+      (add-to-list 'ac-sources 'ac-complete-ghc)
+      (add-to-list 'ac-sources 'ac-source-words-in-same-mode-buffers))))
 
 (use-package outline
   :commands (outline-mode)
