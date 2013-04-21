@@ -205,8 +205,8 @@
 
 ;;; ----------------------------------------------------------------------------
 
-;;; Generic programming mode configuration.
 (hook-fn 'prog-mode-hook
+  "Generic programming mode configuration."
 
   ;; Error navigation keybindings.
   (local-set-key (kbd "M-N") 'next-error)
@@ -214,8 +214,8 @@
 
   ;; Highlight special comments.
   (font-lock-add-keywords
-   nil '(("\\<\\(FIX\\|TODO\\|FIXME\\|HACK\\|REFACTOR\\):"
-          1 font-lock-warning-face t))))
+   major-mode '(("\\<\\(FIX\\|TODO\\|FIXME\\|HACK\\|REFACTOR\\):"
+                 1 font-lock-warning-face t))))
 
 (use-package helm
   :ensure t)
