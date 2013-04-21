@@ -462,12 +462,6 @@
 (use-package hideshow
   :diminish hs-minor-mode)
 
-(defun cb:evil-undefine ()
-  "Temporarily undefine a key for Evil minor mode."
-  (interactive)
-  (let ((evil-mode-map-alist))
-    (call-interactively (key-binding (this-command-keys)))))
-
 (use-package evil
   :ensure t
   :commands evil-mode
@@ -480,6 +474,12 @@
   :config
   (progn
     (require 'cb-evil)
+
+    (defun cb:evil-undefine ()
+      "Temporarily undefine a key for Evil minor mode."
+      (interactive)
+      (let ((evil-mode-map-alist))
+        (call-interactively (key-binding (this-command-keys)))))
 
     (define-key evil-normal-state-map (kbd "M-z") 'evil-emacs-state)
     (define-key evil-emacs-state-map  (kbd "M-z") 'evil-normal-state)
@@ -682,29 +682,30 @@
     (sp-local-tag '(sgml-mode html-mode) "<" "<_>" "</_>"
                   :transform 'sp-match-sgml-tags)))
 
-(defun cb:python-smart-equals ()
-  "Insert an '=' char padded by spaces, except in function arglists."
-  (interactive)
-  (if (string-match-p
-       (rx (* space) "def ")
-       (buffer-substring (line-beginning-position) (line-end-position)))
-      (insert-string "=")
-    (smart-insert-operator "=")))
-
 (use-package smart-operator
   :ensure t
   :commands smart-insert-operator-hook
   :init
   (progn
-    (hook-fn 'sclang-mode-hook
-      (smart-insert-operator-hook)
-      (local-unset-key (kbd ".")))
+
+    (defun cb:python-smart-equals ()
+      "Insert an '=' char padded by spaces, except in function arglists."
+      (interactive)
+      (if (string-match-p
+           (rx (* space) "def ")
+           (buffer-substring (line-beginning-position) (line-end-position)))
+          (insert-string "=")
+        (smart-insert-operator "=")))
 
     (hook-fn 'python-mode-hook
       (smart-insert-operator-hook)
       (local-set-key (kbd "=") 'cb:python-smart-equals)
       (local-unset-key (kbd "."))
       (local-unset-key (kbd ":")))
+
+    (hook-fn 'sclang-mode-hook
+      (smart-insert-operator-hook)
+      (local-unset-key (kbd ".")))
 
     (hook-fn 'inferior-python-mode-hook
       (smart-insert-operator-hook)
@@ -1060,19 +1061,6 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
         (nrepl-switch-to-repl-buffer buf)
         (nrepl-jack-in)))
 
-    (defun cb:switch-to-last-clj-buffer ()
-      "Switch to the last active clojure buffer."
-      (interactive)
-      (when-let (buf (cb:last-buffer-for-mode 'clojure-mode))
-        (pop-to-buffer buf)))
-
-    (defun cb:eval-last-clj-buffer ()
-      "Evaluate that last active clojure buffer without leaving the repl."
-      (interactive)
-      (when-let (buf (cb:last-buffer-for-mode 'clojure-mode))
-        (with-current-buffer buf
-          (nrepl-eval-buffer))))
-
     (hook-fn 'clojure-mode-hook
       (maybe-enable-overtone-mode)
       (subword-mode +1)
@@ -1108,6 +1096,19 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
       :config
       (define-key nrepl-interaction-mode-map (kbd "C-c C-d") 'ac-nrepl-popup-doc))
 
+    (defun cb:switch-to-clojure ()
+      "Switch to the last active clojure buffer."
+      (interactive)
+      (when-let (buf (cb:last-buffer-for-mode 'clojure-mode))
+        (pop-to-buffer buf)))
+
+    (defun cb:eval-last-clj-buffer ()
+      "Evaluate that last active clojure buffer without leaving the repl."
+      (interactive)
+      (when-let (buf (cb:last-buffer-for-mode 'clojure-mode))
+        (with-current-buffer buf
+          (nrepl-eval-buffer))))
+
     (setq
      nrepl-popup-stacktraces    nil
      nrepl-hide-special-buffers t)
@@ -1126,7 +1127,7 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
         (subword-mode +1)
         (paredit-mode +1)
         (local-set-key (kbd "C-c l")   'nrepl-clear-buffer)
-        (local-set-key (kbd "C-c C-z") 'cb:switch-to-last-clj-buffer)
+        (local-set-key (kbd "C-c C-z") 'cb:switch-to-clojure)
         (local-set-key (kbd "C-c C-f") 'cb:eval-last-clj-buffer)))))
 
 (use-package sclang
@@ -1342,19 +1343,31 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
         (document . haskell-doc-sym-doc)
         (cache)))
 
+    (defun cb:switch-to-haskell ()
+      "Switch to the last active Haskell buffer."
+      (interactive)
+      (when-let (buf (cb:last-buffer-for-mode 'haskell-mode))
+        (pop-to-buffer buf)))
+
+    (hook-fn 'inferior-haskell-mode-hook
+      (subword-mode +1)
+      ;; Set key bindings.
+      (local-set-key (kbd "C-c h") 'hoogle)
+      (local-set-key (kbd "C-c C-z") 'cb:switch-to-haskell)
+      ;; Configure auto-complete sources.
+      (add-to-list 'ac-sources 'ac-complete-ghc)
+      (add-to-list 'ac-sources 'ac-source-words-in-same-mode-buffers))
+
     (hook-fn 'haskell-mode-hook
+      (subword-mode +1)
       (setq
        evil-shift-width     4
        tab-width            4
        haskell-tags-on-save t
        haskell-stylish-on-save t)
-
-      (subword-mode +1)
-
       ;; Set key bindings.
       (local-set-key (kbd "C-c C-c") 'haskell-process-cabal-build)
       (local-set-key (kbd "C-c h")   'hoogle)
-
       ;; Configure auto-complete sources.
       (add-to-list 'ac-sources 'ac-complete-ghc)
       (add-to-list 'ac-sources 'ac-source-words-in-same-mode-buffers))))
