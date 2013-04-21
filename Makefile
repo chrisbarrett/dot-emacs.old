@@ -5,7 +5,7 @@ lisp       = ./lisp
 emacs      = emacs
 emacs_exec = $(emacs) --batch -nw -l init.el -f
 
-emacs_version = $(shell $(emacs) -q --batch --exec \
+emacs_version = $(shell $(emacs) -Q --batch --exec \
 		'(princ (format "%s.%s" emacs-major-version emacs-minor-version))')
 emacs_ftp    = http://gnu.mirror.uber.com.au/emacs/emacs-$(emacs_version).tar.gz
 emacs_gz      = $(src)/emacs-$(emacs_version).tar.gz
