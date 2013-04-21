@@ -399,7 +399,9 @@
 (use-package ace-jump-mode
   :ensure t
   :bind (("C-L" . ace-jump-line-mode)
-         ("C-SPC" . ace-jump-word-mode))
+         ("C-SPC" . ace-jump-word-mode)
+         ;; Needed for terminal.
+         ("C-@" . ace-jump-word-mode))
   :config (add-hook 'ace-jump-mode-end-hook 'exit-recursive-edit))
 
 (use-package hideshow
@@ -1208,7 +1210,6 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
     (setq wg-prefix-key (kbd "C-c w"))
 
     (workgroups-mode +1)))
-
 
 ;;; ----------------------------------------------------------------------------
 ;;; Mail configuration
