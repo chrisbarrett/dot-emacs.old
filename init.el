@@ -314,7 +314,8 @@
   :config
   (progn
     (setq recentf-save-file (concat cb:tmp-dir "recentf")
-          recentf-max-saved-items 200
+          recentf-keep '(file-remote-p file-readable-p)
+          recentf-max-saved-items 100
           recentf-exclude '(".newsrc"
                             "-autoloads.el"
                             "recentf"
@@ -599,6 +600,10 @@
                                (window-height)
                                (window-width)))))
 
+;;; Forward-declare ac-modes so auto-complete can be safely loaded separately
+;;; from other modes.
+(defvar ac-modes nil)
+
 (use-package auto-complete
   :ensure t
   :diminish auto-complete-mode
@@ -611,6 +616,10 @@
 
   :config
   (progn
+
+    (use-package auto-complete-config
+      :config (ac-config-default))
+
     (--each cb:lisp-modes (add-to-list 'ac-modes it))
     (setq
      ac-auto-show-menu t
@@ -633,9 +642,6 @@
 
 (use-package fuzzy
   :ensure t)
-
-(use-package auto-complete-config
-  :config (ac-config-default))
 
 (use-package cb-google
   :commands google/search
