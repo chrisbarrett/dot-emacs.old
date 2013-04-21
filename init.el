@@ -46,7 +46,7 @@
  shift-select-mode            nil
  require-final-newline        t
  delete-by-moving-to-trash    nil
- initial-major-mode           'fundamental-mode
+ initial-major-mode           'text-mode
  initial-scratch-message      nil
  x-select-enable-clipboard    t
  font-lock-maximum-decoration t
@@ -909,9 +909,14 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
   :diminish elisp-slime-nav-mode
   :init
   (progn
+
     (hook-fn 'emacs-lisp-mode-hook
       (elisp-slime-nav-mode +1)
-      (local-set-key (kbd "M-.") 'elisp-slime-nav-find-elisp-thing-at-point))))
+      (local-set-key (kbd "M-.") 'elisp-slime-nav-find-elisp-thing-at-point)
+
+      (when (featurep 'evil)
+        (define-key evil-normal-state-map (kbd "M-.")
+          'elisp-slime-nav-find-elisp-thing-at-point)))))
 
 (use-package litable
   :ensure   t
@@ -1187,10 +1192,12 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
                              'ac-source-ghc-mod)))))
 
 (use-package workgroups
-  :bind (("s-1" . wg-switch-to-index-0)
-         ("s-2" . wg-switch-to-index-1)
-         ("s-3" . wg-switch-to-index-2))
+  :if       (display-graphic-p)
+  :bind     (("s-1" . wg-switch-to-index-0)
+             ("s-2" . wg-switch-to-index-1)
+             ("s-3" . wg-switch-to-index-2))
   :ensure   t
+  :defer    nil
   :commands workgroups-mode
   :diminish workgroups-mode
   :config
@@ -1198,9 +1205,10 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
     (set-face-foreground 'wg-divider-face "light slate grey")
     (set-face-foreground 'wg-mode-line-face "light slate grey")
     (ignore-errors (wg-load (concat cb:etc-dir "workgroups")))
-    (setq wg-prefix-key (kbd "C-c w"))))
+    (setq wg-prefix-key (kbd "C-c w"))
 
-(workgroups-mode +1)
+    (workgroups-mode +1)))
+
 
 ;;; ----------------------------------------------------------------------------
 ;;; Mail configuration
