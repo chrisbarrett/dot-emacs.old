@@ -973,7 +973,7 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
   :init     (define-key emacs-lisp-mode-map (kbd "C-c C-l") 'litable-mode))
 
 (use-package emr
-  :bind ("M-RET" . emr-show-refactor-menu)
+  :bind   ("M-RET" . emr-show-refactor-menu)
   :config (require 'emr-elisp))
 
 (use-package lisp-mode
@@ -986,7 +986,7 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
       (local-set-key (kbd "C-c C-t") 'ert))
 
     (hook-fn 'after-save-hook
-      "Byte compile elisp files on save."
+      "Byte compile elisp source files on save."
       (when (and (equal major-mode 'emacs-lisp-mode)
                  (buffer-file-name)
                  (not (equal "Carton" (file-name-nondirectory (buffer-file-name)))))

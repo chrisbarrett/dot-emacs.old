@@ -29,14 +29,6 @@
            (< emacs-minor-version 3))
   (defalias 'set-face-bold 'set-face-bold-p))
 
-(defface paren-face
-  '((((class color) (background dark))
-     (:foreground "grey30"))
-    (((class color) (background light))
-     (:foreground "grey80")))
-  "Face used to dim parentheses."
-  :group 'lisp)
-
 (defun solarized-light ()
   (interactive)
   (load-theme 'solarized-light 'no-confirm)
@@ -53,7 +45,8 @@
     (set-face-background  'show-paren-match-face "black")
     (set-face-bold        'show-paren-match-face t))
 
-  (set-face-foreground  'paren-face (if (display-graphic-p) "grey80" "blue")))
+  (progn-after-load "parenface-plus"
+    (set-face-foreground  'paren-face "grey80")))
 
 (defun solarized-dark ()
   (interactive)
@@ -71,7 +64,8 @@
     (set-face-background  'show-paren-match-face "white")
     (set-face-bold        'show-paren-match-face t))
 
-  (set-face-foreground  'paren-face (if (display-graphic-p) "grey30" "blue")))
+  (progn-after-load "parenface-plus"
+    (set-face-foreground  'paren-face "grey30")))
 
 (defun ir-black ()
   (interactive)
@@ -102,7 +96,8 @@
   (progn-after-load "hl-line"
     (set-face-underline   'hl-line nil))
 
-  (set-face-foreground  'paren-face "grey20"))
+  (progn-after-load "parenface-plus"
+    (set-face-foreground  'paren-face "grey20")))
 
 (provide 'cb-colour)
 
