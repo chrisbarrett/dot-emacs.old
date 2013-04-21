@@ -46,7 +46,7 @@ clean-elc :
 
 # Remove backup files.
 clean-backups :
-	rm -f *~
+	rm -f ./*~
 	rm -f $(lisp)/*~
 	rm -f $(lib)/*~
 

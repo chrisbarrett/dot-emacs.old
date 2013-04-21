@@ -49,7 +49,8 @@
     (set-face-foreground  'helm-selection "black"))
 
   (progn-after-load "paren"
-    (set-face-foreground  'show-paren-match-face "black")
+    (set-face-foreground  'show-paren-match-face "#fdf6e3")
+    (set-face-background  'show-paren-match-face "black")
     (set-face-bold        'show-paren-match-face t))
 
   (set-face-foreground  'paren-face (if (display-graphic-p) "grey80" "blue")))
@@ -66,9 +67,9 @@
     (set-face-foreground  'helm-selection "white"))
 
   (progn-after-load "paren"
-    (set-face-foreground  'show-paren-match-face "white")
-    (set-face-bold        'show-paren-match-face t)
-    (set-face-background  'show-paren-match-face nil))
+    (set-face-foreground  'show-paren-match-face "#002b36")
+    (set-face-background  'show-paren-match-face "white")
+    (set-face-bold        'show-paren-match-face t))
 
   (set-face-foreground  'paren-face (if (display-graphic-p) "grey30" "blue")))
 
@@ -94,9 +95,9 @@
     (set-face-underline   'helm-selection nil))
 
   (progn-after-load "paren"
-    (set-face-foreground  'show-paren-match-face "green")
-    (set-face-bold        'show-paren-match-face t)
-    (set-face-background  'show-paren-match-face nil))
+    (set-face-foreground  'show-paren-match-face "black")
+    (set-face-background  'show-paren-match-face "green")
+    (set-face-bold        'show-paren-match-face t))
 
   (progn-after-load "hl-line"
     (set-face-underline   'hl-line nil))
