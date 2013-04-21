@@ -313,15 +313,14 @@
 (use-package recentf
   :config
   (progn
-    (setq recentf-save-file (concat cb:tmp-dir "recentf")
-          recentf-keep '(file-remote-p file-readable-p)
+    (setq recentf-save-file       (concat cb:tmp-dir "recentf")
+          recentf-keep            '(file-remote-p file-readable-p)
           recentf-max-saved-items 100
-          recentf-exclude '(".newsrc"
-                            "-autoloads.el"
-                            "recentf"
-                            ".ido.last"
-                            "TAGS"
-                            ".gz"))
+          recentf-max-menu-items  25
+
+          recentf-exclude
+          '(".newsrc" "-autoloads.el" "recentf" ".ido.last" "TAGS" ".gz"))
+
     (recentf-mode +1)))
 
 (use-package savehist
