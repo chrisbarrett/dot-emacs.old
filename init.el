@@ -31,6 +31,7 @@
 (tool-bar-mode     -1)
 (blink-cursor-mode -1)
 
+;; Use the menu-bar only in OS X Aqua.
 (if (and (display-graphic-p) (equal system-type 'darwin))
     (menu-bar-mode +1)
   (menu-bar-mode -1))

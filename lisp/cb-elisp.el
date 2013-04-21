@@ -33,6 +33,7 @@
  'emacs-lisp-mode
  `(
    (,(rx "(" (group (or "use-package"
+                        "hook-fn"
                         "progn-after-load"
                         "cl-destructuring-bind"
                         "cl-defstruct"))
