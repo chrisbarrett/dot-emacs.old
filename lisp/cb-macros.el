@@ -67,6 +67,11 @@ BODY is a list of forms to evaluate when the hook is run."
   `(add-hook ,hook (lambda (&rest args)
                      ,@(cons docstring body))))
 
+(defmacro progn-after-load (feature &rest body)
+  "Execute BODY forms after FEATURE is loaded."
+  (declare (indent 1))
+  `(eval-after-load ,feature '(progn ,@body)))
+
 ;;; ----------------------------------------------------------------------------
 
 (defun directory-p (f)

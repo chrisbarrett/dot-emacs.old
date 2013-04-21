@@ -43,12 +43,12 @@
 
   (set-face-underline 'hl-line nil)
 
-  (when (featurep 'helm)
+  (progn-after-load "helm"
     (set-face-background  'helm-selection "white")
     (set-face-underline   'helm-selection nil)
     (set-face-foreground  'helm-selection "black"))
 
-  (when (featurep 'paren)
+  (progn-after-load "paren"
     (set-face-foreground  'show-paren-match-face "black")
     (set-face-bold        'show-paren-match-face t))
 
@@ -60,12 +60,12 @@
 
   (set-face-underline 'hl-line nil)
 
-  (when (featurep 'helm)
+  (progn-after-load "helm"
     (set-face-background  'helm-selection "black")
     (set-face-underline   'helm-selection nil)
     (set-face-foreground  'helm-selection "white"))
 
-  (when (featurep 'paren)
+  (progn-after-load "paren"
     (set-face-foreground  'show-paren-match-face "white")
     (set-face-bold        'show-paren-match-face t)
     (set-face-background  'show-paren-match-face nil))
@@ -85,20 +85,20 @@
   (set-face-foreground  'font-lock-comment-delimiter-face"grey30")
   (set-face-foreground  'font-lock-comment-face "grey30")
 
-  (when (featurep 'linum)
+  (progn-after-load "linum"
     (set-face-background  'linum "gray15"))
 
-  (when (featurep 'helm)
+  (progn-after-load "helm"
     (set-face-foreground  'helm-selection "white")
     (set-face-background  'helm-selection "darkgreen")
     (set-face-underline   'helm-selection nil))
 
-  (when (featurep 'paren)
+  (progn-after-load "paren"
     (set-face-foreground  'show-paren-match-face "green")
     (set-face-bold        'show-paren-match-face t)
     (set-face-background  'show-paren-match-face nil))
 
-  (when (featurep 'hl-line)
+  (progn-after-load "hl-line"
     (set-face-underline   'hl-line nil))
 
   (set-face-foreground  'paren-face "grey20"))
