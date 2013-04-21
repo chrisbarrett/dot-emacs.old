@@ -218,7 +218,8 @@
                  1 font-lock-warning-face t))))
 
 (use-package helm
-  :ensure t)
+  :ensure t
+  :defer  t)
 
 (use-package imenu
   :config
@@ -302,7 +303,7 @@
     (popwin-mode +1)))
 
 (use-package saveplace
-  :config
+  :init
   (progn
     (setq save-place-file (concat cb:tmp-dir "saved-places"))
     (setq-default save-place t)))
@@ -311,30 +312,32 @@
   :config (show-paren-mode +1))
 
 (use-package recentf
-  :config
+  :init
   (progn
-    (setq recentf-save-file       (concat cb:tmp-dir "recentf")
-          recentf-keep            '(file-remote-p file-readable-p)
-          recentf-max-saved-items 100
-          recentf-max-menu-items  25
+    (setq
+     recentf-save-file       (concat cb:tmp-dir "recentf")
+     recentf-keep            '(file-remote-p file-readable-p)
+     recentf-max-saved-items 100
+     recentf-max-menu-items  25
 
-          recentf-exclude
-          '(".newsrc" "-autoloads.el" "recentf" ".ido.last" "TAGS" ".gz"))
+     recentf-exclude
+     '(".newsrc" "-autoloads.el" "recentf" ".ido.last" "TAGS" ".gz"))
 
     (recentf-mode +1)))
 
 (use-package savehist
-  :config
+  :init
   (progn
-    (setq savehist-additional-variables '(search ring regexp-search-ring)
-          savehist-autosave-interval    60
-          savehist-file                 (concat cb:tmp-dir "savehist"))
+    (setq
+     savehist-additional-variables '(search ring regexp-search-ring)
+     savehist-autosave-interval    60
+     savehist-file                 (concat cb:tmp-dir "savehist"))
     (savehist-mode +1)))
 
 (use-package undo-tree
   :ensure   t
   :diminish undo-tree-mode
-  :config   (global-undo-tree-mode +1))
+  :init    (global-undo-tree-mode +1))
 
 (use-package window-number
   :ensure t
@@ -455,7 +458,13 @@
 
 (use-package evil
   :ensure t
-  :init  (hook-fn 'comint-mode-hook 'evil-append-line)
+  :commands evil-mode
+
+  :init
+  (progn
+    (evil-mode +1)
+    (hook-fn 'comint-mode-hook 'evil-append-line))
+
   :config
   (progn
     (require 'cb-evil)
@@ -467,7 +476,7 @@
     (define-key evil-insert-state-map (kbd "C-z") 'cb:evil-undefine)
     (define-key evil-visual-state-map (kbd "C-z") 'cb:evil-undefine)
 
-    ;; Ensure undo-tree commands are remapped. The referenced keymap is in
+    ;; Ensure undo-tree commands are remapped. The referenced keymap in
     ;; evil-integration is incorrect.
     (define-key undo-tree-visualizer-mode-map [remap evil-backward-char]
       'undo-tree-visualize-switch-branch-left)
@@ -491,9 +500,7 @@
     (setq evil-want-visual-char-semi-exclusive t
           evil-toggle-key (kbd "M-z")
           evil-default-cursor t)
-    (setq-default evil-shift-width 2)
-
-    (evil-mode +1)))
+    (setq-default evil-shift-width 2)))
 
 (use-package evil-paredit
   :ensure t
