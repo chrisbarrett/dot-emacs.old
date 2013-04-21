@@ -94,6 +94,7 @@
     (add-to-list 'exec-path (concat home "/.carton/bin"))
     (add-to-list 'exec-path (concat home "/bin"))
     (add-to-list 'exec-path (concat home "/.cabal/bin"))
+    (add-to-list 'exec-path "/usr/local/bin")
     (add-to-list 'exec-path "/opt/local/bin")
     (add-to-list 'exec-path "/opt/local/sbin"))
 
@@ -1458,8 +1459,6 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
 
     (workgroups-mode +1)))
 
-;;; ----------------------------------------------------------------------------
-
 (use-package org
   :ensure t
   :defer t
@@ -1467,6 +1466,18 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
   (progn
     (define-key org-mode-map (kbd "M-p") 'org-metaup)
     (define-key org-mode-map (kbd "M-n") 'org-metadown)))
+
+;;; ----------------------------------------------------------------------------
+;;; Show quote if 'fortune' is installed.
+
+(defun fortune ()
+  "Display a quotation from the 'fortune' program."
+  (interactive)
+  (when (executable-find "fortune")
+    (message (s-trim (shell-command-to-string "fortune")))))
+
+(hook-fn 'after-init-hook
+  (run-with-idle-timer 0.2 nil 'fortune))
 
 ;; Local Variables:
 ;; byte-compile-warnings: (not free-vars obsolete)
