@@ -71,6 +71,7 @@
  indent-tabs-mode             nil
  fill-column                  80)
 (icomplete-mode +1)
+(defalias 'yes-or-no-p 'y-or-n-p)
 
 ;; Encodings
 
@@ -1359,6 +1360,24 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
       (hook-fn 'haskell-mode-hook
         (require 'cb-haskell)
         (local-set-key (kbd "C-c j") 'haskell-test<->code)))
+
+    (use-package ghc
+      :ensure   t
+      :commands ghc-init
+      :init     (add-hook 'haskell-mode-hook 'ghc-init)
+      :config
+      (progn
+
+        (defun ac-haskell-candidates ()
+          "Auto-complete source using ghc-doc."
+          (let ((pat (buffer-substring (ghc-completion-start-point) (point))))
+            (all-completions pat (ghc-select-completion-symbol))))
+
+        (ac-define-source ghc
+          '((candidates . ac-haskell-candidates)))
+
+        (hook-fn 'haskell-mode-hook
+          (add-to-list 'ac-sources 'ac-source-ghc))))
 
     (use-package haskell-ac
       :init
