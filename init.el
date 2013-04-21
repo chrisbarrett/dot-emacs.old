@@ -36,12 +36,18 @@
     (menu-bar-mode +1)
   (menu-bar-mode -1))
 
-;;; Fully-qualify `user-emacs-directory'.
+;;; Fully-qualify `user-emacs-directory' and peform essential loads.
 (setq user-emacs-directory (expand-file-name user-emacs-directory))
+(require 'bind-key (concat user-emacs-directory "lib/use-package/bind-key.el"))
+(require 'use-package (concat user-emacs-directory "lib/use-package/use-package.el"))
 
 ;;; Describe me.
-(setq user-full-name    "Chris Barrett"
-      user-mail-address "chris.d.barrett@me.com")
+
+(setq
+ user-full-name    "Chris Barrett"
+ user-mail-address "chris.d.barrett@me.com")
+
+;;; Basic configuration.
 
 (setq
  redisplay-dont-pause         t
@@ -80,7 +86,7 @@
 (add-hook 'before-save-hook 'whitespace-cleanup)
 (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
 
-;;; Set exec-path manually in OS X
+;;; Set exec-path manually in OS X.
 
 (when (and (display-graphic-p) (equal system-type 'darwin))
   (let ((home (getenv "HOME")))
@@ -92,11 +98,8 @@
 
   (setenv "PATH" (mapconcat 'identity exec-path ":")))
 
-
-(require 'bind-key (concat user-emacs-directory "lib/use-package/bind-key.el"))
-(require 'use-package (concat user-emacs-directory "lib/use-package/use-package.el"))
-
 ;;; Help commands
+
 (define-prefix-command 'help-find-map)
 (bind-key (kbd "C-h e") 'help-find-map)
 (bind-key (kbd "C-h e e") 'view-echo-area-messages)
@@ -248,6 +251,44 @@
   (font-lock-add-keywords
    major-mode '(("\\<\\(FIX\\|TODO\\|FIXME\\|HACK\\|REFACTOR\\):"
                  1 font-lock-warning-face t))))
+
+(hook-fn 'Buffer-menu-mode-hook
+  "Buffer menu only shows files on disk."
+  (Buffer-menu-toggle-files-only +1))
+
+;;; Forward-declare ac-modes so auto-complete can be safely loaded separately
+;;; from other modes.
+(defvar ac-modes nil)
+
+;;; ----------------------------------------------------------------------------
+;;; Mail configuration
+
+(setq mail-signature (concat "\nCheers,\n\n" user-full-name)
+      send-mail-function 'smtpmail-send-it
+      message-send-mail-function 'smtpmail-send-it)
+
+(use-package smtpmail
+  :commands smtpmail-send-it
+  :init
+  (setq
+   smtpmail-mail-address user-mail-address
+   smtpmail-smtp-server "smtp.mail.me.com"
+   smtpmail-smtp-service 587))
+
+(use-package gnus
+  :commands gnus
+  :config
+  (setq
+   gnus-select-method '(nnml "mail")
+   gnus-secondary-select-methods
+   `((nnimap "mail"
+             (nnimap-address ,smtpmail-smtp-server)
+             (nnimap-list-pattern ("INBOX" "mail/*"))
+             (nnimap-server-port 587)
+             (nnimap-stream ssl)
+             (nnimap-authenticator login)))))
+
+;;; ----------------------------------------------------------------------------
 
 (use-package helm
   :ensure t
@@ -432,10 +473,6 @@
          (key-chord-define paredit-mode-map "qm" 'paredit-forward-barf-sexp)))
 
     (key-chord-mode +1)))
-
-;;; Buffer menu only shows files on disk.
-(hook-fn 'Buffer-menu-mode-hook
-  (Buffer-menu-toggle-files-only +1))
 
 (use-package cb-commands
   :bind (("s-f"     . cb:rotate-buffers)
@@ -629,10 +666,6 @@
       (set-process-window-size (get-buffer-process (current-buffer))
                                (window-height)
                                (window-width)))))
-
-;;; Forward-declare ac-modes so auto-complete can be safely loaded separately
-;;; from other modes.
-(defvar ac-modes nil)
 
 (use-package auto-complete
   :ensure t
@@ -1405,36 +1438,6 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
     (setq wg-prefix-key (kbd "C-c w"))
 
     (workgroups-mode +1)))
-
-(require 'midnight)
-
-;;; ----------------------------------------------------------------------------
-;;; Mail configuration
-
-(setq mail-signature (concat "\nCheers,\n\n" user-full-name)
-      send-mail-function 'smtpmail-send-it
-      message-send-mail-function 'smtpmail-send-it)
-
-(use-package smtpmail
-  :commands smtpmail-send-it
-  :init
-  (setq
-   smtpmail-mail-address user-mail-address
-   smtpmail-smtp-server "smtp.mail.me.com"
-   smtpmail-smtp-service 587))
-
-(use-package gnus
-  :commands gnus
-  :config
-  (setq
-   gnus-select-method '(nnml "mail")
-   gnus-secondary-select-methods
-   `((nnimap "mail"
-             (nnimap-address ,smtpmail-smtp-server)
-             (nnimap-list-pattern ("INBOX" "mail/*"))
-             (nnimap-server-port 587)
-             (nnimap-stream ssl)
-             (nnimap-authenticator login)))))
 
 ;;; ----------------------------------------------------------------------------
 
