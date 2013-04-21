@@ -80,6 +80,16 @@
 (add-hook 'before-save-hook 'whitespace-cleanup)
 (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
 
+;;; Set exec-path manually in OS X
+
+(when (and (display-graphic-p) (equal system-type 'darwin))
+  (let ((home (getenv "HOME")))
+    (add-to-list 'exec-path (concat home "/.carton/bin"))
+    (add-to-list 'exec-path (concat home "/bin"))
+    (add-to-list 'exec-path (concat home "/.cabal/bin"))
+    (add-to-list 'exec-path (concat home "/opt/local/bin"))
+    (add-to-list 'exec-path (concat home "/opt/local/sbin"))))
+
 
 (require 'bind-key (concat user-emacs-directory "lib/use-package/bind-key.el"))
 (require 'use-package (concat user-emacs-directory "lib/use-package/use-package.el"))
@@ -544,14 +554,6 @@
           try-expand-line
           try-complete-lisp-symbol-partially
           try-complete-lisp-symbol)))
-
-(use-package exec-path-from-shell
-  :ensure t
-  :if (and (equal system-type 'darwin) (window-system))
-  :config
-  (progn
-    (setenv "INSIDE_EMACS" "1")
-    (exec-path-from-shell-initialize)))
 
 (use-package cb-osx :if (equal system-type 'darwin))
 
