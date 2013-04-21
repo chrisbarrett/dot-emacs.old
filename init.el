@@ -205,10 +205,17 @@
 
 ;;; ----------------------------------------------------------------------------
 
-;; Error navigation keybindings.
+;;; Generic programming mode configuration.
 (hook-fn 'prog-mode-hook
+
+  ;; Error navigation keybindings.
   (local-set-key (kbd "M-N") 'next-error)
-  (local-set-key (kbd "M-P") 'previous-error))
+  (local-set-key (kbd "M-P") 'previous-error)
+
+  ;; Highlight special comments.
+  (font-lock-add-keywords
+   nil '(("\\<\\(FIX\\|TODO\\|FIXME\\|HACK\\|REFACTOR\\):"
+          1 font-lock-warning-face t))))
 
 (use-package helm
   :ensure t)
@@ -713,7 +720,19 @@
 (use-package markdown-mode
   :ensure t
   :mode (("\\.md$"          . markdown-mode)
-         ("\\.[mM]arkdown$" . markdown-mode)))
+         ("\\.[mM]arkdown$" . markdown-mode))
+  :config
+  (hook-fn 'markdown-mode-hook
+    (setq imenu-generic-expression
+          '(("title"  "^\\(.*\\)[\n]=+$" 1)
+            ("h2-"    "^\\(.*\\)[\n]-+$" 1)
+            ("h1"   "^# \\(.*\\)$" 1)
+            ("h2"   "^## \\(.*\\)$" 1)
+            ("h3"   "^### \\(.*\\)$" 1)
+            ("h4"   "^#### \\(.*\\)$" 1)
+            ("h5"   "^##### \\(.*\\)$" 1)
+            ("h6"   "^###### \\(.*\\)$" 1)
+            ("fn"   "^\\[\\^\\(.*\\)\\]" 1)))))
 
 (use-package mode-compile
   :ensure t
@@ -904,7 +923,10 @@
 (use-package eldoc
   :commands eldoc-mode
   :diminish eldoc-mode
-  :init     (add-hook 'cb:lisp-mode-hook 'turn-on-eldoc-mode))
+  :init
+  (progn
+    (add-hook 'cb:lisp-mode-hook 'turn-on-eldoc-mode)
+    (add-hook 'ielm-mode-hook 'turn-on-eldoc-mode)))
 
 (use-package c-eldoc
   :ensure   t
@@ -914,6 +936,7 @@
 (use-package cb-elisp
   :commands (cb:switch-to-ielm cb:switch-to-elisp)
   :defer nil
+
   :init
   (progn
     (autoload 'ert-modeline-mode "ert-modeline")
@@ -958,12 +981,12 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
   :ensure   t
   :diminish elisp-slime-nav-mode
   :init
-  (progn
-
-    (hook-fn 'emacs-lisp-mode-hook
+  (--each '(emacs-lisp-mode-hook ielm-mode-hook)
+    (hook-fn it
       (elisp-slime-nav-mode +1)
       (local-set-key (kbd "M-.") 'elisp-slime-nav-find-elisp-thing-at-point)
 
+      ;; Make M-. work in normal state.
       (when (featurep 'evil)
         (define-key evil-normal-state-map (kbd "M-.")
           'elisp-slime-nav-find-elisp-thing-at-point)))))
@@ -1032,6 +1055,7 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
 
     (hook-fn 'clojure-mode-hook
       (maybe-enable-overtone-mode)
+      (subword-mode +1)
       (local-set-key (kbd "C-c C-z") 'cb:switch-to-nrepl))))
 
 (use-package nrepl
@@ -1079,6 +1103,7 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
     (--each '(nrepl-mode-hook nrepl-interaction-mode-hook)
       (hook-fn it
         (nrepl-turn-on-eldoc-mode)
+        (subword-mode +1)
         (paredit-mode +1)
         (local-set-key (kbd "C-c l")   'nrepl-clear-buffer)
         (local-set-key (kbd "C-c C-z") 'cb:switch-to-last-clj-buffer)
@@ -1196,13 +1221,40 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
           (add-to-list 'ac-sources 'ac-source-rsense-method)
           (add-to-list 'ac-sources 'ac-source-rsense-constant))))
 
+    (use-package yari
+      :ensure t
+      :commands yari
+      :init
+      (progn
+        (hook-fn 'ruby-mode-hook
+          (local-set-key (kbd "C-c C-h") 'yari))
+
+        (hook-fn 'inf-ruby-mode-hook
+          (local-set-key (kbd "C-c C-h") 'yari))))
+
     (use-package inf-ruby
       :ensure   t
       :commands inf-ruby-mode
-      :init     (add-hook 'inf-ruby-mode 'inf-ruby-setup-keybindings))
+      :config
+      (hook-fn 'inf-ruby-mode
+        (subword-mode +1)
+        ;; Stop IRB from echoing input.
+        (setq comint-process-echoes t)
+        (inf-ruby-setup-keybindings)))
+
+    (use-package ruby-tools
+      :ensure   t
+      :commands ruby-tools-mode
+      :init     (add-hook 'ruby-mode-hook 'ruby-tools-mode))
+
+    (use-package ruby-end
+      :ensure   t
+      :commands ruby-end-mode
+      :init     (add-hook 'ruby-mode-hook 'ruby-end-mode))
 
     (add-to-list 'ac-modes 'ruby-mode)
-    (add-to-list 'completion-ignored-extensions ".rbc")))
+    (add-to-list 'completion-ignored-extensions ".rbc")
+    (add-hook 'ruby-mode-hook 'subword-mode)))
 
 (use-package yaml-mode
   :ensure   t
@@ -1277,6 +1329,8 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
        tab-width            4
        haskell-tags-on-save t
        haskell-stylish-on-save t)
+
+      (subword-mode +1)
 
       ;; Set key bindings.
       (local-set-key (kbd "C-c C-c") 'haskell-process-cabal-build)
