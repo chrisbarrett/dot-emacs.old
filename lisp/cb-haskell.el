@@ -29,6 +29,7 @@
 
 (autoload 'haskell-cabal-find-file "haskell-cabal")
 (require 's)
+(require 'flycheck)
 
 (defun cb:hs-project-root ()
   (let ((cabal (haskell-cabal-find-file)))
@@ -99,31 +100,12 @@
      warning))
   :modes 'haskell-mode)
 
-;;; Cosmetic
-
-(defconst cb:haskell-outline-regex "[^\t ].*\\|^.*[\t ]+\\(where\\|of\\|do\\|in\\|if\\|then\\|else\\|let\\|module\\|import\\|deriving\\|instance\\|class\\)[\t\n ]")
-
-(defun cb:hs-outline-level ()
-  "Use spacing to determine outlining."
-  (let (buffer-invisibility-spec)
-    (save-excursion
-      (skip-chars-forward "\t ")
-      (current-column))))
-
 ;;; Use greek lambda symbol.
 (font-lock-add-keywords 'haskell-mode
  `((,(concat "\\s (?\\(\\\\\\)\\s *\\(\\w\\|_\\|(.*)\\).*?\\s *->")
     (0 (progn (compose-region (match-beginning 1) (match-end 1)
                               ,(make-char 'greek-iso8859-7 107))
               nil)))))
-
-;;; Editing Advice
-
-(defadvice paredit-comment-dwim (around haskell-override-comment-char activate)
-  "Override paredit-dwim so that haskell comment chars are used."
-  (if (derived-mode-p 'haskell-mode)
-      (comment-dwim nil)
-    ad-do-it))
 
 (provide 'cb-haskell)
 

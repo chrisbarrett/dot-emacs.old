@@ -26,9 +26,14 @@
 ;;; Code:
 
 ;;; Disable intrusive GUI elements.
-(scroll-bar-mode -1)
-(menu-bar-mode   -1)
-(tool-bar-mode   -1)
+
+(scroll-bar-mode   -1)
+(tool-bar-mode     -1)
+(blink-cursor-mode -1)
+
+(if (and (display-graphic-p) (equal system-type 'darwin))
+    (menu-bar-mode +1)
+  (menu-bar-mode -1))
 
 ;;; Fully-qualify `user-emacs-directory'.
 (setq user-emacs-directory (expand-file-name user-emacs-directory))
@@ -58,6 +63,7 @@
 (setq-default
  indent-tabs-mode             nil
  fill-column                  80)
+(icomplete-mode +1)
 
 ;; Encodings
 
@@ -325,6 +331,12 @@
 (use-package window-number
   :ensure t
   :config (window-number-meta-mode +1))
+
+(use-package windmove
+  :bind (("S-<left>"  . windmove-left)
+         ("S-<right>" . windmove-right)
+         ("S-<up>"    . windmove-up)
+         ("S-<down>"  . windmove-down)))
 
 (use-package winner
   :config (winner-mode +1))
@@ -995,9 +1007,27 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
       :ensure   t
       :commands midje-mode
       :diminish midje-mode
-      :config   (add-hook 'clojure-mode-hook 'midje-mode))
+      :init    (add-hook 'clojure-mode-hook 'midje-mode))
 
-    (use-package cb-clojure)
+    (defun cb:switch-to-nrepl ()
+      "Start nrepl or switch to an existing nrepl buffer."
+      (interactive)
+      (if-let (buf (get-buffer "*nrepl*"))
+        (nrepl-switch-to-repl-buffer buf)
+        (nrepl-jack-in)))
+
+    (defun cb:switch-to-last-clj-buffer ()
+      "Switch to the last active clojure buffer."
+      (interactive)
+      (when-let (buf (cb:last-buffer-for-mode 'clojure-mode))
+        (pop-to-buffer buf)))
+
+    (defun cb:eval-last-clj-buffer ()
+      "Evaluate that last active clojure buffer without leaving the repl."
+      (interactive)
+      (when-let (buf (cb:last-buffer-for-mode 'clojure-mode))
+        (with-current-buffer buf
+          (nrepl-eval-buffer))))
 
     (hook-fn 'clojure-mode-hook
       (maybe-enable-overtone-mode)
@@ -1008,6 +1038,19 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
   :commands nrepl-jack-in
   :config
   (progn
+
+    (defadvice nrepl-switch-to-repl-buffer (after insert-at-end-of-nrepl-line activate)
+      "Enter insertion mode at the end of the line when switching to nrepl."
+      (when (and (boundp 'evil-mode)
+                 evil-mode
+                 (not (evil-insert-state-p)))
+        (evil-append-line 0)))
+
+    (defadvice back-to-indentation (around move-to-nrepl-bol activate)
+      "Move to position after prompt in nREPL."
+      (if (equal major-mode 'nrepl-mode)
+          (nrepl-bol)
+        ad-do-it))
 
     (use-package ac-nrepl
       :ensure t
@@ -1020,8 +1063,9 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
       :config
       (define-key nrepl-interaction-mode-map (kbd "C-c C-d") 'ac-nrepl-popup-doc))
 
-    (setq nrepl-popup-stacktraces    nil
-          nrepl-hide-special-buffers t)
+    (setq
+     nrepl-popup-stacktraces    nil
+     nrepl-hide-special-buffers t)
 
     (set-face-attribute 'nrepl-error-highlight-face t :inherit 'error)
     (set-face-underline 'nrepl-error-highlight-face nil)
@@ -1079,55 +1123,62 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
     (add-hook 'fsharp-mode-hook 'electric-indent-mode)
     (add-hook 'fsharp-mode-hook 'electric-layout-mode)))
 
-(defun cb:comma-then-space ()
-  (interactive)
-  (atomic-change-group
-    (insert-char ?\,)
-    (just-one-space)))
-
-(defun cb:switch-to-python ()
-  "Switch to the last active Python buffer."
-  (interactive)
-  (when-let (buf (cb:last-buffer-for-mode 'python-mode))
-    (pop-to-buffer buf)))
-
 (use-package python
   :ensure   t
   :commands python-mode
   :mode     ("\\.py$" . python-mode)
   :config
   (progn
+
+    (use-package jedi
+      :ensure   t
+      :commands jedi:setup
+      :init
+      (progn
+        (setq jedi:setup-keys t)
+        (add-hook 'inferior-python-mode-hook 'jedi:setup)
+        (add-hook 'python-mode-hook 'jedi:setup)))
+
+    (defun cb:comma-then-space ()
+      (interactive)
+      (atomic-change-group
+        (insert-char ?\,)
+        (just-one-space)))
+
+    (defun cb:switch-to-python ()
+      "Switch to the last active Python buffer."
+      (interactive)
+      (when-let (buf (cb:last-buffer-for-mode 'python-mode))
+        (pop-to-buffer buf)))
+
     (define-key python-mode-map (kbd ",") 'cb:comma-then-space)
     (define-key inferior-python-mode-map (kbd ",") 'cb:comma-then-space)
     (define-key inferior-python-mode-map (kbd "C-c C-z") 'cb:switch-to-python)
     (add-to-list 'ac-modes 'python-mode)
     (add-to-list 'ac-modes 'inferior-python-mode)))
 
-(use-package jedi
-  :ensure   t
-  :commands jedi:setup
-  :init
-  (progn
-    (setq jedi:setup-keys t)
-    (add-hook 'inferior-python-mode-hook 'jedi:setup)
-    (add-hook 'python-mode-hook 'jedi:setup)))
-
 (use-package ruby-mode
   :ensure t
-  :mode (("\\.rake$"    . ruby-mode)
-         ("Rakefile$"   . ruby-mode)
-         ("\\.gemspec$" . ruby-mode))
-  :defer t
+  :mode (("\\.rake\\'" . ruby-mode)
+         ("Rakefile\\'" . ruby-mode)
+         ("\\.gemspec\\'" . ruby-mode)
+         ("\\.ru\\'" . ruby-mode)
+         ("Gemfile\\'" . ruby-mode)
+         ("Guardfile\\'" . ruby-mode)
+         ("Capfile\\'" . ruby-mode)
+         ("\\.thor\\'" . ruby-mode)
+         ("Thorfile\\'" . ruby-mode)
+         ("Vagrantfile\\'" . ruby-mode)
+         ("\\.jbuilder\\'" . ruby-mode))
   :config
   (progn
 
     (use-package ruby-electric
-      :ensure t
+      :ensure   t
+      :commands ruby-electric-mode
       :diminish ruby-electric-mode
-      :config
-      (progn
-        (setq ruby-electric-expand-delimiters-list '(39 96 124))
-        (add-hook 'ruby-mode-hook 'ruby-electric-mode)))
+      :init     (add-hook 'ruby-mode-hook 'ruby-electric-mode)
+      :config   (setq ruby-electric-expand-delimiters-list '(39 96 124)))
 
     (use-package rsense
       :ensure t
@@ -1135,27 +1186,32 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
       (progn
         (setq rsense-home cb:rsense-home)
         (cb:define-path cb:rsense-home "bin/rsense-0.3")
-        (add-to-list 'ac-sources 'ac-source-rsense-method)
-        (add-to-list 'ac-sources 'ac-source-rsense-constant)))
+
+        (hook-fn 'inf-ruby-mode-hook
+          (add-to-list 'ac-sources 'ac-source-rsense-method)
+          (add-to-list 'ac-sources 'ac-source-rsense-constant))
+
+        (hook-fn 'ruby-mode-hook
+          (add-to-list 'ac-sources 'ac-source-rsense-method)
+          (add-to-list 'ac-sources 'ac-source-rsense-constant))))
 
     (use-package inf-ruby
-      :ensure t
-      :config
-      (progn
-        (add-hook 'ruby-mode-hook 'ruby-electric-mode)
-        (add-hook 'inf-ruby-mode 'inf-ruby-setup-keybindings)))
+      :ensure   t
+      :commands inf-ruby-mode
+      :init     (add-hook 'inf-ruby-mode 'inf-ruby-setup-keybindings))
 
     (add-to-list 'ac-modes 'ruby-mode)
     (add-to-list 'completion-ignored-extensions ".rbc")))
 
 (use-package yaml-mode
-  :ensure t
-  :mode (("\\.yaml$" . yaml-mode)
-         ("\\.yml$" . yaml-mode)))
+  :ensure   t
+  :commands yaml-mode
+  :mode     (("\\.yaml$" . yaml-mode)
+             ("\\.yml$"  . yaml-mode)))
 
 (use-package haskell-mode
   :ensure t
-  :commands (haskell-mode haskell-c-mode haskell-cabal-mode)
+  :commands (haskell-mode haskell-c-mode haskell-cabal-mode hoogle)
   :mode
   (("\\.hs$"    . haskell-mode)
    ("\\.hsc$"   . haskell-c-mode)
@@ -1163,44 +1219,48 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
   :config
   (progn
 
-    (use-package ghc
-      :ensure t)
+    (use-package cb-haskell
+      :init
+      (hook-fn 'haskell-mode-hook
+        (require 'cb-haskell)
+        (local-set-key (kbd "C-c j") 'haskell-test<->code)))
 
-    (use-package haskell-edit)
+    (use-package ghc
+      :ensure   t
+      :commands ghc-init
+      :init     (add-hook 'haskell-mode-hook 'ghc-init))
+
+    (use-package haskell-edit
+      :commands (haskell-find-type-signature
+                 haskell-reformat-type-signature))
 
     (use-package haskell-indentation
       :diminish haskell-indentation-mode
-      :config (add-hook 'haskell-mode-hook 'haskell-indentation-mode))
+      :config   (add-hook 'haskell-mode-hook 'haskell-indentation-mode))
 
     (use-package haskell-doc
       :diminish haskell-doc-mode
-      :config (add-hook 'haskell-mode-hook 'haskell-doc-mode))
+      :commands haskell-doc-mode
+      :init     (add-hook 'haskell-mode-hook 'haskell-doc-mode))
 
-    (use-package haskell-decl-scan)
-
-    (use-package outline
-      :commands (outline-mode)
-      :diminish outline-mode
-      :config
-      (add-hook 'haskell-mode-hook 'outline-mode))
+    (use-package haskell-decl-scan
+      :commands turn-on-haskell-decl-scan
+      :init     (add-hook 'haskell-mode-hook 'turn-on-haskell-decl-scan))
 
     (use-package hs-lint
+      :commands hs-lint
       :config
-      (setq hs-lint-command (executable-find "hlint")))
-
-    (use-package cb-haskell)
+      (progn
+        (setq hs-lint-command (executable-find "hlint"))
+        (hook-fn 'haskell-mode-hook
+          (local-set-key (kbd "C-c l") 'hs-lint))))
 
     (add-to-list 'completion-ignored-extensions ".hi")
-    (setq haskell-stylish-on-save t)
 
-    ;; Auto-complete
+    ;; Configure auto-complete
 
-    (--each '(haskell-mode
-              haskell-c-mode
-              haskell-cabal-mode
-              haskell-interactive-mode
-              inferior-haskell-mode
-              )
+    (--each '(haskell-mode haskell-c-mode haskell-cabal-mode
+                           haskell-interactive-mode inferior-haskell-mode)
       (add-to-list 'ac-modes it))
 
     (ac-define-source ghc-mod
@@ -1211,22 +1271,44 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
         (cache)))
 
     (hook-fn 'haskell-mode-hook
-      (setq evil-shift-width     4
-            tab-width            4
-            haskell-tags-on-save t)
+      (setq
+       evil-shift-width     4
+       tab-width            4
+       haskell-tags-on-save t
+       haskell-stylish-on-save t)
 
       ;; Set key bindings.
       (local-set-key (kbd "C-c C-c") 'haskell-process-cabal-build)
       (local-set-key (kbd "C-c h")   'hoogle)
-      (local-set-key (kbd "C-c l")   'hs-lint)
-      (local-set-key (kbd "C-c j")   'haskell-test<->code)
-      ;; Configure outlining.
-      (setq outline-regexp cb:haskell-outline-regex
-            outline-level 'cb:hs-outline-level)
-      (outline-minor-mode t)
+
       ;; Configure auto-complete sources.
       (setq ac-sources (list 'ac-source-words-in-same-mode-buffers
                              'ac-source-ghc-mod)))))
+
+(use-package outline
+  :commands (outline-mode)
+  :diminish outline-mode
+  :init
+  (hook-fn 'haskell-mode-hook
+    "Configure outlining on common keywords and spacing."
+    (setq
+     outline-regexp
+     (rx (or (group (not space) (* nonl))
+             (group bol (* nonl) (+ space)
+                    (or  "where" "of" "do" "in" "if"
+                         "then" "else" "let" "module"
+                         "import" "deriving" "instance" "class")
+                    space)))
+
+     outline-level
+     (lambda ()
+       "Use spacing to determine outlining."
+       (let (buffer-invisibility-spec)
+         (save-excursion
+           (skip-chars-forward "\t ")
+           (current-column))))
+     )
+    (outline-minor-mode +1)))
 
 (use-package workgroups
   :if       (display-graphic-p)
@@ -1245,6 +1327,8 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
     (setq wg-prefix-key (kbd "C-c w"))
 
     (workgroups-mode +1)))
+
+(require 'midnight)
 
 ;;; ----------------------------------------------------------------------------
 ;;; Mail configuration
