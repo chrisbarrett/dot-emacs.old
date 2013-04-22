@@ -1473,7 +1473,7 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
   "Display a quotation from the 'fortune' program."
   (interactive)
   (when (executable-find "fortune")
-    (message (s-trim (shell-command-to-string "fortune")))))
+    (message (s-trim (shell-command-to-string "fortune -as")))))
 
 (hook-fn 'after-init-hook
   (run-with-idle-timer 0.1 nil 'fortune))
