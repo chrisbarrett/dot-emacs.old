@@ -1476,7 +1476,7 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
     (message (s-trim (shell-command-to-string "fortune")))))
 
 (hook-fn 'after-init-hook
-  (run-with-idle-timer 0.2 nil 'fortune))
+  (run-with-idle-timer 0.1 nil 'fortune))
 
 ;; Local Variables:
 ;; byte-compile-warnings: (not free-vars obsolete)
