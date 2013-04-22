@@ -1200,6 +1200,7 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
   (progn
     (setq sclang-auto-scroll-post-buffer t
           sclang-eval-line-forward nil)
+    (add-to-list 'ac-modes 'sclang-mode)
 
     ;; Configure paths.
     (let* ((bundle "/Applications/SuperCollider/SuperCollider.app")
