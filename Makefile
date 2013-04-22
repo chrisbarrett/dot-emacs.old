@@ -2,20 +2,18 @@ src        = ./src
 backups    = ./backups
 lib        = ./lib
 lisp       = ./lisp
+bin        = ./bin
 emacs      = emacs
-emacs_exec = $(emacs) --batch -nw -l init.el -f
 
+emacs_exec    = $(emacs) --batch -nw -l init.el -f
 emacs_version = $(shell $(emacs) -Q --batch --exec \
-		'(princ (format "%s.%s" emacs-major-version emacs-minor-version))')
-emacs_ftp    = http://gnu.mirror.uber.com.au/emacs/emacs-$(emacs_version).tar.gz
-emacs_gz      = $(src)/emacs-$(emacs_version).tar.gz
-emacs_src_dir = $(src)/emacs-$(emacs_version)
+      '(princ (format "%s.%s" emacs-major-version emacs-minor-version))')
 
 # ----------------------------------------------------------------------------
 
 default : conf elpa tags
 
-all : emacs-source byte-compile-all tags
+all : $(emacs_src_d) byte-compile-all tags ruby supercollider python
 
 # Build tags file.
 tags :; $(emacs_exec) 'cb:build-ctags'
@@ -59,12 +57,18 @@ clean-flycheck :
 # ----------------------------------------------------------------------------
 # Emacs source
 
-# Download and extract the emacs source files for this emacs version.
-emacs-source : $(src)
-	curl $(emacs_ftp) -o $(emacs_gz)
-	tar xfz $(emacs_gz) --directory=$(src)
+emacs_src_d = $(src)/emacs-$(emacs_version)
+emacs_ftp   = http://gnu.mirror.uber.com.au/emacs/emacs-$(emacs_version).tar.gz
+emacs_gz    = $(src)/emacs-$(emacs_version).tar.gz
 
-# Create source directory.
+# Download and extract the emacs source files for this emacs version.
+
+$(emacs_gz) : $(src)
+	curl $(emacs_ftp) -o $(emacs_gz)
+
+$(emacs_src_d) : $(emacs_gz)
+	tar xvfz $(emacs_gz) --directory=$(src)
+
 $(src) :;  mkdir $(src)
 
 # ----------------------------------------------------------------------------
@@ -73,6 +77,7 @@ $(src) :;  mkdir $(src)
 python : jedi
 
 # Install Jedi for python auto-completion.
+
 jedi       : virtualenv epc argparse ; pip install jedi
 epc        :; pip install epc
 virtualenv :; pip install virtualenv
@@ -87,6 +92,31 @@ sc_github      = git://github.com/supercollider/supercollider.git
 sc_src         = ~/src/SuperCollider
 
 # Install SuperCollider emacs extensions.
-supercollider   : $(sc_src) $(sc_ext) ; cp -r $(sc_src)/editors/scel/sc/* $(sc_ext)
+
 $(sc_ext)       :; mkdir -p $(sc_ext)
 $(sc_src)       :; git clone $(sc_github) $(sc_src)
+
+supercollider   : $(sc_src) $(sc_ext)
+	cp -r $(sc_src)/editors/scel/sc/* $(sc_ext)
+
+# ----------------------------------------------------------------------------
+# Ruby
+
+ruby : $(rsense) rubocop
+
+# Install rsense.
+
+rsense_version = 0.3
+rsense     = $(bin)/rsense-$(rsense_version)/bin/rsense
+rsense_url = http://cx4a.org/pub/rsense/rsense-$(rsense_version).tar.bz2
+rsense_bz  = $(bin)/rsense-$(rsense_version).tar.bz2
+
+$(rsense_bz) :; curl $(rsense_url) -o $(rsense_bz)
+
+$(rsense) : $(rsense_bz) ;
+	tar xvjf $(rsense_bz) --directory=$(bin)
+	chmod a+x $(rsense)
+
+# Install rubocop
+
+rubocop :; sudo gem install rubocop
