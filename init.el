@@ -192,7 +192,6 @@
     (cb:define-path cb:yasnippet-dir "snippets/")
     (cb:define-path cb:backups-dir   "backups/")
     (cb:define-path cb:autosaves-dir "tmp/autosaves/")
-    (cb:define-path cb:rsense-home   "bin/rsense-0.3/")
 
     ;; Use the version of emacs in /src for info and source.
     (setq source-directory (format "%s/emacs-%s.%s" cb:src-dir
@@ -1288,8 +1287,8 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
       :ensure t
       :config
       (progn
-        (setq rsense-home cb:rsense-home)
         (cb:define-path cb:rsense-home "bin/rsense-0.3")
+        (setq rsense-home cb:rsense-home)
 
         (hook-fn 'inf-ruby-mode-hook
           (add-to-list 'ac-sources 'ac-source-rsense-method)
