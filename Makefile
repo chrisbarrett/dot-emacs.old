@@ -13,7 +13,7 @@ emacs_version = $(shell $(emacs) -Q --batch --exec \
 
 default : conf elpa tags
 
-all : $(emacs_src_d) byte-compile-all tags ruby supercollider python
+all : $(emacs_src_d) compile tags ruby supercollider python
 
 # Build tags file.
 tags :; $(emacs_exec) 'cb:build-ctags'
@@ -28,7 +28,7 @@ conf :; $(emacs_exec) 'cb:byte-compile-conf'
 elpa :; $(emacs_exec) 'cb:byte-compile-elpa'
 
 # Byte-compile all elisp files.
-byte-compile-all : conf elpa tags
+compile : conf elpa tags
 
 # ----------------------------------------------------------------------------
 # Cleaning
