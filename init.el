@@ -1196,6 +1196,7 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
 (use-package sclang
   :commands (sclang-mode sclang-start)
   :mode ("\\.sc$" . sclang-mode)
+  :init (defalias 'supercollider 'sclang-start)
   :config
   (progn
     (setq sclang-auto-scroll-post-buffer t
@@ -1214,10 +1215,15 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
        sclang-extension-path
        (list "~/Library/Application Support/SuperCollider/Extensions")
 
-       sclang-help-path (list help-path (concat help-path "/Classes"))))
+       sclang-help-path (list help-path
+                              (concat help-path "/Classes")
+                              (concat help-path "/Guides")
+                              (concat help-path "/Reference")
+                              (concat help-path "/Tutorials"))))
 
     (hook-fn 'sclang-mode-hook
       (local-set-key (kbd "s-.") 'sclang-main-stop)
+      (auto-complete-mode +1)
       (smartparens-mode +1)
       (unless (sclang-server-running-p)
         (sclang-server-boot)))))
