@@ -1466,6 +1466,15 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
     (define-key org-mode-map (kbd "M-p") 'org-metaup)
     (define-key org-mode-map (kbd "M-n") 'org-metadown)))
 
+(use-package gist
+  :ensure t
+  :commands (gist-list
+             gist-region
+             gist-region-private
+             gist-buffergist-buffer-private
+             gist-region-or-buffer
+             gist-region-or-buffer-private))
+
 ;;; ----------------------------------------------------------------------------
 ;;; Show quote if 'fortune' is installed.
 

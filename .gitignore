@@ -43,3 +43,4 @@ image-dired
 elim
 tramp
 swank
+var
