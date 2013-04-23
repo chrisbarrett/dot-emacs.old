@@ -81,6 +81,8 @@ documentation in the minibuffer for the thing at point."
     ("-" . "subtraction"))
   "Alist of help topics with transcoded filenames.")
 
+(defconst sclang--help-buffer-name "*SuperCollider Help*")
+
 ;;; -----------------------------------------------------------------------------
 ;;; Initialization
 ;;;
@@ -204,15 +206,56 @@ documentation in the minibuffer for the thing at point."
   (sclang--blocking-eval-string
    (format "SCDoc.findHelpFile(\"%s\")" topic)))
 
+(defun sclang--sc-help-buffer? (buf)
+  "Non-nil if buffer BUF is a SuperCollider help buffer."
+  (with-current-buffer buf
+    (equal (buffer-name) sclang--help-buffer-name)))
+
+(defun sclang--help-buffer? (buf)
+  "Non-nil if buffer BUF is an Emacs help buffer."
+  (with-current-buffer buf (equal major-mode 'help-mode)))
+
+(defun sclang--help-window-visible? ()
+  "Non-nil if the SCLang w3m help window is on-screen."
+  (->> (window-list)
+    (-map 'window-buffer)
+    (--any? (or (sclang--sc-help-buffer? it)
+                (sclang--help-buffer? it)))))
+
+(defun sclang--switch-to-help-window ()
+  "Switch to an open help window."
+  (when (sclang--help-window-visible?)
+    (while (not (or (sclang--sc-help-buffer? (current-buffer))
+                    (sclang--help-buffer? (current-buffer))))
+      (other-window 1))
+    (current-buffer)))
+
+(defun sclang--open-help-window (file)
+  "Open the help window and navigate to FILE."
+  ;; Switch to a help window if it is open. Otherwise, split the window.
+  (or (sclang--switch-to-help-window)
+      (progn (split-window) (other-window +1)))
+  ;; Open the help page in the current window.
+  (w3m-browse-url file)
+  (rename-buffer sclang--help-buffer-name))
+
+(defadvice w3m-close-window (around delete-sc-help-window activate)
+  "Delete the SuperCollider help window, rather than killing w3m."
+  (if (equal (buffer-name) sclang--help-buffer-name)
+      (delete-window)
+    ad-do-it))
+
 (defun sclang-find-help (topic)
   "Prompt the user for a help TOPIC and display the topic in a browser window."
   (interactive (list (sclang--read-help-topic)))
   (let ((file (sclang--topic->helpfile topic)))
     (if (not (or file sclang--help-initialized?))
         (error "Help system not ready")
-      (condition-case _err
-          (w3m-browse-url file)
-        (error (error "No help for \"%s\"" topic))))))
+      (condition-case err
+          (sclang--open-help-window file)
+        (error
+         (message err)
+         (error "No help for \"%s\"" topic))))))
 
 (defun sclang-open-help-gui ()
   "Open SCDoc Help Browser."
