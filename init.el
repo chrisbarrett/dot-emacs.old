@@ -1223,7 +1223,7 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
       (auto-complete-mode +1)
       (smartparens-mode +1)
       (unless (sclang-server-running-p)
-        (sclang-server-boot)))))
+        (sclang-server-boot))))
 
 (use-package fsharp-mode
   :ensure   t
