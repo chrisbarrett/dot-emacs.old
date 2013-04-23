@@ -1206,24 +1206,24 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
     (add-to-list 'ac-modes 'sclang-mode)
 
     ;; Configure paths.
-    (let* ((sc-app-resources (concat "/Applications/SuperCollider/SuperCollider.app"
-                                     "/Contents/Resources"))
-           (sc-app-support concat user-home-directory
-                                   "/Library/Application Support/SuperCollider")))
+    (let* ((sc-app-resources
+            (concat "/Applications/SuperCollider/SuperCollider.app/Contents/Resources"))
+           (sc-app-support
+            (concat user-home-directory "/Library/Application Support/SuperCollider")))
       (setq
        sclang-runtime-directory (concat sc-app-resources "/SCClassLibrary")
        sclang-program (concat sc-app-resources "/sclang")
        sclang-extension-path (list (concat sc-app-support "/Extensions"))
        sclang-help-path (list (concat sc-app-support "/Help")
                               (concat sc-app-support "/Help/Reference")
-                              (concat sc-app-support "/Help/Classes"))))
+                              (concat sc-app-support "/Help/Classes")))))
 
-    (hook-fn 'sclang-mode-hook
-      (local-set-key (kbd "s-.") 'sclang-main-stop)
-      (auto-complete-mode +1)
-      (smartparens-mode +1)
-      (unless (sclang-server-running-p)
-        (sclang-server-boot))))
+  (hook-fn 'sclang-mode-hook
+    (local-set-key (kbd "s-.") 'sclang-main-stop)
+    (auto-complete-mode +1)
+    (smartparens-mode +1)
+    (unless (sclang-server-running-p)
+      (sclang-server-boot))))
 
 (use-package fsharp-mode
   :ensure   t
