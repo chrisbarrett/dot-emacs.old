@@ -71,30 +71,7 @@
   :type 'string)
 
 ;;; ----------------------------------------------------------------------------
-;;; Help file HTML processing.
-;;;
-;;; Some tags are filtered and replaced in the contents of help files for
-;;; compatability with w3m.
-
-(defvar sclang-help-filters
-  '(("p\\.p\\([0-9]+\\)" . "#p\\1")
-    ("<p class=\"\\(.*\\)\">\\(.*\\)</p>" . "<div id=\"\\1\">\\2</div>"))
-  "List of pairs of (regexp . filter) representing HTML tags.
-These will be substituted for compatibility with w3m.")
-
-(defun sclang-help-substitute-for-filters (&rest _)
-  "Substitute various tags in SuperCollider HTML documentation."
-  (--map (cl-destructuring-bind (regex str) it
-           (goto-char (point-min))
-           (while (re-search-forward regex nil t)
-             (replace-match str nil nil)))
-         sclang-help-filters))
-
-(setq w3m-use-filter t)
-(eval-after-load "w3m-filter"
-  '(add-to-list 'w3m-filter-rules
-                ;; run on all files read by w3m...
-                '(".*" sclang-help-substitute-for-filters)))
+;;; Help file caching
 
 (defvar sclang-help-topic-alist nil
   "Alist mapping help topics to file names.")
@@ -121,11 +98,6 @@ These will be substituted for compatibility with w3m.")
 
 ;;; ----------------------------------------------------------------------------
 ;;; File-type predicates
-
-(defun sclang-get-help-file (topic)
-  "Find the help file corresponding to TOPIC."
-  (let ((topic (or (cdr (assoc topic sclang-special-help-topics)) topic)))
-    (cdr (assoc topic sclang-help-topic-alist))))
 
 (defun sclang-get-help-topic (file)
   "Get the help topic corresponding to FILE."
@@ -415,9 +387,7 @@ These will be substituted for compatibility with w3m.")
 
 (defun sclang-filter-help-directories (list)
   "Remove paths to be skipped from LIST of directories."
-  (-remove (lambda (x)
-               (or (not (file-directory-p x))
-                   (sclang-skip-help-directory-p x)))
+  (--remove (or (not (file-directory-p it)) (sclang-skip-help-directory-p it))
              list))
 
 (defun sclang-directory-files-save (directory &optional full match nosort)
@@ -539,23 +509,42 @@ Either visit file internally (.sc) or start external editor (.rtf)."
       (sclang-goto-help-browser))))
 
 (defun sclang--read-help-topic ()
-  "Read a help topic from the user."
-  (let* ((topic (or (buffer-substring (region-beginning) (region-end))
-                    (sclang-help-topic-at-point)
-                    "Help"))
-         (default (if (sclang-get-help-file topic) (format " (default %s)" topic) ""))
+  "Read an SCDoc topic, with a default value."
+  (let* ((topic (sclang-symbol-at-point))
+         (default (if topic (format " (default %s)" topic) ""))
          (prompt (format "Help topic%s: " default)))
     (completing-read prompt
-                     sclang-help-topic-alist nil t nil
+                     sclang-scdoc-topics nil nil nil
                      'sclang-help-topic-history topic)))
 
+(cl-defun sclang--blocking-eval-string (expr &optional (timeout-ms 100))
+  "Ask SuperCollider to evalutate the given string EXPR. Wait a maximum TIMEOUT-MS."
+  (let ((result nil)
+        (elapsed 0))
+    ;; SuperCollider will eval the string and then call back with the result.
+    ;; We rebind Emacs' `message' action to intercept the response.
+    (flet ((message (str &rest args) (setq result str)))
+      (sclang-eval-string (format "Emacs.message(%s)" expr))
+      ;; Block until we receive a response or the timeout expires.
+      (while (and (not result) (> timeout-ms elapsed))
+        (sleep-for 0 10)
+        (setq elapsed (+ 10 elapsed)))
+      result)))
+
+(defun sclang--topic->helpfile (topic)
+  "Get the absolute path to the SuperCollider help file for TOPIC."
+  (->> (format "SCDoc.findHelpFile(\"%s\")" topic)
+    (sclang--blocking-eval-string)
+    (s-chop-prefix "file://")))
+
 (defun sclang-find-help (topic)
-  "Prompt the user for a help topic."
+  "Prompt the user for a help TOPIC."
   (interactive (list (sclang--read-help-topic)))
-  (let ((file (sclang-get-help-file topic)))
-    (if (and file (file-exists-p file))
-        (sclang--find-help-file file)
-      (sclang-message "No help for \"%s\"" topic)) nil))
+  (let ((file (sclang--topic->helpfile topic)))
+    (message "TOPIC: %s, FILE: %s" topic file)
+    (if file
+        (w3m-find-file file)
+      (error "No help for \"%s\"" topic)) nil))
 
 (defun sclang-open-help-gui ()
   "Open SCDoc Help Browser."
@@ -570,18 +559,9 @@ Either visit file internally (.sc) or start external editor (.rtf)."
  (lambda (syms)
    (--map (puthash it nil sclang-scdoc-topics) syms)))
 
-(defun sclang--read-scdoc-topic ()
-  "Read an SCDoc topic, with a default value."
-  (let* ((topic (sclang-symbol-at-point))
-         (default (if topic (format " (default %s)" topic) ""))
-         (prompt (format "Help topic%s: " default)))
-    (completing-read prompt
-                     sclang-scdoc-topics nil nil nil
-                     'sclang-help-topic-history topic)))
-
 (defun sclang-find-help-in-gui (topic)
   "Search for TOPIC in SCDoc Help Browser."
-  (interactive (list (sclang--read-scdoc-topic)))
+  (interactive (list (sclang--read-help-topic)))
   (if topic
       (sclang-eval-string (sclang-format "HelpBrowser.openHelpFor(%o)" topic))
     (sclang-eval-string (sclang-format "Help.gui"))))

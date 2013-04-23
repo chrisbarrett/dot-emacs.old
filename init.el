@@ -38,6 +38,8 @@
 
 ;;; Fully-qualify `user-emacs-directory' and peform essential loads.
 (setq user-emacs-directory (expand-file-name user-emacs-directory))
+(defvar user-home-directory (getenv "HOME"))
+
 (require 'bind-key (concat user-emacs-directory "lib/use-package/bind-key.el"))
 (require 'use-package (concat user-emacs-directory "lib/use-package/use-package.el"))
 
@@ -1204,22 +1206,17 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
     (add-to-list 'ac-modes 'sclang-mode)
 
     ;; Configure paths.
-    (let* ((bundle "/Applications/SuperCollider/SuperCollider.app")
-           (app-resources (concat bundle "/Contents/Resources"))
-           (help-path     (concat app-resources "/HelpSource")))
+    (let* ((sc-app-resources (concat "/Applications/SuperCollider/SuperCollider.app"
+                                     "/Contents/Resources"))
+           (sc-app-support concat user-home-directory
+                                   "/Library/Application Support/SuperCollider")))
       (setq
-       sclang-runtime-directory (concat app-resources "/SCClassLibrary")
-
-       sclang-program (concat app-resources "/sclang")
-
-       sclang-extension-path
-       (list "~/Library/Application Support/SuperCollider/Extensions")
-
-       sclang-help-path (list help-path
-                              (concat help-path "/Classes")
-                              (concat help-path "/Guides")
-                              (concat help-path "/Reference")
-                              (concat help-path "/Tutorials"))))
+       sclang-runtime-directory (concat sc-app-resources "/SCClassLibrary")
+       sclang-program (concat sc-app-resources "/sclang")
+       sclang-extension-path (list (concat sc-app-support "/Extensions"))
+       sclang-help-path (list (concat sc-app-support "/Help")
+                              (concat sc-app-support "/Help/Reference")
+                              (concat sc-app-support "/Help/Classes"))))
 
     (hook-fn 'sclang-mode-hook
       (local-set-key (kbd "s-.") 'sclang-main-stop)
