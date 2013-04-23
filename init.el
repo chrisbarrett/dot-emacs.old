@@ -575,9 +575,9 @@
     (setq-default evil-shift-width 2)))
 
 (use-package evil-paredit
-  :ensure t
+  :ensure   t
   :commands evil-paredit-mode
-  :config (add-hook 'paredit-mode-hook 'evil-paredit-mode))
+  :init     (add-hook 'paredit-mode-hook 'evil-paredit-mode))
 
 (use-package surround
   :ensure t
