@@ -36,7 +36,6 @@
 (autoload 'sclang-format "sclang-language")
 (autoload 'sclang-eval-string "sclang-interp")
 (autoload 'sclang-symbol-at-point "sclang-language")
-(autoload 'sclang-message "sclang-util")
 (autoload 'sclang-set-command-handler "sclang-interp")
 (autoload 'sclang-perform-command "sclang-interp")
 
@@ -61,11 +60,12 @@
   :group 'sclang-help
   :type '(repeat directory))
 
-;;; ----------------------------------------------------------------------------
-;;; Help file caching
+(defcustom sclang-minibuffer-doc-idle-delay 0.25
+  "The time in milliseconds to wait for idle before showing
+documentation in the minibuffer for the thing at point."
+  :group 'sclang-help)
 
-(defvar sclang-scdoc-topics (make-hash-table :size 16385)
-  "List of all scdoc topics.")
+;;; ----------------------------------------------------------------------------
 
 (defvar sclang-help-topic-alist nil
   "Alist mapping help topics to file names.")
@@ -73,16 +73,13 @@
 (defvar sclang-help-topic-history nil
   "List of recently invoked help topics.")
 
+(defvar sclang-scdoc-topics (make-hash-table :size 16385)
+  "List of all scdoc topics.")
+
 (defconst sclang-special-help-topics
   '(("/" . "division")
     ("-" . "subtraction"))
   "Alist of help topics with transcoded filenames.")
-
-(defun sclang-help-topic-name (file)
-  "Use the name of FILE to determine the title of the corresponding help topic."
-  (->> file
-    (file-name-nondirectory)
-    (file-name-sans-extension)))
 
 ;;; -----------------------------------------------------------------------------
 ;;; Initialization
@@ -112,7 +109,20 @@
    (--map (puthash it nil sclang-scdoc-topics) syms)))
 
 ;;; ----------------------------------------------------------------------------
+;;; Reflection
+
+(defun sclang-typeof-expr (expr)
+  "Return the class of the given SuperCollider expression EXPR."
+  (->> (s-trim expr) (format "%s.class") (sclang--blocking-eval-string)))
+
+;;; ----------------------------------------------------------------------------
 ;;; Help commands
+
+(defun sclang-help-topic-name (file)
+  "Use the name of FILE to determine the title of the corresponding help topic."
+  (->> file
+    (file-name-nondirectory)
+    (file-name-sans-extension)))
 
 (defun sclang-skip-help-directory? (path)
   "Answer t if PATH should be skipped during help file indexing."
@@ -154,11 +164,12 @@
   (setq sclang-help-topic-alist nil)
   (let ((case-fold-search nil)
         (max-specpdl-size 10000)
-        (max-lisp-eval-depth 10000))
-    (sclang-message "Indexing help topics ...")
+        (max-lisp-eval-depth 10000)
+        )
+    (message "Indexing help topics ...")
     (setq sclang-help-topic-alist
           (sclang-make-help-topic-alist (sclang-help-directories) nil))
-    (sclang-message "Indexing help topics ... Done")))
+    (message "Indexing help topics ... Done")))
 
 (defun sclang--read-help-topic ()
   "Read an SCDoc topic, with a default value."
@@ -172,11 +183,16 @@
 (cl-defun sclang--blocking-eval-string (expr &optional (timeout-ms 100))
   "Ask SuperCollider to evalutate the given string EXPR. Wait a maximum TIMEOUT-MS."
   (let ((result nil)
-        (elapsed 0))
+        (elapsed 0)
+        ;; Prevent expressions from crashing sclang.
+        (fmt (format "try { Emacs.message((%s).asString) } {|err|}" expr))
+        )
     ;; SuperCollider will eval the string and then call back with the result.
     ;; We rebind Emacs' `message' action to intercept the response.
     (flet ((message (str &rest _) (setq result str)))
-      (sclang-eval-string (format "Emacs.message(%s)" expr))
+
+      (sclang-eval-string fmt)
+
       ;; Block until we receive a response or the timeout expires.
       (while (and (not result) (> timeout-ms elapsed))
         (sleep-for 0 10)
@@ -189,14 +205,14 @@
    (format "SCDoc.findHelpFile(\"%s\")" topic)))
 
 (defun sclang-find-help (topic)
-  "Prompt the user for a help TOPIC."
+  "Prompt the user for a help TOPIC and display the topic in a browser window."
   (interactive (list (sclang--read-help-topic)))
   (let ((file (sclang--topic->helpfile topic)))
-    (cond
-     ((not sclang--help-initialized?) (error "Help system not ready"))
-     ((not file)                      (error "No help for \"%s\"" topic))
-     (t
-      (w3m-browse-url file)))))
+    (if (not (or file sclang--help-initialized?))
+        (error "Help system not ready")
+      (condition-case _err
+          (w3m-browse-url file)
+        (error (error "No help for \"%s\"" topic))))))
 
 (defun sclang-open-help-gui ()
   "Open SCDoc Help Browser."
@@ -206,12 +222,17 @@
 (defun sclang-find-help-in-gui (topic)
   "Search for TOPIC in SCDoc Help Browser."
   (interactive (list (sclang--read-help-topic)))
-  (if topic
-      (sclang-eval-string (sclang-format "HelpBrowser.openHelpFor(%o)" topic))
-    (sclang-eval-string (sclang-format "Help.gui"))))
+  (cond
+   ((not sclang--help-initialized?)
+    (error "Help system not ready"))
+
+   (topic
+    (sclang-eval-string (sclang-format "HelpBrowser.openHelpFor(%o)" topic)))
+
+   (t
+    (sclang-eval-string (sclang-format "Help.gui")))))
 
 (provide 'sclang-help)
-
 
 ;;; NOTES:
 ;;; * lexical-binding: Because it's generally the expected binding behaviour.
