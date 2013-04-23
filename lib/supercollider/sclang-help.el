@@ -495,19 +495,6 @@ Either visit file internally (.sc) or start external editor (.rtf)."
       (set-buffer-modified-p nil)
       (current-buffer))))
 
-(defun sclang--find-help-file (file)
-  "Find the help file corresponding with FILE."
-  (let* ((topic (sclang-get-help-topic file))
-         (bufname (sclang-help-buffer-name topic))
-         (buf (or (get-buffer bufname)
-                  (if (sclang-html-file? file)
-                      (w3m-find-file file)
-                    (sclang--create-help-buffer file bufname))))
-         )
-    (switch-to-buffer buf)
-    (when (sclang-html-file? file)
-      (sclang-goto-help-browser))))
-
 (defun sclang--read-help-topic ()
   "Read an SCDoc topic, with a default value."
   (let* ((topic (sclang-symbol-at-point))
@@ -537,13 +524,17 @@ Either visit file internally (.sc) or start external editor (.rtf)."
     (sclang--blocking-eval-string)
     (s-chop-prefix "file://")))
 
+(defun sclang--show-help-buf (file)
+  "Display a help buffer showing the contents of the given help FILE."
+  (let ((w3m-pop-up-windows t))
+    (w3m-browse-url file)))
+
 (defun sclang-find-help (topic)
   "Prompt the user for a help TOPIC."
   (interactive (list (sclang--read-help-topic)))
   (let ((file (sclang--topic->helpfile topic)))
-    (message "TOPIC: %s, FILE: %s" topic file)
     (if file
-        (w3m-find-file file)
+        (sclang--show-help-buf file)
       (error "No help for \"%s\"" topic)) nil))
 
 (defun sclang-open-help-gui ()
