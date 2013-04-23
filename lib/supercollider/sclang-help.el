@@ -88,27 +88,21 @@ documentation in the minibuffer for the thing at point."
 ;;;
 ;;; Ensure that help system is set up and torn down with the SuperCollider server.
 
-(defvar sclang--help-initialized? nil
-  "Non-nil if the SuperCollider help system is ready.")
-
 (defun sclang--setup-help ()
   "Initialize help system."
   (sclang-perform-command 'helpSymbols)
-  (ignore-errors (sclang-index-help-topics))
-  (setq sclang--help-initialized? t))
+  (sclang-eval-string "SCDoc.indexAllDocuments")
+  (ignore-errors (sclang-index-help-topics)))
 
 (defun sclang--clean-up-help ()
   "Tear down help system."
-  (clrhash sclang-scdoc-topics)
-  (setq sclang--help-initialized? nil))
+  (clrhash sclang-scdoc-topics))
 
 (add-hook 'sclang-library-startup-hook 'sclang--setup-help)
 (add-hook 'sclang-library-shutdown-hook 'sclang--clean-up-help)
 
 (sclang-set-command-handler
- 'helpSymbols
- (lambda (syms)
-   (--map (puthash it nil sclang-scdoc-topics) syms)))
+ 'helpSymbols (lambda (syms) (--map (puthash it nil sclang-scdoc-topics) syms)))
 
 ;;; ----------------------------------------------------------------------------
 ;;; Reflection
@@ -120,7 +114,7 @@ documentation in the minibuffer for the thing at point."
 ;;; ----------------------------------------------------------------------------
 ;;; Help commands
 
-(defun sclang-help-topic-name (file)
+(defun sclang--filename->topic (file)
   "Use the name of FILE to determine the title of the corresponding help topic."
   (->> file
     (file-name-nondirectory)
@@ -153,7 +147,7 @@ documentation in the minibuffer for the thing at point."
   "Build a help topic alist from directories in DIRS, with initial RESULT."
   (if dirs
       (let* ((files (sclang-help-files dirs))
-             (topics (-remove 'null (mapcar 'sclang-help-topic-name files)))
+             (topics (-remove 'null (mapcar 'sclang--filename->topic files)))
              (new-dirs	(sclang-filter-help-directories files)))
         (sclang-make-help-topic-alist
          (append new-dirs (cdr dirs))
@@ -183,7 +177,7 @@ documentation in the minibuffer for the thing at point."
                      'sclang-help-topic-history topic)))
 
 (cl-defun sclang--blocking-eval-string (expr &optional (timeout-ms 100))
-  "Ask SuperCollider to evalutate the given string EXPR. Wait a maximum TIMEOUT-MS."
+  "Ask SuperCollider to evaluate the given string EXPR. Wait a maximum TIMEOUT-MS."
   (let ((result nil)
         (elapsed 0)
         ;; Prevent expressions from crashing sclang.
@@ -235,27 +229,29 @@ documentation in the minibuffer for the thing at point."
   ;; Switch to a help window if it is open. Otherwise, split the window.
   (or (sclang--switch-to-help-window)
       (progn (split-window) (other-window +1)))
+
   ;; Open the help page in the current window.
-  (w3m-browse-url file)
-  (rename-buffer sclang--help-buffer-name))
+  (condition-case _err
+      (w3m-browse-url file)
+    (error
+     (error "No help for \"%s\"" (sclang--filename->topic file))))
+
+  ;; Rename buffer if the help buffer was successfully opened.
+  (if (equal major-mode 'w3m-mode)
+      (rename-buffer sclang--help-buffer-name)
+    (error "SuperCollider help system not initialized")))
 
 (defadvice w3m-close-window (around delete-sc-help-window activate)
   "Delete the SuperCollider help window, rather than killing w3m."
-  (if (equal (buffer-name) sclang--help-buffer-name)
+  (if (and (equal (buffer-name) sclang--help-buffer-name)
+           (< 1 (length (window-list))))
       (delete-window)
     ad-do-it))
 
 (defun sclang-find-help (topic)
   "Prompt the user for a help TOPIC and display the topic in a browser window."
   (interactive (list (sclang--read-help-topic)))
-  (let ((file (sclang--topic->helpfile topic)))
-    (if (not (or file sclang--help-initialized?))
-        (error "Help system not ready")
-      (condition-case err
-          (sclang--open-help-window file)
-        (error
-         (message err)
-         (error "No help for \"%s\"" topic))))))
+  (sclang--open-help-window (sclang--topic->helpfile topic)))
 
 (defun sclang-open-help-gui ()
   "Open SCDoc Help Browser."
@@ -265,15 +261,9 @@ documentation in the minibuffer for the thing at point."
 (defun sclang-find-help-in-gui (topic)
   "Search for TOPIC in SCDoc Help Browser."
   (interactive (list (sclang--read-help-topic)))
-  (cond
-   ((not sclang--help-initialized?)
-    (error "Help system not ready"))
-
-   (topic
-    (sclang-eval-string (sclang-format "HelpBrowser.openHelpFor(%o)" topic)))
-
-   (t
-    (sclang-eval-string (sclang-format "Help.gui")))))
+  (if topic
+      (sclang-eval-string (sclang-format "HelpBrowser.openHelpFor(%o)" topic))
+    (sclang-eval-string (sclang-format "Help.gui"))))
 
 (provide 'sclang-help)
 
