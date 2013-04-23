@@ -2,12 +2,10 @@
 
 ;; Copyright (C) 2013 Chris Barrett
 
-;; Author:
+;; Author: stefan kersten <steve@k-hornz.de>
 
 ;; This file is not part of GNU Emacs.
 
-;; copyright 2003 stefan kersten <steve@k-hornz.de>
-;;
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
 ;; published by the Free Software Foundation; either version 2 of the
@@ -30,31 +28,38 @@
 
 ;;; Code:
 
-(require 'sclang-util)
-(require 'sclang-interp)
-(require 'sclang-language)
-(require 'sclang-mode)
-(require 'sclang-vars)
-(require 'sclang-minor-mode)
 (require 'dash)
 (require 's)
 (require 'cl-lib)
 
-(autoload 'w3m-edit-current-url "w3m")
+(autoload 'w3m-browse-url "w3m")
+(autoload 'sclang-format "sclang-language")
+(autoload 'sclang-eval-string "sclang-interp")
+(autoload 'sclang-symbol-at-point "sclang-language")
+(autoload 'sclang-message "sclang-util")
+(autoload 'sclang-set-command-handler "sclang-interp")
+(autoload 'sclang-perform-command "sclang-interp")
 
 ;;; ----------------------------------------------------------------------------
 ;;; Customizable variables.
 
-(defcustom sclang-help-path
-  (list sclang-system-help-dir "~/.local/share/SuperCollider/Help")
-  "*List of directories where SuperCollider help files are kept."
-  :group 'sclang-interface
+(defgroup sclang-help nil
+  "Emacs interface to the SuperCollider help system."
+  :prefix "sclang-"
   :version "21.4"
+  :group 'languages)
+
+(defcustom sclang-help-path
+  (list "~/.local/share/SuperCollider/Help")
+  "*List of directories where SuperCollider help files are kept."
+  :group 'sclang-help
   :type '(repeat directory))
 
-(defconst sclang-extension-path
-  (list sclang-system-extension-dir "~/.local/share/SuperCollider/Extensions")
-  "List of SuperCollider extension directories.")
+(defcustom sclang-extension-path
+  (list "~/.local/share/SuperCollider/Extensions")
+  "List of SuperCollider extension directories."
+  :group 'sclang-help
+  :type '(repeat directory))
 
 ;;; ----------------------------------------------------------------------------
 ;;; Help file caching
@@ -79,9 +84,35 @@
     (file-name-nondirectory)
     (file-name-sans-extension)))
 
-;; =====================================================================
-;; help file access
-;; =====================================================================
+;;; -----------------------------------------------------------------------------
+;;; Initialization
+;;;
+;;; Ensure that help system is set up and torn down with the SuperCollider server.
+
+(defvar sclang--help-initialized? nil
+  "Non-nil if the SuperCollider help system is ready.")
+
+(defun sclang--setup-help ()
+  "Initialize help system."
+  (sclang-perform-command 'helpSymbols)
+  (ignore-errors (sclang-index-help-topics))
+  (setq sclang--help-initialized? t))
+
+(defun sclang--clean-up-help ()
+  "Tear down help system."
+  (clrhash sclang-scdoc-topics)
+  (setq sclang--help-initialized? nil))
+
+(add-hook 'sclang-library-startup-hook 'sclang--setup-help)
+(add-hook 'sclang-library-shutdown-hook 'sclang--clean-up-help)
+
+(sclang-set-command-handler
+ 'helpSymbols
+ (lambda (syms)
+   (--map (puthash it nil sclang-scdoc-topics) syms)))
+
+;;; ----------------------------------------------------------------------------
+;;; Help commands
 
 (defun sclang-skip-help-directory? (path)
   "Answer t if PATH should be skipped during help file indexing."
@@ -154,17 +185,18 @@
 
 (defun sclang--topic->helpfile (topic)
   "Get the absolute path to the SuperCollider help file for TOPIC."
-  (->> (format "SCDoc.findHelpFile(\"%s\")" topic)
-    (sclang--blocking-eval-string)
-    (s-chop-prefix "file://")))
+  (sclang--blocking-eval-string
+   (format "SCDoc.findHelpFile(\"%s\")" topic)))
 
 (defun sclang-find-help (topic)
   "Prompt the user for a help TOPIC."
   (interactive (list (sclang--read-help-topic)))
   (let ((file (sclang--topic->helpfile topic)))
-    (if file
-        (w3m-browse-url file)
-      (error "No help for \"%s\"" topic)) nil))
+    (cond
+     ((not sclang--help-initialized?) (error "Help system not ready"))
+     ((not file)                      (error "No help for \"%s\"" topic))
+     (t
+      (w3m-browse-url file)))))
 
 (defun sclang-open-help-gui ()
   "Open SCDoc Help Browser."
@@ -178,32 +210,16 @@
       (sclang-eval-string (sclang-format "HelpBrowser.openHelpFor(%o)" topic))
     (sclang-eval-string (sclang-format "Help.gui"))))
 
-(sclang-set-command-handler
- 'helpSymbols
- (lambda (syms)
-   (--map (puthash it nil sclang-scdoc-topics) syms)))
-
-;;; -----------------------------------------------------------------------------
-;;; Setup modle.
-;;;
-;;; Ensure that help system is set up and torn down with the SuperCollider server.
-
-(defun sclang--setup-help ()
-  "Initialize help system."
-  (sclang-perform-command 'helpSymbols)
-  (ignore-errors (sclang-index-help-topics)))
-
-(defun sclang--clean-up-help ()
-  "Tear down help system."
-  (clrhash sclang-scdoc-topics))
-
-(add-hook 'sclang-library-startup-hook 'sclang--setup-help)
-(add-hook 'sclang-library-shutdown-hook 'sclang--clean-up-help)
-
 (provide 'sclang-help)
+
+
+;;; NOTES:
+;;; * lexical-binding: Because it's generally the expected binding behaviour.
+;;; * not obsolete: We need `flet' for dynamically rebinding functions.
 
 ;; Local Variables:
 ;; lexical-binding: t
+;; byte-compile-warnings: (not obsolete)
 ;; End:
 
 ;;; sclang-help.el ends here
