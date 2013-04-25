@@ -36,12 +36,23 @@
     (menu-bar-mode +1)
   (menu-bar-mode -1))
 
-;;; Fully-qualify `user-emacs-directory' and peform essential loads.
-(setq user-emacs-directory (expand-file-name user-emacs-directory))
-(defvar user-home-directory (getenv "HOME"))
+;;; ----------------------------------------------------------------------------
+;;; Initialize packages.
 
-(require 'bind-key (concat user-emacs-directory "lib/use-package/bind-key.el"))
-(require 'use-package (concat user-emacs-directory "lib/use-package/use-package.el"))
+(require 'package)
+(add-to-list 'package-archives '("melpa"     . "http://melpa.milkbox.net/packages/"))
+(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
+(package-initialize)
+(unless package-archive-contents (package-refresh-contents))
+
+(unless (package-installed-p 'use-package)
+  (package-install 'use-package))
+
+;; Manually load bind-key until the `use-package' package is fixed.
+(require 'bind-key (concat user-emacs-directory "lib/bind-key.el"))
+(require 'use-package)
+
+;;; ----------------------------------------------------------------------------
 
 ;;; Describe me.
 
@@ -121,6 +132,11 @@
 (eval-after-load "vc"
   '(remove-hook 'find-file-hooks 'vc-find-file-hook))
 
+;;; Fully-qualify `user-emacs-directory'.
+(setq user-emacs-directory (expand-file-name user-emacs-directory))
+(defvar user-home-directory (getenv "HOME"))
+(add-to-list 'load-path (concat user-emacs-directory "lisp"))
+
 ;;; Editing Advice
 
 (defadvice ido-find-file (after find-file-sudo activate)
@@ -158,17 +174,6 @@
   "Recompile all lisp files in the package directory."
   (interactive)
   (byte-recompile-directory (concat user-emacs-directory "elpa") 0 t))
-
-;;; ----------------------------------------------------------------------------
-;;; Initialize packages.
-
-(require 'package)
-(add-to-list 'package-archives '("melpa"     . "http://melpa.milkbox.net/packages/"))
-(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
-(package-initialize)
-(unless package-archive-contents (package-refresh-contents))
-
-(add-to-list 'load-path (concat user-emacs-directory "lisp"))
 
 ;;; ============================================================================
 ;;; Load packages.
@@ -1227,7 +1232,7 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
       (local-set-key (kbd "s-.") 'sclang-main-stop)
       (auto-complete-mode +1)
       (smartparens-mode +1)
-      (setq ac-sources nil)
+      (sclang-ac-mode +1)
       (unless (sclang-server-running-p)
         (sclang-server-boot)))))
 
