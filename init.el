@@ -804,6 +804,11 @@
     (add-hook 'python-mode-hook        'lambda-mode)
     (add-hook 'slime-repl-mode-hook    'lambda-mode)))
 
+(use-package dired-details
+  :ensure   t
+  :commands dired-details-install
+  :init     (add-hook 'dired-mode-hook 'dired-details-install))
+
 (use-package markdown-mode
   :ensure t
   :mode (("\\.md$"          . markdown-mode)
@@ -1222,6 +1227,7 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
       (local-set-key (kbd "s-.") 'sclang-main-stop)
       (auto-complete-mode +1)
       (smartparens-mode +1)
+      (setq ac-sources nil)
       (unless (sclang-server-running-p)
         (sclang-server-boot)))))
 
