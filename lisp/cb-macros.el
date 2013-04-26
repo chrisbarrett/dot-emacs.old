@@ -33,28 +33,6 @@
   (and (fboundp symbol)
        (eq (car (symbol-function symbol)) 'macro)))
 
-(defmacro cb:defmacro-safe (symbol arglist &rest body)
-  "Define the given macro only if it is not already defined."
-  (declare (doc-string 3) (indent defun))
-  (cl-assert (symbolp symbol))
-  (cl-assert (listp arglist))
-  `(unless (macro-boundp ',symbol)
-     (cl-defmacro ,symbol ,arglist ,@body)))
-
-(cb:defmacro-safe when-let ((var form) &rest body)
-  "Execute BODY forms with bindings only if FORM evaluates to a non-nil value."
-  (declare (indent 1))
-  `(let ((,var ,form))
-     (when ,var
-       ,@body)))
-
-(cb:defmacro-safe if-let ((var form) then &rest else)
-  "Execute THEN form with bindings if FORM evaluates to a non-nil value,
-otherwise execute ELSE forms without bindings."
-  (declare (indent 1))
-  `(let ((,var ,form))
-     (if ,var ,then ,@else)))
-
 (defmacro hook-fn (hook &optional docstring &rest body)
   "Execute forms when a given hook is called.
 The arguments passed to the hook function are bound to the symbol 'args'.
@@ -109,7 +87,7 @@ This directory tree will be added to the load path if ADD-PATH is non-nil"
   (let ((args* (cl-gensym)))
     `(eval-and-compile
        (let ((,args* ,args))
-         (when-let (pkg (plist-get ,args* ))
+         (-when-let (pkg (plist-get ,args* ))
            (cb:ensure-package ,name))
          (use-package ,name ,@args)))))
 

@@ -28,6 +28,7 @@
 ;;; Font lock
 
 (autoload 'ielm "ielm")
+(require 'dash)
 
 (font-lock-add-keywords
  'emacs-lisp-mode
@@ -94,9 +95,13 @@
 (defun cb:switch-to-elisp ()
   "Switch to the last active elisp buffer."
   (interactive)
-  (when-let (buf (cb:last-elisp-buffer))
+  (-when-let (buf (cb:last-elisp-buffer))
     (switch-to-buffer-other-window buf)))
 
 (provide 'cb-elisp)
 
 ;;; cb-elisp.el ends here
+
+;; Local Variables:
+;; byte-compile-warnings: (not obsolete)
+;; End:
