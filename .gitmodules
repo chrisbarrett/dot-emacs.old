@@ -7,3 +7,6 @@
 [submodule "lib/ido-speed-hack"]
 	path = lib/ido-speed-hack
 	url = git://github.com/orfelyus/ido-speed-hack.git
+[submodule "lib/sclang-ac-mode"]
+	path = lib/sclang-ac-mode
+	url = git://github.com/chrisbarrett/sclang-ac-mode.git
