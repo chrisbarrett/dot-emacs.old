@@ -47,9 +47,6 @@
 
 (unless (package-installed-p 'use-package)
   (package-install 'use-package))
-
-;; Manually load bind-key until the `use-package' package is fixed.
-(require 'bind-key (concat user-emacs-directory "lib/bind-key.el"))
 (require 'use-package)
 
 ;;; ----------------------------------------------------------------------------
