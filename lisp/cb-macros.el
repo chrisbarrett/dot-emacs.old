@@ -28,11 +28,6 @@
 (require 'dash)
 (require 'cl-lib)
 
-(defun macro-boundp (symbol)
-  "Test whether SYMBOL is bound as a macro."
-  (and (fboundp symbol)
-       (eq (car (symbol-function symbol)) 'macro)))
-
 (defmacro hook-fn (hook &optional docstring &rest body)
   "Execute forms when a given hook is called.
 The arguments passed to the hook function are bound to the symbol 'args'.

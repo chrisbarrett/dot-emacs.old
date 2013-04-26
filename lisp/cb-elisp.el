@@ -41,11 +41,6 @@
          word-end)
     (1 font-lock-keyword-face))
 
-   ;; -let forms.
-
-   (,(rx "(" (group (* (not space)) "-let") symbol-end)
-    (1 font-lock-keyword-face))
-
    ;; definition forms.
 
    (,(rx "("
