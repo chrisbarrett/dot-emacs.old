@@ -1487,6 +1487,16 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
              gist-region-or-buffer
              gist-region-or-buffer-private))
 
+(use-package projectile
+  :ensure   t
+  :diminish projectile-mode
+  :config   (projectile-global-mode))
+
+(use-package helm-projectile
+  :ensure t
+  :commands helm-projectile
+  :bind ("C-c C-h" . helm-projectile))
+
 ;;; ----------------------------------------------------------------------------
 ;;; Show quote if 'fortune' is installed.
 
