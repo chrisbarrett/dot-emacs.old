@@ -26,8 +26,6 @@
 
 ;;; Code:
 
-(autoload 'eproject-root "eproject")
-
 (require 's)
 
 (defvar cb:ctags-exclude-patterns
@@ -51,7 +49,7 @@
 
 (defun cb:tags-project-root ()
   "Return the root of the current project or the current directory."
-  (or (ignore-errors (eproject-root))
+  (or (ignore-errors (projectile-project-root))
       (s-chop-prefix "Directory " (pwd))))
 
 (defun cb:home-subfolder? (dir)
@@ -80,6 +78,10 @@
   (let ((tags-revert-without-query t))
     (visit-tags-table (cb:tags-project-root))
     (message (concat "Loaded " tags-file-name))))
+
+(defadvice find-tag (before set-tags-directory activate)
+  "Ensure the TAGS path is set."
+  (setq tags-file-name (concat (cb:tags-project-root) "TAGS")))
 
 (defun cb:find-tag ()
   "Find the tags at point, creating a tags file if none exists."
