@@ -887,14 +887,6 @@
     (hook-fn 'snippet-mode-hook
       (setq require-final-newline nil))))
 
-(use-package eproject
-  :ensure t
-  :commands eproject-maybe-turn-on
-  :diminish eproject-mode
-  :config
-  (hook-fn 'prog-mode-hook
-    (ignore-errors (eproject-maybe-turn-on))))
-
 (use-package make-mode
   :config
   (progn
