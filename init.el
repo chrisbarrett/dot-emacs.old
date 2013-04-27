@@ -99,16 +99,10 @@
 
 ;;; Set exec-path manually in OS X.
 
-(when (and (display-graphic-p) (equal system-type 'darwin))
-  (let ((home (getenv "HOME")))
-    (add-to-list 'exec-path (concat home "/.carton/bin"))
-    (add-to-list 'exec-path (concat home "/bin"))
-    (add-to-list 'exec-path (concat home "/.cabal/bin"))
-    (add-to-list 'exec-path "/usr/local/bin")
-    (add-to-list 'exec-path "/opt/local/bin")
-    (add-to-list 'exec-path "/opt/local/sbin"))
-
-  (setenv "PATH" (mapconcat 'identity exec-path ":")))
+(use-package exec-path-from-shell
+  :ensure t
+  :if     (memq window-system '(mac ns))
+  :config (exec-path-from-shell-initialize))
 
 ;;; Help commands
 
@@ -1229,9 +1223,12 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
       (local-set-key (kbd "s-.") 'sclang-main-stop)
       (auto-complete-mode +1)
       (smartparens-mode +1)
-      (sclang-ac-mode +1)
       (unless (sclang-server-running-p)
         (sclang-server-boot)))))
+
+(use-package sclang-extensions
+  :commands sclang-extensions-mode
+  :init (add-hook 'sclang-mode-hook 'sclang-extensions-mode))
 
 (use-package fsharp-mode
   :ensure   t
