@@ -1,12 +1,12 @@
-[submodule "lib/elisp-refactor"]
-        path = lib/elisp-refactor
-        url = git://github.com/chrisbarrett/elisp-refactor.git
+[submodule "lib/emacs-refactor"]
+        path = lib/emacs-refactor
+        url = git://github.com/chrisbarrett/emacs-refactor.git
 [submodule "lib/ert-modeline"]
         path = lib/ert-modeline
         url = git://github.com/chrisbarrett/ert-modeline.git
 [submodule "lib/ido-speed-hack"]
-	path = lib/ido-speed-hack
-	url = git://github.com/orfelyus/ido-speed-hack.git
-[submodule "lib/sclang-ac-mode"]
-	path = lib/sclang-ac-mode
-	url = git://github.com/chrisbarrett/sclang-ac-mode.git
+        path = lib/ido-speed-hack
+        url = git://github.com/orfelyus/ido-speed-hack.git
+[submodule "lib/sclang-extensions"]
+        path = lib/sclang-extensions
+        url = git://github.com/chrisbarrett/sclang-extensions.git

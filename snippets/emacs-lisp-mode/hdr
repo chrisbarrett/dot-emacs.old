@@ -2,7 +2,7 @@
 # name: elisp file header
 # key: hdr
 # --
-;;; `(file-name-sans-extension (file-name-nondirectory buffer-file-name))` --- $1
+;;; `(file-name-nondirectory buffer-file-name)` --- $1
 
 ;; Copyright (C) `(format-time-string "%Y")` `user-full-name`
 
