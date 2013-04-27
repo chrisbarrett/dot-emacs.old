@@ -659,12 +659,19 @@
 (use-package shell
   :commands shell
   :config
-  (hook-fn 'window-configuration-change-hook
-    "Change process window size."
-    (when (derived-mode-p 'comint-mode)
-      (set-process-window-size (get-buffer-process (current-buffer))
-                               (window-height)
-                               (window-width)))))
+  (progn
+    (hook-fn 'window-configuration-change-hook
+      "Change process window size."
+      (when (derived-mode-p 'comint-mode)
+        (set-process-window-size (get-buffer-process (current-buffer))
+                                 (window-height)
+                                 (window-width))))
+
+    (defadvice shell (after move-to-end-of-buffer activate)
+      "Move to the end of the shell buffer and enter insertion state."
+      (goto-char (point-max))
+      (when (fboundp 'evil-append-line)
+        (evil-append-line 1)))))
 
 (use-package auto-complete
   :ensure t
@@ -1510,7 +1517,11 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
     (message (s-trim (shell-command-to-string "fortune -as")))))
 
 (hook-fn 'after-init-hook
-  (run-with-idle-timer 0.1 nil 'fortune))
+  ;; Show fortune.
+  (run-with-idle-timer 0.1 nil 'fortune)
+
+  ;; Load site-file.
+  (load (concat user-emacs-directory "site-file.el") t t))
 
 ;; Local Variables:
 ;; byte-compile-warnings: (not free-vars obsolete)
