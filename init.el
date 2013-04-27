@@ -1497,6 +1497,12 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
   :commands helm-projectile
   :bind ("C-c C-h" . helm-projectile))
 
+(use-package ack-and-a-half
+  :ensure t
+  :commands (ack-and-a-half-same
+             ack-and-a-half-find-file
+             ack-and-a-half-find-file-same))
+
 ;;; ----------------------------------------------------------------------------
 ;;; Show quote if 'fortune' is installed.
 
