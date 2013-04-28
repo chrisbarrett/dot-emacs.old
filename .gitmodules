@@ -10,3 +10,6 @@
 [submodule "lib/sclang-extensions"]
         path = lib/sclang-extensions
         url = git://github.com/chrisbarrett/sclang-extensions.git
+[submodule "lib/info-lookmore"]
+        path = lib/info-lookmore
+        url = git://github.com/emacsmirror/info-lookmore.git

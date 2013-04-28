@@ -425,14 +425,18 @@
 
 (use-package recentf
   :init
-  (progn
-    (setq
-     recentf-save-file       (concat cb:tmp-dir "recentf")
-     recentf-keep            '(file-remote-p file-readable-p)
-     recentf-max-saved-items 100
-     recentf-max-menu-items  25
-     recentf-exclude
-     '(".newsrc" "-autoloads.el" "recentf" ".ido.last" "TAGS" ".gz"))))
+  (setq
+   recentf-save-file       (concat cb:tmp-dir "recentf")
+   recentf-keep            '(file-remote-p file-readable-p)
+   recentf-max-saved-items 100
+   recentf-max-menu-items  25
+   recentf-exclude '(".newsrc"
+                     "Emacs.app"
+                     "-autoloads.el"
+                     "recentf"
+                     ".ido.last"
+                     "TAGS"
+                     ".gz")))
 
 (use-package savehist
   :init
@@ -1296,8 +1300,9 @@
         (sclang-server-boot)))))
 
 (use-package sclang-extensions
+  :ensure   t
   :commands sclang-extensions-mode
-  :init (add-hook 'sclang-mode-hook 'sclang-extensions-mode))
+  :init     (add-hook 'sclang-mode-hook 'sclang-extensions-mode))
 
 (use-package fsharp-mode
   :ensure   t
@@ -1591,6 +1596,10 @@
   :commands iedit-mode
   :bind     ("C-c RET" . iedit-mode))
 
+(use-package info-lookmore
+  :commands info-lookmore-elisp-cl
+  :init     (eval-after-load "info-look" '(info-lookmore-elisp-cl)))
+
 ;;; ----------------------------------------------------------------------------
 ;;; Miss commands=
 
@@ -1609,7 +1618,7 @@ Repeated invocations toggle between the two most recently open buffers."
   "Display a quotation from the 'fortune' program."
   (interactive)
   (when (executable-find "fortune")
-    (message (s-trim (shell-command-to-string "fortune -as")))))
+    (message (s-trim (shell-command-to-string "fortune -s")))))
 
 (hook-fn 'after-init-hook
   ;; Show fortune.
