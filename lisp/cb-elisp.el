@@ -28,6 +28,7 @@
 ;;; Font lock
 
 (autoload 'ielm "ielm")
+(autoload 'projectile-project-root "projectile")
 (require 'dash)
 
 (defun cb:switch-to-ielm ()
@@ -51,6 +52,29 @@
   (interactive)
   (-when-let (buf (cb:last-elisp-buffer))
     (switch-to-buffer-other-window buf)))
+
+(defun cb:find-and-load-ert-tests ()
+  "Load the test-runner for the current project if one exists."
+  (interactive)
+  (-when-let (root (projectile-project-root))
+    (let* (
+           (files (->> (list root (concat root "test/") (concat root "tests/"))
+                    ;; Find all tests in possible test directories.
+                    (-filter 'file-exists-p)
+                    (--mapcat (directory-files it t (rx "test" (* nonl) ".el")))
+                    (-remove 'null)
+                    (-filter 'file-exists-p)
+                    ;; Find test runners.
+                    (--group-by (s-matches? (rx (or "runner" "fixture")) it))))
+           (runners (assoc t files))
+           (tests   (assoc nil files))
+           )
+      (-each (cdr runners) 'load-file)
+      (-each (cdr tests)   'load-file)
+      (when (or runners tests)
+        (message "Loaded %s test files"
+                 (+ (length (cdr runners))
+                    (length (cdr tests))))))))
 
 (provide 'cb-elisp)
 

@@ -1098,12 +1098,17 @@
   :init     (add-hook 'emacs-lisp-mode-hook 'ert-modeline-mode))
 
 (use-package cb-elisp
-  :commands (cb:switch-to-ielm cb:switch-to-elisp)
+  :commands (cb:switch-to-ielm
+             cb:switch-to-elisp
+             cb:find-and-load-ert-tests)
+  :defer    t
   :init
   (progn
-    (add-hook 'after-save-hook 'check-parens nil 'local)
-    (add-to-list 'auto-mode-alist '("Carton$" . emacs-lisp-mode))
+    (hook-fn 'emacs-lisp-mode-hook
+      (add-hook 'after-save-hook 'check-parens nil 'local)
+      (ignore-errors (cb:find-and-load-ert-tests)))
 
+    (add-to-list 'auto-mode-alist '("Carton$" . emacs-lisp-mode))
     (define-key emacs-lisp-mode-map (kbd "C-c e b") 'eval-buffer)
     (define-key emacs-lisp-mode-map (kbd "C-c e f") 'emacs-lisp-byte-compile-and-load)
     (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'cb:switch-to-ielm)
