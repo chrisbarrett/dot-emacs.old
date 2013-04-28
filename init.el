@@ -293,11 +293,11 @@
   :ensure   t
   :init
   (progn
+    (global-set-key (kbd "C-x C-b") 'helm-buffers-list)
     (global-set-key (kbd "C-c C-h") 'helm-mini)
     (global-set-key (kbd "C-c C-i") 'helm-imenu)
     (global-set-key (kbd "C-c C-f") 'helm-etags-select)
-    (global-set-key (kbd "C-c m")   'helm-man-woman)
-    (global-set-key (kbd "C-c RET") 'helm-regexp)))
+    (global-set-key (kbd "C-c m")   'helm-man-woman)))
 
 (use-package imenu
   :config
