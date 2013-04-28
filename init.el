@@ -291,8 +291,12 @@
 
 (use-package helm
   :ensure   t
-  :defer    t
-  :init     (global-set-key (kbd "C-c C-t") 'helm-mini))
+  :init
+  (progn
+    (global-set-key (kbd "C-c C-h") 'helm-mini)
+    (global-set-key (kbd "C-c C-i") 'helm-imenu)
+    (global-set-key (kbd "C-c C-f") 'helm-etags-select)
+    (global-set-key (kbd "C-c RET") 'helm-regexp)))
 
 (use-package imenu
   :config
@@ -459,9 +463,7 @@
   :config
   (progn
     ;; Global keys.
-    (key-chord-define-global "dh" 'helm-mini)
     (key-chord-define-global "x;" 'cb:kill-current-buffer)
-    (key-chord-define-global "fh" 'helm-imenu)
 
     ;; Paredit keys.
     (eval-after-load 'paredit
@@ -1051,15 +1053,26 @@
     (font-lock-add-keywords
      'emacs-lisp-mode
      `(
+       ;; General keywords
        (,(rx "(" (group (or "use-package"
                             "hook-fn"
                             "progn-after-load"
+                            "ac-define-source"
+                            "flycheck-declare-checker"
                             "cl-destructuring-bind"
                             "cl-defstruct"))
              word-end)
         (1 font-lock-keyword-face))
 
-       ;; definition forms.
+       ;; Identifiers after keywords
+       (,(rx "(" (group (or "use-package"
+                            "ac-define-source"
+                            "flycheck-declare-checker"))
+             (+ space)
+             (group (+ (regex "\[^ )\n\]"))))
+        (2 font-lock-constant-face))
+
+       ;; definition forms
        (,(rx "("
              (group (* (not space)) (or "cl-" "--" "/" ":") "def"
                     (* (not space)))
@@ -1077,13 +1090,7 @@
              (+ space)
              (group (+ (regex "\[^ )\n\]"))))
 
-        (1 font-lock-type-face))
-
-       ;; use-package macro
-       (,(rx "(" (group "use-package")
-             (+ space)
-             (group (+ (regex "\[^ )\n\]"))))
-        (2 font-lock-constant-face)))))
+        (1 font-lock-type-face)))))
 
   :config
   (progn
@@ -1535,7 +1542,7 @@
           (helm-projectile)
         (helm-mini)))
 
-    (global-set-key (kbd "C-c C-h") 'cb:helm-dwim)))
+    (global-set-key (kbd "C-c C-j") 'cb:helm-dwim)))
 
 (use-package ack-and-a-half
   :ensure t
