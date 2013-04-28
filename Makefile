@@ -89,10 +89,10 @@ $(src) :
 # Python
 
 .PHONY: python
-python : jedi eply
+python : jedi elpy
 
 .PHONY: jedi
-jedi : virtualenv epc argparse
+jedi :
 	pip install virtualenv epc argparse jedi
 
 .PHONY: elpy

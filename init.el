@@ -1559,6 +1559,11 @@
              ack-and-a-half-find-file
              ack-and-a-half-find-file-same))
 
+(use-package iedit
+  :ensure   t
+  :commands iedit-mode
+  :bind     ("C-c RET" . iedit-mode))
+
 ;;; ----------------------------------------------------------------------------
 ;;; Miss commands=
 
