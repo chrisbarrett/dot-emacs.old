@@ -30,47 +30,6 @@
 (autoload 'ielm "ielm")
 (require 'dash)
 
-(font-lock-add-keywords
- 'emacs-lisp-mode
- `(
-   (,(rx "(" (group (or "use-package"
-                        "hook-fn"
-                        "progn-after-load"
-                        "cl-destructuring-bind"
-                        "cl-defstruct"))
-         word-end)
-    (1 font-lock-keyword-face))
-
-   ;; definition forms.
-
-   (,(rx "("
-         (group (* (not space)) (or "cl-" "--" "/" ":") "def"
-                (* (not space)))
-         (+ space)
-         (group (+ (regex "\[^ )\n\]"))))
-    (1 font-lock-keyword-face)
-    (2 font-lock-function-name-face))
-
-   ;; cb:extracting-list
-
-   (,(rx "(" (group "cb:extracting-list") (or space eol))
-    (1 font-lock-keyword-face))
-
-   ;; cl-struct.
-
-   (,(rx "(cl-defstruct"
-         (+ space)
-         (group (+ (regex "\[^ )\n\]"))))
-
-    (1 font-lock-type-face))
-
-   ;; use-package macro.
-
-   (,(rx "(" (group "use-package")
-         (+ space)
-         (group (+ (regex "\[^ )\n\]"))))
-    (2 font-lock-constant-face))))
-
 (defun cb:switch-to-ielm ()
   "Start up or switch to an Inferior Emacs Lisp buffer."
   (interactive)

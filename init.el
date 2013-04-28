@@ -290,8 +290,9 @@
 ;;; ----------------------------------------------------------------------------
 
 (use-package helm
-  :ensure t
-  :defer  t)
+  :ensure   t
+  :defer    t
+  :init     (global-set-key (kbd "C-c C-t") 'helm-mini))
 
 (use-package imenu
   :config
@@ -888,6 +889,7 @@
       (setq require-final-newline nil))))
 
 (use-package make-mode
+  :defer t
   :config
   (progn
     (add-to-list 'ac-modes 'makefile-mode)
@@ -1020,44 +1022,78 @@
   :commands c-turn-on-eldoc-mode
   :init     (add-hook 'c-mode-hook 'c-turn-on-eldoc-mode))
 
+(use-package ert-modeline
+  :defer    t
+  :commands ert-modeline-mode
+  :init     (add-hook 'emacs-lisp-mode-hook 'ert-modeline-mode))
+
 (use-package cb-elisp
   :commands (cb:switch-to-ielm cb:switch-to-elisp)
-  :defer nil
-
   :init
   (progn
-    (autoload 'ert-modeline-mode "ert-modeline")
-    (add-hook 'emacs-lisp-mode-hook 'ert-modeline-mode)
-    (add-hook 'after-save-hook 'check-parens)
+    (add-hook 'after-save-hook 'check-parens nil 'local)
     (add-to-list 'auto-mode-alist '("Carton$" . emacs-lisp-mode))
 
-    (bind-key (kbd "C-c e b") 'eval-buffer)
-    (bind-key (kbd "C-c e e") 'toggle-debug-on-error)
-    (bind-key (kbd "C-c e f") 'emacs-lisp-byte-compile-and-load)
-    (bind-key (kbd "C-c e r") 'eval-region)
-    (bind-key (kbd "C-c e s") 'scratch)
-
-    ;; Switching back-and-forth from IELM.
+    (define-key emacs-lisp-mode-map (kbd "C-c e b") 'eval-buffer)
+    (define-key emacs-lisp-mode-map (kbd "C-c e e") 'toggle-debug-on-error)
+    (define-key emacs-lisp-mode-map (kbd "C-c e f") 'emacs-lisp-byte-compile-and-load)
+    (define-key emacs-lisp-mode-map (kbd "C-c e r") 'eval-region)
+    (define-key emacs-lisp-mode-map (kbd "C-c e s") 'scratch)
     (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'cb:switch-to-ielm)
-    (hook-fn 'ielm-mode-hook
-      (local-set-key (kbd "C-c C-z") 'cb:switch-to-elisp))
+    (hook-fn 'ielm-mode-hook (local-set-key (kbd "C-c C-z") 'cb:switch-to-elisp))
 
-    (hook-fn 'emacs-lisp-mode-hook
-      (require 'cb-elisp)))
+    (defadvice eval-buffer (after buffer-evaluated-feedback activate)
+      "Message that the buffer has been evaluated."
+      (when (buffer-file-name)
+        (message "Buffer evaluated.")))
+
+    ;; Elisp font-locking
+    (font-lock-add-keywords
+     'emacs-lisp-mode
+     `(
+       (,(rx "(" (group (or "use-package"
+                            "hook-fn"
+                            "progn-after-load"
+                            "cl-destructuring-bind"
+                            "cl-defstruct"))
+             word-end)
+        (1 font-lock-keyword-face))
+
+       ;; definition forms.
+       (,(rx "("
+             (group (* (not space)) (or "cl-" "--" "/" ":") "def"
+                    (* (not space)))
+             (+ space)
+             (group (+ (regex "\[^ )\n\]"))))
+        (1 font-lock-keyword-face)
+        (2 font-lock-function-name-face))
+
+       ;; cb:extracting-list
+       (,(rx "(" (group "cb:extracting-list") (or space eol))
+        (1 font-lock-keyword-face))
+
+       ;; cl-struct.
+       (,(rx "(cl-defstruct"
+             (+ space)
+             (group (+ (regex "\[^ )\n\]"))))
+
+        (1 font-lock-type-face))
+
+       ;; use-package macro
+       (,(rx "(" (group "use-package")
+             (+ space)
+             (group (+ (regex "\[^ )\n\]"))))
+        (2 font-lock-constant-face)))))
 
   :config
   (progn
-    (defadvice eval-buffer (before buffer-evaluated-feedback activate)
-      "Message that the buffer has been evaluated.
-This has to be BEFORE advice because `eval-buffer' doesn't return anything."
-      (when (buffer-file-name)
-        (message "Buffer evaluated.")))))
+    ))
 
 (use-package redshank
   :ensure   t
   :commands turn-on-redshank-mode
   :diminish redshank-mode
-  :init    (add-hook 'emacs-lisp-mode-hook 'turn-on-redshank-mode))
+  :init     (add-hook 'emacs-lisp-mode-hook 'turn-on-redshank-mode))
 
 (use-package macrostep
   :ensure t
@@ -1090,18 +1126,12 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
 (use-package lisp-mode
   :commands (emacs-lisp-mode lisp-mode)
   :config
-  (progn
-
-    (hook-fn 'emacs-lisp-mode-hook
-      (autoload 'ert "ert")
-      (local-set-key (kbd "C-c C-t") 'ert))
-
-    (hook-fn 'after-save-hook
-      "Byte compile elisp source files on save."
-      (when (and (equal major-mode 'emacs-lisp-mode)
-                 (buffer-file-name)
-                 (not (equal "Carton" (file-name-nondirectory (buffer-file-name)))))
-        (byte-compile-file (buffer-file-name))))))
+  (hook-fn 'after-save-hook
+    "Byte compile elisp source files on save."
+    (when (and (equal major-mode 'emacs-lisp-mode)
+               (buffer-file-name)
+               (not (equal "Carton" (file-name-nondirectory (buffer-file-name)))))
+      (byte-compile-file (buffer-file-name)))))
 
 (use-package clojure-mode
   :ensure t
