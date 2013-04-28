@@ -972,7 +972,7 @@
 
 (use-package magit
   :ensure t
-  :bind   ("C-x g" . magit-status)
+  :bind   ("C-x C-g" . magit-status)
   :config
   (progn
     (defadvice magit-status (around magit-fullscreen activate)
@@ -993,6 +993,13 @@
         (evil-append-line nil)))
 
     (add-hook 'magit-mode-hook 'magit-load-config-extensions)))
+
+(use-package git-gutter
+  :ensure t
+  :bind ("C-x g" . git-gutter:toggle)
+  :commands (git-gutter:toggle
+             git-gutter:clean
+             git-gutter))
 
 (use-package conf-mode
   :mode ((".gitignore$" . conf-mode)
