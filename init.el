@@ -323,6 +323,16 @@
 
 ;;; ----------------------------------------------------------------------------
 
+(use-package projectile
+  :ensure   t
+  :diminish projectile-mode
+  :config
+  (progn
+    (projectile-global-mode)
+    (defadvice find-tag (before set-tags-directory activate)
+      "Ensure the TAGS path is set before searching for tags."
+      (setq tags-file-name (concat (projectile-project-root) "TAGS")))))
+
 (use-package helm
   :ensure   t
   :init
@@ -332,6 +342,26 @@
     (bind-key* "C-c C-i" 'helm-imenu)
     (bind-key* "C-c C-f" 'helm-etags-select)
     (bind-key* "C-c m"   'helm-man-woman)))
+
+(use-package helm-projectile
+  :ensure t
+  :commands helm-projectile
+  :init
+  (progn
+    (defun cb:helm-dwim ()
+      "Show helm-projectile, failling back to helm-mini if not in a project."
+      (interactive)
+      (if (projectile-project-p)
+          (helm-projectile)
+        (helm-mini)))
+
+    (global-set-key (kbd "C-c C-j") 'cb:helm-dwim)))
+
+(use-package ack-and-a-half
+  :ensure t
+  :commands (ack-and-a-half-same
+             ack-and-a-half-find-file
+             ack-and-a-half-find-file-same))
 
 (use-package imenu
   :config
@@ -1568,36 +1598,6 @@
              gist-region-or-buffer
              gist-region-or-buffer-private))
 
-(use-package projectile
-  :ensure   t
-  :diminish projectile-mode
-  :config
-  (progn
-    (projectile-global-mode)
-    (defadvice find-tag (before set-tags-directory activate)
-      "Ensure the TAGS path is set before searching for tags."
-      (setq tags-file-name (concat (projectile-project-root) "TAGS")))))
-
-(use-package helm-projectile
-  :ensure t
-  :commands helm-projectile
-  :init
-  (progn
-    (defun cb:helm-dwim ()
-      "Show helm-projectile, failling back to helm-mini if not in a project."
-      (interactive)
-      (if (projectile-project-p)
-          (helm-projectile)
-        (helm-mini)))
-
-    (global-set-key (kbd "C-c C-j") 'cb:helm-dwim)))
-
-(use-package ack-and-a-half
-  :ensure t
-  :commands (ack-and-a-half-same
-             ack-and-a-half-find-file
-             ack-and-a-half-find-file-same))
-
 (use-package iedit
   :ensure   t
   :commands iedit-mode
@@ -1606,6 +1606,14 @@
 (use-package info-lookmore
   :commands info-lookmore-elisp-cl
   :init     (eval-after-load "info-look" '(info-lookmore-elisp-cl)))
+
+(use-package disaster
+  :ensure   t
+  :commands disaster
+  :defer    t
+  :init
+  (hook-fn 'c-mode-common-hook
+    (local-set-key (kbd "C-c C-d") 'disaster)))
 
 ;;; ----------------------------------------------------------------------------
 ;;; Miss commands=
