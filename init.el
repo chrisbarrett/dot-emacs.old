@@ -1496,7 +1496,16 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
 (use-package helm-projectile
   :ensure t
   :commands helm-projectile
-  :bind ("C-c C-h" . helm-projectile))
+  :init
+  (progn
+    (defun cb:helm-dwim ()
+      "Show helm-projectile, failling back to helm-mini if not in a project."
+      (interactive)
+      (if (projectile-project-p)
+          (helm-projectile)
+        (helm-mini)))
+
+    (global-set-key (kbd "C-c C-h") 'cb:helm-dwim)))
 
 (use-package ack-and-a-half
   :ensure t
