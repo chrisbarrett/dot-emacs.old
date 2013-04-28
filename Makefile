@@ -11,44 +11,57 @@ emacs_version = $(shell $(emacs) -Q --batch --exec \
 
 # ----------------------------------------------------------------------------
 
+.PHONY: default
 default : conf elpa tags
 
+.PHONY: all
 all : $(emacs_src_d) compile tags ruby supercollider python
 
 # Build tags file.
-tags :; $(emacs_exec) 'cb:build-ctags'
+.PHONY: tags
+tags :
+	$(emacs_exec) 'cb:build-ctags'
 
 # ----------------------------------------------------------------------------
 # Byte-compilation
 
 # Byte-compile files in ./lisp
-conf :; $(emacs_exec) 'cb:byte-compile-conf'
+.PHONY: conf
+conf :
+	$(emacs_exec) 'cb:byte-compile-conf'
 
 # Byte-compile files in ./elpa
-elpa :; $(emacs_exec) 'cb:byte-compile-elpa'
+.PHONY: elpa
+elpa :
+	$(emacs_exec) 'cb:byte-compile-elpa'
 
 # Byte-compile all elisp files.
+.PHONY: compile
 compile : conf elpa tags
 
 # ----------------------------------------------------------------------------
 # Cleaning
 
 # Perform all cleaning tasks.
+.PHONY: clean
 clean : clean-elc clean-backups clean-flycheck
 
 # Remove compiled elisp files.
+.PHONY: clean-elc
 clean-elc :
 	rm -f *.elc
 	rm -f $(lisp)/*.elc
 	rm -f $(lib)/*.elc
 
 # Remove backup files.
+.PHONY: clean-backups
 clean-backups :
 	rm -f ./*~
 	rm -f $(lisp)/*~
 	rm -f $(lib)/*~
 
 # Remove temporary flycheck files.
+.PHONY: clean-flycheck
 clean-flycheck :
 	rm -f flycheck-*
 	rm -f $(lisp)/flycheck-*
@@ -69,19 +82,22 @@ $(emacs_gz) : $(src)
 $(emacs_src_d) : $(emacs_gz)
 	tar xvfz $(emacs_gz) --directory=$(src)
 
-$(src) :;  mkdir $(src)
+$(src) :
+	mkdir $(src)
 
 # ----------------------------------------------------------------------------
 # Python
 
-python : jedi
+.PHONY: python
+python : jedi eply
 
-# Install Jedi for python auto-completion.
+.PHONY: jedi
+jedi : virtualenv epc argparse
+	pip install virtualenv epc argparse jedi
 
-jedi       : virtualenv epc argparse ; pip install jedi
-epc        :; pip install epc
-virtualenv :; pip install virtualenv
-argparse   :; pip install argparse
+.PHONY: elpy
+elpy :
+	pip install elpy rope pyflakes pep8
 
 # ----------------------------------------------------------------------------
 # SuperCollider
@@ -96,27 +112,29 @@ sc_src         = ~/src/SuperCollider
 $(sc_ext)       :; mkdir -p $(sc_ext)
 $(sc_src)       :; git clone $(sc_github) $(sc_src)
 
+.PHONY: supercollider
 supercollider   : $(sc_src) $(sc_ext)
 	cp -r $(sc_src)/editors/scel/sc/* $(sc_ext)
 
 # ----------------------------------------------------------------------------
 # Ruby
 
+.PHONY: ruby
 ruby : $(rsense) rubocop
 
-# Install rsense.
+.PHONY: rubocop
+rubocop :; sudo gem install rubocop
+
+# RSense
 
 rsense_version = 0.3
 rsense     = $(bin)/rsense-$(rsense_version)/bin/rsense
 rsense_url = http://cx4a.org/pub/rsense/rsense-$(rsense_version).tar.bz2
 rsense_bz  = $(bin)/rsense-$(rsense_version).tar.bz2
 
-$(rsense_bz) :; curl $(rsense_url) -o $(rsense_bz)
+$(rsense_bz) :
+	curl $(rsense_url) -o $(rsense_bz)
 
 $(rsense) : $(rsense_bz) ;
 	tar xvjf $(rsense_bz) --directory=$(bin)
 	chmod a+x $(rsense)
-
-# Install rubocop
-
-rubocop :; sudo gem install rubocop

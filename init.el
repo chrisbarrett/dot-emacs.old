@@ -1286,9 +1286,14 @@
   :ensure   t
   :commands python-mode
   :mode     ("\\.py$" . python-mode)
+  :init
+  (use-package elpy
+    :ensure t
+    :config
+    (elpy-enable))
+
   :config
   (progn
-
     (use-package jedi
       :ensure   t
       :commands jedi:setup
@@ -1308,7 +1313,7 @@
       "Switch to the last active Python buffer."
       (interactive)
       (when-let (buf (cb:last-buffer-for-mode 'python-mode))
-        (pop-to-buffer buf)))
+                (pop-to-buffer buf)))
 
     (define-key python-mode-map (kbd ",") 'cb:comma-then-space)
     (define-key inferior-python-mode-map (kbd ",") 'cb:comma-then-space)
@@ -1553,6 +1558,17 @@
   :commands (ack-and-a-half-same
              ack-and-a-half-find-file
              ack-and-a-half-find-file-same))
+
+;;; ----------------------------------------------------------------------------
+;;; Miss commands=
+
+(defun cb:swap-with-previous-buffer ()
+  "Switch to previously open buffer.
+Repeated invocations toggle between the two most recently open buffers."
+  (interactive)
+  (switch-to-buffer (other-buffer (current-buffer) 1)))
+
+(bind-key* "C-;" 'cb:swap-with-previous-buffer)
 
 ;;; ----------------------------------------------------------------------------
 ;;; Show quote if 'fortune' is installed.
