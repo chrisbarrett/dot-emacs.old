@@ -76,7 +76,6 @@
 Most of these are stolen from Solarized Dark."
   (interactive)
   (load-theme 'ir-black 'no-confirm)
-
   (let* ((class '((class color) (min-colors 89)))
        ;; Solarized palette
        (base03    "#002b36")
@@ -155,7 +154,7 @@ Most of these are stolen from Solarized Dark."
    '(button ((t (:underline t))))
 
    ;; Override defaults
-   `(default ((,class (:foreground "grey60"))))
+   `(default ((,class (:foreground "grey60" :background "black"))))
    `(font-lock-comment-delimiter-face ((,class (:foreground "grey30"))))
    `(font-lock-comment-face ((,class (:foreground "grey30"))))
    `(font-lock-string-face ((,class (:foreground "SpringGreen3"))))
@@ -487,7 +486,7 @@ Most of these are stolen from Solarized Dark."
    `(highlight-changes-delete ((,class (:foreground ,red :underline t))))
 
    ;; hl-line-mode
-   `(hl-line ((,class (:underline nil))))
+   `(hl-line ((,class (:underline nil :background "gray10"))))
 
    ;; ido-mode
    `(ido-first-match ((,class (:foreground ,green :weight bold))))

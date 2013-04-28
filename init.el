@@ -1486,7 +1486,12 @@ This has to be BEFORE advice because `eval-buffer' doesn't return anything."
 (use-package projectile
   :ensure   t
   :diminish projectile-mode
-  :config   (projectile-global-mode))
+  :config
+  (progn
+    (projectile-global-mode)
+    (defadvice find-tag (before set-tags-directory activate)
+      "Ensure the TAGS path is set before searching for tags."
+      (setq tags-file-name (concat (projectile-project-root) "TAGS")))))
 
 (use-package helm-projectile
   :ensure t

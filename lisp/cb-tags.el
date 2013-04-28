@@ -79,10 +79,6 @@
     (visit-tags-table (cb:tags-project-root))
     (message (concat "Loaded " tags-file-name))))
 
-(defadvice find-tag (before set-tags-directory activate)
-  "Ensure the TAGS path is set."
-  (setq tags-file-name (concat (cb:tags-project-root) "TAGS")))
-
 (defun cb:find-tag ()
   "Find the tags at point, creating a tags file if none exists."
   (interactive)
