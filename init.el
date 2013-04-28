@@ -159,6 +159,20 @@
   (interactive)
   (byte-recompile-directory (concat user-emacs-directory "elpa") 0 t))
 
+;;; Compilation
+(bind-key* "C-c C-b" 'compile)
+(setq
+ compilation-window-height    12
+ compilation-scroll-output    'first-error
+ compilation-finish-functions 'cb:compile-autoclose)
+
+(defun cb:compile-autoclose (buffer string)
+  (if (s-matches? "finished" string)
+      (run-with-timer (/ 1 50) nil
+                      '(lambda (w) (delete-window w) (message "Compilation succeeded"))
+                      (get-buffer-window buffer t))
+    (message "Compilation exited abnormally: %s" string)))
+
 ;;; ============================================================================
 ;;; Load packages.
 
@@ -858,16 +872,8 @@
   :bind (("C-c C-k" . mode-compile-kill)
          ("C-c C-c" . mode-compile))
   :config
-  (progn
-    (setq mode-compile-expert-p             t
-          mode-compile-always-save-buffer-p t
-          compilation-window-height         12
-          compilation-scroll-output         'first-error)
-    (add-to-list 'compilation-finish-functions
-                 (lambda (buf str)
-                   "Close compilation buffer if compilation succeeded."
-                   (unless (string-match "exited abnormally" str)
-                     (delete-windows-on (get-buffer-create "*compilation")))))))
+  (setq mode-compile-expert-p             t
+        mode-compile-always-save-buffer-p t))
 
 (use-package flyspell-lazy
   :ensure t
@@ -1058,11 +1064,10 @@
     (add-to-list 'auto-mode-alist '("Carton$" . emacs-lisp-mode))
 
     (define-key emacs-lisp-mode-map (kbd "C-c e b") 'eval-buffer)
-    (define-key emacs-lisp-mode-map (kbd "C-c e e") 'toggle-debug-on-error)
     (define-key emacs-lisp-mode-map (kbd "C-c e f") 'emacs-lisp-byte-compile-and-load)
-    (define-key emacs-lisp-mode-map (kbd "C-c e r") 'eval-region)
-    (define-key emacs-lisp-mode-map (kbd "C-c e s") 'scratch)
     (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'cb:switch-to-ielm)
+    (define-key emacs-lisp-mode-map (kbd "C-c e r") 'eval-region)
+    (global-set-key (kbd "C-c e e") 'toggle-debug-on-error)
     (hook-fn 'ielm-mode-hook (local-set-key (kbd "C-c C-z") 'cb:switch-to-elisp))
 
     (defadvice eval-buffer (after buffer-evaluated-feedback activate)
@@ -1111,11 +1116,16 @@
              (+ space)
              (group (+ (regex "\[^ )\n\]"))))
 
-        (1 font-lock-type-face)))))
+        (1 font-lock-type-face))))))
 
-  :config
+(use-package highlight-cl
+  :ensure   t
+  :defer    t
+  :commands highlight-cl-add-font-lock-keywords
+  :init
   (progn
-    ))
+    (add-hook 'emacs-lisp-mode-hook 'highlight-cl-add-font-lock-keywords)
+    (add-hook 'lisp-interaction-mode-hook 'highlight-cl-add-font-lock-keywords)))
 
 (use-package redshank
   :ensure   t
