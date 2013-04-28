@@ -97,13 +97,6 @@
 (add-hook 'before-save-hook 'whitespace-cleanup)
 (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
 
-;;; Set exec-path manually in OS X.
-
-(use-package exec-path-from-shell
-  :ensure t
-  :if     (memq window-system '(mac ns))
-  :config (exec-path-from-shell-initialize))
-
 ;;; Help commands
 
 (define-prefix-command 'help-find-map)
@@ -288,6 +281,33 @@
              (nnimap-authenticator login)))))
 
 ;;; ----------------------------------------------------------------------------
+;;; OS X-specific configuration.
+(when (equal system-type 'darwin)
+
+  (add-to-list 'default-frame-alist '(font . "Menlo-11"))
+
+  ;; Set exec-path
+  (use-package exec-path-from-shell
+    :ensure t
+    :if     (display-graphic-p)
+    :config (exec-path-from-shell-initialize))
+
+  ;; Configure cut & paste in terminal.
+  (unless (window-system)
+
+    (defun cb:paste ()
+      (shell-command-to-string "pbpaste"))
+
+    (defun cb:copy (text &optional push)
+      (let ((process-connection-type nil))
+        (let ((proc (start-process "pbcopy" "*Messages*" "pbcopy")))
+          (process-send-string proc text)
+          (process-send-eof proc))))
+
+    (setq interprogram-cut-function   'cb:copy
+          interprogram-paste-function 'cb:paste)))
+
+;;; ----------------------------------------------------------------------------
 
 (use-package helm
   :ensure   t
@@ -397,11 +417,8 @@
      recentf-keep            '(file-remote-p file-readable-p)
      recentf-max-saved-items 100
      recentf-max-menu-items  25
-
      recentf-exclude
-     '(".newsrc" "-autoloads.el" "recentf" ".ido.last" "TAGS" ".gz"))
-
-    (recentf-mode +1)))
+     '(".newsrc" "-autoloads.el" "recentf" ".ido.last" "TAGS" ".gz"))))
 
 (use-package savehist
   :init
@@ -520,7 +537,9 @@
       (hook-fn it (local-set-key (kbd "ESC") 'keyboard-quit)))))
 
 (use-package hideshow
-  :diminish hs-minor-mode)
+  :diminish hs-minor-mode
+  :commands hs-minor-mode
+  :defer    t)
 
 (use-package evil
   :ensure t
@@ -619,8 +638,6 @@
           try-expand-line
           try-complete-lisp-symbol-partially
           try-complete-lisp-symbol)))
-
-(use-package cb-osx :if (equal system-type 'darwin))
 
 (use-package color-theme
   :config (setq color-theme-is-global t))
@@ -1114,6 +1131,7 @@
 (use-package elisp-slime-nav
   :ensure   t
   :diminish elisp-slime-nav-mode
+  :defer    t
   :init
   (--each '(emacs-lisp-mode-hook ielm-mode-hook)
     (hook-fn it
@@ -1128,6 +1146,7 @@
 (use-package litable
   :ensure   t
   :commands litable-mode
+  :defer    t
   :init     (define-key emacs-lisp-mode-map (kbd "C-c C-l") 'litable-mode))
 
 (use-package emr
@@ -1286,14 +1305,12 @@
   :ensure   t
   :commands python-mode
   :mode     ("\\.py$" . python-mode)
-  :init
-  (use-package elpy
-    :ensure t
-    :config
-    (elpy-enable))
-
   :config
   (progn
+    (use-package elpy
+      :ensure t
+      :config (elpy-enable))
+
     (use-package jedi
       :ensure   t
       :commands jedi:setup
