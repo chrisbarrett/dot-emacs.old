@@ -296,6 +296,7 @@
     (global-set-key (kbd "C-c C-h") 'helm-mini)
     (global-set-key (kbd "C-c C-i") 'helm-imenu)
     (global-set-key (kbd "C-c C-f") 'helm-etags-select)
+    (global-set-key (kbd "C-c m")   'helm-man-woman)
     (global-set-key (kbd "C-c RET") 'helm-regexp)))
 
 (use-package imenu
@@ -546,6 +547,9 @@
     (define-key evil-normal-state-map (kbd "SPC") 'evil-toggle-fold)
     (define-key evil-insert-state-map (kbd "C-z") 'cb:evil-undefine)
     (define-key evil-visual-state-map (kbd "C-z") 'cb:evil-undefine)
+
+    (progn-after-load "man"
+      (evil-declare-key 'normal Man-mode-map (kbd "q") 'Man-kill))
 
     ;; Ensure undo-tree commands are remapped. The referenced keymap in
     ;; evil-integration is incorrect.
