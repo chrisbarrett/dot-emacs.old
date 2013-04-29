@@ -901,6 +901,11 @@
                           (get-buffer-window buffer t))
         (message "Compilation exited abnormally: %s" string)))
 
+    (hook-fn 'find-file-hook
+      "Try to find a makefile for the current project."
+      (when (projectile-project-p)
+        (setq-local compilation-directory (projectile-project-root))))
+
     (setq
      compilation-window-height    12
      compilation-scroll-output    'first-error
