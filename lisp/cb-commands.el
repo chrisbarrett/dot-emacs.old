@@ -96,6 +96,12 @@ If this buffer is a member of `kill-buffer-ignored-list, bury it rather than kil
   (interactive)
   (insert (cb:timestamp)))
 
+(defun indent-buffer ()
+  "Indent the whole buffer."
+  (interactive)
+  (save-excursion
+    (indent-region (point-min) (point-max))))
+
 (provide 'cb-commands)
 
 ;;; cb-commands.el ends here

@@ -534,6 +534,7 @@
 
   :commands (cb:hide-dos-eol
              cb:kill-current-buffer
+             indent-buffer
              insert-timestamp
              cb:last-buffer-for-mode)
 
@@ -1253,8 +1254,8 @@
       "Start nrepl or switch to an existing nrepl buffer."
       (interactive)
       (if-let (buf (get-buffer "*nrepl*"))
-        (nrepl-switch-to-repl-buffer buf)
-        (nrepl-jack-in)))
+              (nrepl-switch-to-repl-buffer buf)
+              (nrepl-jack-in)))
 
     (hook-fn 'clojure-mode-hook
       (maybe-enable-overtone-mode)
@@ -1293,13 +1294,13 @@
     (defun cb:switch-to-clojure ()
       "Switch to the last active clojure buffer."
       (interactive)
-      (when-let (buf (cb:last-buffer-for-mode 'clojure-mode))
+      (-when-let (buf (cb:last-buffer-for-mode 'clojure-mode))
         (pop-to-buffer buf)))
 
     (defun cb:eval-last-clj-buffer ()
       "Evaluate that last active clojure buffer without leaving the repl."
       (interactive)
-      (when-let (buf (cb:last-buffer-for-mode 'clojure-mode))
+      (-when-let (buf (cb:last-buffer-for-mode 'clojure-mode))
         (with-current-buffer buf
           (nrepl-eval-buffer))))
 
@@ -1350,8 +1351,10 @@
     (hook-fn 'sclang-mode-hook
       (local-set-key (kbd "s-.") 'sclang-main-stop)
       (local-set-key (kbd "C-c C-l") 'sclang-eval-document)
+      (local-set-key (kbd "M-q") 'indent-buffer)
       (auto-complete-mode +1)
       (smartparens-mode +1)
+      (setq-local indent-tabs-mode nil)
       (unless (sclang-server-running-p)
         (sclang-server-boot)))))
 
@@ -1400,8 +1403,8 @@
     (defun cb:switch-to-python ()
       "Switch to the last active Python buffer."
       (interactive)
-      (when-let (buf (cb:last-buffer-for-mode 'python-mode))
-                (pop-to-buffer buf)))
+      (-when-let (buf (cb:last-buffer-for-mode 'python-mode))
+        (pop-to-buffer buf)))
 
     (define-key python-mode-map (kbd ",") 'cb:comma-then-space)
     (define-key inferior-python-mode-map (kbd ",") 'cb:comma-then-space)
@@ -1568,7 +1571,7 @@
     (defun cb:switch-to-haskell ()
       "Switch to the last active Haskell buffer."
       (interactive)
-      (when-let (buf (cb:last-buffer-for-mode 'haskell-mode))
+      (-when-let (buf (cb:last-buffer-for-mode 'haskell-mode))
         (pop-to-buffer buf)))
 
     (hook-fn 'inferior-haskell-mode-hook
