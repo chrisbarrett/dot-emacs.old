@@ -835,6 +835,7 @@
 
     (hook-fn 'sclang-mode-hook
       (smart-insert-operator-hook)
+      (local-unset-key (kbd "|"))
       (local-unset-key (kbd ".")))
 
     (hook-fn 'inferior-python-mode-hook
@@ -1354,6 +1355,9 @@
       (local-set-key (kbd "M-q") 'indent-buffer)
       (auto-complete-mode +1)
       (smartparens-mode +1)
+      ;; sclang-mode starts in the SuperCollider app bundle. Override this.
+      (cd (expand-file-name "~"))
+      ;; sclang-mode uses indent-tabs-mode WHYYYY
       (setq-local indent-tabs-mode nil)
       (unless (sclang-server-running-p)
         (sclang-server-boot)))))
