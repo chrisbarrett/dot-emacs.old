@@ -780,6 +780,7 @@
 
 (use-package google-this
   :ensure t
+  :diminish google-this-mode
   :config (google-this-mode +1))
 
 (use-package w3m
@@ -1611,6 +1612,7 @@
   :defer t
   :config
   (progn
+    (setq org-catch-invisible-edits 'smart)
     (define-key org-mode-map (kbd "M-p") 'org-metaup)
     (define-key org-mode-map (kbd "M-n") 'org-metadown)))
 
@@ -1626,7 +1628,7 @@
 (use-package iedit
   :ensure   t
   :commands iedit-mode
-  :bind     ("C-c RET" . iedit-mode))
+  :bind     ("C-<return>" . iedit-mode))
 
 (use-package info-lookmore
   :commands info-lookmore-elisp-cl
