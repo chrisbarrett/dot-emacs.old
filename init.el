@@ -1612,9 +1612,11 @@
   :defer t
   :init
   (progn
-    ;; Use org-style commands in other modes.
+    ;; Use org commands in other modes.
     (add-hook 'message-mode-hook 'turn-on-orgstruct++)
-    (add-hook 'text-mode-hook 'turn-on-orgstruct++))
+    (add-hook 'message-mode-hook 'turn-on-orgtbl)
+    (add-hook 'text-mode-hook 'turn-on-orgstruct++)
+    (add-hook 'text-mode-hook 'turn-on-orgtbl))
   :config
   (progn
     (setq org-catch-invisible-edits 'smart)
