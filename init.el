@@ -778,10 +778,9 @@
 (use-package fuzzy
   :ensure t)
 
-(use-package cb-google
-  :commands google/search
-  :bind     (("C-c C-/" . google/search)
-             ("C-c C-_" . google/search)))
+(use-package google-this
+  :ensure t
+  :config (google-this-mode +1))
 
 (use-package w3m
   :ensure t
