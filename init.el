@@ -578,7 +578,9 @@
          ("C-@" . ace-jump-word-mode))
   :config
   (progn
-    (add-hook 'ace-jump-mode-end-hook 'exit-recursive-edit)
+    (hook-fn 'ace-jump-mode-end-hook
+      (ignore-errors
+        (exit-recursive-edit)))
 
     ;; Use ESC to quit ace-jump.
     (--each '(ace-jump-line-mode ace-jump-word-mode ace-jump-char-mode)
