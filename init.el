@@ -1610,6 +1610,11 @@
 (use-package org
   :ensure t
   :defer t
+  :init
+  (progn
+    ;; Use org-style commands in other modes.
+    (add-hook 'message-mode-hook 'turn-on-orgstruct++)
+    (add-hook 'text-mode-hook 'turn-on-orgstruct++))
   :config
   (progn
     (setq org-catch-invisible-edits 'smart)
