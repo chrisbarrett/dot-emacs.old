@@ -69,8 +69,8 @@
            (runners (assoc t files))
            (tests   (assoc nil files))
            )
-      (-each (cdr runners) 'load-file)
-      (-each (cdr tests)   'load-file)
+      (--each (cdr runners) (load it t))
+      (--each (cdr tests)   (load it t))
       (when (or runners tests)
         (message "Loaded %s test files"
                  (+ (length (cdr runners))

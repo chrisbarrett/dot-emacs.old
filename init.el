@@ -159,20 +159,6 @@
   (interactive)
   (byte-recompile-directory (concat user-emacs-directory "elpa") 0 t))
 
-;;; Compilation
-(bind-key* "C-c C-b" 'compile)
-(setq
- compilation-window-height    12
- compilation-scroll-output    'first-error
- compilation-finish-functions 'cb:compile-autoclose)
-
-(defun cb:compile-autoclose (buffer string)
-  (if (s-matches? "finished" string)
-      (run-with-timer (/ 1 50) nil
-                      '(lambda (w) (delete-window w) (message "Compilation succeeded"))
-                      (get-buffer-window buffer t))
-    (message "Compilation exited abnormally: %s" string)))
-
 ;;; ============================================================================
 ;;; Load packages.
 
@@ -902,6 +888,23 @@
             ("h5"   "^##### \\(.*\\)$" 1)
             ("h6"   "^###### \\(.*\\)$" 1)
             ("fn"   "^\\[\\^\\(.*\\)\\]" 1)))))
+
+(use-package compile
+  :bind  (("C-c b" . compile)
+          ("C-c C-b" . recompile))
+  :config
+  (progn
+    (defun cb:compile-autoclose (buffer string)
+      (if (s-matches? "finished" string)
+          (run-with-timer (/ 1 50) nil
+                          '(lambda (w) (delete-window w) (message "Compilation succeeded"))
+                          (get-buffer-window buffer t))
+        (message "Compilation exited abnormally: %s" string)))
+
+    (setq
+     compilation-window-height    12
+     compilation-scroll-output    'first-error
+     compilation-finish-functions 'cb:compile-autoclose)))
 
 (use-package mode-compile
   :ensure t
