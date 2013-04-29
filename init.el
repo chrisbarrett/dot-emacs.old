@@ -1652,7 +1652,7 @@ Repeated invocations toggle between the two most recently open buffers."
   "Display a quotation from the 'fortune' program."
   (interactive)
   (when (executable-find "fortune")
-    (message (s-trim (shell-command-to-string "fortune -o -n 250")))))
+    (message (s-trim (shell-command-to-string "fortune -o -s -n 250")))))
 
 (hook-fn 'after-init-hook
   ;; Show fortune.
