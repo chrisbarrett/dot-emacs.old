@@ -909,17 +909,19 @@
   (setq mode-compile-expert-p             t
         mode-compile-always-save-buffer-p t))
 
-(use-package flyspell-lazy
-  :ensure t
-  :defines flyspell-lazy-mode
+(use-package flyspell
+  :diminish flyspell-mode
   :config
   (progn
     (setq ispell-dictionary "english")
-    (flyspell-lazy-mode +1)
     (add-hook 'text-mode-hook 'flyspell-mode)
     (add-hook 'prog-mode-hook 'flyspell-prog-mode)
-    (hook-fn 'flyspell-mode-hook
-      (diminish 'flyspell-mode))))
+    (define-key flyspell-mode-map (kbd "C-'") 'flyspell-auto-correct-word)))
+
+(use-package flyspell-lazy
+  :ensure  t
+  :defines flyspell-lazy-mode
+  :config  (flyspell-lazy-mode +1))
 
 (use-package flycheck
   :ensure t
@@ -1109,6 +1111,7 @@
       (ignore-errors (cb:find-and-load-ert-tests)))
 
     (add-to-list 'auto-mode-alist '("Carton$" . emacs-lisp-mode))
+    (define-key emacs-lisp-mode-map (kbd "C-c C-t") 'ert)
     (define-key emacs-lisp-mode-map (kbd "C-c e b") 'eval-buffer)
     (define-key emacs-lisp-mode-map (kbd "C-c e f") 'emacs-lisp-byte-compile-and-load)
     (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'cb:switch-to-ielm)
@@ -1336,6 +1339,7 @@
 
     (hook-fn 'sclang-mode-hook
       (local-set-key (kbd "s-.") 'sclang-main-stop)
+      (local-set-key (kbd "C-c C-l") 'sclang-eval-document)
       (auto-complete-mode +1)
       (smartparens-mode +1)
       (unless (sclang-server-running-p)
