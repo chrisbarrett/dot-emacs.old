@@ -97,6 +97,13 @@
 (add-hook 'before-save-hook 'whitespace-cleanup)
 (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
 
+;;; Exiting Emacs
+;;;
+;;; Rebind to C-c r q ("really quit"), so you're less likely to kill Emacs
+;;; accidently with Org key-commands.
+(unbind-key "C-x C-c")
+(bind-key* "C-c r q" 'save-buffers-kill-emacs)
+
 ;;; Help commands
 
 (define-prefix-command 'help-find-map)
@@ -547,8 +554,9 @@
       (cb:select-largest-window))))
 
 (use-package scratch
-  :ensure t
-  :commands (scratch))
+  :ensure   t
+  :commands scratch
+  :bind     ("C-c e s" . scratch) )
 
 (use-package uniquify
   :config
@@ -923,12 +931,14 @@
 
 (use-package flyspell
   :diminish flyspell-mode
-  :config
+  :defer    t
+  :init
   (progn
     (setq ispell-dictionary "english")
     (add-hook 'text-mode-hook 'flyspell-mode)
-    (add-hook 'prog-mode-hook 'flyspell-prog-mode)
-    (define-key flyspell-mode-map (kbd "C-'") 'flyspell-auto-correct-word)))
+    (add-hook 'prog-mode-hook 'flyspell-prog-mode))
+  :config
+  (define-key flyspell-mode-map (kbd "C-'") 'flyspell-auto-correct-word))
 
 (use-package flyspell-lazy
   :ensure  t
