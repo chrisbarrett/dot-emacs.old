@@ -789,6 +789,7 @@
 (use-package google-this
   :ensure t
   :diminish google-this-mode
+  :bind ("C-c / /" . google-this)
   :config (google-this-mode +1))
 
 (use-package w3m
