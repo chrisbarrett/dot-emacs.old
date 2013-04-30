@@ -152,20 +152,6 @@
         (whitespace-tab-width tab-width))
     ad-do-it))
 
-;;; Byte compilation commands
-
-(defun cb:byte-compile-conf ()
-  "Recompile all configuration files."
-  (interactive)
-  (byte-recompile-file (concat user-emacs-directory "init.el") t 0)
-  (byte-recompile-directory cb:lib-dir 0 t)
-  (byte-recompile-directory cb:lisp-dir 0 t))
-
-(defun cb:byte-compile-elpa ()
-  "Recompile all lisp files in the package directory."
-  (interactive)
-  (byte-recompile-directory (concat user-emacs-directory "elpa") 0 t))
-
 ;;; ============================================================================
 ;;; Load packages.
 
@@ -1662,7 +1648,7 @@
     (local-set-key (kbd "C-c C-d") 'disaster)))
 
 ;;; ----------------------------------------------------------------------------
-;;; Miss commands=
+;;; Misc commands
 
 (defun cb:swap-with-previous-buffer ()
   "Switch to previously open buffer.
@@ -1671,6 +1657,20 @@ Repeated invocations toggle between the two most recently open buffers."
   (switch-to-buffer (other-buffer (current-buffer) 1)))
 
 (bind-key* "C-;" 'cb:swap-with-previous-buffer)
+
+;;; Byte compilation
+
+(defun cb:byte-compile-conf ()
+  "Recompile all configuration files."
+  (interactive)
+  (byte-recompile-file (concat user-emacs-directory "init.el") t 0)
+  (byte-recompile-directory cb:lib-dir 0 t)
+  (byte-recompile-directory cb:lisp-dir 0 t))
+
+(defun cb:byte-compile-elpa ()
+  "Recompile all lisp files in the package directory."
+  (interactive)
+  (byte-recompile-directory (concat user-emacs-directory "elpa") 0 t))
 
 ;;; ----------------------------------------------------------------------------
 ;;; Show quote if 'fortune' is installed.
