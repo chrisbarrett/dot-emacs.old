@@ -101,7 +101,7 @@
 ;;;
 ;;; Rebind to C-c r q ("really quit"), so you're less likely to kill Emacs
 ;;; accidently with Org key-commands.
-(unbind-key "C-x C-c")
+(bind-key* "C-x C-c" (lambda () (interactive) (message "Type <C-c r q> to exit Emacs")))
 (bind-key* "C-c r q" 'save-buffers-kill-emacs)
 
 ;;; Help commands
