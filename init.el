@@ -68,7 +68,7 @@
  shift-select-mode            nil
  require-final-newline        t
  delete-by-moving-to-trash    nil
- initial-major-mode           'text-mode
+ initial-major-mode           'fundamental-mode
  initial-scratch-message      nil
  x-select-enable-clipboard    t
  font-lock-maximum-decoration t
@@ -276,6 +276,7 @@
 
 (use-package gnus
   :commands gnus
+  :defer t
   :config
   (setq
    gnus-select-method '(nnml "mail")
@@ -1367,7 +1368,7 @@
       (auto-complete-mode +1)
       (smartparens-mode +1)
       ;; sclang-mode starts in the SuperCollider app bundle. Override this.
-      (cd (expand-file-name "~"))
+      (setq-local default-directory (expand-file-name "~"))
       ;; sclang-mode uses indent-tabs-mode WHYYYY
       (setq-local indent-tabs-mode nil)
       (unless (sclang-server-running-p)
@@ -1600,7 +1601,7 @@
        haskell-stylish-on-save t)
       (local-set-key (kbd "C-c C-c") 'haskell-process-cabal-build))))
 
-(use-package workgroups
+(use-package workgroups2
   :if       (display-graphic-p)
   :bind     (("s-1" . wg-switch-to-index-0)
              ("s-2" . wg-switch-to-index-1)
