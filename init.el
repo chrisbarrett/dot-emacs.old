@@ -82,6 +82,7 @@
  fill-column                  80)
 (icomplete-mode +1)
 (defalias 'yes-or-no-p 'y-or-n-p)
+(add-hook 'text-mode-hook 'turn-on-auto-fill)
 
 ;; Encodings
 
