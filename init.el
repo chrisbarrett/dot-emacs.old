@@ -343,10 +343,12 @@
   :init
   (progn
     (bind-key* "C-x C-b" 'helm-buffers-list)
-    (bind-key* "C-c J" 'helm-mini)
+    (bind-key* "C-c C-k" 'helm-mini)
     (bind-key* "C-c C-i" 'helm-imenu)
     (bind-key* "C-c C-f" 'helm-etags-select)
-    (bind-key* "C-c m"   'helm-man-woman)))
+    (bind-key* "C-c m"   'helm-man-woman))
+  :config
+  (define-key helm-map (kbd "C-[") 'helm-keyboard-quit))
 
 (use-package helm-projectile
   :ensure t
@@ -897,8 +899,8 @@
 
 (use-package dired-x
   :defer t
-  :bind (("C-c C-k" . dired-jump)
-         ("C-c K" . dired-jump-other-window)))
+  :bind (("C-x C-k" . dired-jump)
+         ("C-x K"   . dired-jump-other-window)))
 
 (use-package dired-details
   :ensure   t
@@ -948,7 +950,7 @@
 
 (use-package mode-compile
   :ensure t
-  :bind (("C-c C-k" . mode-compile-kill)
+  :bind (("C-c ."   . mode-compile-kill)
          ("C-c C-c" . mode-compile))
   :config
   (setq mode-compile-expert-p             t
