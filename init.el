@@ -274,6 +274,31 @@
              (nnimap-stream ssl)
              (nnimap-authenticator login)))))
 
+(use-package bbdb
+  :ensure t
+  :defer  t
+  :init
+  (progn
+    (add-hook 'gnus-startup-hook 'bbdb-insinuate-gnus)
+    (setq
+     bbdb-file       "~/Dropbox/.bbdb"
+     bbdb-offer-save 1
+     bbdb-use-popup  t
+     bbdb-electric   t
+     bddb-popup-target-lines 1
+     bbdb-dwim-net-address-allow-redundancy t
+     bbdb-quiet-about-name-mismatches 2
+     bbdb-always-add-address t
+     bbdb-canonicalize-redundant-nets-p t
+     bbdb-completion-type nil
+     bbdb-complete-name-allow-cycling t
+     bbbd-message-caching-enabled t
+     bbdb-use-alternate-names t
+     bbdb-elided-display t
+     bbdb/mail-auto-create-p 'bbdb-ignore-some-messages-hook))
+  :config
+  (bbdb-initialize))
+
 ;;; ----------------------------------------------------------------------------
 ;;; OS X-specific configuration.
 (when (equal system-type 'darwin)
@@ -318,7 +343,7 @@
   :init
   (progn
     (bind-key* "C-x C-b" 'helm-buffers-list)
-    (bind-key* "C-c C-k" 'helm-mini)
+    (bind-key* "C-c J" 'helm-mini)
     (bind-key* "C-c C-i" 'helm-imenu)
     (bind-key* "C-c C-f" 'helm-etags-select)
     (bind-key* "C-c m"   'helm-man-woman)))
@@ -864,6 +889,16 @@
     (add-hook 'emacs-lisp-mode-hook    'lambda-mode)
     (add-hook 'python-mode-hook        'lambda-mode)
     (add-hook 'slime-repl-mode-hook    'lambda-mode)))
+
+(use-package dired
+  :defer   t
+  :config (when (equal system-type 'darwin)
+            (setq dired-use-ls-dired nil)))
+
+(use-package dired-x
+  :defer t
+  :bind (("C-c C-k" . dired-jump)
+         ("C-c K" . dired-jump-other-window)))
 
 (use-package dired-details
   :ensure   t
@@ -1656,6 +1691,10 @@
   (hook-fn 'c-mode-common-hook
     (local-set-key (kbd "C-c C-d") 'disaster)))
 
+(use-package proced
+  :defer t
+  :bind ("C-x p" . proced))
+
 ;;; ----------------------------------------------------------------------------
 ;;; Misc commands
 
@@ -1688,7 +1727,7 @@ Repeated invocations toggle between the two most recently open buffers."
   "Display a quotation from the 'fortune' program."
   (interactive)
   (when (executable-find "fortune")
-    (message (s-trim (shell-command-to-string "fortune -o -s -n 250")))))
+    (message (s-trim (shell-command-to-string "fortune -s -n 250")))))
 
 (hook-fn 'after-init-hook
   ;; Show fortune.
