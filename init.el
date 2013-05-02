@@ -893,11 +893,13 @@
   :config
   (progn
     (defun cb:compile-autoclose (buffer string)
-      (if (s-matches? "finished" string)
-          (run-with-timer (/ 1 50) nil
-                          '(lambda (w) (delete-window w) (message "Compilation succeeded"))
-                          (get-buffer-window buffer t))
-        (message "Compilation exited abnormally: %s" string)))
+      "Automatically close the compile window."
+      (when (-contains? '(compile recompile) last-command)
+        (if (s-matches? "finished" string)
+            (run-with-timer (/ 1 50) nil
+                            '(lambda (w) (delete-window w) (message "Compilation succeeded"))
+                            (get-buffer-window buffer t))
+          (message "Compilation exited abnormally: %s" string))))
 
     (hook-fn 'find-file-hook
       "Try to find a makefile for the current project."
@@ -1327,11 +1329,17 @@
 (use-package sclang
   :commands (sclang-mode sclang-start)
   :mode ("\\.sc$" . sclang-mode)
-  :init (defalias 'supercollider 'sclang-start)
+  :init
+  (defun supercollider ()
+    "Start SuperCollider and open the SC Workspace."
+    (interactive)
+    (let ((sclang-show-workspace-on-startup t))
+      (sclang-start)))
   :config
   (progn
-    (setq sclang-auto-scroll-post-buffer t
-          sclang-eval-line-forward nil)
+    (setq sclang-auto-scroll-post-buffer   t
+          sclang-eval-line-forward         nil
+          sclang-show-workspace-on-startup nil)
     (add-to-list 'ac-modes 'sclang-mode)
 
     ;; Configure paths.
@@ -1357,8 +1365,9 @@
       (setq-local default-directory (expand-file-name "~"))
       ;; sclang-mode uses indent-tabs-mode WHYYYY
       (setq-local indent-tabs-mode nil)
-      (unless (sclang-server-running-p)
-        (sclang-server-boot)))))
+      (unless (or (equal (buffer-name) sclang-post-buffer)
+                  (sclang-get-process))
+        (sclang-start)))))
 
 (use-package sclang-extensions
   :ensure   t
