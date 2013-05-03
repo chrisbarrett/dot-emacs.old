@@ -109,14 +109,18 @@
 ;;; Help commands
 
 (define-prefix-command 'help-find-map)
-(bind-key (kbd "C-h e") 'help-find-map)
+(bind-key (kbd "C-h e")   'help-find-map)
 (bind-key (kbd "C-h e e") 'view-echo-area-messages)
 (bind-key (kbd "C-h e f") 'find-function)
 (bind-key (kbd "C-h e k") 'find-function-on-key)
 (bind-key (kbd "C-h e l") 'find-library)
 (bind-key (kbd "C-h e p") 'find-library)
 (bind-key (kbd "C-h e v") 'find-variable)
+(bind-key (kbd "C-h e a") 'apropos)
 (bind-key (kbd "C-h e V") 'apropos-value)
+
+;;; Misc commands
+(bind-key "S-<tab>" 'tab-to-tab-stop)
 
 ;;; Disable vc modes
 
@@ -353,11 +357,11 @@
   :ensure   t
   :init
   (progn
-    (bind-key* "C-x C-b" 'helm-buffers-list)
-    (bind-key* "C-x j"   'helm-mini)
-    (bind-key* "C-x C-i" 'helm-imenu)
-    (bind-key* "C-c C-f" 'helm-etags-select)
-    (bind-key* "C-c m"   'helm-man-woman))
+    (bind-key* "M-b" 'helm-buffers-list)
+    (bind-key* "M-j" 'helm-mini)
+    (bind-key* "M-i" 'helm-imenu)
+    (bind-key* "M-f" 'helm-etags-select)
+    (bind-key* "M-m" 'helm-man-woman))
   :config
   (define-key helm-map (kbd "C-[") 'helm-keyboard-quit))
 
@@ -373,7 +377,7 @@
           (helm-projectile)
         (helm-mini)))
 
-    (global-set-key (kbd "C-x C-j") 'cb:helm-dwim)))
+    (bind-key* "C-j" 'cb:helm-dwim)))
 
 (use-package ack-and-a-half
   :ensure t
