@@ -80,9 +80,10 @@
 (setq-default
  indent-tabs-mode             nil
  fill-column                  80)
-(icomplete-mode +1)
-(defalias 'yes-or-no-p 'y-or-n-p)
 (add-hook 'text-mode-hook 'turn-on-auto-fill)
+(icomplete-mode +1)
+
+(defalias 'yes-or-no-p 'y-or-n-p)
 
 ;; Encodings
 
@@ -331,6 +332,13 @@
 
 ;;; ----------------------------------------------------------------------------
 
+(use-package simple
+  :diminish (visual-line-mode
+             global-visual-line-mode
+             auto-fill-mode)
+  :config
+  (global-visual-line-mode +1))
+
 (use-package projectile
   :ensure   t
   :diminish projectile-mode
@@ -346,8 +354,8 @@
   :init
   (progn
     (bind-key* "C-x C-b" 'helm-buffers-list)
-    (bind-key* "C-c C-k" 'helm-mini)
-    (bind-key* "C-c C-i" 'helm-imenu)
+    (bind-key* "C-x j"   'helm-mini)
+    (bind-key* "C-x C-i" 'helm-imenu)
     (bind-key* "C-c C-f" 'helm-etags-select)
     (bind-key* "C-c m"   'helm-man-woman))
   :config
@@ -365,7 +373,7 @@
           (helm-projectile)
         (helm-mini)))
 
-    (global-set-key (kbd "C-c C-j") 'cb:helm-dwim)))
+    (global-set-key (kbd "C-x C-j") 'cb:helm-dwim)))
 
 (use-package ack-and-a-half
   :ensure t
