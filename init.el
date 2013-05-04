@@ -572,6 +572,7 @@
              cb:kill-current-buffer
              indent-buffer
              insert-timestamp
+             rename-file-and-buffer
              cb:last-buffer-for-mode)
 
   :init     (add-hook 'find-file-hook 'cb:hide-dos-eol)
