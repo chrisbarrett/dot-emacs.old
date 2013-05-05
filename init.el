@@ -78,6 +78,7 @@
  confirm-nonexistent-file-or-buffer nil
  )
 (setq-default
+ tab-width                    4
  indent-tabs-mode             nil
  fill-column                  80)
 (add-hook 'text-mode-hook 'turn-on-auto-fill)
@@ -341,7 +342,7 @@
              global-visual-line-mode
              auto-fill-mode)
   :config
-  (global-visual-line-mode +1))
+  (add-hook 'text-mode-hook 'visual-line-mode))
 
 (use-package projectile
   :ensure   t
@@ -441,7 +442,6 @@
 
 (use-package popwin
   :ensure t
-  :defer nil
   :config
   (progn
     (setq display-buffer-function 'popwin:display-buffer
@@ -491,7 +491,7 @@
                      ".gz")))
 
 (use-package savehist
-  :init
+  :config
   (progn
     (setq
      savehist-additional-variables '(search ring regexp-search-ring)
@@ -502,7 +502,7 @@
 (use-package undo-tree
   :ensure   t
   :diminish undo-tree-mode
-  :init    (global-undo-tree-mode +1))
+  :config   (global-undo-tree-mode +1))
 
 (use-package window-number
   :ensure t
@@ -851,6 +851,9 @@
   :commands (smart-insert-operator smart-insert-operator-hook)
   :init
   (progn
+    (hook-fn 'prog-mode-hook
+      (unless (apply 'derived-mode-p cb:lisp-modes)
+        (smart-insert-operator-hook)))
 
     (defun cb:python-smart-equals ()
       "Insert an '=' char padded by spaces, except in function arglists."
@@ -862,18 +865,15 @@
         (smart-insert-operator "=")))
 
     (hook-fn 'python-mode-hook
-      (smart-insert-operator-hook)
       (local-set-key (kbd "=") 'cb:python-smart-equals)
       (local-unset-key (kbd "."))
       (local-unset-key (kbd ":")))
 
     (hook-fn 'cb:haskell-shared-hook
-      (smart-insert-operator-hook)
       (local-unset-key (kbd ":"))
       (local-unset-key (kbd ".")))
 
     (hook-fn 'sclang-mode-hook
-      (smart-insert-operator-hook)
       (local-unset-key (kbd "|"))
       (local-unset-key (kbd ".")))
 
@@ -882,8 +882,11 @@
       (local-unset-key (kbd "."))
       (local-unset-key (kbd ":")))
 
+    (hook-fn 'asm-mode-hook
+      (local-unset-key (kbd "-"))
+      (local-unset-key (kbd ".")))
+
     (hook-fn 'c-mode-common-hook
-      (smart-insert-operator-hook)
       (local-unset-key (kbd "."))
       (local-unset-key (kbd ":"))
       (local-set-key (kbd "*") 'c-electric-star))))
@@ -912,6 +915,11 @@
   :defer   t
   :config (when (equal system-type 'darwin)
             (setq dired-use-ls-dired nil)))
+
+(use-package dired-aux
+  :defer t
+  :config
+  (add-to-list 'dired-compress-file-suffixes '("\\.zip\\'" ".zip" "unzip")))
 
 (use-package dired-x
   :defer t
@@ -1712,6 +1720,40 @@
 (use-package proced
   :defer t
   :bind ("C-x p" . proced))
+
+(use-package asm-mode
+  :commands asm-mode
+  :config
+  (progn
+    (defun cb:asm-toggling-tab ()
+      (interactive)
+      (if (equal (line-beginning-position)
+                 (progn (back-to-indentation) (point)))
+          (indent-for-tab-command)
+        (indent-to-left-margin)))
+
+    (defun cb:asm-tab ()
+      "Perform a context-sensitive indentation."
+      (interactive)
+      (if (s-contains? ":" (thing-at-point 'line))
+          (indent-to-left-margin)
+        (cb:asm-toggling-tab)))
+
+    (defun cb:asm-electric-colon ()
+      "Insert a colon, indent, then newline."
+      (interactive)
+      (atomic-change-group
+        (unless (thing-at-point-looking-at (rx ":" (* space) eol))
+          (insert ":"))
+        (cb:asm-tab)
+        (newline-and-indent)))
+
+    (hook-fn 'asm-mode-hook
+      (setq tab-width 8)
+      (local-set-key (kbd "<tab>") 'cb:asm-tab)
+      (local-set-key (kbd ":") 'cb:asm-electric-colon))))
+
+
 
 ;;; ----------------------------------------------------------------------------
 ;;; Misc commands
