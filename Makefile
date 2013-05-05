@@ -7,7 +7,7 @@ emacs      = emacs
 
 emacs_exec    = $(emacs) --batch -nw -l init.el -f
 emacs_version = $(shell $(emacs) -Q --batch --exec \
-      '(princ (format "%s.%s" emacs-major-version emacs-minor-version))')
+	  '(princ (format "%s.%s" emacs-major-version emacs-minor-version))')
 
 # ----------------------------------------------------------------------------
 
@@ -123,7 +123,8 @@ supercollider   : $(sc_src) $(sc_ext)
 ruby : $(rsense) rubocop
 
 .PHONY: rubocop
-rubocop :; sudo gem install rubocop
+rubocop :
+	sudo gem install rubocop
 
 # RSense
 
@@ -138,3 +139,9 @@ $(rsense_bz) :
 $(rsense) : $(rsense_bz) ;
 	tar xvjf $(rsense_bz) --directory=$(bin)
 	chmod a+x $(rsense)
+
+# ----------------------------------------------------------------------------
+
+.PHONY: clang
+clang :
+	cd lib/clang-complete-async && make

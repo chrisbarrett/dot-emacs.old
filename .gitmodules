@@ -13,3 +13,6 @@
 [submodule "lib/info-lookmore"]
         path = lib/info-lookmore
         url = git://github.com/emacsmirror/info-lookmore.git
+[submodule "lib/clang-complete-async"]
+	path = lib/clang-complete-async
+	url = git://github.com/Golevka/emacs-clang-complete-async.git

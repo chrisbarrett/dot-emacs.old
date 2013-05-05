@@ -362,7 +362,8 @@
     (bind-key* "M-j" 'helm-mini)
     (bind-key* "M-i" 'helm-imenu)
     (bind-key* "M-f" 'helm-etags-select)
-    (bind-key* "M-m" 'helm-man-woman))
+    (bind-key* "M-m" 'helm-man-woman)
+    (bind-key* "M-k" 'helm-show-kill-ring))
   :config
   (define-key helm-map (kbd "C-[") 'helm-keyboard-quit))
 
@@ -757,6 +758,7 @@
 
 (use-package shell
   :commands shell
+  :bind ("M-t" . shell)
   :config
   (progn
     (hook-fn 'window-configuration-change-hook
@@ -851,10 +853,6 @@
   :commands (smart-insert-operator smart-insert-operator-hook)
   :init
   (progn
-    (hook-fn 'prog-mode-hook
-      (unless (apply 'derived-mode-p cb:lisp-modes)
-        (smart-insert-operator-hook)))
-
     (defun cb:python-smart-equals ()
       "Insert an '=' char padded by spaces, except in function arglists."
       (interactive)
@@ -865,15 +863,18 @@
         (smart-insert-operator "=")))
 
     (hook-fn 'python-mode-hook
+      (smart-insert-operator-hook)
       (local-set-key (kbd "=") 'cb:python-smart-equals)
       (local-unset-key (kbd "."))
       (local-unset-key (kbd ":")))
 
     (hook-fn 'cb:haskell-shared-hook
+      (smart-insert-operator-hook)
       (local-unset-key (kbd ":"))
       (local-unset-key (kbd ".")))
 
     (hook-fn 'sclang-mode-hook
+      (smart-insert-operator-hook)
       (local-unset-key (kbd "|"))
       (local-unset-key (kbd ".")))
 
@@ -883,10 +884,12 @@
       (local-unset-key (kbd ":")))
 
     (hook-fn 'asm-mode-hook
+      (smart-insert-operator-hook)
       (local-unset-key (kbd "-"))
       (local-unset-key (kbd ".")))
 
     (hook-fn 'c-mode-common-hook
+      (smart-insert-operator-hook)
       (local-unset-key (kbd "."))
       (local-unset-key (kbd ":"))
       (local-set-key (kbd "*") 'c-electric-star))))
@@ -1753,7 +1756,17 @@
       (local-set-key (kbd "<tab>") 'cb:asm-tab)
       (local-set-key (kbd ":") 'cb:asm-electric-colon))))
 
-
+(use-package auto-complete-clang-async
+  :commands ac-clang-launch-completion-process
+  :init
+  (hook-fn 'c-mode-common-hook
+    (setq ac-sources '(ac-source-clang-async
+                       ac-source-words-in-buffer))
+    (ac-clang-launch-completion-process))
+  :config
+  (progn
+    (cb:define-path cb:clang-complete-dir (concat cb:lib-dir "clang-complete-async/"))
+    (setq ac-clang-complete-executable (concat cb:clang-complete-dir "clang-complete"))))
 
 ;;; ----------------------------------------------------------------------------
 ;;; Misc commands
