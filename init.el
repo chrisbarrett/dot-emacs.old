@@ -927,8 +927,8 @@
 
 (use-package dired-x
   :defer t
-  :bind (("C-x C-k" . dired-jump)
-         ("C-x K"   . dired-jump-other-window)))
+  :bind (("M-d" . dired-jump)
+         ("M-D" . dired-jump-other-window)))
 
 (use-package dired-details
   :ensure   t
@@ -1081,7 +1081,7 @@
 
 (use-package magit
   :ensure t
-  :bind   ("C-x C-g" . magit-status)
+  :bind   ("M-g" . magit-status)
   :config
   (progn
     (defadvice magit-status (around magit-fullscreen activate)
