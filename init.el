@@ -358,6 +358,7 @@
   :ensure   t
   :init
   (progn
+    (bind-key* "M-a" 'helm-apropos)
     (bind-key* "M-b" 'helm-buffers-list)
     (bind-key* "M-j" 'helm-mini)
     (bind-key* "M-i" 'helm-imenu)
