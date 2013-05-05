@@ -120,6 +120,12 @@
 (bind-key (kbd "C-h e a") 'apropos)
 (bind-key (kbd "C-h e V") 'apropos-value)
 
+;;; Narrowing
+
+(put 'narrow-to-defun  'disabled nil)
+(put 'narrow-to-page   'disabled nil)
+(put 'narrow-to-region 'disabled nil)
+
 ;;; Misc commands
 (bind-key "S-<tab>" 'tab-to-tab-stop)
 
