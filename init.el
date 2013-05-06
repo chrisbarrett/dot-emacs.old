@@ -265,6 +265,8 @@
       send-mail-function 'smtpmail-send-it
       message-send-mail-function 'smtpmail-send-it)
 
+;;; Packages.
+
 (use-package smtpmail
   :commands smtpmail-send-it
   :init
@@ -293,6 +295,7 @@
   :init
   (progn
     (add-hook 'gnus-startup-hook 'bbdb-insinuate-gnus)
+    (add-hook 'message-mode-hook 'bbdb-insinuate-mail)
     (setq bbdb-file "~/Dropbox/.bbdb"))
   :config
   (progn
@@ -313,6 +316,16 @@
      bbdb/mail-auto-create-p     'bbdb-ignore-some-messages-hook
      )
     (bbdb-initialize)))
+
+(use-package bbdb-vcard
+  :commands (bbdb-vcard-import-file
+             bbdb-vcard-import-buffer
+             bbdb-vcard-export)
+  :config
+  ;; HACK: calls functions that appear not to exist.
+  (progn
+    (defalias 'bbdb-record-Notes 'ignore)
+    (defalias 'bbdb-record-set-Notes 'ignore)))
 
 ;;; ----------------------------------------------------------------------------
 ;;; OS X-specific configuration.

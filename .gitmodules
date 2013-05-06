@@ -16,3 +16,6 @@
 [submodule "lib/clang-complete-async"]
 	path = lib/clang-complete-async
 	url = git://github.com/Golevka/emacs-clang-complete-async.git
+[submodule "lib/bbdb-vcard"]
+	path = lib/bbdb-vcard
+	url = git://github.com/tohojo/bbdb-vcard.git
