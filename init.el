@@ -933,8 +933,10 @@
 
 (use-package dired-x
   :defer t
-  :bind (("M-d" . dired-jump)
-         ("M-D" . dired-jump-other-window)))
+  :init
+  (progn
+    (bind-key* "M-d" 'dired-jump)
+    (bind-key* "M-D" 'dired-jump-other-window)))
 
 (use-package dired-details
   :ensure   t
