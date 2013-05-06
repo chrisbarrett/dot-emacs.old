@@ -214,14 +214,9 @@ Most of these are stolen from Solarized Dark."
    `(menu ((,class (:foreground ,solarized-fg :background ,solarized-bg))))
    `(minibuffer-prompt ((,class (:foreground ,solarized-emph))))
    `(mode-line
-     ((,class (:foreground ,solarized-fg
-                           :background "#001d1d"
-                           :box (:line-width -1 :style released-button)))))
+     ((,class (:foreground ,solarized-fg :background "gray15"))))
    `(mode-line-buffer-id ((,class (:foreground ,solarized-emph :weight bold))))
-   `(mode-line-inactive
-     ((,class (:foreground ,solarized-fg
-                           :background "gray5"
-                           :box (:line-width -1 :style released-button)))))
+   `(mode-line-inactive ((,class (:foreground ,solarized-fg :background "gray5"))))
    `(region ((,class (:foreground ,solarized-bg :background ,solarized-emph))))
    `(secondary-selection ((,class (:background ,solarized-hl))))
 
