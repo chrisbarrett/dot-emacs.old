@@ -945,7 +945,7 @@
   (add-to-list 'dired-compress-file-suffixes '("\\.zip\\'" ".zip" "unzip")))
 
 (use-package dired-x
-  :defer t
+  :commands (dired-jump dired-jump-other-window)
   :init
   (progn
     (bind-key* "M-d" 'dired-jump)
@@ -1478,10 +1478,6 @@
   :mode     ("\\.py$" . python-mode)
   :config
   (progn
-    (use-package elpy
-      :ensure t
-      :config (elpy-enable))
-
     (use-package jedi
       :ensure   t
       :commands jedi:setup
@@ -1787,7 +1783,7 @@
     (ac-clang-launch-completion-process))
   :config
   (progn
-    (cb:define-path cb:clang-complete-dir (concat cb:lib-dir "clang-complete-async/"))
+    (cb:define-path cb:clang-complete-dir "lib/clang-complete-async/")
     (setq ac-clang-complete-executable (concat cb:clang-complete-dir "clang-complete"))))
 
 ;;; ----------------------------------------------------------------------------
