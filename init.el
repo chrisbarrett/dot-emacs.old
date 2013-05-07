@@ -912,6 +912,8 @@
       (smart-insert-operator-hook)
       (local-unset-key (kbd "."))
       (local-unset-key (kbd ":"))
+      (local-unset-key (kbd "-"))
+      (local-unset-key (kbd "+"))
       (local-set-key (kbd "*") 'c-electric-star))))
 
 (use-package json-mode
@@ -1416,11 +1418,22 @@
   :commands (sclang-mode sclang-start)
   :mode ("\\.sc$" . sclang-mode)
   :init
-  (defun supercollider ()
-    "Start SuperCollider and open the SC Workspace."
-    (interactive)
-    (let ((sclang-show-workspace-on-startup t))
-      (sclang-start)))
+  (progn
+    (defun supercollider ()
+      "Start SuperCollider and open the SC Workspace."
+      (interactive)
+      (switch-to-buffer
+       (get-buffer-create "*sclang workspace*"))
+      (sclang-mode))
+
+    (defun cb:switch-sclang-buffers ()
+      "Switch between the Post buffer and the last sclang buffer."
+      (interactive)
+      (if (equal (buffer-name) sclang-post-buffer)
+          (->> (cdr (buffer-list))
+            (cb:last-buffer-for-mode 'sclang-mode)
+            (switch-to-buffer))
+        (switch-to-buffer sclang-post-buffer))))
   :config
   (progn
     (setq sclang-auto-scroll-post-buffer   t
@@ -1445,6 +1458,7 @@
       (local-set-key (kbd "s-.") 'sclang-main-stop)
       (local-set-key (kbd "C-c C-l") 'sclang-eval-document)
       (local-set-key (kbd "M-q") 'indent-buffer)
+      (local-set-key (kbd "C-c C-z") 'cb:switch-sclang-buffers)
       (auto-complete-mode +1)
       (smartparens-mode +1)
       ;; sclang-mode starts in the SuperCollider app bundle. Override this.
@@ -1730,6 +1744,12 @@
   :commands info-lookmore-elisp-cl
   :init     (eval-after-load "info-look" '(info-lookmore-elisp-cl)))
 
+(use-package google-c-style
+  :ensure t
+  :defer t
+  :commands google-set-c-style
+  :init (add-hook 'c-mode-common-hook 'google-set-c-style))
+
 (use-package disaster
   :ensure   t
   :commands disaster
@@ -1779,6 +1799,7 @@
   :init
   (hook-fn 'c-mode-common-hook
     (setq ac-sources '(ac-source-clang-async
+                       ac-source-yasnippet
                        ac-source-words-in-buffer))
     (ac-clang-launch-completion-process))
   :config
