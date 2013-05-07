@@ -845,8 +845,6 @@
   :bind ("C-c / /" . google-this)
   :config (google-this-mode +1))
 
-
-
 (use-package w3m
   :ensure   t
   :commands (w3m-find-file w3m-browse-url)
@@ -870,10 +868,9 @@
   (progn
     (add-hook 'text-mode-hook 'smartparens-mode)
     (add-hook 'comint-mode-hook 'smartparens-mode)
-    ;; Don't enable smartparents mode for lisps. Make doubly-sure Paredit is
-    ;; used.
     (hook-fn 'prog-mode-hook
-      (if (s-matches? (rx (or "lisp" "clojure")) (symbol-name major-mode))
+      "Ensure Paredit is used for Lisps."
+      (if (-contains? cb:lisp-modes major-mode)
           (paredit-mode +1)
         (smartparens-mode +1))))
   :config
