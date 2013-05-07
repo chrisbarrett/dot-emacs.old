@@ -30,11 +30,7 @@
 (scroll-bar-mode   -1)
 (tool-bar-mode     -1)
 (blink-cursor-mode -1)
-
-;; Use the menu-bar only in OS X Aqua.
-(if (and (display-graphic-p) (equal system-type 'darwin))
-    (menu-bar-mode +1)
-  (menu-bar-mode -1))
+(menu-bar-mode (if (display-graphic-p) +1 -1))
 
 ;;; Fully-qualify `user-emacs-directory'.
 (setq user-emacs-directory (expand-file-name user-emacs-directory))
@@ -130,7 +126,7 @@
 
 (defvar cb:sans-serif-font
   (cb:font "Helvetica Neue" "Ubuntu Regular"
-           "Cambria" "Calibri" "Helvetica" "Arial"))
+           "Cambria" "Calibri" "Helvetica" "Verdana" "Arial"))
 
 (defvar cb:monospace-font
   (cb:font "Menlo" "Consolas" "Inconsolata" "DejaVu Sans Mono"
