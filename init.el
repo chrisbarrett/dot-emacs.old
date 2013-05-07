@@ -36,7 +36,12 @@
     (menu-bar-mode +1)
   (menu-bar-mode -1))
 
-;;; ----------------------------------------------------------------------------
+;;; Fully-qualify `user-emacs-directory'.
+(setq user-emacs-directory (expand-file-name user-emacs-directory))
+(defvar user-home-directory (getenv "HOME"))
+(add-to-list 'load-path (concat user-emacs-directory "lisp"))
+
+;;; ============================================================================
 ;;; Initialize packages.
 
 (require 'package)
@@ -49,7 +54,36 @@
   (package-install 'use-package))
 (require 'use-package)
 
-;;; ----------------------------------------------------------------------------
+(use-package cb-macros)
+
+(use-package cl-lib)
+
+(use-package s
+  :ensure t)
+
+(use-package dash
+  :ensure t)
+
+;;; ============================================================================
+
+;;; Initialize paths
+
+(cb:define-path cb:lib-dir       "lib/" t)
+(cb:define-path cb:lisp-dir      "lisp/" t)
+(cb:define-path cb:src-dir       "src")
+(cb:define-path cb:tmp-dir       "tmp/")
+(cb:define-path cb:elpa-dir      "elpa/")
+(cb:define-path cb:bin-dir       "bin/")
+(cb:define-path cb:etc-dir       "etc/")
+(cb:define-path cb:yasnippet-dir "snippets/")
+(cb:define-path cb:backups-dir   "backups/")
+(cb:define-path cb:autosaves-dir "tmp/autosaves/")
+
+;; Use the version of emacs in /src for info and source.
+(setq source-directory (format "%s/emacs-%s.%s" cb:src-dir
+                               emacs-major-version
+                               emacs-minor-version))
+(setenv "INFOPATH" (concat source-directory "/info/"))
 
 ;;; Describe me.
 
@@ -81,10 +115,33 @@
  tab-width                    4
  indent-tabs-mode             nil
  fill-column                  80)
-(add-hook 'text-mode-hook 'turn-on-auto-fill)
 (icomplete-mode +1)
-
+(add-hook 'text-mode-hook 'turn-on-auto-fill)
 (defalias 'yes-or-no-p 'y-or-n-p)
+
+;;; Typefaces
+
+(defun cb:font (&rest fonts)
+  "Return the first available font in FONTS."
+  (--first (find-font (font-spec :name it)) fonts))
+
+(defvar cb:serif-font
+  (cb:font "Palatino" "Times New Roman"))
+
+(defvar cb:sans-serif-font
+  (cb:font "Helvetica Neue" "Ubuntu Regular"
+           "Cambria" "Calibri" "Helvetica" "Arial"))
+
+(defvar cb:monospace-font
+  (cb:font "Menlo" "Consolas" "Inconsolata" "DejaVu Sans Mono"
+           "Ubuntu Mono Regular" "Courier"))
+
+(hook-fn 'text-mode-hook
+  "Use a sans-serif font for text-mode."
+  (unless (equal major-mode 'org-mode)
+    (buffer-face-set `(:family ,cb:sans-serif-font :height 130))))
+
+(set-frame-font (format "%s 11" cb:monospace-font))
 
 ;; Encodings
 
@@ -136,11 +193,6 @@
 (eval-after-load "vc"
   '(remove-hook 'find-file-hooks 'vc-find-file-hook))
 
-;;; Fully-qualify `user-emacs-directory'.
-(setq user-emacs-directory (expand-file-name user-emacs-directory))
-(defvar user-home-directory (getenv "HOME"))
-(add-to-list 'load-path (concat user-emacs-directory "lisp"))
-
 ;;; Editing Advice
 
 (defadvice ido-find-file (after find-file-sudo activate)
@@ -166,37 +218,6 @@
     ad-do-it))
 
 ;;; ============================================================================
-;;; Load packages.
-
-(use-package cl-lib)
-
-(use-package s
-  :ensure t)
-
-(use-package dash
-  :ensure t)
-
-(use-package cb-macros
-  :init
-  (progn
-    (cb:define-path cb:lib-dir       "lib/" t)
-    (cb:define-path cb:lisp-dir      "lisp/" t)
-    (cb:define-path cb:src-dir       "src")
-    (cb:define-path cb:tmp-dir       "tmp/")
-    (cb:define-path cb:elpa-dir      "elpa/")
-    (cb:define-path cb:bin-dir       "bin/")
-    (cb:define-path cb:etc-dir       "etc/")
-    (cb:define-path cb:yasnippet-dir "snippets/")
-    (cb:define-path cb:backups-dir   "backups/")
-    (cb:define-path cb:autosaves-dir "tmp/autosaves/")
-
-    ;; Use the version of emacs in /src for info and source.
-    (setq source-directory (format "%s/emacs-%s.%s" cb:src-dir
-                                   emacs-major-version
-                                   emacs-minor-version))
-    (setenv "INFOPATH" (concat source-directory "/info/"))))
-
-;;; ----------------------------------------------------------------------------
 ;;; Combined hooks.
 ;;;
 ;;; These hooks are used to configure similar modes that do not have derivation
@@ -217,6 +238,7 @@
 
 (defvar cb:lisp-modes
   '(scheme-mode
+    inferior-scheme-mode
     emacs-lisp-mode
     lisp-mode
     common-lisp-mode
@@ -330,9 +352,6 @@
 ;;; ----------------------------------------------------------------------------
 ;;; OS X-specific configuration.
 (when (equal system-type 'darwin)
-
-  (add-to-list 'default-frame-alist '(font . "Palatino-12"))
-  (add-to-list 'default-frame-alist '(font . "Menlo-11"))
 
   ;; Set exec-path
   (use-package exec-path-from-shell
@@ -849,16 +868,11 @@
   :ensure   t
   :commands (w3m-find-file w3m-browse-url)
   :init
-  (progn
-    (defun font-candidate (&rest fonts)
-      "Return the first available font in FONTS."
-      (--first (find-font (font-spec :name it)) fonts))
-
-    (setq browse-url-browser-function 'w3m-browse-url))
+  (setq browse-url-browser-function 'w3m-browse-url)
   :config
   (hook-fn 'w3m-mode-hook
     (buffer-face-set
-     `(:family ,(font-candidate "Palatino" "Times New Roman") :height 130))))
+     `(:family ,cb:serif-font :height 130))))
 
 (use-package smartparens
   :ensure t
