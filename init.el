@@ -139,7 +139,13 @@
 (hook-fn 'text-mode-hook
   "Use a sans-serif font for text-mode."
   (unless (equal major-mode 'org-mode)
-    (buffer-face-set `(:family ,cb:sans-serif-font :height 130))))
+    (buffer-face-set `(:family ,cb:sans-serif-font :height 120))))
+
+(hook-fn 'help-mode-hook
+  (buffer-face-set `(:family ,cb:serif-font :height 140)))
+
+(hook-fn 'Info-mode-hook
+  (buffer-face-set `(:family ,cb:serif-font :height 140)))
 
 (set-frame-font (format "%s 11" cb:monospace-font))
 
@@ -989,6 +995,7 @@
          ("\\.[mM]arkdown$" . markdown-mode))
   :config
   (hook-fn 'markdown-mode-hook
+    (buffer-face-set `(:family ,cb:serif-font :height 130))
     (setq imenu-generic-expression
           '(("title"  "^\\(.*\\)[\n]=+$" 1)
             ("h2-"    "^\\(.*\\)[\n]-+$" 1)
