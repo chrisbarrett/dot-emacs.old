@@ -409,6 +409,7 @@
     (bind-key* "M-i" 'helm-imenu)
     (bind-key* "M-f" 'helm-etags-select)
     (bind-key* "M-m" 'helm-man-woman)
+    (bind-key* "M-w" 'helm-w3m-bookmarks)
     (bind-key* "M-k" 'helm-show-kill-ring))
   :config
   (define-key helm-map (kbd "C-[") 'helm-keyboard-quit))
