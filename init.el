@@ -331,6 +331,7 @@
 ;;; OS X-specific configuration.
 (when (equal system-type 'darwin)
 
+  (add-to-list 'default-frame-alist '(font . "Palatino-12"))
   (add-to-list 'default-frame-alist '(font . "Menlo-11"))
 
   ;; Set exec-path
@@ -844,9 +845,22 @@
   :bind ("C-c / /" . google-this)
   :config (google-this-mode +1))
 
+
+
 (use-package w3m
-  :ensure t
-  :commands (w3m-find-file w3m-browse-url))
+  :ensure   t
+  :commands (w3m-find-file w3m-browse-url)
+  :init
+  (progn
+    (defun font-candidate (&rest fonts)
+      "Return the first available font in FONTS."
+      (--first (find-font (font-spec :name it)) fonts))
+
+    (setq browse-url-browser-function 'w3m-browse-url))
+  :config
+  (hook-fn 'w3m-mode-hook
+    (buffer-face-set
+     `(:family ,(font-candidate "Palatino" "Times New Roman") :height 130))))
 
 (use-package smartparens
   :ensure t
@@ -1418,56 +1432,19 @@
   :commands (sclang-mode sclang-start)
   :mode ("\\.sc$" . sclang-mode)
   :init
-  (progn
-    (defun supercollider ()
-      "Start SuperCollider and open the SC Workspace."
-      (interactive)
-      (switch-to-buffer
-       (get-buffer-create "*sclang workspace*"))
-      (sclang-mode))
+  (defun supercollider ()
+    "Start SuperCollider and open the SC Workspace."
+    (interactive)
+    (switch-to-buffer
+     (get-buffer-create "*sclang workspace*"))
+    (sclang-mode))
 
-    (defun cb:switch-sclang-buffers ()
-      "Switch between the Post buffer and the last sclang buffer."
-      (interactive)
-      (if (equal (buffer-name) sclang-post-buffer)
-          (->> (cdr (buffer-list))
-            (cb:last-buffer-for-mode 'sclang-mode)
-            (switch-to-buffer))
-        (switch-to-buffer sclang-post-buffer))))
   :config
   (progn
     (setq sclang-auto-scroll-post-buffer   t
           sclang-eval-line-forward         nil
           sclang-show-workspace-on-startup nil)
-    (add-to-list 'ac-modes 'sclang-mode)
-
-    ;; Configure paths.
-    (let* ((sc-app-resources
-            (concat "/Applications/SuperCollider/SuperCollider.app/Contents/Resources"))
-           (sc-app-support
-            (concat user-home-directory "/Library/Application Support/SuperCollider")))
-      (setq
-       sclang-runtime-directory (concat sc-app-resources "/SCClassLibrary")
-       sclang-program (concat sc-app-resources "/sclang")
-       sclang-extension-path (list (concat sc-app-support "/Extensions"))
-       sclang-help-path (list (concat sc-app-support "/Help")
-                              (concat sc-app-support "/Help/Reference")
-                              (concat sc-app-support "/Help/Classes"))))
-
-    (hook-fn 'sclang-mode-hook
-      (local-set-key (kbd "s-.") 'sclang-main-stop)
-      (local-set-key (kbd "C-c C-l") 'sclang-eval-document)
-      (local-set-key (kbd "M-q") 'indent-buffer)
-      (local-set-key (kbd "C-c C-z") 'cb:switch-sclang-buffers)
-      (auto-complete-mode +1)
-      (smartparens-mode +1)
-      ;; sclang-mode starts in the SuperCollider app bundle. Override this.
-      (setq-local default-directory (expand-file-name "~"))
-      ;; sclang-mode uses indent-tabs-mode WHYYYY
-      (setq-local indent-tabs-mode nil)
-      (unless (or (equal (buffer-name) sclang-post-buffer)
-                  (sclang-get-process))
-        (sclang-start)))))
+    (add-hook 'sclang-mode-hook 'smartparens-mode)))
 
 (use-package sclang-extensions
   :ensure   t
