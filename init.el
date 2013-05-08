@@ -46,19 +46,21 @@
 (package-initialize)
 (unless package-archive-contents (package-refresh-contents))
 
+(unless (package-installed-p 'bind-key)
+  (package-install 'bind-key))
 (unless (package-installed-p 'use-package)
   (package-install 'use-package))
 (require 'use-package)
-
-(use-package cb-macros)
-
-(use-package cl-lib)
 
 (use-package s
   :ensure t)
 
 (use-package dash
   :ensure t)
+
+(use-package cb-macros)
+
+(use-package cl-lib)
 
 ;;; ============================================================================
 
