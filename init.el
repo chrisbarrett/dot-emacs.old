@@ -865,8 +865,26 @@
     (define-key ac-completing-map (kbd "M-RET") 'ac-help)))
 
 (use-package slime
+  :defer t
+  :init
+  (require 'slime-autoloads)
+  :config
+  (progn
+    (setq slime-lisp-implementations
+          `((lisp  ("sbcl" "--noinform"))
+            (guile ("guile" "-L" ,(concat user-home-directory "/.scheme")))))
+    (setq slime-lisp-modes)
+    (slime-setup '(slime-fancy))))
+
+(use-package ac-slime
   :ensure t
-  :defer  t)
+  :defer  t
+  :init
+  (progn
+    (add-hook 'slime-mode-hook 'set-up-slime-ac)
+    (add-hook 'slime-repl-mode-hook 'set-up-slime-ac))
+  :config
+  (add-to-list 'ac-modes 'slime-repl-mode))
 
 (use-package geiser
   :ensure t

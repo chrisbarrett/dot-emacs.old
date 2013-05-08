@@ -19,3 +19,6 @@
 [submodule "lib/bbdb-vcard"]
 	path = lib/bbdb-vcard
 	url = git://github.com/tohojo/bbdb-vcard.git
+[submodule "lib/slime"]
+	path = lib/slime
+	url = git://github.com/nablaone/slime.git
