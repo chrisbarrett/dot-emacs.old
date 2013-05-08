@@ -157,12 +157,35 @@ clang :
 
 # ----------------------------------------------------------------------------
 
-r5rs_html    = $(etc)/r5rs-html
-r5rs_gz      = $(tmp)/r5rs-html.tar.gz
-r5rs_url     = http://www.schemers.org/Documents/Standards/R5RS/r5rs-html.tar.gz
+r5rs_html     = $(etc)/r5rs-html
+r5rs_gz       = $(tmp)/r5rs-html.tar.gz
+r5rs_url      = http://www.schemers.org/Documents/Standards/R5RS/r5rs-html.tar.gz
+scm_init      = ~/.scheme.init
+scm_d         = ~/.scheme
+scm_swank     = $(scm_d)/swank.scm
+scm_swank_url = https://raw.github.com/ecraven/mit-scheme-swank/master/swank.scm
+scm_config_str = "(load-option 'format) \
+				  (load \""$(scm_swank)"\" (->environment '(runtime swank)))"
 
 .PHONY: scheme
-scheme : $(etc) $(r5rs_html)
+scheme : $(r5rs_html) $(scm_swank) $(scm_init)
+
+# Download SWANK client.
+
+.PHONY: scheme_swank
+
+$(scm_swank) :| $(scm_d)
+	curl $(scm_swank_url) > $(scm_swank)
+
+$(scm_d) :
+	mkdir -p $(scm_d)
+
+$(scm_init) :
+	touch $(scm_init)
+	echo "\n"                                                  >> $(scm_init)
+	echo ";; SWANK configuration. Added by .emacs.d makefile." >> $(scm_init)
+	echo $(scm_config_str)                                     >> $(scm_init)
+	echo "\n"                                                  >> $(scm_init)
 
 # Download Scheme documentation.
 

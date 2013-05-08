@@ -137,9 +137,6 @@
   (unless (equal major-mode 'org-mode)
     (buffer-face-set `(:family ,cb:sans-serif-font :height 120))))
 
-(hook-fn 'help-mode-hook
-  (buffer-face-set `(:family ,cb:serif-font :height 140)))
-
 (hook-fn 'Info-mode-hook
   (buffer-face-set `(:family ,cb:serif-font :height 140)))
 
@@ -867,6 +864,10 @@
     (define-key ac-completing-map "\t" 'ac-complete)
     (define-key ac-completing-map (kbd "M-RET") 'ac-help)))
 
+(use-package slime
+  :ensure t
+  :defer  t)
+
 (use-package geiser
   :ensure t
   :commands run-geiser
@@ -880,10 +881,10 @@
   (progn
     (setq scheme-r5rs-root (concat cb:etc-dir "r5rs-html/"))
     (hook-fn 'cb:scheme-shared-hook
+      (local-set-key (kbd "C-c C-h") 'scheme-r5rs-lookup)
       (set (make-local-variable 'browse-url-browser-function)
            (lambda (url &rest _)
-             (w3m-browse-url (s-prepend "file://" url))))
-      (local-set-key (kbd "C-c C-h") 'scheme-r5rs-lookup))))
+             (cb:w3m-browse-url-as-help (concat "file://" url)))))))
 
 (use-package scheme-complete
   :ensure t
@@ -913,7 +914,22 @@
   :ensure   t
   :commands (w3m-find-file w3m-browse-url)
   :init
-  (setq browse-url-browser-function 'w3m-browse-url)
+  (progn
+    (setq browse-url-browser-function 'w3m-browse-url)
+
+    (defun cb:find-window-with-mode (mode)
+      "Find the first window whose buffer is in major-mode MODE."
+      (get-window-with-predicate
+       (lambda (w) (with-current-buffer (window-buffer w)
+                     (equal mode major-mode)))))
+
+    (defun cb:w3m-browse-url-as-help (url)
+      "Browse the given URL in a help window."
+      (interactive "sURL: ")
+      (let ((win (or (cb:find-window-with-mode 'w3m-mode) (split-window))))
+        (select-window win)
+        (w3m-browse-url url)))
+    )
   :config
   (hook-fn 'w3m-mode-hook
     (buffer-face-set
