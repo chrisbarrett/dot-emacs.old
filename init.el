@@ -134,7 +134,7 @@
 
 (hook-fn 'text-mode-hook
   "Use a sans-serif font for text-mode."
-  (unless (equal major-mode 'org-mode)
+  (when (equal major-mode 'text-mode)
     (buffer-face-set `(:family ,cb:sans-serif-font :height 120))))
 
 (hook-fn 'Info-mode-hook
@@ -895,8 +895,13 @@
 (use-package geiser
   :ensure t
   :commands run-geiser
+  :init
+  (progn
+    (autoload 'geiser-autodoc-mode "geiser-autodoc")
+    (add-hook 'cb:scheme-shared-hook 'geiser-autodoc-mode))
   :config
   (setq
+   geiser-repl-startup-time 20000
    geiser-repl-history-filename (concat cb:tmp-dir "geiser-history")
    geiser-active-implementations '(racket)))
 
@@ -919,7 +924,9 @@
              scheme-smart-indent-function)
   :init
   (hook-fn 'cb:scheme-shared-hook
-    (setq ac-sources '(ac-source-dictionary))
+    (setq ac-sources '(ac-source-dictionary
+                       ac-source-yasnippet
+                       ac-source-words-in-buffer))
     (set (make-local-variable 'lisp-indent-function)
          'scheme-smart-indent-function)
     (set (make-local-variable 'eldoc-documentation-function)
