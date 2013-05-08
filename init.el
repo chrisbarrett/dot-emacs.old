@@ -52,6 +52,12 @@
   (package-install 'use-package))
 (require 'use-package)
 
+(defadvice use-package-ensure-elpa (around ignore-errs activate)
+  "Ignore errors caused by package generation."
+  (condition-case err
+      ad-do-it
+    (file-already-exists)))
+
 (use-package s
   :ensure t)
 
@@ -571,6 +577,10 @@
 (use-package diminish
   :ensure t
   :commands diminish)
+
+(use-package highlight
+  :ensure t
+  :defer t)
 
 (use-package hl-line
   :if (display-graphic-p)
@@ -1424,6 +1434,7 @@
 (use-package elisp-slime-nav
   :ensure   t
   :diminish elisp-slime-nav-mode
+  :commands elisp-slime-nav-mode
   :defer    t
   :init
   (--each '(emacs-lisp-mode-hook ielm-mode-hook)
