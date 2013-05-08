@@ -237,7 +237,6 @@
 
 (defconst cb:scheme-modes
   '(scheme-mode
-    guile-scheme-mode
     inferior-scheme-mode
     geiser-repl-mode
     geiser-mode))
@@ -866,19 +865,26 @@
 
 (use-package slime
   :defer t
+  :commands (slime-mode slime)
   :init
-  (require 'slime-autoloads)
+  (progn
+    (setq slime-lisp-implementations `((lisp ("sbcl" "--noinform"))))
+
+    (defun run-slime ()
+      "Run slime, prompting for a lisp implementation."
+      (interactive)
+      (let ((current-prefix-arg '-))
+        (slime))))
+
   :config
   (progn
-    (setq slime-lisp-implementations
-          `((lisp  ("sbcl" "--noinform"))
-            (guile ("guile" "-L" ,(concat user-home-directory "/.scheme")))))
-    (setq slime-lisp-modes)
+    (require 'slime)
     (slime-setup '(slime-fancy))))
 
 (use-package ac-slime
   :ensure t
   :defer  t
+  :commands (set-up-slime-ac)
   :init
   (progn
     (add-hook 'slime-mode-hook 'set-up-slime-ac)
@@ -890,7 +896,9 @@
   :ensure t
   :commands run-geiser
   :config
-  (setq geiser-repl-history-filename (concat cb:tmp-dir "geiser-history")))
+  (setq
+   geiser-repl-history-filename (concat cb:tmp-dir "geiser-history")
+   geiser-active-implementations '(racket)))
 
 (use-package r5rs
   :ensure t
