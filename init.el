@@ -140,7 +140,8 @@
 (hook-fn 'Info-mode-hook
   (buffer-face-set `(:family ,cb:serif-font :height 140)))
 
-(set-frame-font (format "%s 11" cb:monospace-font))
+(set-frame-font (format "%s 11" cb:monospace-font)
+                nil t)
 
 ;; Encodings
 
@@ -404,6 +405,7 @@
   (progn
     (bind-key* "M-a" 'helm-apropos)
     (bind-key* "M-b" 'helm-buffers-list)
+    (bind-key* "C-x C-b" 'helm-buffers-list)
     (bind-key* "M-j" 'helm-mini)
     (bind-key* "M-i" 'helm-imenu)
     (bind-key* "M-f" 'helm-etags-select)

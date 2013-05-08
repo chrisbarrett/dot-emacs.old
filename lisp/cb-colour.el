@@ -221,7 +221,7 @@ Most of these are stolen from Solarized Dark."
    `(secondary-selection ((,class (:background ,solarized-hl))))
 
    `(trailing-whitespace ((,class (:background ,red))))
-   `(vertical-border ((,class (:foreground "grey10"))))
+   `(vertical-border ((,class (:foreground "SteelBlue4"))))
 
 ;;; external
 
