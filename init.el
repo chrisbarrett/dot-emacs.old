@@ -895,6 +895,21 @@
 (use-package geiser
   :ensure t
   :commands run-geiser
+  :init
+  (progn
+    (autoload 'geiser-company--prefix-at-point "geiser-company")
+    (autoload 'geiser-company--doc "geiser-company")
+
+    (ac-define-source geiser
+      '((candidates . (progn
+                        (geiser-company--prefix-at-point)
+                        (cdr geiser-company--completions)))
+        (document   . geiser-company--doc)))
+
+    (hook-fn 'cb:scheme-shared-hook
+      "Configure auto-complete for Scheme modes."
+      (setq ac-sources '(ac-source-yasnippet ac-source-geiser)))
+    )
   :config
   (setq
    geiser-mode-start-repl-p t
@@ -1046,6 +1061,7 @@
   :config
   (progn
     (setq lambda-symbol (string (make-char 'greek-iso8859-7 107)))
+    (add-hook 'cb:scheme-shared-hook   'lambda-mode)
     (add-hook 'inferior-lisp-mode-hook 'lambda-mode)
     (add-hook 'lisp-mode-hook          'lambda-mode)
     (add-hook 'emacs-lisp-mode-hook    'lambda-mode)
@@ -1397,7 +1413,7 @@
   :ensure   t
   :commands turn-on-redshank-mode
   :diminish redshank-mode
-  :init     (add-hook 'emacs-lisp-mode-hook 'turn-on-redshank-mode))
+  :init     (add-hook 'cb:lisp-shared-hook 'turn-on-redshank-mode))
 
 (use-package macrostep
   :ensure t

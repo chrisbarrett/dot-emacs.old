@@ -1,8 +1,6 @@
 # -*- mode: snippet -*-
 # name: let
 # key: let
-# key: l
 # --
-(let (($1 ))
+let (($1))
   $0
-  )
