@@ -77,7 +77,7 @@ clean-flycheck :
 
 .PHONY: clean-tmp
 clean-tmp :
-	rm -f $(tmp)/*
+	rm -rf $(tmp)/*
 
 # ----------------------------------------------------------------------------
 # Emacs source
