@@ -895,12 +895,9 @@
 (use-package geiser
   :ensure t
   :commands run-geiser
-  :init
-  (progn
-    (autoload 'geiser-autodoc-mode "geiser-autodoc")
-    (add-hook 'cb:scheme-shared-hook 'geiser-autodoc-mode))
   :config
   (setq
+   geiser-mode-start-repl-p t
    geiser-repl-startup-time 20000
    geiser-repl-history-filename (concat cb:tmp-dir "geiser-history")
    geiser-active-implementations '(racket)))
