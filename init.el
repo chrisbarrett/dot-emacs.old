@@ -829,7 +829,6 @@
 
   :config
   (progn
-
     ;; Enable for everything except text modes.
     (global-auto-complete-mode +1)
     (hook-fn 'text-mode-hook
@@ -837,6 +836,9 @@
 
     (use-package auto-complete-config
       :config (ac-config-default))
+
+    (add-to-list 'ac-dictionary-directories
+                 (concat user-emacs-directory "ac-dict"))
 
     (--each cb:lisp-modes (add-to-list 'ac-modes it))
     (setq
@@ -857,6 +859,32 @@
     (define-key ac-completing-map (kbd "C-p") 'ac-previous)
     (define-key ac-completing-map "\t" 'ac-complete)
     (define-key ac-completing-map (kbd "M-RET") 'ac-help)))
+
+(use-package scheme
+  :defer t
+  :config
+  (progn
+    (hook-fn 'inferior-scheme-mode-hook
+      (setq ac-sources '(ac-source-dictionary)))
+    (hook-fn 'scheme-mode-hook
+      (setq ac-sources '(ac-source-dictionary ac-source-words-in-buffer)))))
+
+(use-package scheme-complete
+  :ensure t
+  :defer  t
+  :commands (scheme-get-current-symbol-info
+             scheme-smart-indent-function)
+  :init
+  (progn
+    (hook-fn 'inferior-scheme-mode-hook
+      (set (make-local-variable 'eldoc-documentation-function)
+           'scheme-get-current-symbol-info)
+      (eldoc-mode +1))
+    (hook-fn 'scheme-mode-hook
+      (set (make-local-variable 'eldoc-documentation-function)
+           'scheme-get-current-symbol-info)
+      (eldoc-mode +1)
+      (set (make-local-variable 'lisp-indent-function) 'scheme-smart-indent-function))))
 
 (use-package fuzzy
   :ensure t)
