@@ -122,11 +122,11 @@
   (--first (find-font (font-spec :name it)) fonts))
 
 (defvar cb:serif-font
-  (cb:font "Palatino" "Times New Roman"))
+  (cb:font "Palatino" "Cambria" "Times New Roman"))
 
 (defvar cb:sans-serif-font
-  (cb:font "Helvetica Neue" "Ubuntu Regular"
-           "Cambria" "Calibri" "Helvetica" "Verdana" "Arial"))
+  (cb:font "Lucida Grande" "Ubuntu Regular" "Segoe UI"
+           "Helvetica Neue" "Calibri" "Helvetica" "Verdana" "Arial"))
 
 (defvar cb:monospace-font
   (cb:font "Menlo" "Consolas" "Inconsolata" "DejaVu Sans Mono"
