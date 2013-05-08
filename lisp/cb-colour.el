@@ -221,7 +221,7 @@ Most of these are stolen from Solarized Dark."
    `(secondary-selection ((,class (:background ,solarized-hl))))
 
    `(trailing-whitespace ((,class (:background ,red))))
-   `(vertical-border ((,class (:foreground "SteelBlue4"))))
+   `(vertical-border ((,class (:foreground ,solarized-bg))))
 
 ;;; external
 
@@ -761,7 +761,7 @@ Most of these are stolen from Solarized Dark."
    `(w3m-header-line-location-content ((,class (:background ,solarized-hl :foreground ,solarized-fg))))
    `(w3m-bold ((,class (:foreground ,solarized-emph :weight bold))))
    `(w3m-image-anchor ((,class (:background ,solarized-bg :foreground ,cyan :inherit link))))
-   `(w3m-image ((,class (:background ,solarized-bg :foreground ,cyan))))
+   `(w3m-image ((,class (:background ,solarized-fg :foreground ,cyan))))
    `(w3m-lnum-minibuffer-prompt ((,class (:foreground ,solarized-emph))))
    `(w3m-lnum-match ((,class (:background ,solarized-hl))))
    `(w3m-lnum ((,class (:underline nil :bold nil :foreground ,red))))

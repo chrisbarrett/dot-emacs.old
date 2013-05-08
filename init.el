@@ -902,11 +902,25 @@
     (autoload 'geiser-company--prefix-at-point "geiser-company")
     (autoload 'geiser-company--doc "geiser-company")
 
+    (defun cb:geiser-ac-doc (fname &optional module impl)
+      (let* ((symbol (intern fname))
+             (impl (or impl geiser-impl--implementation))
+             (module (geiser-doc--module (or module (geiser-eval--get-module))
+                                         impl)))
+        (-when-let (ds (geiser-doc--get-docstring symbol module))
+          (ignore-errors
+            (with-temp-buffer
+              (geiser-doc--insert-title
+               (geiser-autodoc--str* (cdr (assoc "signature" ds))))
+              (newline)
+              (insert (or (cdr (assoc "docstring" ds)) ""))
+              (buffer-string))))))
+
     (ac-define-source geiser
       '((candidates . (progn
                         (geiser-company--prefix-at-point)
                         (cdr geiser-company--completions)))
-        (document   . geiser-company--doc)))
+        (document   . cb:geiser-ac-doc)))
 
     (hook-fn 'cb:scheme-shared-hook
       "Configure auto-complete for Scheme modes."
@@ -930,23 +944,6 @@
       (set (make-local-variable 'browse-url-browser-function)
            (lambda (url &rest _)
              (cb:w3m-browse-url-as-help (concat "file://" url)))))))
-
-(use-package scheme-complete
-  :ensure t
-  :defer  t
-  :commands (scheme-get-current-symbol-info
-             scheme-smart-indent-function)
-  :init
-  (hook-fn 'cb:scheme-shared-hook
-    (setq ac-sources '(ac-source-dictionary
-                       ac-source-yasnippet
-                       ac-source-words-in-buffer))
-    (set (make-local-variable 'lisp-indent-function)
-         'scheme-smart-indent-function)
-    (set (make-local-variable 'eldoc-documentation-function)
-         'scheme-get-current-symbol-info)
-
-    (eldoc-mode +1)))
 
 (use-package fuzzy
   :ensure t)
