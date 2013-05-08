@@ -161,10 +161,16 @@ r5rs_html     = $(etc)/r5rs-html
 r5rs_gz       = $(tmp)/r5rs-html.tar.gz
 r5rs_url      = http://www.schemers.org/Documents/Standards/R5RS/r5rs-html.tar.gz
 
+r6rs_html     = $(etc)/r6rs-html
+r6rs_gz       = $(tmp)/r6rs.tar.gz
+r6rs_url      = http://www.r6rs.org/final/r6rs.tar.gz
+
 .PHONY: scheme
-scheme : $(r5rs_html) $(scm_init)
+scheme : $(r5rs_html) $(r6rs_html) $(scm_init)
 
 # Download Scheme documentation.
+
+## R5RS
 
 $(r5rs_html) :| $(r5rs_gz) $(etc)
 	tar xfzv $(r5rs_gz) --directory=$(tmp)
@@ -172,3 +178,12 @@ $(r5rs_html) :| $(r5rs_gz) $(etc)
 
 $(r5rs_gz) :| $(tmp)
 	curl $(r5rs_url) -o $(r5rs_gz)
+
+## R6RS
+
+$(r6rs_html) :| $(r6rs_gz) $(etc)
+	tar xfzv $(r6rs_gz) --directory=$(tmp)
+	mv $(tmp)/r6rs/html $(r6rs_html)
+
+$(r6rs_gz) :| $(tmp)
+	curl $(r6rs_url) -o $(r6rs_gz)
