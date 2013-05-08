@@ -896,7 +896,7 @@
   :ensure t
   :commands run-geiser
   :init
-  (progn
+  (progn-after-load "auto-complete"
     (autoload 'geiser-company--prefix-at-point "geiser-company")
     (autoload 'geiser-company--doc "geiser-company")
 
@@ -1788,23 +1788,25 @@
        haskell-stylish-on-save t)
       (local-set-key (kbd "C-c C-c") 'haskell-process-cabal-build))))
 
-(use-package workgroups2
+(use-package workgroups
   :if       (display-graphic-p)
   :bind     (("s-1" . wg-switch-to-index-0)
              ("s-2" . wg-switch-to-index-1)
              ("s-3" . wg-switch-to-index-2))
   :ensure   t
-  :defer    nil
-  :commands workgroups-mode
   :diminish workgroups-mode
+  :commands workgroups-mode
+  :init
+  (progn
+    (setq
+     wg-prefix-key (kbd "C-c w")
+     wg-default-session-file (concat cb:etc-dir "workgroups"))
+    (add-hook 'after-init-hook 'workgroups-mode))
   :config
   (progn
+    (ignore-errors (wg-load wg-default-session-file))
     (set-face-foreground 'wg-divider-face "light slate grey")
-    (set-face-foreground 'wg-mode-line-face "light slate grey")
-    (ignore-errors (wg-load (concat cb:etc-dir "workgroups")))
-    (setq wg-prefix-key (kbd "C-c w"))
-
-    (workgroups-mode +1)))
+    (set-face-foreground 'wg-mode-line-face "light slate grey")))
 
 (use-package org
   :ensure t
