@@ -238,9 +238,15 @@
 
 ;;; Lisp hooks
 
-(defvar cb:lisp-modes
+(defconst cb:scheme-modes
   '(scheme-mode
+    guile-scheme-mode
     inferior-scheme-mode
+    geiser-repl-mode
+    geiser-mode))
+
+(defconst cb:lisp-modes
+  `(,@cb:scheme-modes
     emacs-lisp-mode
     lisp-mode
     common-lisp-mode
@@ -249,7 +255,8 @@
     clojurescript-mode
     ielm-mode))
 
-(define-combined-hook cb:lisp-shared-hook cb:lisp-modes)
+(define-combined-hook cb:lisp-shared-hook   cb:lisp-modes)
+(define-combined-hook cb:scheme-shared-hook cb:scheme-modes)
 
 ;;; Haskell hooks.
 
@@ -860,14 +867,23 @@
     (define-key ac-completing-map "\t" 'ac-complete)
     (define-key ac-completing-map (kbd "M-RET") 'ac-help)))
 
-(use-package scheme
-  :defer t
+(use-package geiser
+  :ensure t
+  :commands run-geiser
   :config
+  (setq geiser-repl-history-filename (concat cb:tmp-dir "geiser-history")))
+
+(use-package r5rs
+  :ensure t
+  :commands scheme-r5rs-lookup
+  :init
   (progn
-    (hook-fn 'inferior-scheme-mode-hook
-      (setq ac-sources '(ac-source-dictionary)))
-    (hook-fn 'scheme-mode-hook
-      (setq ac-sources '(ac-source-dictionary ac-source-words-in-buffer)))))
+    (setq scheme-r5rs-root (concat cb:etc-dir "r5rs-html/"))
+    (hook-fn 'cb:scheme-shared-hook
+      (set (make-local-variable 'browse-url-browser-function)
+           (lambda (url &rest _)
+             (w3m-browse-url (s-prepend "file://" url))))
+      (local-set-key (kbd "C-c C-h") 'scheme-r5rs-lookup))))
 
 (use-package scheme-complete
   :ensure t
@@ -875,16 +891,14 @@
   :commands (scheme-get-current-symbol-info
              scheme-smart-indent-function)
   :init
-  (progn
-    (hook-fn 'inferior-scheme-mode-hook
-      (set (make-local-variable 'eldoc-documentation-function)
-           'scheme-get-current-symbol-info)
-      (eldoc-mode +1))
-    (hook-fn 'scheme-mode-hook
-      (set (make-local-variable 'eldoc-documentation-function)
-           'scheme-get-current-symbol-info)
-      (eldoc-mode +1)
-      (set (make-local-variable 'lisp-indent-function) 'scheme-smart-indent-function))))
+  (hook-fn 'cb:scheme-shared-hook
+    (setq ac-sources '(ac-source-dictionary))
+    (set (make-local-variable 'lisp-indent-function)
+         'scheme-smart-indent-function)
+    (set (make-local-variable 'eldoc-documentation-function)
+         'scheme-get-current-symbol-info)
+
+    (eldoc-mode +1)))
 
 (use-package fuzzy
   :ensure t)
