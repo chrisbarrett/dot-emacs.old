@@ -1368,16 +1368,32 @@
   :commands ert-modeline-mode
   :init     (add-hook 'emacs-lisp-mode-hook 'ert-modeline-mode))
 
-(use-package cb-elisp
-  :commands (cb:switch-to-ielm
-             cb:switch-to-elisp
-             cb:find-and-load-ert-tests)
-  :defer    t
-  :init
+(use-package lisp-mode
+  :defer t
+  :config
   (progn
-    (hook-fn 'emacs-lisp-mode-hook
-      (add-hook 'after-save-hook 'check-parens nil 'local)
-      (ignore-errors (cb:find-and-load-ert-tests)))
+
+    (defun cb:switch-to-ielm ()
+      "Start up or switch to an Inferior Emacs Lisp buffer."
+      (interactive)
+      ;; HACK: rebind switch-to-buffer so ielm opens in another window.
+      (flet ((switch-to-buffer (buf) (switch-to-buffer-other-window buf)))
+        (ielm)
+        (goto-char (point-max))
+        (when (fboundp 'evil-append-line)
+          (evil-append-line 1))))
+
+    (defun cb:last-elisp-buffer ()
+      "Find the last active Elisp buffer."
+      (--first (with-current-buffer it
+                 (equal 'emacs-lisp-mode major-mode))
+               (buffer-list)))
+
+    (defun cb:switch-to-elisp ()
+      "Switch to the last active elisp buffer."
+      (interactive)
+      (-when-let (buf (cb:last-elisp-buffer))
+        (switch-to-buffer-other-window buf)))
 
     (add-to-list 'auto-mode-alist '("Carton$" . emacs-lisp-mode))
     (define-key emacs-lisp-mode-map (kbd "C-c C-t") 'ert)
@@ -1385,13 +1401,20 @@
     (define-key emacs-lisp-mode-map (kbd "C-c e f") 'emacs-lisp-byte-compile-and-load)
     (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'cb:switch-to-ielm)
     (define-key emacs-lisp-mode-map (kbd "C-c e r") 'eval-region)
-    (global-set-key (kbd "C-c e e") 'toggle-debug-on-error)
+
     (hook-fn 'ielm-mode-hook (local-set-key (kbd "C-c C-z") 'cb:switch-to-elisp))
+
+    (hook-fn 'emacs-lisp-mode-hook
+      (add-hook 'after-save-hook 'check-parens nil 'local))
 
     (defadvice eval-buffer (after buffer-evaluated-feedback activate)
       "Message that the buffer has been evaluated."
       (when (buffer-file-name)
         (message "Buffer evaluated.")))
+    )
+  :init
+  (progn
+    (global-set-key (kbd "C-c e e") 'toggle-debug-on-error)
 
     ;; Elisp font-locking
     (font-lock-add-keywords
@@ -1479,6 +1502,7 @@
   :init     (define-key emacs-lisp-mode-map (kbd "C-c C-l") 'litable-mode))
 
 (use-package emr
+  :ensure t
   :bind   ("M-RET" . emr-show-refactor-menu)
   :config (require 'emr-elisp))
 
