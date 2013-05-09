@@ -1831,6 +1831,7 @@
   :init
   (progn
     (setq
+     wg-morph-vsteps 6
      wg-prefix-key (kbd "C-c w")
      wg-default-session-file (concat cb:etc-dir "workgroups"))
     (add-hook 'after-init-hook 'workgroups-mode))
