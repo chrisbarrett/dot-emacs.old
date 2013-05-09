@@ -193,6 +193,7 @@
 
 ;;; Misc commands
 (bind-key "S-<tab>" 'tab-to-tab-stop)
+(bind-key "C-c e e" 'toggle-debug-on-error)
 
 ;;; Disable vc modes
 
@@ -1404,17 +1405,20 @@
 
     (hook-fn 'ielm-mode-hook (local-set-key (kbd "C-c C-z") 'cb:switch-to-elisp))
 
+    (defun cb:elisp-after-save ()
+      "Check parens are balanced and byte-compile."
+      (check-parens)
+      (ignore-errors
+        (unless (equal "Carton" (file-name-nondirectory (buffer-file-name)))
+          (byte-compile-file (buffer-file-name)))))
+
     (hook-fn 'emacs-lisp-mode-hook
-      (add-hook 'after-save-hook 'check-parens nil 'local))
+      (add-hook 'after-save-hook 'cb:elisp-after-save t 'local))
 
     (defadvice eval-buffer (after buffer-evaluated-feedback activate)
       "Message that the buffer has been evaluated."
       (when (buffer-file-name)
         (message "Buffer evaluated.")))
-    )
-  :init
-  (progn
-    (global-set-key (kbd "C-c e e") 'toggle-debug-on-error)
 
     ;; Elisp font-locking
     (font-lock-add-keywords
@@ -1459,15 +1463,6 @@
 
         (1 font-lock-type-face))))))
 
-(use-package highlight-cl
-  :ensure   t
-  :defer    t
-  :commands highlight-cl-add-font-lock-keywords
-  :init
-  (progn
-    (add-hook 'emacs-lisp-mode-hook 'highlight-cl-add-font-lock-keywords)
-    (add-hook 'lisp-interaction-mode-hook 'highlight-cl-add-font-lock-keywords)))
-
 (use-package redshank
   :ensure   t
   :commands turn-on-redshank-mode
@@ -1505,16 +1500,6 @@
   :ensure t
   :bind   ("M-RET" . emr-show-refactor-menu)
   :config (require 'emr-elisp))
-
-(use-package lisp-mode
-  :commands (emacs-lisp-mode lisp-mode)
-  :config
-  (hook-fn 'after-save-hook
-    "Byte compile elisp source files on save."
-    (when (and (equal major-mode 'emacs-lisp-mode)
-               (buffer-file-name)
-               (not (equal "Carton" (file-name-nondirectory (buffer-file-name)))))
-      (byte-compile-file (buffer-file-name)))))
 
 (use-package clojure-mode
   :ensure t
