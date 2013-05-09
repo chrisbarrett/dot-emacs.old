@@ -917,12 +917,19 @@
     (defun cb:geiser-eval-buffer ()
       "Evaluate the current Scheme buffer with Geiser."
       (interactive)
-      (let (result)
-        (flet ((message (&rest args) (setq result (apply 'format args))))
-          (save-excursion
-            (mark-whole-buffer)
-            (geiser-eval-region (region-beginning) (region-end))))
-        (message "Buffer evaluated %s" result)))
+      ;; Switch to source if we're in the repl.
+      (if (derived-mode-p 'repl-mode 'comint-mode 'inferior-scheme-mode)
+        (save-excursion
+          (switch-to-geiser)
+          (cb:geiser-eval-buffer)
+          (switch-to-geiser))
+
+        (let (result)
+          (flet ((message (&rest args) (setq result (apply 'format args))))
+            (save-excursion
+              (mark-whole-buffer)
+              (geiser-eval-region (region-beginning) (region-end))))
+          (message "Buffer evaluated %s" result))))
 
     (defun cb:geiser-ac-doc (fname &optional module impl)
       (let* ((symbol (intern fname))
@@ -947,7 +954,7 @@
     (hook-fn 'cb:scheme-shared-hook
       (local-set-key (kbd "C-c C-l") 'cb:geiser-eval-buffer)
       (setq ac-sources '(ac-source-yasnippet ac-source-geiser)))
-  )
+    )
   :config
   (setq
    geiser-mode-start-repl-p t
