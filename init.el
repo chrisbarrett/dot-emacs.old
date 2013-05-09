@@ -919,10 +919,10 @@
       (interactive)
       ;; Switch to source if we're in the repl.
       (if (derived-mode-p 'repl-mode 'comint-mode 'inferior-scheme-mode)
-        (save-excursion
-          (switch-to-geiser)
-          (cb:geiser-eval-buffer)
-          (switch-to-geiser))
+          (save-excursion
+            (switch-to-geiser)
+            (cb:geiser-eval-buffer)
+            (switch-to-geiser))
 
         (let (result)
           (flet ((message (&rest args) (setq result (apply 'format args))))
@@ -956,11 +956,19 @@
       (setq ac-sources '(ac-source-yasnippet ac-source-geiser)))
     )
   :config
-  (setq
-   geiser-mode-start-repl-p t
-   geiser-repl-startup-time 20000
-   geiser-repl-history-filename (concat cb:tmp-dir "geiser-history")
-   geiser-active-implementations '(racket)))
+  (progn
+    (defadvice switch-to-geiser (after append-with-evil activate)
+      "Move to end of REPL and append-line."
+      (when (and (fboundp 'evil-append-line)
+                 (derived-mode-p 'comint-mode))
+        (goto-char (point-max))
+        (evil-append-line 1)))
+
+    (setq
+     geiser-mode-start-repl-p t
+     geiser-repl-startup-time 20000
+     geiser-repl-history-filename (concat cb:tmp-dir "geiser-history")
+     geiser-active-implementations '(racket))))
 
 (use-package r5rs
   :ensure t
