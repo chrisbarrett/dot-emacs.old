@@ -914,6 +914,16 @@
     (autoload 'geiser-company--prefix-at-point "geiser-company")
     (autoload 'geiser-company--doc "geiser-company")
 
+    (defun cb:geiser-eval-buffer ()
+      "Evaluate the current Scheme buffer with Geiser."
+      (interactive)
+      (let (result)
+        (flet ((message (&rest args) (setq result (apply 'format args))))
+          (save-excursion
+            (mark-whole-buffer)
+            (geiser-eval-region (region-beginning) (region-end))))
+        (message "Buffer evaluated %s" result)))
+
     (defun cb:geiser-ac-doc (fname &optional module impl)
       (let* ((symbol (intern fname))
              (impl (or impl geiser-impl--implementation))
@@ -935,9 +945,9 @@
         (document   . cb:geiser-ac-doc)))
 
     (hook-fn 'cb:scheme-shared-hook
-      "Configure auto-complete for Scheme modes."
+      (local-set-key (kbd "C-c C-l") 'cb:geiser-eval-buffer)
       (setq ac-sources '(ac-source-yasnippet ac-source-geiser)))
-    )
+  )
   :config
   (setq
    geiser-mode-start-repl-p t
@@ -1804,7 +1814,10 @@
   :if       (display-graphic-p)
   :bind     (("s-1" . wg-switch-to-index-0)
              ("s-2" . wg-switch-to-index-1)
-             ("s-3" . wg-switch-to-index-2))
+             ("s-3" . wg-switch-to-index-2)
+             ("s-4" . wg-switch-to-index-3)
+             ("s-5" . wg-switch-to-index-4)
+             )
   :ensure   t
   :diminish workgroups-mode
   :commands workgroups-mode
@@ -1824,12 +1837,15 @@
   :ensure t
   :defer t
   :init
-  (progn
+  (macrolet ((maybe (f) `(lambda ()
+                           (unless (derived-mode-p 'org-mode)
+                             (funcall ,f)))))
+
     ;; Use org commands in other modes.
     (add-hook 'message-mode-hook 'turn-on-orgstruct++)
     (add-hook 'message-mode-hook 'turn-on-orgtbl)
-    (add-hook 'text-mode-hook 'turn-on-orgstruct++)
-    (add-hook 'text-mode-hook 'turn-on-orgtbl))
+    (add-hook 'text-mode-hook (maybe 'turn-on-orgstruct++))
+    (add-hook 'text-mode-hook (maybe 'turn-on-orgtbl)))
   :config
   (progn
     (setq org-catch-invisible-edits 'smart)
