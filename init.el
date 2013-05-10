@@ -264,11 +264,23 @@
                   face mode-line-filename-face)
      ;; narrow [default -- keep?]
      " %n "
+
      ;; mode indicators: recursive edit, major mode, minor modes, process, global
+
      " %["
      (:propertize mode-name
                   face mode-line-mode-face)
      "%] "
+
+     ;; Show ert test status.
+     (:eval (when (and (boundp 'ert-modeline-mode) ert-modeline-mode)
+              (set-face-bold 'ertml-failing-face t)
+              (let ((s (s-trim ertml--status-text)))
+                (if (s-matches? (rx digit) s)
+                    (propertize s 'face 'ertml-failing-face)
+                  (propertize s 'face 'bold)))))
+
+     ;; Show minor modes.
      (:eval (propertize (format-mode-line minor-mode-alist)
                         'face 'mode-line-minor-mode-face))
      (:propertize mode-line-process
@@ -1565,6 +1577,8 @@
 
 (use-package ert-modeline
   :defer    t
+  ;; The status is added to the mode-line format directly.
+  :diminish ert-modeline-mode
   :commands ert-modeline-mode
   :init     (add-hook 'emacs-lisp-mode-hook 'ert-modeline-mode))
 
