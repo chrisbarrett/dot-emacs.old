@@ -44,6 +44,7 @@
   (set-face-foreground 'mode-line-mode-face "gray40")
   (set-face-foreground 'mode-line-minor-mode-face "gray70")
 
+  (set-face-foreground 'mode-line-80col-face "#b58900")
   (set-face-foreground 'mode-line-position-face "gray50")
 
   (progn-after-load "helm"
@@ -73,6 +74,7 @@
   (set-face-foreground 'mode-line-minor-mode-face "gray40")
 
   (set-face-foreground 'mode-line-position-face "gray60")
+  (set-face-foreground 'mode-line-80col-face "#eab700")
 
   (progn-after-load "helm"
     (set-face-background  'helm-selection "black")
@@ -186,6 +188,7 @@ Most of these are stolen from Solarized Dark."
      `(mode-line-mode-face ((,class (:foreground "gray70"))))
      `(mode-line-minor-mode-face ((,class (:foreground "gray40"))))
      `(mode-line-position-face ((,class (:foreground "gray60"))))
+     `(mode-line-80col-face ((,class (:foreground "#eab700"))))
 
      ;; compilation
      `(compilation-column-face ((,class (:foreground ,yellow))))

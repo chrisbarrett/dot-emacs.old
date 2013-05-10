@@ -339,7 +339,7 @@
 
 (defface mode-line-80col-face
   '((t (:inherit 'mode-line-position-face
-        :foreground "black" :background "#eab700")))
+        :foreground "#eab700")))
   "Face for the warning when point is past column 80."
   :group 'modeline)
 
