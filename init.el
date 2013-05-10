@@ -252,7 +252,7 @@
       (cond (buffer-read-only
              (propertize " RO " 'face 'mode-line-read-only-face))
             ((buffer-modified-p)
-             (propertize " ** " 'face 'mode-line-modified-face))
+             (propertize " M  " 'face 'mode-line-modified-face))
             (t "    ")))
      " "
      ;; directory and buffer/file name
