@@ -175,21 +175,25 @@
 ;;; Help commands
 
 (define-prefix-command 'help-find-map)
-(bind-key (kbd "C-h e")   'help-find-map)
-(bind-key (kbd "C-h e e") 'view-echo-area-messages)
-(bind-key (kbd "C-h e f") 'find-function)
-(bind-key (kbd "C-h e k") 'find-function-on-key)
-(bind-key (kbd "C-h e l") 'find-library)
-(bind-key (kbd "C-h e p") 'find-library)
-(bind-key (kbd "C-h e v") 'find-variable)
-(bind-key (kbd "C-h e a") 'apropos)
-(bind-key (kbd "C-h e V") 'apropos-value)
+(bind-key "C-h e"   'help-find-map)
+(bind-key "C-h e e" 'view-echo-area-messages)
+(bind-key "C-h e f" 'find-function)
+(bind-key "C-h e k" 'find-function-on-key)
+(bind-key "C-h e l" 'find-library)
+(bind-key "C-h e p" 'find-library)
+(bind-key "C-h e v" 'find-variable)
+(bind-key "C-h e a" 'apropos)
+(bind-key "C-h e V" 'apropos-value)
 
 ;;; Narrowing
 
 (put 'narrow-to-defun  'disabled nil)
 (put 'narrow-to-page   'disabled nil)
 (put 'narrow-to-region 'disabled nil)
+(bind-key "M-n d" 'narrow-to-defun)
+(bind-key "M-n w" 'widen)
+(bind-key "M-n p" 'narrow-to-page)
+(bind-key "M-n n" 'narrow-to-region)
 
 ;;; Misc commands
 (bind-key "S-<tab>" 'tab-to-tab-stop)
@@ -1247,6 +1251,7 @@
 
     (hook-fn 'asm-mode-hook
       (smart-insert-operator-hook)
+      (local-unset-key (kbd "%"))
       (local-unset-key (kbd "-"))
       (local-unset-key (kbd ".")))
 
