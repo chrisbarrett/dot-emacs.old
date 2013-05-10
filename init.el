@@ -408,6 +408,30 @@
   "Buffer menu only shows files on disk."
   (Buffer-menu-toggle-files-only +1))
 
+
+;;; Shebang insertion
+
+(defconst cb:extension->cmd (make-hash-table :test 'equal))
+(puthash "py" "python" cb:extension->cmd)
+(puthash "sh" "bash"   cb:extension->cmd)
+(puthash "rb" "ruby"   cb:extension->cmd)
+(puthash "el" "emacs"  cb:extension->cmd)
+
+(defun cb:bufname->cmd (name)
+  (gethash (car-safe (last (split-string name "[.]" t)))
+           cb:extension->cmd))
+
+(defun insert-shebang ()
+  "Insert a shebang line at the top of the current buffer."
+  (interactive)
+  (let* ((env (shell-command-to-string "where env"))
+         (env (replace-regexp-in-string "[\r\n]*" "" env))
+         (cmd (cb:bufname->cmd buffer-file-name)))
+    (save-excursion
+      (goto-char (point-min))
+      (insert (concat "#!" env " " cmd))
+      (newline 2))))
+
 ;;; Forward-declare ac-modes so auto-complete can be safely loaded separately
 ;;; from other modes.
 (defvar ac-modes nil)
@@ -932,6 +956,23 @@
 
 (use-package ediff
   :commands (ediff ediff-merge-files-with-ancestor)
+  :init
+  (progn
+
+    (defun cb:apply-diff ()
+      (let ((file ediff-merge-store-file))
+        (set-buffer ediff-buffer-C)
+        (write-region (point-min) (point-max) file)
+        (message "Merge buffer saved in: %s" file)
+        (set-buffer-modified-p nil)
+        (sit-for 1)))
+
+    (defun cb:handle-git-merge (local remote base merged)
+      "Configure this emacs session for use as the git mergetool."
+      (add-hook 'ediff-quit-hook 'kill-emacs)
+      (add-hook 'ediff-quit-merge-hook 'cb:apply-diff)
+      (ediff-merge-files-with-ancestor local remote base nil merged)))
+
   :config
   (progn
     (setq diff-switches "-u"
@@ -1384,18 +1425,38 @@
   :ensure   t
   :commands (etags-select-find-tag-at-point etags-select-find-tag))
 
-(use-package cb-shebang
-  :commands insert-shebang)
-
 (use-package nxml-mode
   :commands nxml-mode
   :config
-  (hook-fn 'find-file-hook
-    "Enable nxml-mode if this is an XML file."
-    (when (or (s-ends-with? ".xml" (buffer-file-name))
-              (s-starts-with? "<?xml " (buffer-string)))
-      (nxml-mode)
-      (local-set-key (kbd "M-q") 'cb:reformat-xml))))
+  (progn
+
+    (defun cb:reformat-xml-in-region (begin end)
+      (save-excursion
+        (let ((end end))
+          (nxml-mode)
+          (goto-char begin)
+          (while (search-forward-regexp "\>[ \\t]*\<" nil t)
+            (backward-char)
+            (insert "\n")
+            (cl-incf end))
+          (indent-region begin end))))
+
+    (defun cb:reformat-xml ()
+      "Insert newlines and indent XML. Operates on region, or the whole buffer if no region is defined."
+      (interactive)
+      (save-excursion
+        (let ((start (or (ignore-errors (region-beginning))
+                         (point-min)))
+              (end   (or (ignore-errors (region-end))
+                         (point-max))))
+          (cb:reformat-xml-in-region start end))))
+
+    (hook-fn 'find-file-hook
+      "Enable nxml-mode if this is an XML file."
+      (when (or (s-ends-with? ".xml" (buffer-file-name))
+                (s-starts-with? "<?xml " (buffer-string)))
+        (nxml-mode)
+        (local-set-key (kbd "M-q") 'cb:reformat-xml)))))
 
 (use-package tagedit
   :ensure   t
@@ -1642,7 +1703,6 @@
   (progn
 
     (use-package cb-overtone
-      :bind     ("s-." . cb:stop-overtone)
       :commands (maybe-enable-overtone-mode cb:stop-overtone))
 
     (use-package midje-mode

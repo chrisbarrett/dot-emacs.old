@@ -1,10 +1,41 @@
-;;; cb-overtone.el
+;;; cb-overtone.el --- Minor mode for Overtone.
 
+;; Copyright (C) 2013 Chris Barrett
+
+;; Author: Chris Barrett <chris.d.barrett@me.com>
+;; Version: 20130510.1410
+
+;; This file is not part of GNU Emacs.
+
+;; This program is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;; Minor mode for Overtone.
+
+;;; Code:
+
+(require 'nrepl)
+
+;;;###autoload
 (defvar overtone-mode-map
   (let ((km (make-sparse-keymap)))
     (define-key km (kbd "C-c C-g") 'cb:stop-overtone)
+    (define-key km (kbd "s-.") 'cb:stop-overtone)
     km))
 
+;;;###autoload
 (define-minor-mode overtone-mode
   "Provide additional overtone-related functionality for clojure."
   nil " overtone" overtone-mode-map
@@ -13,14 +44,15 @@
   (unless (and (boundp 'nrepl-connection-list) nrepl-connection-list)
     (nrepl-jack-in)))
 
+;;;###autoload
 (defun maybe-enable-overtone-mode ()
-  "Enable `overtone-mode' only if the current Clojure buffer
-references overtone."
+  "Enable `overtone-mode' only if the current Clojure buffer references overtone."
   (when (and (not overtone-mode)
              (equal major-mode 'clojure-mode)
              (string-match-p "overtone.live" (buffer-string)))
     (overtone-mode t)))
 
+;;;###autoload
 (defun cb:stop-overtone ()
   "Stop synthesis."
   (interactive)
@@ -28,3 +60,9 @@ references overtone."
   (message "Synthesis stopped."))
 
 (provide 'cb-overtone)
+
+;; Local Variables:
+;; lexical-binding: t
+;; End:
+
+;;; cb-overtone.el ends here
