@@ -194,6 +194,7 @@
 ;;; Misc commands
 (bind-key "S-<tab>" 'tab-to-tab-stop)
 (bind-key "C-c e e" 'toggle-debug-on-error)
+(bind-key "s-`"     'other-window)
 
 ;;; Disable vc modes
 
