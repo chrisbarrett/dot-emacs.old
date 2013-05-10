@@ -392,6 +392,22 @@
 
 ;;; ----------------------------------------------------------------------------
 
+(use-package erc
+  :defer t
+  :config
+  (progn
+    (erc-autojoin-mode +1)
+    (erc-track-mode +1)
+    (setq
+     erc-hide-list '("JOIN" "PART" "QUIT" "NICK")
+
+     erc-track-exclude-types
+     '("JOIN" "NICK" "PART" "QUIT" "MODE"
+       "324" "329" "332" "333" "353" "477")
+
+     erc-autojoin-channels-alist
+     '((".*\\.freenode.net" "#emacs" "#haskell")))))
+
 (use-package simple
   :diminish (visual-line-mode
              global-visual-line-mode
