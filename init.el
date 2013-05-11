@@ -480,6 +480,11 @@
   '(inf-ruby-mode
     ruby-mode))
 
+(cb:define-mode-group org-minor-modes
+  '(orgtbl-mode
+    orgstruct-mode
+    orgstruct++-mode) )
+
 ;;; ----------------------------------------------------------------------------
 
 (hook-fn 'prog-mode-hook
@@ -1477,8 +1482,9 @@
 (use-package tagedit
   :ensure   t
   :commands (tagedit-add-paredit-like-keybindings)
-  :config
+  :init
   (hook-fn 'sgml-mode-hook
+    (tagedit-add-experimental-features)
     (tagedit-add-paredit-like-keybindings)
     (setq sgml-xml-mode +1)))
 
@@ -2304,11 +2310,15 @@ Start an inferior ruby if necessary."
 (use-package org
   :ensure t
   :defer t
-  :diminish (orgtbl-mode orgstruct-mode)
   :init
   (macrolet ((maybe (f) `(lambda ()
                            (unless (derived-mode-p 'org-mode)
                              (funcall ,f)))))
+
+    (hook-fn 'org-minor-modes-hook
+      "Diminish org minor modes."
+      (--each org-minor-modes
+        (ignore-errors (diminish it))))
 
     ;; Use org commands in other modes.
     (add-hook 'message-mode-hook 'turn-on-orgstruct++)
