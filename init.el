@@ -340,41 +340,54 @@
   :group 'modeline)
 
 (defface mode-line-directory-face
-  '((((type graphic))
+  '((((type graphic) (background dark))
      (:foreground "gray60"))
+    (((type graphic) (background light))
+     (:foreground "gray70"))
     (t
      (:inherit 'mode-line-face)))
   "Face for the directory component of the current filename."
   :group 'modeline)
 
 (defface mode-line-filename-face
-  '((((type graphic))
+  '((((type graphic) (background dark))
      (:foreground "#eab700"))
+    (((type graphic) (background light))
+     (:foreground "gray40"))
     (t
      (:inherit 'mode-line-face :weight bold)))
   "Face for the name component of the current filename."
   :group 'modeline)
 
 (defface mode-line-position-face
-  `((((type graphic))
-     (:family ,cb:monospace-font :height 100))
+  `((((type graphic) (background dark))
+     (:family ,cb:monospace-font
+      :height 100
+      :foreground "gray60"))
+    (((type graphic) (background light))
+     (:family ,cb:monospace-font
+      :height 100
+      :foreground "gray50"))
     (t
      (:inherit 'mode-line-face)))
   "Face for the position indicators."
   :group 'modeline)
 
 (defface mode-line-mode-face
-  '((((type graphic))
+  '((((type graphic) (background dark))
      (:foreground "gray70"))
+    (((type graphic) (background light))
+     (:foreground "gray40"))
     (t
      (:inherit 'mode-line-face)))
   "Face for the current major mode indicator."
   :group 'modeline)
 
 (defface mode-line-minor-mode-face
-  '((((type graphic))
-     (:foreground "gray40"
-      :height 110))
+  '((((type graphic) (background dark))
+     (:foreground "gray40" :height 110))
+    (((type graphic) (background light))
+     (:foreground "gray70" :height 110))
     (t (:inherit 'mode-line-mode-face)))
   "Face for the current minor mode indicators."
   :group 'modeline)
@@ -388,8 +401,10 @@
   :group 'modeline)
 
 (defface mode-line-80col-face
-  '((((type graphic))
+  '((((type graphic) (background dark))
      (:foreground "#eab700"))
+    (((type graphic) (background light))
+     (:foreground "#b58900"))
     (t
      (:inherit 'mode-line-position-face)))
   "Face for the warning when point is past column 80."

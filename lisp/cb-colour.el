@@ -38,15 +38,6 @@
 
   (set-face-underline 'hl-line nil)
 
-  (set-face-foreground 'mode-line-filename-face "gray40")
-  (set-face-foreground 'mode-line-directory-face "gray70")
-
-  (set-face-foreground 'mode-line-mode-face "gray40")
-  (set-face-foreground 'mode-line-minor-mode-face "gray70")
-
-  (set-face-foreground 'mode-line-80col-face "#b58900")
-  (set-face-foreground 'mode-line-position-face "gray50")
-
   (progn-after-load "helm"
     (set-face-background  'helm-selection "white")
     (set-face-underline   'helm-selection nil)
@@ -68,13 +59,6 @@
   (set-face-underline 'hl-line nil)
 
   (set-face-foreground 'mode-line-filename-face "#b58900")
-  (set-face-foreground 'mode-line-directory-face "gray60")
-
-  (set-face-foreground 'mode-line-mode-face "gray70")
-  (set-face-foreground 'mode-line-minor-mode-face "gray40")
-
-  (set-face-foreground 'mode-line-position-face "gray60")
-  (set-face-foreground 'mode-line-80col-face "#eab700")
 
   (progn-after-load "helm"
     (set-face-background  'helm-selection "black")
@@ -185,10 +169,6 @@ Most of these are stolen from Solarized Dark."
        ((,class (:box '(:line-width 1 :color "gray20" :style nil)))))
      `(mode-line-inactive
        ((,class (:box '(:line-width 1 :color "gray80" :style nil)))))
-     `(mode-line-mode-face ((,class (:foreground "gray70"))))
-     `(mode-line-minor-mode-face ((,class (:foreground "gray40"))))
-     `(mode-line-position-face ((,class (:foreground "gray60"))))
-     `(mode-line-80col-face ((,class (:foreground "#eab700"))))
 
      ;; compilation
      `(compilation-column-face ((,class (:foreground ,yellow))))
