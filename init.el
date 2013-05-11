@@ -58,6 +58,10 @@
       ad-do-it
     (file-already-exists)))
 
+(use-package diminish
+  :ensure t
+  :commands diminish)
+
 (use-package s
   :ensure t)
 
@@ -503,18 +507,335 @@
 (defvar ac-modes nil)
 
 ;;; ----------------------------------------------------------------------------
-;;; Mail configuration
 
-(setq mail-signature (concat "\nCheers,\n\n" user-full-name)
-      send-mail-function 'smtpmail-send-it
-      message-send-mail-function 'smtpmail-send-it)
+;;; OS X-specific configuration.
+(when (equal system-type 'darwin)
 
-;;; Packages.
+  ;; Set exec-path
+  (use-package exec-path-from-shell
+    :ensure t
+    :if     (display-graphic-p)
+    :config (exec-path-from-shell-initialize))
+
+  ;; Configure cut & paste in terminal.
+  (unless (window-system)
+
+    (defun cb:paste ()
+      (shell-command-to-string "pbpaste"))
+
+    (defun cb:copy (text &optional push)
+      (let ((process-connection-type nil))
+        (let ((proc (start-process "pbcopy" "*Messages*" "pbcopy")))
+          (process-send-string proc text)
+          (process-send-eof proc))))
+
+    (setq interprogram-cut-function   'cb:copy
+          interprogram-paste-function 'cb:paste)))
+
+;;; ----------------------------------------------------------------------------
+
+(use-package simple
+  :diminish (visual-line-mode
+             global-visual-line-mode
+             auto-fill-mode)
+  :config
+  (add-hook 'text-mode-hook 'visual-line-mode))
+
+;;; Helm
+
+(use-package projectile
+  :ensure   t
+  :diminish projectile-mode
+  :config
+  (progn
+    (projectile-global-mode)
+    (defadvice find-tag (before set-tags-directory activate)
+      "Ensure the TAGS path is set before searching for tags."
+      (setq tags-file-name (concat (projectile-project-root) "TAGS")))))
+
+(use-package helm
+  :ensure   t
+  :init
+  (progn
+    (bind-key* "M-a" 'helm-apropos)
+    (bind-key* "M-b" 'helm-buffers-list)
+    (bind-key* "C-x C-b" 'helm-buffers-list)
+    (bind-key* "M-j" 'helm-mini)
+    (bind-key* "M-i" 'helm-imenu)
+    (bind-key* "M-f" 'helm-etags-select)
+    (bind-key* "M-m" 'helm-man-woman)
+    (bind-key* "M-w" 'helm-w3m-bookmarks)
+    (bind-key* "M-k" 'helm-show-kill-ring))
+  :config
+  (define-key helm-map (kbd "C-[") 'helm-keyboard-quit))
+
+(use-package helm-projectile
+  :ensure t
+  :commands helm-projectile
+  :init
+  (progn
+    (defun cb:helm-dwim ()
+      "Show helm-projectile, failling back to helm-mini if not in a project."
+      (interactive)
+      (if (projectile-project-p)
+          (helm-projectile)
+        (helm-mini)))
+
+    (bind-key* "C-j" 'cb:helm-dwim)))
+
+;;; Ido
+
+(use-package ido
+  :ensure t
+  :defer  nil
+  :init
+  (setq ido-enable-prefix            nil
+        ido-save-directory-list-file (concat cb:tmp-dir "ido.last")
+        ido-enable-flex-matching     t
+        ido-create-new-buffer        'always
+        ido-use-filename-at-point    'guess
+        ido-max-prospects            10
+        ido-default-file-method      'selected-window)
+  :config
+  (progn
+    (ido-mode +1)
+    (add-to-list 'ido-ignore-buffers "*helm mini*")
+    (add-to-list 'ido-ignore-files "\\.DS_Store")))
+
+(use-package ido-hacks
+  :ensure t
+  :config (ido-hacks-mode +1))
+
+(use-package ido-ubiquitous
+  :ensure t
+  :config (ido-ubiquitous-mode +1))
+
+(use-package ido-yes-or-no
+  :ensure t
+  :config (ido-yes-or-no-mode +1))
+
+(use-package ido-better-flex
+  :ensure t
+  :config (ido-better-flex/enable))
+
+(use-package ido-speed-hack)
+
+(use-package imenu
+  :config
+  (hook-fn 'emacs-lisp-mode-hook
+    "Display section headings."
+    (setq imenu-prev-index-position-function nil)
+    (add-to-list 'imenu-generic-expression
+                 `("SECTION"
+                   ;; Match sections.
+                   ,(rx bol ";;;" (* space) (+ "-") (? "\n")
+                        ";;;" (* space)
+                        (group (1+ nonl))
+                        (* "-") eol) 1) t)))
+
+(use-package smex
+  :ensure t
+  :config (smex-initialize)
+  :bind   (("M-x" . smex)
+           ("M-X" . smex-major-mode-commands)))
+
+;;; Buffer/window management
+
+(use-package workgroups
+  :if       (display-graphic-p)
+  :bind     (("s-1" . wg-switch-to-index-0)
+             ("s-2" . wg-switch-to-index-1)
+             ("s-3" . wg-switch-to-index-2)
+             ("s-4" . wg-switch-to-index-3)
+             ("s-5" . wg-switch-to-index-4)
+             )
+  :ensure   t
+  :diminish workgroups-mode
+  :commands workgroups-mode
+  :init
+  (progn
+    (setq
+     wg-morph-vsteps 6
+     wg-prefix-key (kbd "C-c w")
+     wg-default-session-file (concat cb:etc-dir "workgroups"))
+    (add-hook 'after-init-hook 'workgroups-mode))
+  :config
+  (progn
+   (defadvice wg-mode-line-add-display (around wg-suppress-error activate)
+     "Ignore errors in modeline display function caused by custom modeline."
+     (ignore-errors ad-do-it))
+    (ignore-errors (wg-load wg-default-session-file))))
+
+(use-package popwin
+  :ensure t
+  :config
+  (progn
+    (setq display-buffer-function 'popwin:display-buffer
+          popwin:special-display-config
+          '(("*Help*"  :height 30 :stick t)
+            ("*Completions*" :noselect t)
+            ("*compilation*" :noselect t)
+            ("*Messages*" :height 30)
+            ("*Occur*" :noselect t)
+            ("\\*Slime Description.*" :noselect t :regexp t :height 30)
+            ("*magit-commit*" :noselect t :height 40 :width 80)
+            ("*magit-diff*" :noselect t :height 40 :width 80)
+            ("*magit-edit-log*" :noselect t :height 15 :width 80)
+            ("\\*Slime Inspector.*" :regexp t :height 30)
+            ("*Ido Completions*" :noselect t :height 30)
+            ("*eshell*" :height 30)
+            ("\\*ansi-term\\*.*" :regexp t :height 30)
+            ("*shell*" :height 30)
+            (".*overtone.log" :regexp t :height 30)
+            ("*gists*" :height 30)
+            ("*sldb.*":regexp t :height 30)))
+
+    (popwin-mode +1)))
+
+(use-package transpose-frame
+  :bind (("C-x t" . transpose-frame)
+         ("s-t"   . transpose-frame)
+         ("C-x f" . rotate-frame)
+         ("s-r"   . rotate-frame))
+
+  :commands
+  (transpose-frame
+   flip-frame
+   flop-frame
+   rotate-frame
+   rotate-frame-clockwise
+   rotate-frame-anticlockwise))
+
+(use-package winner
+  :config (winner-mode +1))
+
+(use-package window-number
+  :ensure t
+  :config (window-number-meta-mode +1))
+
+(use-package windmove
+  :bind (("S-<left>"  . windmove-left)
+         ("S-<right>" . windmove-right)
+         ("S-<up>"    . windmove-up)
+         ("S-<down>"  . windmove-down)))
+
+(use-package cb-commands
+  :bind (("s-f"     . cb:rotate-buffers)
+         ("C-x C-o" . other-window))
+
+  :commands (cb:hide-dos-eol
+             cb:kill-current-buffer
+             indent-buffer
+             insert-timestamp
+             rename-file-and-buffer
+             cb:last-buffer-for-mode)
+
+  :init     (add-hook 'find-file-hook 'cb:hide-dos-eol)
+
+  :config
+  (defadvice cb:rotate-buffers (after select-largest-window activate)
+    "Switch to the largest window if using a 2-up window configuration."
+    (when (= 2 (length (window-list)))
+      (cb:select-largest-window))))
+
+;;; Backups & State
+
+(use-package saveplace
+  :init
+  (progn
+    (setq save-place-file (concat cb:tmp-dir "saved-places"))
+    (setq-default save-place t)))
+
+(use-package recentf
+  :init
+  (setq
+   recentf-save-file       (concat cb:tmp-dir "recentf")
+   recentf-keep            '(file-remote-p file-readable-p)
+   recentf-max-saved-items 100
+   recentf-max-menu-items  25
+   recentf-exclude '(".newsrc"
+                     "Emacs.app"
+                     "-autoloads.el"
+                     "recentf"
+                     ".ido.last"
+                     "TAGS"
+                     ".gz")))
+
+(use-package backup-dir
+  :config
+  (setq auto-save-file-name-transforms `((".*" ,(concat cb:autosaves-dir "\\1") t))
+        backup-by-copying        t
+        bkup-backup-directory-info `((".*" ,cb:backups-dir ok-create))
+        auto-save-list-file-name (concat cb:autosaves-dir "autosave-list")
+        delete-old-versions      t
+        kept-new-versions        6
+        kept-old-versions        2
+        version-control          t))
+
+(use-package savehist
+  :config
+  (progn
+    (setq
+     savehist-additional-variables '(search ring regexp-search-ring)
+     savehist-autosave-interval    60
+     savehist-file                 (concat cb:tmp-dir "savehist"))
+    (savehist-mode +1)))
+
+(use-package undo-tree
+  :ensure   t
+  :diminish undo-tree-mode
+  :config   (global-undo-tree-mode +1))
+
+;;; Cosmetic
+
+(use-package highlight
+  :ensure t
+  :defer t)
+
+(use-package hl-line
+  :if (display-graphic-p)
+  :config (global-hl-line-mode t))
+
+(use-package fringe
+  :if     (display-graphic-p)
+  :config (fringe-mode '(2 . 0)))
+
+(use-package ansi-color
+  :config (ansi-color-for-comint-mode-on))
+
+;;; Navigation
+
+(use-package ace-jump-mode
+  :ensure t
+  :bind (("C-L" . ace-jump-line-mode)
+         ("C-SPC" . ace-jump-word-mode)
+         ;; Needed for terminal.
+         ("C-@" . ace-jump-word-mode))
+  :config
+  (progn
+    (hook-fn 'ace-jump-mode-end-hook
+      (ignore-errors
+        (exit-recursive-edit)))
+
+    ;; Use ESC to quit ace-jump.
+    (--each '(ace-jump-line-mode ace-jump-word-mode ace-jump-char-mode)
+      (hook-fn it (local-set-key (kbd "ESC") 'keyboard-quit)))))
+
+(use-package hideshow
+  :diminish hs-minor-mode
+  :commands hs-minor-mode
+  :defer    t)
+
+;;; Web
 
 (use-package smtpmail
   :commands smtpmail-send-it
   :init
   (setq
+   mail-signature (concat "\nCheers,\n\n" user-full-name)
+   send-mail-function 'smtpmail-send-it
+   message-send-mail-function 'smtpmail-send-it
+
    smtpmail-mail-address user-mail-address
    smtpmail-smtp-server "smtp.mail.me.com"
    smtpmail-smtp-service 587))
@@ -571,32 +892,36 @@
     (defalias 'bbdb-record-Notes 'ignore)
     (defalias 'bbdb-record-set-Notes 'ignore)))
 
-;;; ----------------------------------------------------------------------------
-;;; OS X-specific configuration.
-(when (equal system-type 'darwin)
+(use-package google-this
+  :ensure t
+  :diminish google-this-mode
+  :bind ("C-c / /" . google-this)
+  :config (google-this-mode +1))
 
-  ;; Set exec-path
-  (use-package exec-path-from-shell
-    :ensure t
-    :if     (display-graphic-p)
-    :config (exec-path-from-shell-initialize))
+(use-package w3m
+  :ensure   t
+  :commands (w3m-find-file w3m-browse-url)
+  :init
+  (progn
+    (setq browse-url-browser-function 'w3m-browse-url)
 
-  ;; Configure cut & paste in terminal.
-  (unless (window-system)
+    (defun cb:find-window-with-mode (mode)
+      "Find the first window whose buffer is in major-mode MODE."
+      (get-window-with-predicate
+       (lambda (w) (with-current-buffer (window-buffer w)
+                     (equal mode major-mode)))))
 
-    (defun cb:paste ()
-      (shell-command-to-string "pbpaste"))
-
-    (defun cb:copy (text &optional push)
-      (let ((process-connection-type nil))
-        (let ((proc (start-process "pbcopy" "*Messages*" "pbcopy")))
-          (process-send-string proc text)
-          (process-send-eof proc))))
-
-    (setq interprogram-cut-function   'cb:copy
-          interprogram-paste-function 'cb:paste)))
-
-;;; ----------------------------------------------------------------------------
+    (defun cb:w3m-browse-url-as-help (url)
+      "Browse the given URL in a help window."
+      (interactive "sURL: ")
+      (let ((win (or (cb:find-window-with-mode 'w3m-mode) (split-window))))
+        (select-window win)
+        (w3m-browse-url url)))
+    )
+  :config
+  (hook-fn 'w3m-mode-hook
+    (buffer-face-set
+     `(:family ,cb:serif-font :height 130))))
 
 (use-package erc
   :defer t
@@ -614,292 +939,30 @@
      erc-autojoin-channels-alist
      '((".*\\.freenode.net" "#emacs" "#haskell")))))
 
-(use-package simple
-  :diminish (visual-line-mode
-             global-visual-line-mode
-             auto-fill-mode)
-  :config
-  (add-hook 'text-mode-hook 'visual-line-mode))
+;;; Themes
 
-(use-package projectile
-  :ensure   t
-  :diminish projectile-mode
-  :config
-  (progn
-    (projectile-global-mode)
-    (defadvice find-tag (before set-tags-directory activate)
-      "Ensure the TAGS path is set before searching for tags."
-      (setq tags-file-name (concat (projectile-project-root) "TAGS")))))
+(use-package color-theme
+  :config (setq color-theme-is-global t))
 
-(use-package helm
-  :ensure   t
-  :init
-  (progn
-    (bind-key* "M-a" 'helm-apropos)
-    (bind-key* "M-b" 'helm-buffers-list)
-    (bind-key* "C-x C-b" 'helm-buffers-list)
-    (bind-key* "M-j" 'helm-mini)
-    (bind-key* "M-i" 'helm-imenu)
-    (bind-key* "M-f" 'helm-etags-select)
-    (bind-key* "M-m" 'helm-man-woman)
-    (bind-key* "M-w" 'helm-w3m-bookmarks)
-    (bind-key* "M-k" 'helm-show-kill-ring))
-  :config
-  (define-key helm-map (kbd "C-[") 'helm-keyboard-quit))
-
-(use-package helm-projectile
-  :ensure t
-  :commands helm-projectile
-  :init
-  (progn
-    (defun cb:helm-dwim ()
-      "Show helm-projectile, failling back to helm-mini if not in a project."
-      (interactive)
-      (if (projectile-project-p)
-          (helm-projectile)
-        (helm-mini)))
-
-    (bind-key* "C-j" 'cb:helm-dwim)))
-
-(use-package ack-and-a-half
-  :ensure t
-  :commands (ack-and-a-half-same
-             ack-and-a-half-find-file
-             ack-and-a-half-find-file-same))
-
-(use-package imenu
-  :config
-  (hook-fn 'emacs-lisp-mode-hook
-    "Display section headings."
-    (setq imenu-prev-index-position-function nil)
-    (add-to-list 'imenu-generic-expression
-                 `("SECTION"
-                   ;; Match sections.
-                   ,(rx bol ";;;" (* space) (+ "-") (? "\n")
-                        ";;;" (* space)
-                        (group (1+ nonl))
-                        (* "-") eol) 1) t)))
-
-(use-package ido
-  :ensure t
-  :defer  nil
-  :init
-  (setq ido-enable-prefix            nil
-        ido-save-directory-list-file (concat cb:tmp-dir "ido.last")
-        ido-enable-flex-matching     t
-        ido-create-new-buffer        'always
-        ido-use-filename-at-point    'guess
-        ido-max-prospects            10
-        ido-default-file-method      'selected-window)
-  :config
-  (progn
-    (ido-mode +1)
-    (add-to-list 'ido-ignore-buffers "*helm mini*")
-    (add-to-list 'ido-ignore-files "\\.DS_Store")))
-
-(use-package ido-hacks
-  :ensure t
-  :config (ido-hacks-mode +1))
-
-(use-package ido-ubiquitous
-  :ensure t
-  :config (ido-ubiquitous-mode +1))
-
-(use-package ido-yes-or-no
-  :ensure t
-  :config (ido-yes-or-no-mode +1))
-
-(use-package ido-better-flex
-  :ensure t
-  :config (ido-better-flex/enable))
-
-(use-package ido-speed-hack)
-
-(use-package smex
-  :ensure t
-  :config (smex-initialize)
-  :bind   (("M-x" . smex)
-           ("M-X" . smex-major-mode-commands)))
-
-(use-package popwin
-  :ensure t
-  :config
-  (progn
-    (setq display-buffer-function 'popwin:display-buffer
-          popwin:special-display-config
-          '(("*Help*"  :height 30 :stick t)
-            ("*Completions*" :noselect t)
-            ("*compilation*" :noselect t)
-            ("*Messages*" :height 30)
-            ("*Occur*" :noselect t)
-            ("\\*Slime Description.*" :noselect t :regexp t :height 30)
-            ("*magit-commit*" :noselect t :height 40 :width 80)
-            ("*magit-diff*" :noselect t :height 40 :width 80)
-            ("*magit-edit-log*" :noselect t :height 15 :width 80)
-            ("\\*Slime Inspector.*" :regexp t :height 30)
-            ("*Ido Completions*" :noselect t :height 30)
-            ("*eshell*" :height 30)
-            ("\\*ansi-term\\*.*" :regexp t :height 30)
-            ("*shell*" :height 30)
-            (".*overtone.log" :regexp t :height 30)
-            ("*gists*" :height 30)
-            ("*sldb.*":regexp t :height 30)))
-
-    (popwin-mode +1)))
-
-(use-package saveplace
-  :init
-  (progn
-    (setq save-place-file (concat cb:tmp-dir "saved-places"))
-    (setq-default save-place t)))
-
-(use-package paren
-  :config (show-paren-mode +1))
-
-(use-package recentf
-  :init
-  (setq
-   recentf-save-file       (concat cb:tmp-dir "recentf")
-   recentf-keep            '(file-remote-p file-readable-p)
-   recentf-max-saved-items 100
-   recentf-max-menu-items  25
-   recentf-exclude '(".newsrc"
-                     "Emacs.app"
-                     "-autoloads.el"
-                     "recentf"
-                     ".ido.last"
-                     "TAGS"
-                     ".gz")))
-
-(use-package savehist
-  :config
-  (progn
-    (setq
-     savehist-additional-variables '(search ring regexp-search-ring)
-     savehist-autosave-interval    60
-     savehist-file                 (concat cb:tmp-dir "savehist"))
-    (savehist-mode +1)))
-
-(use-package undo-tree
-  :ensure   t
-  :diminish undo-tree-mode
-  :config   (global-undo-tree-mode +1))
-
-(use-package window-number
-  :ensure t
-  :config (window-number-meta-mode +1))
-
-(use-package windmove
-  :bind (("S-<left>"  . windmove-left)
-         ("S-<right>" . windmove-right)
-         ("S-<up>"    . windmove-up)
-         ("S-<down>"  . windmove-down)))
-
-(use-package winner
-  :config (winner-mode +1))
-
-(use-package diminish
-  :ensure t
-  :commands diminish)
-
-(use-package highlight
+(use-package solarized-theme
   :ensure t
   :defer t)
 
-(use-package hl-line
+(use-package ir-black-theme
+  :ensure t
+  :defer t)
+
+(use-package cb-colour
   :if (display-graphic-p)
-  :config (global-hl-line-mode t))
-
-(use-package fringe
-  :if     (display-graphic-p)
-  :config (fringe-mode '(2 . 0)))
-
-(use-package ansi-color
-  :config (ansi-color-for-comint-mode-on))
-
-(use-package transpose-frame
-  :bind (("C-x t" . transpose-frame)
-         ("s-t"   . transpose-frame)
-         ("C-x f" . rotate-frame)
-         ("s-r"   . rotate-frame))
-
-  :commands
-  (transpose-frame
-   flip-frame
-   flop-frame
-   rotate-frame
-   rotate-frame-clockwise
-   rotate-frame-anticlockwise))
-
-(use-package key-chord
-  :ensure t
   :config
-  (progn
-    ;; Global keys.
-    (key-chord-define-global "x;" 'cb:kill-current-buffer)
+  ;; Set colour by time of day.
+  (let ((hour (string-to-number (format-time-string "%H"))))
+    (cond
+     ((and (<= 0 hour) (>= 6 hour)) (ir-black))
+     ((or  (< 20 hour) (> 9 hour))  (solarized-dark))
+     (t                             (solarized-light)))))
 
-    ;; Paredit keys.
-    (eval-after-load 'paredit
-      '(progn
-         (key-chord-define paredit-mode-map "qj" 'paredit-backward-slurp-sexp)
-         (key-chord-define paredit-mode-map "qk" 'cb:paredit-forward-slurp-sexp-neatly)
-         (key-chord-define paredit-mode-map "ql" 'paredit-splice-sexp-killing-backward)
-         (key-chord-define paredit-mode-map "qn" 'paredit-backward-barf-sexp)
-         (key-chord-define paredit-mode-map "qm" 'paredit-forward-barf-sexp)))
-
-    (key-chord-mode +1)))
-
-(use-package cb-commands
-  :bind (("s-f"     . cb:rotate-buffers)
-         ("C-x C-o" . other-window))
-
-  :commands (cb:hide-dos-eol
-             cb:kill-current-buffer
-             indent-buffer
-             insert-timestamp
-             rename-file-and-buffer
-             cb:last-buffer-for-mode)
-
-  :init     (add-hook 'find-file-hook 'cb:hide-dos-eol)
-
-  :config
-  (defadvice cb:rotate-buffers (after select-largest-window activate)
-    "Switch to the largest window if using a 2-up window configuration."
-    (when (= 2 (length (window-list)))
-      (cb:select-largest-window))))
-
-(use-package scratch
-  :ensure   t
-  :commands scratch
-  :bind     ("C-c e s" . scratch) )
-
-(use-package uniquify
-  :config
-  (setq uniquify-buffer-name-style   'forward
-        uniquify-separator           "/"
-        uniquify-after-kill-buffer-p t
-        uniquify-ignore-buffers-re   "^\\*"))
-
-(use-package ace-jump-mode
-  :ensure t
-  :bind (("C-L" . ace-jump-line-mode)
-         ("C-SPC" . ace-jump-word-mode)
-         ;; Needed for terminal.
-         ("C-@" . ace-jump-word-mode))
-  :config
-  (progn
-    (hook-fn 'ace-jump-mode-end-hook
-      (ignore-errors
-        (exit-recursive-edit)))
-
-    ;; Use ESC to quit ace-jump.
-    (--each '(ace-jump-line-mode ace-jump-word-mode ace-jump-char-mode)
-      (hook-fn it (local-set-key (kbd "ESC") 'keyboard-quit)))))
-
-(use-package hideshow
-  :diminish hs-minor-mode
-  :commands hs-minor-mode
-  :defer    t)
+;;; Vim & Evil
 
 (use-package evil
   :ensure t
@@ -973,80 +1036,7 @@
     (define-key evil-normal-state-map (kbd "-") 'evil-numbers/dec-at-pt)
     (define-key evil-normal-state-map (kbd "+") 'evil-numbers/inc-at-pt)))
 
-(use-package backup-dir
-  :config
-  (setq auto-save-file-name-transforms `((".*" ,(concat cb:autosaves-dir "\\1") t))
-        backup-by-copying        t
-        bkup-backup-directory-info `((".*" ,cb:backups-dir ok-create))
-        auto-save-list-file-name (concat cb:autosaves-dir "autosave-list")
-        delete-old-versions      t
-        kept-new-versions        6
-        kept-old-versions        2
-        version-control          t))
-
-(use-package hippie-exp
-  :bind ("M-/" . hippie-expand)
-  :config
-  (setq hippie-expand-try-functions-list
-        '(try-expand-dabbrev
-          try-expand-dabbrev-all-buffers
-          try-expand-dabbrev-from-kill
-          try-complete-file-name-partially
-          try-complete-file-name
-          try-expand-all-abbrevs
-          try-expand-list
-          try-expand-line
-          try-complete-lisp-symbol-partially
-          try-complete-lisp-symbol)))
-
-(use-package color-theme
-  :config (setq color-theme-is-global t))
-
-(use-package solarized-theme
-  :ensure t
-  :defer t)
-
-(use-package ir-black-theme
-  :ensure t
-  :defer t)
-
-(use-package cb-colour
-  :if (display-graphic-p)
-  :config
-  ;; Set colour by time of day.
-  (let ((hour (string-to-number (format-time-string "%H"))))
-    (cond
-     ((and (<= 0 hour) (>= 6 hour)) (ir-black))
-     ((or  (< 20 hour) (> 9 hour))  (solarized-dark))
-     (t                             (solarized-light)))))
-
-(use-package ediff
-  :commands (ediff ediff-merge-files-with-ancestor)
-  :init
-  (progn
-
-    (defun cb:apply-diff ()
-      (let ((file ediff-merge-store-file))
-        (set-buffer ediff-buffer-C)
-        (write-region (point-min) (point-max) file)
-        (message "Merge buffer saved in: %s" file)
-        (set-buffer-modified-p nil)
-        (sit-for 1)))
-
-    (defun cb:handle-git-merge (local remote base merged)
-      "Configure this emacs session for use as the git mergetool."
-      (add-hook 'ediff-quit-hook 'kill-emacs)
-      (add-hook 'ediff-quit-merge-hook 'cb:apply-diff)
-      (ediff-merge-files-with-ancestor local remote base nil merged)))
-
-  :config
-  (progn
-    (setq diff-switches "-u"
-          ediff-window-setup-function 'ediff-setup-windows-plain)
-    (add-hook 'ediff-startup-hook 'turn-off-evil-mode)))
-
-(use-package cb-ediff
-  :commands cb:handle-git-merge)
+;;; Shells
 
 (use-package eshell
   :commands eshell
@@ -1121,144 +1111,152 @@
     (define-key ac-completing-map "\t" 'ac-complete)
     (define-key ac-completing-map (kbd "M-RET") 'ac-help)))
 
-(use-package slime
-  :defer t
-  :commands (slime-mode slime)
+;;; Completion
+
+(use-package yasnippet
+  :ensure t
+  :commands (yas-global-mode yas-minor-mode)
+  :diminish yas-minor-mode
   :init
-  (progn
-    (setq slime-lisp-implementations `((lisp ("sbcl" "--noinform"))))
-
-    (defun run-slime ()
-      "Run slime, prompting for a lisp implementation."
-      (interactive)
-      (let ((current-prefix-arg '-))
-        (slime))))
-
+  (add-hook 'prog-mode-hook 'yas-minor-mode)
   :config
   (progn
-    (require 'slime)
-    (slime-setup '(slime-fancy))))
+    (setq yas/trigger-key (kbd "RET"))
+    (add-to-list 'yas-snippet-dirs cb:yasnippet-dir)
+    (yas/global-mode t)
+    (hook-fn 'snippet-mode-hook
+      (setq require-final-newline nil))))
 
-(use-package ac-slime
-  :ensure t
-  :defer  t
-  :commands (set-up-slime-ac)
-  :init
-  (progn
-    (add-hook 'slime-mode-hook 'set-up-slime-ac)
-    (add-hook 'slime-repl-mode-hook 'set-up-slime-ac))
+(use-package hippie-exp
+  :bind ("M-/" . hippie-expand)
   :config
-  (add-to-list 'ac-modes 'slime-repl-mode))
-
-(use-package geiser
-  :ensure t
-  :commands run-geiser
-  :init
-  (progn-after-load "auto-complete"
-    (autoload 'geiser-company--prefix-at-point "geiser-company")
-    (autoload 'geiser-company--doc "geiser-company")
-
-    (defun cb:geiser-eval-buffer ()
-      "Evaluate the current Scheme buffer with Geiser."
-      (interactive)
-      ;; Switch to source if we're in the repl.
-      (if (derived-mode-p 'repl-mode 'comint-mode 'inferior-scheme-mode)
-          (save-excursion
-            (switch-to-geiser)
-            (cb:geiser-eval-buffer)
-            (switch-to-geiser))
-
-        (let (result)
-          (flet ((message (&rest args) (setq result (apply 'format args))))
-            (save-excursion
-              (mark-whole-buffer)
-              (geiser-eval-region (region-beginning) (region-end))))
-          (message "Buffer evaluated %s" result))))
-
-    (defun cb:geiser-ac-doc (fname &optional module impl)
-      (let* ((symbol (intern fname))
-             (impl (or impl geiser-impl--implementation))
-             (module (geiser-doc--module (or module (geiser-eval--get-module))
-                                         impl)))
-        (-when-let (ds (geiser-doc--get-docstring symbol module))
-          (ignore-errors
-            (with-temp-buffer
-              (geiser-doc--insert-title
-               (geiser-autodoc--str* (cdr (assoc "signature" ds))))
-              (newline)
-              (insert (or (cdr (assoc "docstring" ds)) ""))
-              (buffer-string))))))
-
-    (ac-define-source geiser
-      '((candidates . (progn
-                        (geiser-company--prefix-at-point)
-                        (cdr geiser-company--completions)))
-        (document   . cb:geiser-ac-doc)))
-
-    (hook-fn 'cb:scheme-shared-hook
-      (local-set-key (kbd "C-c C-l") 'cb:geiser-eval-buffer)
-      (setq ac-sources '(ac-source-yasnippet ac-source-geiser)))
-    )
-  :config
-  (progn
-    (defadvice switch-to-geiser (after append-with-evil activate)
-      "Move to end of REPL and append-line."
-      (when (and (fboundp 'evil-append-line)
-                 (derived-mode-p 'comint-mode))
-        (goto-char (point-max))
-        (evil-append-line 1)))
-
-    (setq
-     geiser-mode-start-repl-p t
-     geiser-repl-startup-time 20000
-     geiser-repl-history-filename (concat cb:tmp-dir "geiser-history")
-     geiser-active-implementations '(racket))))
-
-(use-package r5rs
-  :ensure t
-  :commands scheme-r5rs-lookup
-  :init
-  (progn
-    (setq scheme-r5rs-root (concat cb:etc-dir "r5rs-html/"))
-    (hook-fn 'cb:scheme-shared-hook
-      (local-set-key (kbd "C-c C-h") 'scheme-r5rs-lookup)
-      (set (make-local-variable 'browse-url-browser-function)
-           (lambda (url &rest _)
-             (cb:w3m-browse-url-as-help (concat "file://" url)))))))
+  (setq hippie-expand-try-functions-list
+        '(try-expand-dabbrev
+          try-expand-dabbrev-all-buffers
+          try-expand-dabbrev-from-kill
+          try-complete-file-name-partially
+          try-complete-file-name
+          try-expand-all-abbrevs
+          try-expand-list
+          try-expand-line
+          try-complete-lisp-symbol-partially
+          try-complete-lisp-symbol)))
 
 (use-package fuzzy
   :ensure t)
 
-(use-package google-this
-  :ensure t
-  :diminish google-this-mode
-  :bind ("C-c / /" . google-this)
-  :config (google-this-mode +1))
+;;; Dired
 
-(use-package w3m
-  :ensure   t
-  :commands (w3m-find-file w3m-browse-url)
+(use-package dired
+  :defer   t
+  :config (when (equal system-type 'darwin)
+            (setq dired-use-ls-dired nil)))
+
+(use-package dired-aux
+  :defer t
+  :config
+  (add-to-list 'dired-compress-file-suffixes '("\\.zip\\'" ".zip" "unzip")))
+
+(use-package dired-x
+  :commands (dired-jump dired-jump-other-window)
   :init
   (progn
-    (setq browse-url-browser-function 'w3m-browse-url)
+    (bind-key* "M-d" 'dired-jump)
+    (bind-key* "M-D" 'dired-jump-other-window)))
 
-    (defun cb:find-window-with-mode (mode)
-      "Find the first window whose buffer is in major-mode MODE."
-      (get-window-with-predicate
-       (lambda (w) (with-current-buffer (window-buffer w)
-                     (equal mode major-mode)))))
+(use-package dired-details
+  :ensure   t
+  :commands dired-details-install
+  :init     (add-hook 'dired-mode-hook 'dired-details-install))
 
-    (defun cb:w3m-browse-url-as-help (url)
-      "Browse the given URL in a help window."
-      (interactive "sURL: ")
-      (let ((win (or (cb:find-window-with-mode 'w3m-mode) (split-window))))
-        (select-window win)
-        (w3m-browse-url url)))
-    )
+;;; Compilation & Checking
+
+(use-package compile
+  :bind  (("C-c b" . compile)
+          ("C-c C-b" . recompile))
   :config
-  (hook-fn 'w3m-mode-hook
-    (buffer-face-set
-     `(:family ,cb:serif-font :height 130))))
+  (progn
+    (defun cb:compile-autoclose (buffer string)
+      "Automatically close the compile window."
+      (when (-contains? '(compile recompile) last-command)
+        (if (s-matches? "finished" string)
+            (run-with-timer (/ 1 50) nil
+                            '(lambda (w) (delete-window w) (message "Compilation succeeded"))
+                            (get-buffer-window buffer t))
+          (message "Compilation exited abnormally: %s" string))))
+
+    (hook-fn 'find-file-hook
+      "Try to find a makefile for the current project."
+      (when (projectile-project-p)
+        (setq-local compilation-directory (projectile-project-root))))
+
+    (setq
+     compilation-window-height    12
+     compilation-scroll-output    'first-error
+     compilation-finish-functions 'cb:compile-autoclose)))
+
+(use-package mode-compile
+  :ensure t
+  :bind (("C-c ."   . mode-compile-kill)
+         ("C-c C-c" . mode-compile))
+  :config
+  (setq mode-compile-expert-p             t
+        mode-compile-always-save-buffer-p t))
+
+(use-package flyspell
+  :diminish flyspell-mode
+  :defer    t
+  :init
+  (progn
+    (setq ispell-dictionary "english")
+    (add-hook 'text-mode-hook 'flyspell-mode)
+    (add-hook 'prog-mode-hook 'flyspell-prog-mode))
+  :config
+  (bind-key* "C-'" 'flyspell-auto-correct-word))
+
+(use-package flyspell-lazy
+  :ensure  t
+  :defines flyspell-lazy-mode
+  :config  (flyspell-lazy-mode +1))
+
+(use-package flycheck
+  :ensure t
+  :commands (flycheck-may-enable-mode flycheck-mode)
+  :init
+  (let ((maybe-enable-flycheck
+         (lambda ()
+           "Do not enable flycheck for /src and /elpa."
+           (when (and (flycheck-may-enable-mode))
+             (unless (or (s-contains? cb:elpa-dir (or (buffer-file-name) ""))
+                         (s-contains? cb:src-dir  (or (buffer-file-name) "")))
+               (flycheck-mode +1))))))
+
+    (setq flycheck-highlighting-mode 'lines)
+    (add-hook 'text-mode-hook maybe-enable-flycheck)
+    (add-hook 'prog-mode-hook maybe-enable-flycheck)))
+
+;;; Tags
+
+(use-package cb-tags
+  :commands cb:build-ctags
+  :bind (("C-]"     . cb:find-tag)
+         ("C-c C-r" . cb:load-ctags))
+  :config
+  (progn
+    ;; Ensure tags searches are case-sensitive.
+    (setq tags-case-fold-search nil)
+    (global-set-key (kbd "M-.") 'find-tag)))
+
+(use-package ctags-update
+  :ensure   t
+  :diminish ctags-auto-update-mode
+  :config   (add-hook 'prog-mode-hook 'turn-on-ctags-auto-update-mode))
+
+(use-package etags-select
+  :ensure   t
+  :commands (etags-select-find-tag-at-point etags-select-find-tag))
+
+;;; Language utils
 
 (use-package smartparens
   :ensure t
@@ -1334,15 +1332,6 @@
       (local-unset-key (kbd "+"))
       (local-set-key (kbd "*") 'c-electric-star))))
 
-(use-package json-mode
-  :ensure t
-  :commands json-mode
-  :mode ("\\.json$" . json-mode)
-  :config
-  (progn
-    (add-to-list 'ac-modes 'json-mode)
-    (defalias 'format-json 'beautify-json)))
-
 (use-package lambda-mode
   :diminish lambda-mode
   :config
@@ -1355,151 +1344,22 @@
     (add-hook 'python-mode-hook        'lambda-mode)
     (add-hook 'slime-repl-mode-hook    'lambda-mode)))
 
-(use-package dired
-  :defer   t
-  :config (when (equal system-type 'darwin)
-            (setq dired-use-ls-dired nil)))
+(use-package paren
+  :config (show-paren-mode +1))
 
-(use-package dired-aux
-  :defer t
-  :config
-  (add-to-list 'dired-compress-file-suffixes '("\\.zip\\'" ".zip" "unzip")))
+(use-package highlight-parentheses
+  :ensure t
+  :diminish highlight-parentheses-mode
+  :config (add-hook 'prog-mode-hook 'highlight-parentheses-mode))
 
-(use-package dired-x
-  :commands (dired-jump dired-jump-other-window)
-  :init
-  (progn
-    (bind-key* "M-d" 'dired-jump)
-    (bind-key* "M-D" 'dired-jump-other-window)))
-
-(use-package dired-details
+(use-package highlight-symbol
   :ensure   t
-  :commands dired-details-install
-  :init     (add-hook 'dired-mode-hook 'dired-details-install))
+  :diminish highlight-symbol-mode
+  :commands highlight-symbol-mode
+  :init     (add-hook 'prog-mode-hook 'highlight-symbol-mode)
+  :config   (setq highlight-symbol-idle-delay 0.5))
 
-(use-package markdown-mode
-  :ensure t
-  :mode (("\\.md$"          . markdown-mode)
-         ("\\.[mM]arkdown$" . markdown-mode))
-  :config
-  (hook-fn 'markdown-mode-hook
-    (buffer-face-set `(:family ,cb:serif-font :height 130))
-    (setq imenu-generic-expression
-          '(("title"  "^\\(.*\\)[\n]=+$" 1)
-            ("h2-"    "^\\(.*\\)[\n]-+$" 1)
-            ("h1"   "^# \\(.*\\)$" 1)
-            ("h2"   "^## \\(.*\\)$" 1)
-            ("h3"   "^### \\(.*\\)$" 1)
-            ("h4"   "^#### \\(.*\\)$" 1)
-            ("h5"   "^##### \\(.*\\)$" 1)
-            ("h6"   "^###### \\(.*\\)$" 1)
-            ("fn"   "^\\[\\^\\(.*\\)\\]" 1)))))
-
-(use-package compile
-  :bind  (("C-c b" . compile)
-          ("C-c C-b" . recompile))
-  :config
-  (progn
-    (defun cb:compile-autoclose (buffer string)
-      "Automatically close the compile window."
-      (when (-contains? '(compile recompile) last-command)
-        (if (s-matches? "finished" string)
-            (run-with-timer (/ 1 50) nil
-                            '(lambda (w) (delete-window w) (message "Compilation succeeded"))
-                            (get-buffer-window buffer t))
-          (message "Compilation exited abnormally: %s" string))))
-
-    (hook-fn 'find-file-hook
-      "Try to find a makefile for the current project."
-      (when (projectile-project-p)
-        (setq-local compilation-directory (projectile-project-root))))
-
-    (setq
-     compilation-window-height    12
-     compilation-scroll-output    'first-error
-     compilation-finish-functions 'cb:compile-autoclose)))
-
-(use-package mode-compile
-  :ensure t
-  :bind (("C-c ."   . mode-compile-kill)
-         ("C-c C-c" . mode-compile))
-  :config
-  (setq mode-compile-expert-p             t
-        mode-compile-always-save-buffer-p t))
-
-(use-package flyspell
-  :diminish flyspell-mode
-  :defer    t
-  :init
-  (progn
-    (setq ispell-dictionary "english")
-    (add-hook 'text-mode-hook 'flyspell-mode)
-    (add-hook 'prog-mode-hook 'flyspell-prog-mode))
-  :config
-  (bind-key* "C-'" 'flyspell-auto-correct-word))
-
-(use-package flyspell-lazy
-  :ensure  t
-  :defines flyspell-lazy-mode
-  :config  (flyspell-lazy-mode +1))
-
-(use-package flycheck
-  :ensure t
-  :commands (flycheck-may-enable-mode flycheck-mode)
-  :init
-  (let ((maybe-enable-flycheck
-         (lambda ()
-           "Do not enable flycheck for /src and /elpa."
-           (when (and (flycheck-may-enable-mode))
-             (unless (or (s-contains? cb:elpa-dir (or (buffer-file-name) ""))
-                         (s-contains? cb:src-dir  (or (buffer-file-name) "")))
-               (flycheck-mode +1))))))
-
-    (setq flycheck-highlighting-mode 'lines)
-    (add-hook 'text-mode-hook maybe-enable-flycheck)
-    (add-hook 'prog-mode-hook maybe-enable-flycheck)))
-
-(use-package yasnippet
-  :ensure t
-  :commands (yas-global-mode yas-minor-mode)
-  :diminish yas-minor-mode
-  :init
-  (add-hook 'prog-mode-hook 'yas-minor-mode)
-  :config
-  (progn
-    (setq yas/trigger-key (kbd "RET"))
-    (add-to-list 'yas-snippet-dirs cb:yasnippet-dir)
-    (yas/global-mode t)
-    (hook-fn 'snippet-mode-hook
-      (setq require-final-newline nil))))
-
-(use-package make-mode
-  :defer t
-  :config
-  (progn
-    (add-to-list 'ac-modes 'makefile-mode)
-    (hook-fn 'makefile-mode-hook
-      (auto-complete-mode t)
-      (setq indent-tabs-mode t))))
-
-(use-package cb-tags
-  :commands cb:build-ctags
-  :bind (("C-]"     . cb:find-tag)
-         ("C-c C-r" . cb:load-ctags))
-  :config
-  (progn
-    ;; Ensure tags searches are case-sensitive.
-    (setq tags-case-fold-search nil)
-    (global-set-key (kbd "M-.") 'find-tag)))
-
-(use-package ctags-update
-  :ensure   t
-  :diminish ctags-auto-update-mode
-  :config   (add-hook 'prog-mode-hook 'turn-on-ctags-auto-update-mode))
-
-(use-package etags-select
-  :ensure   t
-  :commands (etags-select-find-tag-at-point etags-select-find-tag))
+;;; XML
 
 (use-package nxml-mode
   :commands nxml-mode
@@ -1542,40 +1402,23 @@
     (tagedit-add-paredit-like-keybindings)
     (setq sgml-xml-mode +1)))
 
-(use-package magit
-  :ensure t
-  :bind   ("M-g" . magit-status)
-  :config
+;;; Lisps
+
+(use-package parenface-plus
+  :ensure t)
+
+(use-package eval-sexp-fu
+  :commands eval-sexp-fu-flash-mode
+  :init     (add-hook 'cb:lisp-shared-hook 'eval-sexp-fu-flash-mode)
+  :config   (setq eval-sexp-fu-flash-duration 0.2))
+
+(use-package eldoc
+  :commands eldoc-mode
+  :diminish eldoc-mode
+  :init
   (progn
-    (defadvice magit-status (around magit-fullscreen activate)
-      (window-configuration-to-register :magit-fullscreen)
-      ad-do-it
-      (delete-other-windows))
-
-    (define-key magit-status-mode-map (kbd "q")
-      (lambda ()
-        "Quit magit."
-        (interactive)
-        (kill-buffer)
-        (jump-to-register :magit-fullscreen)))
-
-    (hook-fn 'magit-log-edit-mode-hook
-      "Enter insertion mode."
-      (when (and (boundp 'evil-mode) evil-mode)
-        (evil-append-line nil)))
-
-    (add-hook 'magit-mode-hook 'magit-load-config-extensions)))
-
-(use-package git-gutter
-  :ensure t
-  :bind ("C-x g" . git-gutter:toggle)
-  :commands (git-gutter:toggle
-             git-gutter:clean
-             git-gutter))
-
-(use-package conf-mode
-  :mode ((".gitignore$" . conf-mode)
-         (".gitmodules$" . conf-mode)))
+    (add-hook 'cb:lisp-shared-hook 'turn-on-eldoc-mode)
+    (add-hook 'ielm-mode-hook 'turn-on-eldoc-mode)))
 
 (use-package paredit
   :ensure   t
@@ -1601,45 +1444,36 @@
     (add-hook 'inferior-lisp-mode-hook 'paredit-mode)
     (add-hook 'repl-mode-hook 'paredit-mode)))
 
-(use-package highlight-parentheses
-  :ensure t
-  :diminish highlight-parentheses-mode
-  :config (add-hook 'prog-mode-hook 'highlight-parentheses-mode))
-
-(use-package highlight-symbol
-  :ensure   t
-  :diminish highlight-symbol-mode
-  :commands highlight-symbol-mode
-  :init     (add-hook 'prog-mode-hook 'highlight-symbol-mode)
-  :config   (setq highlight-symbol-idle-delay 0.5))
-
-(use-package parenface-plus
-  :ensure t)
-
-(use-package eval-sexp-fu
-  :commands eval-sexp-fu-flash-mode
-  :init     (add-hook 'cb:lisp-shared-hook 'eval-sexp-fu-flash-mode)
-  :config   (setq eval-sexp-fu-flash-duration 0.2))
-
-(use-package eldoc
-  :commands eldoc-mode
-  :diminish eldoc-mode
+(use-package slime
+  :defer t
+  :commands (slime-mode slime)
   :init
   (progn
-    (add-hook 'cb:lisp-shared-hook 'turn-on-eldoc-mode)
-    (add-hook 'ielm-mode-hook 'turn-on-eldoc-mode)))
+    (setq slime-lisp-implementations `((lisp ("sbcl" "--noinform"))))
 
-(use-package c-eldoc
-  :ensure   t
-  :commands c-turn-on-eldoc-mode
-  :init     (add-hook 'c-mode-hook 'c-turn-on-eldoc-mode))
+    (defun run-slime ()
+      "Run slime, prompting for a lisp implementation."
+      (interactive)
+      (let ((current-prefix-arg '-))
+        (slime))))
 
-(use-package ert-modeline
-  :defer    t
-  ;; The status is added to the mode-line format directly.
-  :diminish ert-modeline-mode
-  :commands ert-modeline-mode
-  :init     (add-hook 'emacs-lisp-mode-hook 'ert-modeline-mode))
+  :config
+  (progn
+    (require 'slime)
+    (slime-setup '(slime-fancy))))
+
+(use-package ac-slime
+  :ensure t
+  :defer  t
+  :commands (set-up-slime-ac)
+  :init
+  (progn
+    (add-hook 'slime-mode-hook 'set-up-slime-ac)
+    (add-hook 'slime-repl-mode-hook 'set-up-slime-ac))
+  :config
+  (add-to-list 'ac-modes 'slime-repl-mode))
+
+;;; Elisp
 
 (use-package lisp-mode
   :defer t
@@ -1735,6 +1569,13 @@
 
         (1 font-lock-type-face))))))
 
+(use-package ert-modeline
+  :defer    t
+  ;; The status is added to the mode-line format directly.
+  :diminish ert-modeline-mode
+  :commands ert-modeline-mode
+  :init     (add-hook 'emacs-lisp-mode-hook 'ert-modeline-mode))
+
 (use-package redshank
   :ensure   t
   :commands turn-on-redshank-mode
@@ -1772,6 +1613,8 @@
   :ensure t
   :bind   ("M-RET" . emr-show-refactor-menu)
   :config (require 'emr-elisp))
+
+;;; Clojure
 
 (use-package clojure-mode
   :ensure t
@@ -1864,40 +1707,85 @@
         (local-set-key (kbd "C-c C-z") 'cb:switch-to-clojure)
         (local-set-key (kbd "C-c C-f") 'cb:eval-last-clj-buffer)))))
 
-(use-package sclang
-  :commands (sclang-mode sclang-start)
-  :mode ("\\.sc$" . sclang-mode)
+;;; Scheme
+
+(use-package geiser
+  :ensure t
+  :commands run-geiser
   :init
-  (defun supercollider ()
-    "Start SuperCollider and open the SC Workspace."
-    (interactive)
-    (switch-to-buffer
-     (get-buffer-create "*sclang workspace*"))
-    (sclang-mode))
+  (progn-after-load "auto-complete"
+    (autoload 'geiser-company--prefix-at-point "geiser-company")
+    (autoload 'geiser-company--doc "geiser-company")
 
+    (defun cb:geiser-eval-buffer ()
+      "Evaluate the current Scheme buffer with Geiser."
+      (interactive)
+      ;; Switch to source if we're in the repl.
+      (if (derived-mode-p 'repl-mode 'comint-mode 'inferior-scheme-mode)
+          (save-excursion
+            (switch-to-geiser)
+            (cb:geiser-eval-buffer)
+            (switch-to-geiser))
+
+        (let (result)
+          (flet ((message (&rest args) (setq result (apply 'format args))))
+            (save-excursion
+              (mark-whole-buffer)
+              (geiser-eval-region (region-beginning) (region-end))))
+          (message "Buffer evaluated %s" result))))
+
+    (defun cb:geiser-ac-doc (fname &optional module impl)
+      (let* ((symbol (intern fname))
+             (impl (or impl geiser-impl--implementation))
+             (module (geiser-doc--module (or module (geiser-eval--get-module))
+                                         impl)))
+        (-when-let (ds (geiser-doc--get-docstring symbol module))
+          (ignore-errors
+            (with-temp-buffer
+              (geiser-doc--insert-title
+               (geiser-autodoc--str* (cdr (assoc "signature" ds))))
+              (newline)
+              (insert (or (cdr (assoc "docstring" ds)) ""))
+              (buffer-string))))))
+
+    (ac-define-source geiser
+      '((candidates . (progn
+                        (geiser-company--prefix-at-point)
+                        (cdr geiser-company--completions)))
+        (document   . cb:geiser-ac-doc)))
+
+    (hook-fn 'cb:scheme-shared-hook
+      (local-set-key (kbd "C-c C-l") 'cb:geiser-eval-buffer)
+      (setq ac-sources '(ac-source-yasnippet ac-source-geiser)))
+    )
   :config
   (progn
-    (setq sclang-auto-scroll-post-buffer   t
-          sclang-eval-line-forward         nil
-          sclang-show-workspace-on-startup nil)
-    (add-hook 'sclang-mode-hook 'smartparens-mode)))
+    (defadvice switch-to-geiser (after append-with-evil activate)
+      "Move to end of REPL and append-line."
+      (when (and (fboundp 'evil-append-line)
+                 (derived-mode-p 'comint-mode))
+        (goto-char (point-max))
+        (evil-append-line 1)))
 
-(use-package sclang-extensions
-  :ensure   t
-  :commands sclang-extensions-mode
-  :init     (add-hook 'sclang-mode-hook 'sclang-extensions-mode))
+    (setq
+     geiser-mode-start-repl-p t
+     geiser-repl-startup-time 20000
+     geiser-repl-history-filename (concat cb:tmp-dir "geiser-history")
+     geiser-active-implementations '(racket))))
 
-(use-package fsharp-mode
-  :ensure   t
-  :commands fsharp-mode
-  :mode ("\\.fs[ixly]?$" . fsharp-mode)
-  :config
+(use-package r5rs
+  :ensure t
+  :commands scheme-r5rs-lookup
+  :init
   (progn
-    (add-to-list 'ac-modes 'fsharp-mode)
-    (unless (display-graphic-p)
-      (setq fsharp-ac-use-popup nil))
-    (add-hook 'fsharp-mode-hook 'electric-indent-mode)
-    (add-hook 'fsharp-mode-hook 'electric-layout-mode)))
+    (setq scheme-r5rs-root (concat cb:etc-dir "r5rs-html/"))
+    (hook-fn 'cb:scheme-shared-hook
+      (local-set-key (kbd "C-c C-h") 'scheme-r5rs-lookup)
+      (set (make-local-variable 'browse-url-browser-function)
+           (lambda (url &rest _)
+             (cb:w3m-browse-url-as-help (concat "file://" url)))))))
+
+;;; Python
 
 (use-package python
   :ensure   t
@@ -1905,15 +1793,6 @@
   :mode     ("\\.py$" . python-mode)
   :config
   (progn
-    (use-package jedi
-      :ensure   t
-      :commands jedi:setup
-      :init
-      (progn
-        (setq jedi:setup-keys t)
-        (add-hook 'inferior-python-mode-hook 'jedi:setup)
-        (add-hook 'python-mode-hook 'jedi:setup)))
-
     (defun cb:comma-then-space ()
       (interactive)
       (atomic-change-group
@@ -1932,6 +1811,17 @@
     (add-to-list 'ac-modes 'python-mode)
     (add-to-list 'ac-modes 'inferior-python-mode)))
 
+(use-package jedi
+  :ensure   t
+  :commands jedi:setup
+  :init
+  (progn
+    (setq jedi:setup-keys t)
+    (add-hook 'inferior-python-mode-hook 'jedi:setup)
+    (add-hook 'python-mode-hook 'jedi:setup)))
+
+;;; Ruby
+
 (use-package ruby-mode
   :ensure t
   :mode (("\\.rake\\'" . ruby-mode)
@@ -1947,55 +1837,6 @@
          ("\\.jbuilder\\'" . ruby-mode))
   :config
   (progn
-
-    (use-package rsense
-      :ensure t
-      :config
-      (progn
-        (cb:define-path cb:rsense-home "bin/rsense-0.3")
-        (setq rsense-home cb:rsense-home)
-
-        (hook-fn 'inf-ruby-mode-hook
-          (add-to-list 'ac-sources 'ac-source-rsense-method)
-          (add-to-list 'ac-sources 'ac-source-rsense-constant))
-
-        (hook-fn 'ruby-mode-hook
-          (add-to-list 'ac-sources 'ac-source-rsense-method)
-          (add-to-list 'ac-sources 'ac-source-rsense-constant))))
-
-    (use-package yari
-      :ensure t
-      :commands yari
-      :init
-      (progn
-        (hook-fn 'ruby-mode-hook
-          (local-set-key (kbd "C-c C-h") 'yari))
-
-        (hook-fn 'inf-ruby-mode-hook
-          (local-set-key (kbd "C-c C-h") 'yari))))
-
-    (use-package inf-ruby
-      :ensure   t
-      :commands inf-ruby-mode
-      :config
-      (hook-fn 'inf-ruby-mode
-        (subword-mode +1)
-        ;; Stop IRB from echoing input.
-        (setq comint-process-echoes t)
-        (inf-ruby-setup-keybindings)))
-
-    (use-package ruby-tools
-      :ensure   t
-      :diminish ruby-tools-mode
-      :commands ruby-tools-mode
-      :init     (add-hook 'ruby-mode-hook 'ruby-tools-mode))
-
-    (use-package ruby-end
-      :ensure   t
-      :diminish ruby-end-mode
-      :commands ruby-end-mode
-      :init     (add-hook 'ruby-mode-hook 'ruby-end-mode))
-
     (add-to-list 'ac-modes 'ruby-mode)
     (add-to-list 'completion-ignored-extensions ".rbc")
     (define-combined-hook cb:ruby-shared-hook '(inf-ruby-mode ruby-mode))
@@ -2017,11 +1858,52 @@ Start an inferior ruby if necessary."
       (local-set-key (kbd "C-c C-z") 'cb:switch-to-ruby)
       (subword-mode +1))))
 
+(use-package rsense
+  :ensure t
+  :init
+  (hook-fn 'cb:ruby-shared-hook
+    (add-to-list 'ac-sources 'ac-source-rsense-method)
+    (add-to-list 'ac-sources 'ac-source-rsense-constant))
+  :config
+  (progn
+    (cb:define-path cb:rsense-home "bin/rsense-0.3")
+    (setq rsense-home cb:rsense-home)))
+
+(use-package yari
+  :ensure t
+  :commands yari
+  :init
+  (hook-fn 'cb:ruby-shared-hook
+    (local-set-key (kbd "C-c C-h") 'yari)))
+
+(use-package inf-ruby
+  :ensure   t
+  :commands inf-ruby-mode
+  :init
+  (hook-fn 'inf-ruby-mode
+    ;; Stop IRB from echoing input.
+    (setq comint-process-echoes t)
+    (inf-ruby-setup-keybindings)))
+
+(use-package ruby-tools
+  :ensure   t
+  :diminish ruby-tools-mode
+  :commands ruby-tools-mode
+  :init     (add-hook 'ruby-mode-hook 'ruby-tools-mode))
+
+(use-package ruby-end
+  :ensure   t
+  :diminish ruby-end-mode
+  :commands ruby-end-mode
+  :init     (add-hook 'ruby-mode-hook 'ruby-end-mode))
+
 (use-package yaml-mode
   :ensure   t
   :commands yaml-mode
   :mode     (("\\.yaml$" . yaml-mode)
              ("\\.yml$"  . yaml-mode)))
+
+;;; Haskell
 
 (use-package haskell-mode
   :ensure t
@@ -2032,62 +1914,6 @@ Start an inferior ruby if necessary."
    ("\\.cabal$" . haskell-cabal-mode))
   :config
   (progn
-
-    (use-package cb-haskell
-      :init
-      (hook-fn 'haskell-mode-hook
-        (require 'cb-haskell)
-        (local-set-key (kbd "C-c j") 'haskell-test<->code)))
-
-    (use-package ghc
-      :ensure   t
-      :commands ghc-init
-      :init     (add-hook 'haskell-mode-hook 'ghc-init)
-      :config
-      (progn
-
-        (defun ac-haskell-candidates ()
-          "Auto-complete source using ghc-doc."
-          (let ((pat (buffer-substring (ghc-completion-start-point) (point))))
-            (all-completions pat (ghc-select-completion-symbol))))
-
-        (ac-define-source ghc
-          '((candidates . ac-haskell-candidates)))
-
-        (hook-fn 'haskell-mode-hook
-          (add-to-list 'ac-sources 'ac-source-ghc))))
-
-    (use-package haskell-ac
-      :init
-      (hook-fn 'cb:haskell-shared-hook
-        (add-to-list 'ac-modes major-mode)
-        (add-to-list 'ac-sources 'ac-source-words-in-same-mode-buffers)
-        (add-to-list 'ac-sources 'ac-source-haskell)))
-
-    (use-package haskell-edit
-      :commands (haskell-find-type-signature
-                 haskell-reformat-type-signature))
-
-    (use-package haskell-indentation
-      :diminish haskell-indentation-mode
-      :config   (add-hook 'haskell-mode-hook 'haskell-indentation-mode))
-
-    (use-package haskell-doc
-      :diminish haskell-doc-mode
-      :commands haskell-doc-mode
-      :init     (add-hook 'cb:haskell-shared-hook 'haskell-doc-mode))
-
-    (use-package haskell-decl-scan
-      :commands turn-on-haskell-decl-scan
-      :init     (add-hook 'haskell-mode-hook 'turn-on-haskell-decl-scan))
-
-    (use-package hs-lint
-      :commands hs-lint
-      :config
-      (progn
-        (setq hs-lint-command (executable-find "hlint"))
-        (hook-fn 'haskell-mode-hook
-          (local-set-key (kbd "C-c l") 'hs-lint))))
 
     (defadvice switch-to-haskell (after insert-at-end-of-line activate)
       "Enter insertion mode at the end of the line when switching to inferior haskell."
@@ -2118,67 +1944,63 @@ Start an inferior ruby if necessary."
        haskell-stylish-on-save t)
       (local-set-key (kbd "C-c C-c") 'haskell-process-cabal-build))))
 
-(use-package workgroups
-  :if       (display-graphic-p)
-  :bind     (("s-1" . wg-switch-to-index-0)
-             ("s-2" . wg-switch-to-index-1)
-             ("s-3" . wg-switch-to-index-2)
-             ("s-4" . wg-switch-to-index-3)
-             ("s-5" . wg-switch-to-index-4)
-             )
-  :ensure   t
-  :diminish workgroups-mode
-  :commands workgroups-mode
+(use-package cb-haskell
   :init
-  (progn
-    (setq
-     wg-morph-vsteps 6
-     wg-prefix-key (kbd "C-c w")
-     wg-default-session-file (concat cb:etc-dir "workgroups"))
-    (add-hook 'after-init-hook 'workgroups-mode))
+  (hook-fn 'haskell-mode-hook
+    (require 'cb-haskell)
+    (local-set-key (kbd "C-c j") 'haskell-test<->code)))
+
+(use-package ghc
+  :ensure   t
+  :commands ghc-init
+  :init     (add-hook 'haskell-mode-hook 'ghc-init)
   :config
   (progn
-   (defadvice wg-mode-line-add-display (around wg-suppress-error activate)
-     "Ignore errors in modeline display function caused by custom modeline."
-     (ignore-errors ad-do-it))
-    (ignore-errors (wg-load wg-default-session-file))))
 
-(use-package org
-  :ensure t
-  :defer t
+    (defun ac-haskell-candidates ()
+      "Auto-complete source using ghc-doc."
+      (let ((pat (buffer-substring (ghc-completion-start-point) (point))))
+        (all-completions pat (ghc-select-completion-symbol))))
+
+    (ac-define-source ghc
+      '((candidates . ac-haskell-candidates)))
+
+    (hook-fn 'haskell-mode-hook
+      (add-to-list 'ac-sources 'ac-source-ghc))))
+
+(use-package haskell-ac
   :init
-  (macrolet ((maybe (f) `(lambda ()
-                           (unless (derived-mode-p 'org-mode)
-                             (funcall ,f)))))
+  (hook-fn 'cb:haskell-shared-hook
+    (add-to-list 'ac-modes major-mode)
+    (add-to-list 'ac-sources 'ac-source-words-in-same-mode-buffers)
+    (add-to-list 'ac-sources 'ac-source-haskell)))
 
-    ;; Use org commands in other modes.
-    (add-hook 'message-mode-hook 'turn-on-orgstruct++)
-    (add-hook 'message-mode-hook 'turn-on-orgtbl)
-    (add-hook 'text-mode-hook (maybe 'turn-on-orgstruct++))
-    (add-hook 'text-mode-hook (maybe 'turn-on-orgtbl)))
+(use-package haskell-edit
+  :commands (haskell-find-type-signature
+             haskell-reformat-type-signature))
+
+(use-package haskell-indentation
+  :diminish haskell-indentation-mode
+  :init     (add-hook 'haskell-mode-hook 'haskell-indentation-mode))
+
+(use-package haskell-doc
+  :diminish haskell-doc-mode
+  :commands haskell-doc-mode
+  :init     (add-hook 'cb:haskell-shared-hook 'haskell-doc-mode))
+
+(use-package haskell-decl-scan
+  :commands turn-on-haskell-decl-scan
+  :init     (add-hook 'haskell-mode-hook 'turn-on-haskell-decl-scan))
+
+(use-package hs-lint
+  :commands hs-lint
+  :init
+  (hook-fn 'haskell-mode-hook
+    (local-set-key (kbd "C-c l") 'hs-lint))
   :config
-  (progn
-    (setq org-catch-invisible-edits 'smart)
-    (define-key org-mode-map (kbd "M-p") 'org-metaup)
-    (define-key org-mode-map (kbd "M-n") 'org-metadown)))
+  (setq hs-lint-command (executable-find "hlint")))
 
-(use-package gist
-  :ensure t
-  :commands (gist-list
-             gist-region
-             gist-region-private
-             gist-buffergist-buffer-private
-             gist-region-or-buffer
-             gist-region-or-buffer-private))
-
-(use-package iedit
-  :ensure   t
-  :commands iedit-mode
-  :bind     ("C-<return>" . iedit-mode))
-
-(use-package info-lookmore
-  :commands info-lookmore-elisp-cl
-  :init     (eval-after-load "info-look" '(info-lookmore-elisp-cl)))
+;;; C Languages
 
 (use-package google-c-style
   :ensure t
@@ -2194,9 +2016,68 @@ Start an inferior ruby if necessary."
   (hook-fn 'c-mode-common-hook
     (local-set-key (kbd "C-c C-d") 'disaster)))
 
-(use-package proced
+(use-package auto-complete-clang-async
+  :commands ac-clang-launch-completion-process
+  :init
+  (hook-fn 'c-mode-common-hook
+    (setq ac-sources '(ac-source-clang-async
+                       ac-source-yasnippet
+                       ac-source-words-in-buffer))
+    (ac-clang-launch-completion-process))
+  :config
+  (progn
+    (cb:define-path cb:clang-complete-dir "lib/clang-complete-async/")
+    (setq ac-clang-complete-executable (concat cb:clang-complete-dir "clang-complete"))))
+
+(use-package c-eldoc
+  :ensure   t
+  :commands c-turn-on-eldoc-mode
+  :init     (add-hook 'c-mode-hook 'c-turn-on-eldoc-mode))
+
+;;; SuperCollider
+
+(use-package sclang
+  :commands (sclang-mode sclang-start)
+  :mode ("\\.sc$" . sclang-mode)
+  :init
+  (defun supercollider ()
+    "Start SuperCollider and open the SC Workspace."
+    (interactive)
+    (switch-to-buffer
+     (get-buffer-create "*sclang workspace*"))
+    (sclang-mode))
+
+  :config
+  (progn
+    (setq sclang-auto-scroll-post-buffer   t
+          sclang-eval-line-forward         nil
+          sclang-show-workspace-on-startup nil)
+    (add-hook 'sclang-mode-hook 'smartparens-mode)))
+
+(use-package sclang-extensions
+  :ensure   t
+  :commands sclang-extensions-mode
+  :init     (add-hook 'sclang-mode-hook 'sclang-extensions-mode))
+
+;;; Misc language modes
+
+(use-package make-mode
   :defer t
-  :bind ("C-x p" . proced))
+  :config
+  (progn
+    (add-to-list 'ac-modes 'makefile-mode)
+    (hook-fn 'makefile-mode-hook
+      (auto-complete-mode t)
+      (setq indent-tabs-mode t))))
+
+(use-package json-mode
+  :ensure t
+  :commands json-mode
+  :mode ("\\.json$" . json-mode)
+  :config
+  (progn
+    (add-to-list 'ac-modes 'json-mode)
+    (defalias 'format-json 'beautify-json)))
 
 (use-package asm-mode
   :commands asm-mode
@@ -2230,18 +2111,178 @@ Start an inferior ruby if necessary."
       (local-set-key (kbd "<tab>") 'cb:asm-tab)
       (local-set-key (kbd ":") 'cb:asm-electric-colon))))
 
-(use-package auto-complete-clang-async
-  :commands ac-clang-launch-completion-process
-  :init
-  (hook-fn 'c-mode-common-hook
-    (setq ac-sources '(ac-source-clang-async
-                       ac-source-yasnippet
-                       ac-source-words-in-buffer))
-    (ac-clang-launch-completion-process))
+(use-package markdown-mode
+  :ensure t
+  :mode (("\\.md$"          . markdown-mode)
+         ("\\.[mM]arkdown$" . markdown-mode))
+  :config
+  (hook-fn 'markdown-mode-hook
+    (buffer-face-set `(:family ,cb:serif-font :height 130))
+    (setq imenu-generic-expression
+          '(("title"  "^\\(.*\\)[\n]=+$" 1)
+            ("h2-"    "^\\(.*\\)[\n]-+$" 1)
+            ("h1"   "^# \\(.*\\)$" 1)
+            ("h2"   "^## \\(.*\\)$" 1)
+            ("h3"   "^### \\(.*\\)$" 1)
+            ("h4"   "^#### \\(.*\\)$" 1)
+            ("h5"   "^##### \\(.*\\)$" 1)
+            ("h6"   "^###### \\(.*\\)$" 1)
+            ("fn"   "^\\[\\^\\(.*\\)\\]" 1)))))
+
+(use-package fsharp-mode
+  :ensure   t
+  :commands fsharp-mode
+  :mode ("\\.fs[ixly]?$" . fsharp-mode)
   :config
   (progn
-    (cb:define-path cb:clang-complete-dir "lib/clang-complete-async/")
-    (setq ac-clang-complete-executable (concat cb:clang-complete-dir "clang-complete"))))
+    (add-to-list 'ac-modes 'fsharp-mode)
+    (unless (display-graphic-p)
+      (setq fsharp-ac-use-popup nil))
+    (add-hook 'fsharp-mode-hook 'electric-indent-mode)
+    (add-hook 'fsharp-mode-hook 'electric-layout-mode)))
+
+(use-package conf-mode
+  :mode ((".gitignore$" . conf-mode)
+         (".gitmodules$" . conf-mode)))
+
+;;; Git
+
+(use-package magit
+  :ensure t
+  :bind   ("M-g" . magit-status)
+  :config
+  (progn
+    (defadvice magit-status (around magit-fullscreen activate)
+      (window-configuration-to-register :magit-fullscreen)
+      ad-do-it
+      (delete-other-windows))
+
+    (define-key magit-status-mode-map (kbd "q")
+      (lambda ()
+        "Quit magit."
+        (interactive)
+        (kill-buffer)
+        (jump-to-register :magit-fullscreen)))
+
+    (hook-fn 'magit-log-edit-mode-hook
+      "Enter insertion mode."
+      (when (and (boundp 'evil-mode) evil-mode)
+        (evil-append-line nil)))
+
+    (add-hook 'magit-mode-hook 'magit-load-config-extensions)))
+
+(use-package git-gutter
+  :ensure t
+  :bind ("C-x g" . git-gutter:toggle)
+  :commands (git-gutter:toggle
+             git-gutter:clean
+             git-gutter))
+
+(use-package gist
+  :ensure t
+  :commands (gist-list
+             gist-region
+             gist-region-private
+             gist-buffergist-buffer-private
+             gist-region-or-buffer
+             gist-region-or-buffer-private))
+
+(use-package ediff
+  :commands (ediff ediff-merge-files-with-ancestor)
+  :init
+  (progn
+
+    (defun cb:apply-diff ()
+      (let ((file ediff-merge-store-file))
+        (set-buffer ediff-buffer-C)
+        (write-region (point-min) (point-max) file)
+        (message "Merge buffer saved in: %s" file)
+        (set-buffer-modified-p nil)
+        (sit-for 1)))
+
+    (defun cb:handle-git-merge (local remote base merged)
+      "Configure this emacs session for use as the git mergetool."
+      (add-hook 'ediff-quit-hook 'kill-emacs)
+      (add-hook 'ediff-quit-merge-hook 'cb:apply-diff)
+      (ediff-merge-files-with-ancestor local remote base nil merged)))
+
+  :config
+  (progn
+    (setq diff-switches "-u"
+          ediff-window-setup-function 'ediff-setup-windows-plain)
+    (add-hook 'ediff-startup-hook 'turn-off-evil-mode)))
+
+(use-package cb-ediff
+  :commands cb:handle-git-merge)
+
+;;; Productivity
+
+(use-package key-chord
+  :ensure t
+  :config
+  (progn
+    ;; Global keys.
+    (key-chord-define-global "x;" 'cb:kill-current-buffer)
+
+    ;; Paredit keys.
+    (progn-after-load 'paredit
+      (key-chord-define paredit-mode-map "qj" 'paredit-backward-slurp-sexp)
+      (key-chord-define paredit-mode-map "qk" 'cb:paredit-forward-slurp-sexp-neatly)
+      (key-chord-define paredit-mode-map "ql" 'paredit-splice-sexp-killing-backward)
+      (key-chord-define paredit-mode-map "qn" 'paredit-backward-barf-sexp)
+      (key-chord-define paredit-mode-map "qm" 'paredit-forward-barf-sexp))
+
+    (key-chord-mode +1)))
+
+(use-package scratch
+  :ensure   t
+  :commands scratch
+  :bind     ("C-c e s" . scratch) )
+
+(use-package uniquify
+  :config
+  (setq uniquify-buffer-name-style   'forward
+        uniquify-separator           "/"
+        uniquify-after-kill-buffer-p t
+        uniquify-ignore-buffers-re   "^\\*"))
+
+(use-package org
+  :ensure t
+  :defer t
+  :init
+  (macrolet ((maybe (f) `(lambda ()
+                           (unless (derived-mode-p 'org-mode)
+                             (funcall ,f)))))
+
+    ;; Use org commands in other modes.
+    (add-hook 'message-mode-hook 'turn-on-orgstruct++)
+    (add-hook 'message-mode-hook 'turn-on-orgtbl)
+    (add-hook 'text-mode-hook (maybe 'turn-on-orgstruct++))
+    (add-hook 'text-mode-hook (maybe 'turn-on-orgtbl)))
+  :config
+  (progn
+    (setq org-catch-invisible-edits 'smart)
+    (define-key org-mode-map (kbd "M-p") 'org-metaup)
+    (define-key org-mode-map (kbd "M-n") 'org-metadown)))
+
+(use-package iedit
+  :ensure   t
+  :commands iedit-mode
+  :bind     ("C-<return>" . iedit-mode))
+
+(use-package info-lookmore
+  :commands info-lookmore-elisp-cl
+  :init     (eval-after-load "info-look" '(info-lookmore-elisp-cl)))
+
+(use-package proced
+  :defer t
+  :bind ("C-x p" . proced))
+
+(use-package ack-and-a-half
+  :ensure t
+  :commands (ack-and-a-half-same
+             ack-and-a-half-find-file
+             ack-and-a-half-find-file-same))
 
 ;;; ----------------------------------------------------------------------------
 ;;; Misc commands
