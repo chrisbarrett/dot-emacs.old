@@ -210,7 +210,6 @@
 (put 'narrow-to-region 'disabled nil)
 
 ;;; Misc commands
-(bind-key "S-<tab>" 'tab-to-tab-stop)
 (bind-key "C-c e e" 'toggle-debug-on-error)
 (bind-key "s-`"     'other-window)
 
@@ -989,6 +988,7 @@
   :init
   (progn
     (evil-mode +1)
+    (evil-global-set-key 'insert (kbd "S-TAB") 'tab-to-tab-stop)
     (hook-fn 'comint-mode-hook 'evil-append-line))
 
   :config
@@ -1186,8 +1186,14 @@
 
 (use-package dired-aux
   :defer t
+  :init
+  (hook-fn 'dired-mode-hook
+    (evil-local-set-key 'normal (kbd "TAB") 'dired-hide-subdir)
+    (evil-local-set-key 'normal [backtab] 'dired-hide-all)
+    (evil-local-set-key 'normal [backspace] 'dired-kill-subdir))
   :config
-  (add-to-list 'dired-compress-file-suffixes '("\\.zip\\'" ".zip" "unzip")))
+  (add-to-list 'dired-compress-file-suffixes
+               '("\\.zip\\'" ".zip" "unzip")))
 
 (use-package dired-x
   :commands (dired-jump dired-jump-other-window)
