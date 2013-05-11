@@ -480,7 +480,11 @@
   '(inf-ruby-mode
     ruby-mode))
 
-(cb:define-mode-group org-minor-modes
+(cb:define-mode-group cb:rails-modes
+  `(,@cb:ruby-modes
+    erb-mode))
+
+(cb:define-mode-group cb:org-minor-modes
   '(orgtbl-mode
     orgstruct-mode
     orgstruct++-mode) )
@@ -1926,6 +1930,10 @@ If any return nil, flycheck will not be enabled.")
 
 ;;; Ruby
 
+(define-derived-mode erb-mode html-mode "ERB")
+
+(add-to-list 'auto-mode-alist `("\\.html\\.erb" . erb-mode))
+
 (use-package ruby-mode
   :ensure t
   :mode (("\\.rake\\'" . ruby-mode)
@@ -1957,7 +1965,7 @@ Start an inferior ruby if necessary."
         (run-ruby)
         (cb:append-buffer)))
 
-    (hook-fn 'cb:ruby-modes-hook
+    (hook-fn 'cb:rails-modes
       (local-set-key (kbd "C-c C-z") 'cb:switch-to-ruby)
       (subword-mode +1))))
 
@@ -1967,12 +1975,7 @@ Start an inferior ruby if necessary."
   :commands rinari-minor-mode
   :init
   (progn
-    (add-hook 'cb:ruby-modes-hook 'rinari-minor-mode)
-
-    (hook-fn 'sgml-mode-hook
-      "Enable rinari for rhtml files."
-      (when (s-matches? (rx (or ".html.erb" ".rhtml")) (buffer-file-name))
-        (rinari-minor-mode)))
+    (add-hook 'cb:rails-modes-hook 'rinari-minor-mode)
 
     (hook-fn 'rinari-minor-mode-hook
       ;; Rebind rinari keys.
@@ -2378,12 +2381,12 @@ Start an inferior ruby if necessary."
   :defer t
   :init
   (macrolet ((maybe (f) `(lambda ()
-                           (unless (derived-mode-p 'org-mode)
+                           (unless (derived-mode-p 'org-mode 'sgml-mode)
                              (funcall ,f)))))
 
-    (hook-fn 'org-minor-modes-hook
+    (hook-fn 'cb:org-minor-modes-hook
       "Diminish org minor modes."
-      (--each org-minor-modes
+      (--each cb:org-minor-modes
         (ignore-errors (diminish it))))
 
     ;; Use org commands in other modes.
