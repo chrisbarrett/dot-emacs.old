@@ -1387,7 +1387,7 @@
     (add-hook 'text-mode-hook 'flyspell-mode)
     (add-hook 'prog-mode-hook 'flyspell-prog-mode))
   :config
-  (define-key flyspell-mode-map (kbd "C-'") 'flyspell-auto-correct-word))
+  (bind-key* "C-'" 'flyspell-auto-correct-word))
 
 (use-package flyspell-lazy
   :ensure  t
