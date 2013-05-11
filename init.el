@@ -1957,7 +1957,7 @@ Start an inferior ruby if necessary."
         (run-ruby)
         (cb:append-buffer)))
 
-    (hook-fn 'cb:rails-modes
+    (hook-fn 'cb:ruby-modes-hook
       (local-set-key (kbd "C-c C-z") 'cb:switch-to-ruby)
       (subword-mode +1))))
 
