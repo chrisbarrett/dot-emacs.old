@@ -125,7 +125,11 @@
  indent-tabs-mode             nil
  fill-column                  80)
 (icomplete-mode +1)
-(add-hook 'text-mode-hook 'turn-on-auto-fill)
+
+(hook-fn 'text-mode-hook
+  (unless (derived-mode-p 'sgml-mode)
+    (turn-on-auto-fill)))
+
 (defalias 'yes-or-no-p 'y-or-n-p)
 
 ;;; Typefaces
@@ -1435,7 +1439,7 @@
   :init     (add-hook 'prog-mode-hook 'highlight-symbol-mode)
   :config   (setq highlight-symbol-idle-delay 0.5))
 
-;;; XML
+;;; Markup
 
 (use-package nxml-mode
   :commands nxml-mode
@@ -1474,9 +1478,27 @@
   :ensure   t
   :commands (tagedit-add-paredit-like-keybindings)
   :config
-  (hook-fn 'html-mode-hook
+  (hook-fn 'sgml-mode-hook
     (tagedit-add-paredit-like-keybindings)
     (setq sgml-xml-mode +1)))
+
+(use-package markdown-mode
+  :ensure t
+  :mode (("\\.md$"          . markdown-mode)
+         ("\\.[mM]arkdown$" . markdown-mode))
+  :config
+  (hook-fn 'markdown-mode-hook
+    (buffer-face-set `(:family ,cb:serif-font :height 130))
+    (setq imenu-generic-expression
+          '(("title"  "^\\(.*\\)[\n]=+$" 1)
+            ("h2-"    "^\\(.*\\)[\n]-+$" 1)
+            ("h1"   "^# \\(.*\\)$" 1)
+            ("h2"   "^## \\(.*\\)$" 1)
+            ("h3"   "^### \\(.*\\)$" 1)
+            ("h4"   "^#### \\(.*\\)$" 1)
+            ("h5"   "^##### \\(.*\\)$" 1)
+            ("h6"   "^###### \\(.*\\)$" 1)
+            ("fn"   "^\\[\\^\\(.*\\)\\]" 1)))))
 
 ;;; Lisps
 
@@ -2165,24 +2187,6 @@ Start an inferior ruby if necessary."
       (local-set-key (kbd "<tab>") 'cb:asm-tab)
       (local-set-key (kbd ":") 'cb:asm-electric-colon))))
 
-(use-package markdown-mode
-  :ensure t
-  :mode (("\\.md$"          . markdown-mode)
-         ("\\.[mM]arkdown$" . markdown-mode))
-  :config
-  (hook-fn 'markdown-mode-hook
-    (buffer-face-set `(:family ,cb:serif-font :height 130))
-    (setq imenu-generic-expression
-          '(("title"  "^\\(.*\\)[\n]=+$" 1)
-            ("h2-"    "^\\(.*\\)[\n]-+$" 1)
-            ("h1"   "^# \\(.*\\)$" 1)
-            ("h2"   "^## \\(.*\\)$" 1)
-            ("h3"   "^### \\(.*\\)$" 1)
-            ("h4"   "^#### \\(.*\\)$" 1)
-            ("h5"   "^##### \\(.*\\)$" 1)
-            ("h6"   "^###### \\(.*\\)$" 1)
-            ("fn"   "^\\[\\^\\(.*\\)\\]" 1)))))
-
 (use-package fsharp-mode
   :ensure   t
   :commands fsharp-mode
@@ -2300,6 +2304,7 @@ Start an inferior ruby if necessary."
 (use-package org
   :ensure t
   :defer t
+  :diminish (orgtbl-mode orgstruct-mode)
   :init
   (macrolet ((maybe (f) `(lambda ()
                            (unless (derived-mode-p 'org-mode)
