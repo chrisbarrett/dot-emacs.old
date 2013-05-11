@@ -1961,7 +1961,11 @@ Start an inferior ruby if necessary."
     (hook-fn 'cb:ruby-modes-hook
       (add-to-list 'ac-sources 'ac-source-yasnippet)
       (local-set-key (kbd "C-c C-z") 'cb:switch-to-ruby)
-      (subword-mode +1))))
+      (subword-mode +1)
+
+      ;; Disable rubocop checker if we're not in a project.
+      (unless (projectile-project-p)
+        (flycheck-select-checker 'ruby)))))
 
 (use-package rinari
   :ensure t
