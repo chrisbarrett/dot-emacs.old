@@ -2266,7 +2266,16 @@ Start an inferior ruby if necessary."
 (use-package iedit
   :ensure   t
   :commands iedit-mode
-  :bind     ("C-<return>" . iedit-mode))
+  :bind     ("C-<return>" . iedit-mode)
+  :init
+  (progn
+   (defun cb:rename-symbol-at-point ()
+     "Use iedit to rename the current symbol."
+     (interactive)
+     (iedit-mode 0)
+     (call-interactively 'iedit-replace-occurrences))
+
+   (bind-key* "M-r" 'cb:rename-symbol-at-point)))
 
 (use-package info-lookmore
   :commands info-lookmore-elisp-cl
