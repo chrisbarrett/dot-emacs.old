@@ -1192,7 +1192,9 @@
   :commands (yas-global-mode yas-minor-mode)
   :diminish yas-minor-mode
   :init
-  (add-hook 'prog-mode-hook 'yas-minor-mode)
+  (progn
+    (add-hook 'prog-mode-hook 'yas-minor-mode)
+    (add-hook 'sgml-mode-hook 'yas-minor-mode))
   :config
   (progn
     (setq yas/trigger-key (kbd "RET"))
@@ -1479,6 +1481,12 @@
         (nxml-mode)
         (local-set-key (kbd "M-q") 'cb:reformat-xml)))))
 
+(use-package sgml-mode
+  :defer t
+  :init
+  (hook-fn 'html-mode-hook
+    (setq sgml-xml-mode t)))
+
 (use-package tagedit
   :ensure   t
   :commands (tagedit-add-paredit-like-keybindings)
@@ -1486,7 +1494,7 @@
   (hook-fn 'sgml-mode-hook
     (tagedit-add-experimental-features)
     (tagedit-add-paredit-like-keybindings)
-    (setq sgml-xml-mode +1)))
+    (setq sgml-xml-mode t)))
 
 (use-package markdown-mode
   :ensure t
