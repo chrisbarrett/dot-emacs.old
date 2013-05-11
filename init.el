@@ -569,6 +569,7 @@
 
 (use-package projectile
   :ensure   t
+  :commands (projectile-project-p projectile-project-root)
   :diminish projectile-mode
   :config
   (progn
@@ -1073,10 +1074,10 @@
           evil-default-cursor t)
     (setq-default evil-shift-width 2)))
 
-(use-package evil-paredit
-  :ensure   t
-  :commands evil-paredit-mode
-  :init     (add-hook 'paredit-mode-hook 'evil-paredit-mode))
+;; (use-package evil-paredit
+;;   :ensure   t
+;;   :commands evil-paredit-mode
+;;   :init     (add-hook 'paredit-mode-hook 'evil-paredit-mode))
 
 (use-package surround
   :ensure t
@@ -1960,8 +1961,61 @@ Start an inferior ruby if necessary."
       (local-set-key (kbd "C-c C-z") 'cb:switch-to-ruby)
       (subword-mode +1))))
 
+(use-package rinari
+  :ensure t
+  :commands rinari-minor-mode
+  :init
+  (progn
+    (add-hook 'cb:ruby-modes-hook 'rinari-minor-mode)
+    (hook-fn 'sgml-mode-hook
+      "Enable rinari for Rails views."
+      (when (s-matches? (rx (or ".html.erb" ".rhtml")) (buffer-file-name))
+        (rinari-minor-mode))))
+  :config
+  (progn
+    (hook-fn 'rinari-minor-mode-hook
+      "Rebind rinari keys."
+      (define-prefix-command 'cb:rinari-map)
+      (local-set-key (kbd "C-c f") 'cb:rinari-map)
+      (define-key cb:rinari-map ";" 'rinari-find-by-context)
+      (define-key cb:rinari-map "C" 'rinari-find-cells)
+      (define-key cb:rinari-map "F" 'rinari-find-features)
+      (define-key cb:rinari-map "M" 'rinari-find-mailer)
+      (define-key cb:rinari-map "S" 'rinari-find-steps)
+      (define-key cb:rinari-map "Y" 'rinari-find-sass)
+      (define-key cb:rinari-map "a" 'rinari-find-application)
+      (define-key cb:rinari-map "c" 'rinari-find-controller)
+      (define-key cb:rinari-map "e" 'rinari-find-environment)
+      (define-key cb:rinari-map "f" 'rinari-find-file-in-project)
+      (define-key cb:rinari-map "h" 'rinari-find-helper)
+      (define-key cb:rinari-map "i" 'rinari-find-migration)
+      (define-key cb:rinari-map "j" 'rinari-find-javascript)
+      (define-key cb:rinari-map "l" 'rinari-find-lib)
+      (define-key cb:rinari-map "m" 'rinari-find-model)
+      (define-key cb:rinari-map "n" 'rinari-find-configuration)
+      (define-key cb:rinari-map "o" 'rinari-find-log)
+      (define-key cb:rinari-map "p" 'rinari-find-public)
+      (define-key cb:rinari-map "r" 'rinari-find-rspec)
+      (define-key cb:rinari-map "s" 'rinari-find-script)
+      (define-key cb:rinari-map "t" 'rinari-find-test)
+      (define-key cb:rinari-map "u" 'rinari-find-plugin)
+      (define-key cb:rinari-map "v" 'rinari-find-view)
+      (define-key cb:rinari-map "w" 'rinari-find-worker)
+      (define-key cb:rinari-map "x" 'rinari-find-fixture)
+      (define-key cb:rinari-map "y" 'rinari-find-stylesheet)
+      (define-key cb:rinari-map "z" 'rinari-find-rspec-fixture)
+      )
+   (setq
+    rinari-tags-file-name "TAGS"
+    nxhtml-global-minor-mode t
+    mumamo-chunk-coloring 'submode-colored
+    nxhtml-skip-welcome   t
+    rng-nxml-auto-validate-flag nil
+    nxml-degraded t)))
+
 (use-package rsense
   :ensure t
+  :defer  t
   :init
   (hook-fn 'cb:ruby-modes-hook
     (add-to-list 'ac-sources 'ac-source-rsense-method)
@@ -2045,6 +2099,7 @@ Start an inferior ruby if necessary."
       (local-set-key (kbd "C-c C-c") 'haskell-process-cabal-build))))
 
 (use-package cb-haskell
+  :defer t
   :init
   (hook-fn 'haskell-mode-hook
     (require 'cb-haskell)
@@ -2069,6 +2124,7 @@ Start an inferior ruby if necessary."
       (add-to-list 'ac-sources 'ac-source-ghc))))
 
 (use-package haskell-ac
+  :defer t
   :init
   (hook-fn 'cb:haskell-modes-hook
     (add-to-list 'ac-modes major-mode)
@@ -2081,6 +2137,7 @@ Start an inferior ruby if necessary."
 
 (use-package haskell-indentation
   :diminish haskell-indentation-mode
+  :defer    t
   :init     (add-hook 'haskell-mode-hook 'haskell-indentation-mode))
 
 (use-package haskell-doc
@@ -2317,13 +2374,6 @@ Start an inferior ruby if necessary."
   :ensure   t
   :commands scratch
   :bind     ("C-c e s" . scratch) )
-
-(use-package uniquify
-  :config
-  (setq uniquify-buffer-name-style   'forward
-        uniquify-separator           "/"
-        uniquify-after-kill-buffer-p t
-        uniquify-ignore-buffers-re   "^\\*"))
 
 (use-package org
   :ensure t
