@@ -1065,7 +1065,22 @@
 
 (use-package shell
   :commands shell
-  :bind ("M-t" . shell)
+  :bind ("M-t" . cb:shell-cycle)
+  :init
+  (defun cb:shell-cycle ()
+    "Toggle various shell window states."
+    (interactive)
+    (cond
+     ;; If shell is maximized, split the window.
+     ((and (derived-mode-p 'shell-mode)
+           (equal 1 (length (window-list))))
+      (bury-buffer)
+      (switch-to-buffer-other-window (get-buffer "*shell*")))
+     ;; If we're looking at the shell, maximize it.
+     ((derived-mode-p 'shell-mode)
+      (delete-other-windows))
+     ;; Otherwise show the shell.
+     (t (shell))))
   :config
   (progn
     (hook-fn 'shell-mode-hook
@@ -2267,7 +2282,9 @@ Start an inferior ruby if necessary."
 
 (use-package iedit
   :ensure   t
-  :commands iedit-mode
+  :commands (iedit-mode
+             iedit-replace-occurrences
+             iedit-done)
   :bind     ("C-<return>" . iedit-mode)
   :init
   (progn
