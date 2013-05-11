@@ -1062,6 +1062,9 @@
   :bind ("M-t" . shell)
   :config
   (progn
+    (hook-fn 'shell-mode-hook
+      (setq ac-sources '(ac-source-filename)))
+
     (hook-fn 'window-configuration-change-hook
       "Change process window size."
       (when (derived-mode-p 'comint-mode)
@@ -2116,9 +2119,10 @@
     (add-hook 'after-init-hook 'workgroups-mode))
   :config
   (progn
-    (ignore-errors (wg-load wg-default-session-file))
-    (set-face-foreground 'wg-divider-face "light slate grey")
-    (set-face-foreground 'wg-mode-line-face "light slate grey")))
+   (defadvice wg-mode-line-add-display (around wg-suppress-error activate)
+     "Ignore errors in modeline display function caused by custom modeline."
+     (ignore-errors ad-do-it))
+    (ignore-errors (wg-load wg-default-session-file))))
 
 (use-package org
   :ensure t
