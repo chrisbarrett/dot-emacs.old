@@ -1969,18 +1969,6 @@ Start an inferior ruby if necessary."
         (run-ruby)
         (cb:append-buffer)))
 
-    (defun cb:ruby-eval-dwim ()
-      "Perform a context-sensitive evaluation."
-      (interactive)
-      (unless (get-buffer "*ruby*")
-        (run-ruby))
-      (if (region-active-p)
-          (ruby-send-region (region-beginning) (region-end))
-        (ruby-send-region (point-min) (point-max))))
-
-    (hook-fn 'ruby-mode-hook
-      (local-set-key (kbd "C-c C-c") 'cb:ruby-eval-dwim))
-
     (hook-fn 'cb:ruby-modes-hook
       (add-to-list 'ac-sources 'ac-source-yasnippet)
       (local-set-key (kbd "C-c C-z") 'cb:switch-to-ruby)
@@ -2058,10 +2046,39 @@ Start an inferior ruby if necessary."
   :ensure   t
   :commands inf-ruby-mode
   :init
-  (hook-fn 'inf-ruby-mode
-    ;; Stop IRB from echoing input.
-    (setq comint-process-echoes t)
-    (inf-ruby-setup-keybindings)))
+  (progn
+
+    (defun cb:ruby-eval-dwim ()
+      "Perform a context-sensitive evaluation."
+      (interactive)
+      ;; Start ruby if neccessary.
+      (unless (get-buffer "*ruby*")
+        (run-ruby)
+        (cb:switch-to-ruby)
+        ;; Revert window layout.
+        (when (= 2 (length (window-list)))
+          (delete-other-windows)))
+      ;; Evaluate text.
+      (if (region-active-p)
+          (ruby-send-region (region-beginning) (region-end))
+        (ruby-send-region (point-min) (point-max))))
+
+    (hook-fn 'ruby-mode-hook
+      (local-set-key (kbd "C-c C-c") 'cb:ruby-eval-dwim))
+
+    (defun cb:filter-irb-output (str &rest _)
+      "Print IRB output to messages if we're in a ruby buffer."
+      (let ((filt (--remove (s-contains? "--inf-ruby" it) (s-lines str))))
+        (--each filt
+          (unless (or (s-blank? it) (s-matches? inf-ruby-prompt-pattern it))
+            (message (s-trim it))))
+        (apply 'concat filt)))
+
+    (hook-fn 'inf-ruby-mode-hook
+      (add-hook 'comint-preoutput-filter-functions 'cb:filter-irb-output)
+      ;; Stop IRB from echoing input.
+      (setq comint-process-echoes t)
+      (inf-ruby-setup-keybindings))))
 
 (use-package ruby-tools
   :ensure   t
