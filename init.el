@@ -1315,17 +1315,24 @@
   :ensure t
   :commands (flycheck-may-enable-mode flycheck-mode)
   :init
-  (let ((maybe-enable-flycheck
-         (lambda ()
-           "Do not enable flycheck for /src and /elpa."
-           (when (and (flycheck-may-enable-mode))
-             (unless (or (s-contains? cb:elpa-dir (or (buffer-file-name) ""))
-                         (s-contains? cb:src-dir  (or (buffer-file-name) "")))
-               (flycheck-mode +1))))))
+  (progn
+    (defvar cb:flycheck-enable-predicates
+      '((lambda ()
+          "Do not enable flycheck for /src and /elpa."
+          (not (or (s-contains? cb:elpa-dir (or (buffer-file-name) ""))
+                   (s-contains? cb:src-dir  (or (buffer-file-name) ""))))))
+      "A list of nullary predicates run before starting flycheck.
+If any return nil, flycheck will not be enabled.")
 
-    (setq flycheck-highlighting-mode 'lines)
-    (add-hook 'text-mode-hook maybe-enable-flycheck)
-    (add-hook 'prog-mode-hook maybe-enable-flycheck)))
+    (let ((maybe-enable-flycheck
+           (lambda ()
+             (when (and (flycheck-may-enable-mode)
+                        (--all? (funcall it) cb:flycheck-enable-predicates))
+               (flycheck-mode +1)))))
+
+      (setq flycheck-highlighting-mode 'lines)
+      (add-hook 'text-mode-hook maybe-enable-flycheck)
+      (add-hook 'prog-mode-hook maybe-enable-flycheck))))
 
 ;;; Tags
 
@@ -1931,6 +1938,9 @@
          ("Thorfile\\'" . ruby-mode)
          ("Vagrantfile\\'" . ruby-mode)
          ("\\.jbuilder\\'" . ruby-mode))
+  :init
+  (add-to-list 'cb:flycheck-enable-predicates
+               (lambda () (not (s-ends-with? ".erb" (buffer-file-name)))))
   :config
   (progn
     (add-to-list 'ac-modes 'ruby-mode)
