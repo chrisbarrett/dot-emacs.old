@@ -32,10 +32,12 @@
   "Execute forms when a given hook is called.
 The arguments passed to the hook function are bound to the symbol 'args'.
 
-HOOK is the name of the hook.
-DOCSTRING optionally documents the forms.  Otherwise,
-it is evaluated as part of BODY.
-BODY is a list of forms to evaluate when the hook is run."
+* HOOK is the name of the hook.
+
+* DOCSTRING optionally documents the forms.  Otherwise, it is
+  evaluated as part of BODY.
+
+* BODY is a list of forms to evaluate when the hook is run."
   (declare (indent 1) (doc-string 2))
   `(add-hook ,hook (lambda (&rest args)
                      ,@(cons docstring body))))
@@ -59,6 +61,8 @@ BODY is a list of forms to evaluate when the hook is run."
     (-filter 'directory-p)))
 
 (defun cb:prepare-load-dir (dir add-path)
+  "Create directory DIR if it does not exist.
+If ADD-PATH is non-nil, add DIR and its children to the load-path."
   (let ((dir (concat user-emacs-directory dir)))
     (unless (file-exists-p dir) (make-directory dir))
     (when add-path
@@ -68,23 +72,8 @@ BODY is a list of forms to evaluate when the hook is run."
 
 (defmacro cb:define-path (sym path &optional add-path)
   "Define a subfolder of the `user-emacs-directory'.
-This directory tree will be added to the load path if ADD-PATH is non-nil"
+This directory tree will be added to the load path if ADD-PATH is non-nil."
   `(defconst ,sym (cb:prepare-load-dir ,path ,add-path)))
-
-;;; ----------------------------------------------------------------------------
-
-(defun cb:ensure-package (pkg)
-  (unless (package-installed-p pkg)
-    (package-install pkg)))
-
-(defmacro cb:use-package (name &rest args)
-  (cl-assert (symbolp name))
-  (let ((args* (cl-gensym)))
-    `(eval-and-compile
-       (let ((,args* ,args))
-         (-when-let (pkg (plist-get ,args* ))
-           (cb:ensure-package ,name))
-         (use-package ,name ,@args)))))
 
 (provide 'cb-macros)
 
