@@ -1181,8 +1181,12 @@
 
 (use-package dired
   :defer   t
-  :config (when (equal system-type 'darwin)
-            (setq dired-use-ls-dired nil)))
+  :config
+  (when (equal system-type 'darwin)
+    ;; Use GNU version of ls if available.
+    (-when-let (gls (executable-find "gls"))
+      (setq ls-lisp-use-insert-directory-program t
+            insert-directory-program gls))))
 
 (use-package dired-aux
   :defer t
