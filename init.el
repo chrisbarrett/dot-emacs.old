@@ -1968,25 +1968,14 @@ Start an inferior ruby if necessary."
   :init
   (progn
     (add-hook 'cb:ruby-modes-hook 'rinari-minor-mode)
-    (autoload 'eruby-nxhtml-mumamo
-      (concat cb:lib-dir "nxhtml/nxhtml/nxhtml-mumamo.el"))
-    ;; Suppress annoying warnings.
-    (progn-after-load "mumamo"
-      (setq
-       mumamo-background-colors nil
 
-       mumamo-per-buffer-local-vars
-       (delq 'buffer-file-name mumamo-per-buffer-local-vars))
-      )
-    ;; Use mumamo for rhtml and erb files.
-    (let ((load-nxhtml (lambda ()
-                         (load-file (concat cb:lib-dir "nxhtml/autostart.el"))
-                         (eruby-nxhtml-mumamo))))
-      (add-to-list 'auto-mode-alist `(,(rx (or ".html.erb" ".rhtml")) . ,load-nxhtml))))
-  :config
-  (progn
+    (hook-fn 'sgml-mode-hook
+      "Enable rinari for rhtml files."
+      (when (s-matches? (rx (or ".html.erb" ".rhtml")) (buffer-file-name))
+        (rinari-minor-mode)))
+
     (hook-fn 'rinari-minor-mode-hook
-      "Rebind rinari keys."
+      ;; Rebind rinari keys.
       (define-prefix-command 'cb:rinari-map)
       (local-set-key (kbd "C-c f") 'cb:rinari-map)
       (define-key cb:rinari-map ";" 'rinari-find-by-context)
@@ -2016,13 +2005,11 @@ Start an inferior ruby if necessary."
       (define-key cb:rinari-map "x" 'rinari-find-fixture)
       (define-key cb:rinari-map "y" 'rinari-find-stylesheet)
       (define-key cb:rinari-map "z" 'rinari-find-rspec-fixture)
-      )
-    (setq
-     rinari-tags-file-name    "TAGS"
-     nxhtml-global-minor-mode t
-     nxhtml-skip-welcome      t
-     rng-nxml-auto-validate-flag nil
-     nxml-degraded            t)))
+      ;; Configure mode.
+      (setq
+       rinari-tags-file-name    "TAGS"
+       rng-nxml-auto-validate-flag nil
+       nxml-degraded            t))))
 
 (use-package rsense
   :ensure t

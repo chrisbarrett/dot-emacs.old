@@ -14,14 +14,11 @@
         path = lib/info-lookmore
         url = git://github.com/emacsmirror/info-lookmore.git
 [submodule "lib/clang-complete-async"]
-	path = lib/clang-complete-async
-	url = git://github.com/Golevka/emacs-clang-complete-async.git
+    path = lib/clang-complete-async
+    url = git://github.com/Golevka/emacs-clang-complete-async.git
 [submodule "lib/bbdb-vcard"]
-	path = lib/bbdb-vcard
-	url = git://github.com/tohojo/bbdb-vcard.git
+    path = lib/bbdb-vcard
+    url = git://github.com/tohojo/bbdb-vcard.git
 [submodule "lib/slime"]
-	path = lib/slime
-	url = git://github.com/nablaone/slime.git
-[submodule "lib/nxhtml"]
-	path = lib/nxhtml
-	url = git://github.com/emacsmirror/nxhtml.git
+    path = lib/slime
+    url = git://github.com/nablaone/slime.git
