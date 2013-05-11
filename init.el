@@ -909,13 +909,15 @@
     (defalias 'bbdb-record-set-Notes 'ignore)))
 
 (use-package google-this
-  :ensure t
+  :ensure   t
+  :commands google-this
   :diminish google-this-mode
-  :bind ("C-c / /" . google-this)
-  :config (google-this-mode +1))
+  :init     (bind-key* "M-s" 'google-this)
+  :config   (google-this-mode +1))
 
 (use-package w3m
   :ensure   t
+  :bind ("M-e" . w3m-browse-url)
   :commands (w3m-find-file w3m-browse-url)
   :init
   (progn
