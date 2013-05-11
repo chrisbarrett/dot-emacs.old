@@ -187,13 +187,23 @@
 
 ;;; Narrowing
 
+(defun cb:narrow-dwim ()
+  "Perform a context-sensitive narrowing command."
+  (interactive)
+  (cond ((buffer-narrowed-p)
+         (widen))
+
+        ((region-active-p)
+         (narrow-to-region (region-beginning)
+                           (region-end)))
+        (t
+         (narrow-to-defun))))
+
+(bind-key "M-n" 'cb:narrow-dwim)
 (put 'narrow-to-defun  'disabled nil)
 (put 'narrow-to-page   'disabled nil)
 (put 'narrow-to-region 'disabled nil)
-(bind-key "M-n d" 'narrow-to-defun)
-(bind-key "M-n w" 'widen)
-(bind-key "M-n p" 'narrow-to-page)
-(bind-key "M-n n" 'narrow-to-region)
+
 
 ;;; Misc commands
 (bind-key "S-<tab>" 'tab-to-tab-stop)
