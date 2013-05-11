@@ -414,51 +414,66 @@
    (global-mode-string global-mode-string)))
 
 ;;; ============================================================================
-;;; Combined hooks.
-;;;
-;;; These hooks are used to configure similar modes that do not have derivation
-;;; relationships. e.g. language families.
+;;; Mode groups
 
-(defmacro define-combined-hook (name modes)
-  "Define a hook named NAME to be run after each of the setup hooks for MODES."
-  `(progn
-     ;; Define hook variable.
-     (defvar ,name)
-     ;; Add hook for each mode.
-     (--each ,modes
-       (hook-fn (intern (concat (symbol-name it) "-hook"))
-         (run-hooks ',name)))
-     ',name))
+(defmacro cb:define-mode-group (name modes)
+  "Create an ad-hoc relationship between language modes.
+* Creates a special var with NAME to contain the grouping.
+* Declares a hook NAME-hook that runs after any of MODES are initialized."
+  (declare (indent 1))
+  (let ((hook (intern (format "%s-hook" name))))
+    `(progn
+       ;; Define modes variable.
+       (defconst ,name ,modes "Auto-generated variable for language grouping.")
+       ;; Define hook variable.
+       (defvar ,hook nil "Auto-generated hook for language grouping.")
+       ;; Add combined hook to each mode's hook.
+       (--each ,modes
+         (hook-fn (intern (concat (symbol-name it) "-hook"))
+           (run-hooks ',hook)))
+       ',name)))
 
-;;; Lisp hooks
-
-(defconst cb:scheme-modes
+(cb:define-mode-group cb:scheme-modes
   '(scheme-mode
     inferior-scheme-mode
     geiser-repl-mode
     geiser-mode))
 
-(defconst cb:lisp-modes
-  `(,@cb:scheme-modes
-    emacs-lisp-mode
-    lisp-mode
-    common-lisp-mode
-    repl-mode
-    clojure-mode
-    clojurescript-mode
+(cb:define-mode-group cb:clojure-modes
+  '(clojure-mode
+    clojurescript-mode))
+
+(cb:define-mode-group cb:elisp-modes
+  '(emacs-lisp-mode
     ielm-mode))
 
-(define-combined-hook cb:lisp-shared-hook   cb:lisp-modes)
-(define-combined-hook cb:scheme-shared-hook cb:scheme-modes)
+(cb:define-mode-group cb:slime-modes
+  '(slime-mode
+    slime-repl-mode))
 
-;;; Haskell hooks.
+(cb:define-mode-group cb:lisp-modes
+  `(,@cb:scheme-modes
+    ,@cb:clojure-modes
+    ,@cb:elisp-modes
+    ,@cb:slime-modes
+    common-lisp-mode
+    lisp-mode
+    repl-mode))
 
-(define-combined-hook cb:haskell-shared-hook
+(cb:define-mode-group cb:haskell-modes
   '(haskell-mode
     inferior-haskell-mode
     haskell-interactive-mode
     haskell-c-mode
     haskell-cabal-mode))
+
+(cb:define-mode-group cb:python-modes
+  '(python-mode
+    inferior-python-mode))
+
+(cb:define-mode-group cb:ruby-modes
+  '(inf-ruby-mode
+    ruby-mode))
 
 ;;; ----------------------------------------------------------------------------
 
@@ -477,7 +492,6 @@
 (hook-fn 'Buffer-menu-mode-hook
   "Buffer menu only shows files on disk."
   (Buffer-menu-toggle-files-only +1))
-
 
 ;;; Shebang insertion
 
@@ -1291,19 +1305,19 @@
           (insert-string "=")
         (smart-insert-operator "=")))
 
-    (hook-fn 'python-mode-hook
+    (hook-fn 'cb:python-modes-hook
       (smart-insert-operator-hook)
       (local-set-key (kbd "=") 'cb:smart-equals-dwim)
       (local-unset-key (kbd "."))
       (local-unset-key (kbd ":")))
 
-    (hook-fn 'ruby-mode-hook
+    (hook-fn 'cb:ruby-modes-hook
       (smart-insert-operator-hook)
       (local-set-key (kbd "=") 'cb:smart-equals-dwim)
       (local-unset-key (kbd "."))
       (local-unset-key (kbd ":")))
 
-    (hook-fn 'cb:haskell-shared-hook
+    (hook-fn 'cb:haskell-modes-hook
       (smart-insert-operator-hook)
       (local-unset-key (kbd ":"))
       (local-unset-key (kbd ".")))
@@ -1312,11 +1326,6 @@
       (smart-insert-operator-hook)
       (local-unset-key (kbd "|"))
       (local-unset-key (kbd ".")))
-
-    (hook-fn 'inferior-python-mode-hook
-      (smart-insert-operator-hook)
-      (local-unset-key (kbd "."))
-      (local-unset-key (kbd ":")))
 
     (hook-fn 'asm-mode-hook
       (smart-insert-operator-hook)
@@ -1337,12 +1346,12 @@
   :config
   (progn
     (setq lambda-symbol (string (make-char 'greek-iso8859-7 107)))
-    (add-hook 'cb:scheme-shared-hook   'lambda-mode)
+    (add-hook 'cb:scheme-modes-hook    'lambda-mode)
     (add-hook 'inferior-lisp-mode-hook 'lambda-mode)
     (add-hook 'lisp-mode-hook          'lambda-mode)
-    (add-hook 'emacs-lisp-mode-hook    'lambda-mode)
-    (add-hook 'python-mode-hook        'lambda-mode)
-    (add-hook 'slime-repl-mode-hook    'lambda-mode)))
+    (add-hook 'cb:elisp-modes-hook     'lambda-mode)
+    (add-hook 'cb:python-modes-hook    'lambda-mode)
+    (add-hook 'cb:slime-modes-hook     'lambda-mode)))
 
 (use-package paren
   :config (show-paren-mode +1))
@@ -1409,16 +1418,14 @@
 
 (use-package eval-sexp-fu
   :commands eval-sexp-fu-flash-mode
-  :init     (add-hook 'cb:lisp-shared-hook 'eval-sexp-fu-flash-mode)
+  :init     (add-hook 'cb:lisp-modes-hook 'eval-sexp-fu-flash-mode)
   :config   (setq eval-sexp-fu-flash-duration 0.2))
 
 (use-package eldoc
   :commands eldoc-mode
   :diminish eldoc-mode
   :init
-  (progn
-    (add-hook 'cb:lisp-shared-hook 'turn-on-eldoc-mode)
-    (add-hook 'ielm-mode-hook 'turn-on-eldoc-mode)))
+  (add-hook 'cb:lisp-modes-hook 'turn-on-eldoc-mode))
 
 (use-package paredit
   :ensure   t
@@ -1440,7 +1447,7 @@
   :config
   (progn
     (use-package cb-paredit)
-    (add-hook 'cb:lisp-shared-hook 'enable-paredit-mode)
+    (add-hook 'cb:lisp-modes-hook 'enable-paredit-mode)
     (add-hook 'inferior-lisp-mode-hook 'paredit-mode)
     (add-hook 'repl-mode-hook 'paredit-mode)))
 
@@ -1463,15 +1470,11 @@
     (slime-setup '(slime-fancy))))
 
 (use-package ac-slime
-  :ensure t
-  :defer  t
+  :ensure   t
+  :defer    t
   :commands (set-up-slime-ac)
-  :init
-  (progn
-    (add-hook 'slime-mode-hook 'set-up-slime-ac)
-    (add-hook 'slime-repl-mode-hook 'set-up-slime-ac))
-  :config
-  (add-to-list 'ac-modes 'slime-repl-mode))
+  :init     (add-hook 'slime-modes-hook 'set-up-slime-ac)
+  :config   (add-to-list 'ac-modes 'slime-repl-mode))
 
 ;;; Elisp
 
@@ -1580,7 +1583,7 @@
   :ensure   t
   :commands turn-on-redshank-mode
   :diminish redshank-mode
-  :init     (add-hook 'cb:lisp-shared-hook 'turn-on-redshank-mode))
+  :init     (add-hook 'cb:lisp-modes-hook 'turn-on-redshank-mode))
 
 (use-package macrostep
   :ensure t
@@ -1593,15 +1596,14 @@
   :commands elisp-slime-nav-mode
   :defer    t
   :init
-  (--each '(emacs-lisp-mode-hook ielm-mode-hook)
-    (hook-fn it
-      (elisp-slime-nav-mode +1)
-      (local-set-key (kbd "M-.") 'elisp-slime-nav-find-elisp-thing-at-point)
+  (hook-fn 'cb:elisp-modes-hook
+    (elisp-slime-nav-mode +1)
+    (local-set-key (kbd "M-.") 'elisp-slime-nav-find-elisp-thing-at-point)
 
-      ;; Make M-. work in normal state.
-      (when (featurep 'evil)
-        (define-key evil-normal-state-map (kbd "M-.")
-          'elisp-slime-nav-find-elisp-thing-at-point)))))
+    ;; Make M-. work in normal state.
+    (when (featurep 'evil)
+      (define-key evil-normal-state-map (kbd "M-.")
+        'elisp-slime-nav-find-elisp-thing-at-point))))
 
 (use-package litable
   :ensure   t
@@ -1814,11 +1816,8 @@
 (use-package jedi
   :ensure   t
   :commands jedi:setup
-  :init
-  (progn
-    (setq jedi:setup-keys t)
-    (add-hook 'inferior-python-mode-hook 'jedi:setup)
-    (add-hook 'python-mode-hook 'jedi:setup)))
+  :init     (add-hook 'cb:python-modes-hook 'jedi:setup)
+  :config   (setq jedi:setup-keys t))
 
 ;;; Ruby
 
@@ -1839,7 +1838,6 @@
   (progn
     (add-to-list 'ac-modes 'ruby-mode)
     (add-to-list 'completion-ignored-extensions ".rbc")
-    (define-combined-hook cb:ruby-shared-hook '(inf-ruby-mode ruby-mode))
 
     (defun cb:switch-to-ruby ()
       "Toggle between irb and the last ruby buffer.
@@ -1854,14 +1852,14 @@ Start an inferior ruby if necessary."
           (goto-char (point-max))
           (evil-append-line 1))))
 
-    (hook-fn 'cb:ruby-shared-hook
+    (hook-fn 'cb:ruby-modes-hook
       (local-set-key (kbd "C-c C-z") 'cb:switch-to-ruby)
       (subword-mode +1))))
 
 (use-package rsense
   :ensure t
   :init
-  (hook-fn 'cb:ruby-shared-hook
+  (hook-fn 'cb:ruby-modes-hook
     (add-to-list 'ac-sources 'ac-source-rsense-method)
     (add-to-list 'ac-sources 'ac-source-rsense-constant))
   :config
@@ -1873,7 +1871,7 @@ Start an inferior ruby if necessary."
   :ensure t
   :commands yari
   :init
-  (hook-fn 'cb:ruby-shared-hook
+  (hook-fn 'cb:ruby-modes-hook
     (local-set-key (kbd "C-c C-h") 'yari)))
 
 (use-package inf-ruby
@@ -1923,7 +1921,7 @@ Start an inferior ruby if necessary."
 
     (add-to-list 'completion-ignored-extensions ".hi")
 
-    (hook-fn 'cb:haskell-shared-hook
+    (hook-fn 'cb:haskell-modes-hook
       (subword-mode +1)
       (local-set-key (kbd "C-c h") 'hoogle))
 
@@ -1970,7 +1968,7 @@ Start an inferior ruby if necessary."
 
 (use-package haskell-ac
   :init
-  (hook-fn 'cb:haskell-shared-hook
+  (hook-fn 'cb:haskell-modes-hook
     (add-to-list 'ac-modes major-mode)
     (add-to-list 'ac-sources 'ac-source-words-in-same-mode-buffers)
     (add-to-list 'ac-sources 'ac-source-haskell)))
@@ -1986,7 +1984,7 @@ Start an inferior ruby if necessary."
 (use-package haskell-doc
   :diminish haskell-doc-mode
   :commands haskell-doc-mode
-  :init     (add-hook 'cb:haskell-shared-hook 'haskell-doc-mode))
+  :init     (add-hook 'cb:haskell-modes-hook 'haskell-doc-mode))
 
 (use-package haskell-decl-scan
   :commands turn-on-haskell-decl-scan
