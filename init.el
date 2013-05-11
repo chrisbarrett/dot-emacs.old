@@ -252,132 +252,146 @@
   "Non-nil if FILE is up-to-date."
   (ignore-errors (equal 'up-to-date (vc-state file))))
 
-(when (display-graphic-p)
-  (setq-default
-   mode-line-format
-   '(
-     ;; Position, including warning for 80 columns
-     (:propertize " %4l:" face mode-line-position-face)
-     (:eval (propertize "%3c" 'face
-                        (if (>= (current-column) 80)
-                            'mode-line-80col-face
-                          'mode-line-position-face)))
-     ;; emacsclient [default -- keep?]
-     mode-line-client
-     " "
-     ;; read-only or modified status
-     (:eval
-      (cond (buffer-read-only
-             (propertize " RO " 'face 'mode-line-read-only-face))
-            ((or (buffer-modified-p)
-                 (not (cb:vc-file-uptodate?)))
-             (propertize (format " %s%s "
-                                 (cb:vc-state->letter)
-                                 (if (buffer-modified-p) "*" " "))
-                         'face 'mode-line-modified-face))
-            (t "    ")))
-     " "
-     ;; directory and buffer/file name
-     (:propertize (:eval (if (buffer-file-name)
-                             (cb:shorten-directory default-directory 30)
-                           ""))
-                  face mode-line-directory-face)
-     (:propertize "%b"
-                  face mode-line-filename-face)
-     ;; narrow [default -- keep?]
-     " %n "
+(setq-default
+ mode-line-format
+ '(
+   ;; Position, including warning for 80 columns
+   (:propertize " %4l:" face mode-line-position-face)
+   (:eval (propertize "%3c" 'face
+                      (if (>= (current-column) 80)
+                          'mode-line-80col-face
+                        'mode-line-position-face)))
+   ;; emacsclient [default -- keep?]
+   mode-line-client
+   " "
+   ;; read-only or modified status
+   (:eval
+    (cond (buffer-read-only
+           (propertize " RO " 'face 'mode-line-read-only-face))
+          ((or (buffer-modified-p)
+               (not (cb:vc-file-uptodate?)))
+           (propertize (format " %s%s "
+                               (cb:vc-state->letter)
+                               (if (buffer-modified-p) "*" " "))
+                       'face 'mode-line-modified-face))
+          (t "    ")))
+   " "
+   ;; directory and buffer/file name
+   (:propertize (:eval (if (buffer-file-name)
+                           (cb:shorten-directory default-directory 30)
+                         ""))
+                face mode-line-directory-face)
+   (:propertize "%b"
+                face mode-line-filename-face)
+   ;; narrow [default -- keep?]
+   " %n "
 
-     ;; mode indicators: recursive edit, major mode, minor modes, process, global
+   ;; mode indicators: recursive edit, major mode, minor modes, process, global
 
-     " %["
-     (:propertize mode-name
-                  face mode-line-mode-face)
-     "%] "
+   " %["
+   (:propertize mode-name
+                face mode-line-mode-face)
+   "%] "
 
-     ;; Show ert test status.
-     (:eval (when (and (boundp 'ert-modeline-mode) ert-modeline-mode)
-              (set-face-bold 'ertml-failing-face t)
-              (let ((s (s-trim ertml--status-text)))
-                (if (s-matches? (rx digit) s)
-                    (propertize s 'face 'ertml-failing-face)
-                  (propertize s 'face 'bold)))))
+   ;; Show ert test status.
+   (:eval (when (and (boundp 'ert-modeline-mode) ert-modeline-mode)
+            (set-face-bold 'ertml-failing-face t)
+            (let ((s (s-trim ertml--status-text)))
+              (if (s-matches? (rx digit) s)
+                  (propertize s 'face 'ertml-failing-face)
+                (propertize s 'face 'bold)))))
 
-     ;; Show minor modes.
-     (:eval (propertize (format-mode-line minor-mode-alist)
-                        'face 'mode-line-minor-mode-face))
-     (:propertize mode-line-process
-                  face mode-line-process-face)
-     (global-mode-string global-mode-string)))
+   ;; Show minor modes.
+   (:eval (propertize (format-mode-line minor-mode-alist)
+                      'face 'mode-line-minor-mode-face))
+   (:propertize mode-line-process
+                face mode-line-process-face)
+   (global-mode-string global-mode-string)))
 
-  (defun cb:shorten-directory (dir max-length)
-    "Show up to MAX-LENGTH characters of a directory name DIR."
-    (let ((path (reverse (split-string (abbreviate-file-name dir) "/")))
-          (output ""))
-      (when (and path (equal "" (car path)))
-        (setq path (cdr path)))
-      (while (and path (< (length output) (- max-length 4)))
-        (setq output (concat (car path) "/" output))
-        (setq path (cdr path)))
-      (when path
-        (setq output (concat "…/" output)))
-      output)))
+(defun cb:shorten-directory (dir max-length)
+  "Show up to MAX-LENGTH characters of a directory name DIR."
+  (let ((path (reverse (split-string (abbreviate-file-name dir) "/")))
+        (output ""))
+    (when (and path (equal "" (car path)))
+      (setq path (cdr path)))
+    (while (and path (< (length output) (- max-length 4)))
+      (setq output (concat (car path) "/" output))
+      (setq path (cdr path)))
+    (when path
+      (setq output (concat "…/" output)))
+    output))
 
 ;; Extra mode line faces
 
 (defface mode-line-read-only-face
-  '((t (:inherit 'mode-line-face
-        :foreground "#4271ae"
-        :box '(:line-width 2 :color "#4271ae"))))
+  '((((type graphic))
+     (:foreground "#4271ae"
+      :box '(:line-width 2 :color "#4271ae")))
+    (t (:inherit 'mode-line-face)))
   "Face for readonly indicator."
   :group 'modeline)
 
 (defface mode-line-modified-face
-  '((t (:inherit 'mode-line-face
-        :foreground "#c82829")))
+  '((((type graphic))
+     (:foreground "#c82829"))
+    (t
+     (:inherit 'mode-line-face)))
   "Face for modified indicator."
   :group 'modeline)
 
 (defface mode-line-directory-face
-  '((t (:inherit 'mode-line-face
-        :foreground "gray60")))
+  '((((type graphic))
+     (:foreground "gray60"))
+    (t
+     (:inherit 'mode-line-face)))
   "Face for the directory component of the current filename."
   :group 'modeline)
 
 (defface mode-line-filename-face
-  '((t (:inherit 'mode-line-face
-        :foreground "#eab700"
-        :weight bold)))
+  '((((type graphic))
+     (:foreground "#eab700"))
+    (t
+     (:inherit 'mode-line-face :weight bold)))
   "Face for the name component of the current filename."
   :group 'modeline)
 
 (defface mode-line-position-face
-  `((t (:inherit 'mode-line-face
-        :family ,cb:monospace-font :height 100)))
+  `((((type graphic))
+     (:family ,cb:monospace-font :height 100))
+    (t
+     (:inherit 'mode-line-face)))
   "Face for the position indicators."
   :group 'modeline)
 
 (defface mode-line-mode-face
-  '((t (:inherit 'mode-line-face
-        :foreground "gray70")))
+  '((((type graphic))
+     (:foreground "gray70"))
+    (t
+     (:inherit 'mode-line-face)))
   "Face for the current major mode indicator."
   :group 'modeline)
 
 (defface mode-line-minor-mode-face
-  '((t (:inherit 'mode-line-mode-face
-        :foreground "gray40"
-        :height 110)))
+  '((((type graphic))
+     (:foreground "gray40"
+      :height 110))
+    (t (:inherit 'mode-line-mode-face)))
   "Face for the current minor mode indicators."
   :group 'modeline)
 
 (defface mode-line-process-face
-  '((t (:inherit 'mode-line-face
-        :foreground "#718c00")))
+  '((((type graphic))
+     (:foreground "#718c00"))
+    (t
+     (:inherit 'mode-line-face)))
   "Face for the current process."
   :group 'modeline)
 
 (defface mode-line-80col-face
-  '((t (:inherit 'mode-line-position-face
-        :foreground "#eab700")))
+  '((((type graphic))
+     (:foreground "#eab700"))
+    (t
+     (:inherit 'mode-line-position-face)))
   "Face for the warning when point is past column 80."
   :group 'modeline)
 
