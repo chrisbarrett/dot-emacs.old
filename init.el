@@ -1284,7 +1284,7 @@
   :commands (smart-insert-operator smart-insert-operator-hook)
   :init
   (progn
-    (defun cb:python-smart-equals ()
+    (defun cb:smart-equals-dwim ()
       "Insert an '=' char padded by spaces, except in function arglists."
       (interactive)
       (if (string-match-p
@@ -1295,7 +1295,13 @@
 
     (hook-fn 'python-mode-hook
       (smart-insert-operator-hook)
-      (local-set-key (kbd "=") 'cb:python-smart-equals)
+      (local-set-key (kbd "=") 'cb:smart-equals-dwim)
+      (local-unset-key (kbd "."))
+      (local-unset-key (kbd ":")))
+
+    (hook-fn 'ruby-mode-hook
+      (smart-insert-operator-hook)
+      (local-set-key (kbd "=") 'cb:smart-equals-dwim)
       (local-unset-key (kbd "."))
       (local-unset-key (kbd ":")))
 
@@ -1973,7 +1979,6 @@
       :commands inf-ruby-mode
       :config
       (hook-fn 'inf-ruby-mode
-        (ruby-electric-mode -1)
         (subword-mode +1)
         ;; Stop IRB from echoing input.
         (setq comint-process-echoes t)
@@ -1993,9 +1998,23 @@
 
     (add-to-list 'ac-modes 'ruby-mode)
     (add-to-list 'completion-ignored-extensions ".rbc")
+    (define-combined-hook cb:ruby-shared-hook '(inf-ruby-mode ruby-mode))
 
-    (hook-fn 'ruby-mode-hook
-      (ruby-electric-mode -1)
+    (defun cb:switch-to-ruby ()
+      "Toggle between irb and the last ruby buffer.
+Start an inferior ruby if necessary."
+      (interactive)
+      (if (derived-mode-p 'inf-ruby-mode)
+          (switch-to-buffer-other-window
+           (cb:last-buffer-for-mode 'ruby-mode))
+        (run-ruby)
+        ;; Insert at end of buffer.
+        (when (featurep 'evil)
+          (goto-char (point-max))
+          (evil-append-line 1))))
+
+    (hook-fn 'cb:ruby-shared-hook
+      (local-set-key (kbd "C-c C-z") 'cb:switch-to-ruby)
       (subword-mode +1))))
 
 (use-package yaml-mode
