@@ -1073,11 +1073,10 @@
     "Toggle various shell window states."
     (interactive)
     (cond
-     ;; If shell is maximized, split the window.
+     ;; If shell is maximized, hide it.
      ((and (derived-mode-p 'shell-mode)
            (equal 1 (length (window-list))))
-      (bury-buffer)
-      (switch-to-buffer-other-window (get-buffer "*shell*")))
+      (bury-buffer))
      ;; If we're looking at the shell, maximize it.
      ((derived-mode-p 'shell-mode)
       (delete-other-windows))
