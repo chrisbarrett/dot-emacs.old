@@ -1421,7 +1421,18 @@
       (local-unset-key (kbd ":"))
       (local-unset-key (kbd "-"))
       (local-unset-key (kbd "+"))
-      (local-set-key (kbd "*") 'c-electric-star))))
+      (local-set-key (kbd "*") 'c-electric-star))
+    )
+  :config
+  (defadvice smart-insert-operator (around normal-insertion-for-string activate)
+    "Do not perform smart insertion if looking at a string."
+    (if (-contains? '(font-lock-string-face
+                      font-lock-doc-face
+                      font-lock-doc-string-face
+                      font-lock-comment-face)
+                    (face-at-point))
+        (insert (ad-get-arg 0))
+      ad-do-it)))
 
 (use-package lambda-mode
   :diminish lambda-mode
@@ -1958,11 +1969,22 @@ Start an inferior ruby if necessary."
         (run-ruby)
         (cb:append-buffer)))
 
+    (defun cb:ruby-eval-dwim ()
+      "Perform a context-sensitive evaluation."
+      (interactive)
+      (unless (get-buffer "*ruby*")
+        (run-ruby))
+      (if (region-active-p)
+          (ruby-send-region (region-beginning) (region-end))
+        (ruby-send-region (point-min) (point-max))))
+
+    (hook-fn 'ruby-mode-hook
+      (local-set-key (kbd "C-c C-c") 'cb:ruby-eval-dwim))
+
     (hook-fn 'cb:ruby-modes-hook
       (add-to-list 'ac-sources 'ac-source-yasnippet)
       (local-set-key (kbd "C-c C-z") 'cb:switch-to-ruby)
       (subword-mode +1)
-
       ;; Disable rubocop checker if we're not in a project.
       (unless (projectile-project-p)
         (flycheck-select-checker 'ruby)))))
