@@ -2275,7 +2275,8 @@ Start an inferior ruby if necessary."
      "Use iedit to rename the current symbol."
      (interactive)
      (iedit-mode 0)
-     (call-interactively 'iedit-replace-occurrences))
+     (call-interactively 'iedit-replace-occurrences)
+     (iedit-done))
 
    (bind-key* "M-r" 'cb:rename-symbol-at-point)))
 
