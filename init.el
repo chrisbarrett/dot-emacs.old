@@ -1104,7 +1104,7 @@
   (progn
 
     (hook-fn 'shell-mode-hook
-      (local-set-key (kbd "C-c C-z") 'cb:append-buffer)
+      (local-set-key (kbd "M->") 'cb:append-buffer)
       (setq ac-sources '(ac-source-filename)))
 
     (hook-fn 'window-configuration-change-hook
@@ -1201,8 +1201,8 @@
   :defer   t
   :init
   (hook-fn 'dired-mode-hook
-    (auto-revert-mode +1)
-    (set (make-local-variable 'auto-revert-interval) 0.1))
+    (set (make-local-variable 'auto-revert-interval) 0.1)
+    (auto-revert-mode +1))
   :config
   (progn
   (setq dired-auto-revert-buffer t)
