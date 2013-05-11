@@ -464,12 +464,14 @@ Most of these are stolen from Solarized Dark."
      `(helm-buffer-size ((,class (:foreground ,solarized-comments))))
      `(helm-candidate-number ((,class (:background ,solarized-hl :foreground ,solarized-emph
                                                    :bold t))))
-     `(helm-ff-directory ((,class (:foreground ,blue))))
-     `(helm-ff-executable ((,class (:foreground ,green))))
-     `(helm-ff-file ((,class (:foreground ,solarized-fg))))
-     `(helm-ff-invalid-symlink ((,class (:foreground ,orange :slant italic))))
-     `(helm-ff-prefix ((,class (:background ,yellow :foreground ,solarized-bg))))
-     `(helm-ff-symlink ((,class (:foreground ,cyan))))
+     `(helm-ff-directory ((,class (:foreground ,blue :background nil))))
+     `(helm-ff-executable ((,class (:foreground ,green :background nil))))
+     `(helm-ff-file ((,class (:foreground ,solarized-fg :background nil))))
+     `(helm-ff-invalid-symlink ((,class (:foreground ,orange :slant italic
+                                                     :background nil))))
+     `(helm-ff-prefix ((,class (:background ,yellow :foreground ,solarized-bg
+                                            :background nil))))
+     `(helm-ff-symlink ((,class (:foreground ,cyan :background nil))))
      `(helm-grep-file ((,class (:foreground ,cyan :underline t))))
      `(helm-grep-finish ((,class (:foreground ,green))))
      `(helm-grep-lineno ((,class (:foreground ,orange))))
