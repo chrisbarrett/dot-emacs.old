@@ -482,8 +482,8 @@
   "Generic programming mode configuration."
 
   ;; Error navigation keybindings.
-  (local-set-key (kbd "M-N") 'next-error)
-  (local-set-key (kbd "M-P") 'previous-error)
+  (bind-key "M-N" 'next-error)
+  (bind-key "M-P" 'previous-error)
 
   ;; Highlight special comments.
   (font-lock-add-keywords
@@ -927,7 +927,6 @@
 
 (use-package w3m
   :ensure   t
-  :bind ("M-e" . w3m-browse-url)
   :commands (w3m-find-file w3m-browse-url)
   :init
   (progn
@@ -945,6 +944,16 @@
       (let ((win (or (cb:find-window-with-mode 'w3m-mode) (split-window))))
         (select-window win)
         (w3m-browse-url url)))
+
+    (defun cb:w3m-browse-dwim (url)
+      "Browse to URL, ensuring it begins with http:// as reqiured by w3m."
+      (interactive "sGo to URL: ")
+      (w3m-browse-url
+       (if (s-starts-with? "http://" url)
+           url
+         (concat "http://" url))))
+
+    (bind-key "M-e" 'cb:w3m-browse-dwim)
     )
   :config
   (hook-fn 'w3m-mode-hook
@@ -1103,7 +1112,13 @@
   :config
   (progn
 
+    (defun cb:clear-shell ()
+      (interactive)
+      (erase-buffer)
+      (comint-send-input))
+
     (hook-fn 'shell-mode-hook
+      (local-set-key (kbd "C-l") 'cb:clear-shell)
       (local-set-key (kbd "M->") 'cb:append-buffer)
       (setq ac-sources '(ac-source-filename)))
 
