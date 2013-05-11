@@ -816,7 +816,18 @@
   :config (fringe-mode '(2 . 0)))
 
 (use-package ansi-color
-  :config (ansi-color-for-comint-mode-on))
+  :config
+  (progn
+
+    (defadvice display-message-or-buffer (before ansi-color activate)
+      "Process ANSI color codes in shell output."
+      (let ((buf (ad-get-arg 0)))
+        (and (bufferp buf)
+             (string= (buffer-name buf) "*Shell Command Output*")
+             (with-current-buffer buf
+               (ansi-color-apply-on-region (point-min) (point-max))))))
+
+    (ansi-color-for-comint-mode-on)))
 
 ;;; Navigation
 
@@ -1181,12 +1192,18 @@
 
 (use-package dired
   :defer   t
+  :init
+  (hook-fn 'dired-mode-hook
+    (auto-revert-mode +1)
+    (set (make-local-variable 'auto-revert-interval) 0.1))
   :config
-  (when (equal system-type 'darwin)
-    ;; Use GNU version of ls if available.
-    (-when-let (gls (executable-find "gls"))
-      (setq ls-lisp-use-insert-directory-program t
-            insert-directory-program gls))))
+  (progn
+  (setq dired-auto-revert-buffer t)
+    (when (equal system-type 'darwin)
+      ;; Use GNU version of ls if available.
+      (-when-let (gls (executable-find "gls"))
+        (setq ls-lisp-use-insert-directory-program t
+              insert-directory-program gls)))))
 
 (use-package dired-aux
   :defer t
