@@ -127,7 +127,7 @@
 (icomplete-mode +1)
 
 (hook-fn 'text-mode-hook
-  (unless (derived-mode-p 'sgml-mode)
+  (unless (derived-mode-p 'sgml-mode 'nxhtml-mode)
     (turn-on-auto-fill)))
 
 (defalias 'yes-or-no-p 'y-or-n-p)
@@ -1963,14 +1963,26 @@ Start an inferior ruby if necessary."
 
 (use-package rinari
   :ensure t
+  :diminish rinari-minor-mode
   :commands rinari-minor-mode
   :init
   (progn
     (add-hook 'cb:ruby-modes-hook 'rinari-minor-mode)
-    (hook-fn 'sgml-mode-hook
-      "Enable rinari for Rails views."
-      (when (s-matches? (rx (or ".html.erb" ".rhtml")) (buffer-file-name))
-        (rinari-minor-mode))))
+    (autoload 'eruby-nxhtml-mumamo
+      (concat cb:lib-dir "nxhtml/nxhtml/nxhtml-mumamo.el"))
+    ;; Suppress annoying warnings.
+    (progn-after-load "mumamo"
+      (setq
+       mumamo-background-colors nil
+
+       mumamo-per-buffer-local-vars
+       (delq 'buffer-file-name mumamo-per-buffer-local-vars))
+      )
+    ;; Use mumamo for rhtml and erb files.
+    (let ((load-nxhtml (lambda ()
+                         (load-file (concat cb:lib-dir "nxhtml/autostart.el"))
+                         (eruby-nxhtml-mumamo))))
+      (add-to-list 'auto-mode-alist `(,(rx (or ".html.erb" ".rhtml")) . ,load-nxhtml))))
   :config
   (progn
     (hook-fn 'rinari-minor-mode-hook
@@ -2005,13 +2017,12 @@ Start an inferior ruby if necessary."
       (define-key cb:rinari-map "y" 'rinari-find-stylesheet)
       (define-key cb:rinari-map "z" 'rinari-find-rspec-fixture)
       )
-   (setq
-    rinari-tags-file-name "TAGS"
-    nxhtml-global-minor-mode t
-    mumamo-chunk-coloring 'submode-colored
-    nxhtml-skip-welcome   t
-    rng-nxml-auto-validate-flag nil
-    nxml-degraded t)))
+    (setq
+     rinari-tags-file-name    "TAGS"
+     nxhtml-global-minor-mode t
+     nxhtml-skip-welcome      t
+     rng-nxml-auto-validate-flag nil
+     nxml-degraded            t)))
 
 (use-package rsense
   :ensure t

@@ -22,3 +22,6 @@
 [submodule "lib/slime"]
 	path = lib/slime
 	url = git://github.com/nablaone/slime.git
+[submodule "lib/nxhtml"]
+	path = lib/nxhtml
+	url = git://github.com/emacsmirror/nxhtml.git
