@@ -998,9 +998,16 @@
 
   :init
   (progn
+    (defun cb:append-buffer ()
+      "Enter insertion mode at the end of the current buffer."
+      (interactive)
+      (goto-char (point-max))
+      (when (fboundp 'evil-append-line)
+        (evil-append-line 1)))
+
     (evil-mode +1)
     (evil-global-set-key 'insert (kbd "S-TAB") 'tab-to-tab-stop)
-    (hook-fn 'comint-mode-hook 'evil-append-line))
+    (add-hook 'comint-mode-hook 'cb:append-buffer))
 
   :config
   (progn
@@ -1095,7 +1102,9 @@
      (t (shell))))
   :config
   (progn
+
     (hook-fn 'shell-mode-hook
+      (local-set-key (kbd "C-c C-z") 'cb:append-buffer)
       (setq ac-sources '(ac-source-filename)))
 
     (hook-fn 'window-configuration-change-hook
@@ -1107,9 +1116,7 @@
 
     (defadvice shell (after move-to-end-of-buffer activate)
       "Move to the end of the shell buffer and enter insertion state."
-      (goto-char (point-max))
-      (when (fboundp 'evil-append-line)
-        (evil-append-line 1)))))
+      (cb:append-buffer))))
 
 (use-package auto-complete
   :ensure t
@@ -1534,9 +1541,7 @@
       ;; HACK: rebind switch-to-buffer so ielm opens in another window.
       (flet ((switch-to-buffer (buf) (switch-to-buffer-other-window buf)))
         (ielm)
-        (goto-char (point-max))
-        (when (fboundp 'evil-append-line)
-          (evil-append-line 1))))
+        (cb:append-buffer)))
 
     (defun cb:last-elisp-buffer ()
       "Find the last active Elisp buffer."
@@ -1689,9 +1694,7 @@
 
     (defadvice nrepl-switch-to-repl-buffer (after insert-at-end-of-nrepl-line activate)
       "Enter insertion mode at the end of the line when switching to nrepl."
-      (when (and (boundp 'evil-mode) evil-mode)
-        (evil-goto-line)
-        (evil-append-line 0)))
+      (cb:append-buffer))
 
     (defadvice back-to-indentation (around move-to-nrepl-bol activate)
       "Move to position after prompt in nREPL."
@@ -1809,10 +1812,8 @@
   (progn
     (defadvice switch-to-geiser (after append-with-evil activate)
       "Move to end of REPL and append-line."
-      (when (and (fboundp 'evil-append-line)
-                 (derived-mode-p 'comint-mode))
-        (goto-char (point-max))
-        (evil-append-line 1)))
+      (when (derived-mode-p 'comint-mode)
+        (cb:append-buffer)))
 
     (setq
      geiser-mode-start-repl-p t
@@ -1892,10 +1893,7 @@ Start an inferior ruby if necessary."
           (switch-to-buffer-other-window
            (cb:last-buffer-for-mode 'ruby-mode))
         (run-ruby)
-        ;; Insert at end of buffer.
-        (when (featurep 'evil)
-          (goto-char (point-max))
-          (evil-append-line 1))))
+        (cb:append-buffer)))
 
     (hook-fn 'cb:ruby-modes-hook
       (local-set-key (kbd "C-c C-z") 'cb:switch-to-ruby)
@@ -1960,9 +1958,7 @@ Start an inferior ruby if necessary."
 
     (defadvice switch-to-haskell (after insert-at-end-of-line activate)
       "Enter insertion mode at the end of the line when switching to inferior haskell."
-      (when (and (boundp 'evil-mode) evil-mode)
-        (evil-goto-line)
-        (evil-append-line 0)))
+      (cb:append-buffer))
 
     (add-to-list 'completion-ignored-extensions ".hi")
 
@@ -2207,10 +2203,7 @@ Start an inferior ruby if necessary."
         (kill-buffer)
         (jump-to-register :magit-fullscreen)))
 
-    (hook-fn 'magit-log-edit-mode-hook
-      "Enter insertion mode."
-      (when (and (boundp 'evil-mode) evil-mode)
-        (evil-append-line nil)))
+    (add-hook 'magit-log-edit-mode-hook 'cb:append-buffer)
 
     (add-hook 'magit-mode-hook 'magit-load-config-extensions)))
 
