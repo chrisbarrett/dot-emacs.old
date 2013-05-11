@@ -245,12 +245,113 @@
     ((missing unregistered) "?")
     ((added)                "A")
     ((removed)              "D")
-    (t
-     " ")))
+    (t                      " ")))
 
 (cl-defun cb:vc-file-uptodate? (&optional (file (buffer-file-name)))
   "Non-nil if FILE is up-to-date."
   (ignore-errors (equal 'up-to-date (vc-state file))))
+
+(defun cb:shorten-directory (dir max-length)
+  "Show up to MAX-LENGTH characters of a directory name DIR."
+  (let ((path (reverse (split-string (abbreviate-file-name dir) "/")))
+        (output ""))
+    (when (and path (equal "" (car path)))
+      (setq path (cdr path)))
+    (while (and path (< (length output) (- max-length 4)))
+      (setq output (concat (car path) "/" output))
+      (setq path (cdr path)))
+    (when path
+      (setq output (concat "…/" output)))
+    output))
+
+;; Extra mode line faces
+
+(defface mode-line-read-only-face
+  '((((type graphic))
+     (:foreground "#4271ae"
+      :box '(:line-width 2 :color "#4271ae")))
+    (t (:inherit 'mode-line-face)))
+  "Face for readonly indicator."
+  :group 'modeline)
+
+(defface mode-line-modified-face
+  '((((type graphic))
+     (:foreground "#c82829"))
+    (t
+     (:inherit 'mode-line-face)))
+  "Face for modified indicator."
+  :group 'modeline)
+
+(defface mode-line-directory-face
+  '((((type graphic) (background dark))
+     (:foreground "gray60"))
+    (((type graphic) (background light))
+     (:foreground "gray70"))
+    (t
+     (:inherit 'mode-line-face)))
+  "Face for the directory component of the current filename."
+  :group 'modeline)
+
+(defface mode-line-filename-face
+  '((((type graphic) (background dark))
+     (:foreground "#eab700" :weight bold))
+    (((type graphic) (background light))
+     (:foreground "gray40" :weight bold))
+    (t
+     (:inherit 'mode-line-face)))
+  "Face for the name component of the current filename."
+  :group 'modeline)
+
+(defface mode-line-position-face
+  `((((type graphic) (background dark))
+     (:family ,cb:monospace-font
+      :height 100
+      :foreground "gray60"))
+    (((type graphic) (background light))
+     (:family ,cb:monospace-font
+      :height 100
+      :foreground "gray50"))
+    (t
+     (:inherit 'mode-line-face)))
+  "Face for the position indicators."
+  :group 'modeline)
+
+(defface mode-line-mode-face
+  '((((type graphic) (background dark))
+     (:foreground "gray70"))
+    (((type graphic) (background light))
+     (:foreground "gray40"))
+    (t
+     (:inherit 'mode-line-face)))
+  "Face for the current major mode indicator."
+  :group 'modeline)
+
+(defface mode-line-minor-mode-face
+  '((((type graphic) (background dark))
+     (:foreground "gray40" :height 110))
+    (((type graphic) (background light))
+     (:foreground "gray70" :height 110))
+    (t (:inherit 'mode-line-mode-face)))
+  "Face for the current minor mode indicators."
+  :group 'modeline)
+
+(defface mode-line-process-face
+  '((((type graphic))
+     (:foreground "#718c00"))
+    (t
+     (:inherit 'mode-line-face)))
+  "Face for the current process."
+  :group 'modeline)
+
+(defface mode-line-80col-face
+  '((((type graphic) (background dark))
+     (:foreground "#eab700"))
+    (((type graphic) (background light))
+     (:foreground "#b58900"))
+    (t
+     (:inherit 'mode-line-position-face)))
+  "Face for the warning when point is past column 80."
+  :group 'modeline)
 
 (setq-default
  mode-line-format
@@ -307,108 +408,6 @@
    (:propertize mode-line-process
                 face mode-line-process-face)
    (global-mode-string global-mode-string)))
-
-(defun cb:shorten-directory (dir max-length)
-  "Show up to MAX-LENGTH characters of a directory name DIR."
-  (let ((path (reverse (split-string (abbreviate-file-name dir) "/")))
-        (output ""))
-    (when (and path (equal "" (car path)))
-      (setq path (cdr path)))
-    (while (and path (< (length output) (- max-length 4)))
-      (setq output (concat (car path) "/" output))
-      (setq path (cdr path)))
-    (when path
-      (setq output (concat "…/" output)))
-    output))
-
-;; Extra mode line faces
-
-(defface mode-line-read-only-face
-  '((((type graphic))
-     (:foreground "#4271ae"
-      :box '(:line-width 2 :color "#4271ae")))
-    (t (:inherit 'mode-line-face)))
-  "Face for readonly indicator."
-  :group 'modeline)
-
-(defface mode-line-modified-face
-  '((((type graphic))
-     (:foreground "#c82829"))
-    (t
-     (:inherit 'mode-line-face)))
-  "Face for modified indicator."
-  :group 'modeline)
-
-(defface mode-line-directory-face
-  '((((type graphic) (background dark))
-     (:foreground "gray60"))
-    (((type graphic) (background light))
-     (:foreground "gray70"))
-    (t
-     (:inherit 'mode-line-face)))
-  "Face for the directory component of the current filename."
-  :group 'modeline)
-
-(defface mode-line-filename-face
-  '((((type graphic) (background dark))
-     (:foreground "#eab700"))
-    (((type graphic) (background light))
-     (:foreground "gray40"))
-    (t
-     (:inherit 'mode-line-face :weight bold)))
-  "Face for the name component of the current filename."
-  :group 'modeline)
-
-(defface mode-line-position-face
-  `((((type graphic) (background dark))
-     (:family ,cb:monospace-font
-      :height 100
-      :foreground "gray60"))
-    (((type graphic) (background light))
-     (:family ,cb:monospace-font
-      :height 100
-      :foreground "gray50"))
-    (t
-     (:inherit 'mode-line-face)))
-  "Face for the position indicators."
-  :group 'modeline)
-
-(defface mode-line-mode-face
-  '((((type graphic) (background dark))
-     (:foreground "gray70"))
-    (((type graphic) (background light))
-     (:foreground "gray40"))
-    (t
-     (:inherit 'mode-line-face)))
-  "Face for the current major mode indicator."
-  :group 'modeline)
-
-(defface mode-line-minor-mode-face
-  '((((type graphic) (background dark))
-     (:foreground "gray40" :height 110))
-    (((type graphic) (background light))
-     (:foreground "gray70" :height 110))
-    (t (:inherit 'mode-line-mode-face)))
-  "Face for the current minor mode indicators."
-  :group 'modeline)
-
-(defface mode-line-process-face
-  '((((type graphic))
-     (:foreground "#718c00"))
-    (t
-     (:inherit 'mode-line-face)))
-  "Face for the current process."
-  :group 'modeline)
-
-(defface mode-line-80col-face
-  '((((type graphic) (background dark))
-     (:foreground "#eab700"))
-    (((type graphic) (background light))
-     (:foreground "#b58900"))
-    (t
-     (:inherit 'mode-line-position-face)))
-  "Face for the warning when point is past column 80."
-  :group 'modeline)
 
 ;;; ============================================================================
 ;;; Combined hooks.
