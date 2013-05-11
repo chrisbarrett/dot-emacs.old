@@ -1945,6 +1945,7 @@
   :config
   (progn
     (add-to-list 'ac-modes 'ruby-mode)
+    (add-to-list 'ac-modes 'inf-ruby-mode)
     (add-to-list 'completion-ignored-extensions ".rbc")
 
     (defun cb:switch-to-ruby ()
@@ -1958,6 +1959,7 @@ Start an inferior ruby if necessary."
         (cb:append-buffer)))
 
     (hook-fn 'cb:ruby-modes-hook
+      (add-to-list 'ac-sources 'ac-source-yasnippet)
       (local-set-key (kbd "C-c C-z") 'cb:switch-to-ruby)
       (subword-mode +1))))
 
@@ -2011,6 +2013,7 @@ Start an inferior ruby if necessary."
   :defer  t
   :init
   (hook-fn 'cb:ruby-modes-hook
+    (require 'rsense)
     (add-to-list 'ac-sources 'ac-source-rsense-method)
     (add-to-list 'ac-sources 'ac-source-rsense-constant))
   :config
@@ -2297,7 +2300,6 @@ Start an inferior ruby if necessary."
         (jump-to-register :magit-fullscreen)))
 
     (add-hook 'magit-log-edit-mode-hook 'cb:append-buffer)
-
     (add-hook 'magit-mode-hook 'magit-load-config-extensions)))
 
 (use-package git-gutter
@@ -2373,7 +2375,10 @@ Start an inferior ruby if necessary."
   :defer t
   :init
   (macrolet ((maybe (f) `(lambda ()
-                           (unless (derived-mode-p 'org-mode 'sgml-mode)
+                           (unless (derived-mode-p
+                                    'org-mode
+                                    'sgml-mode
+                                    'magit-log-edit-mode)
                              (funcall ,f)))))
 
     (hook-fn 'cb:org-minor-modes-hook
