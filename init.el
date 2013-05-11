@@ -114,6 +114,7 @@
  initial-scratch-message      nil
  truncate-partial-width-windows     nil
  confirm-nonexistent-file-or-buffer nil
+ vc-handled-backends          '(Git)
  )
 (setq-default
  tab-width                    4
@@ -204,18 +205,10 @@
 (put 'narrow-to-page   'disabled nil)
 (put 'narrow-to-region 'disabled nil)
 
-
 ;;; Misc commands
 (bind-key "S-<tab>" 'tab-to-tab-stop)
 (bind-key "C-c e e" 'toggle-debug-on-error)
 (bind-key "s-`"     'other-window)
-
-;;; Disable vc modes
-
-(setq vc-handled-backends nil)
-(remove-hook 'find-file-hooks 'vc-find-file-hook)
-(eval-after-load "vc"
-  '(remove-hook 'find-file-hooks 'vc-find-file-hook))
 
 ;;; Editing Advice
 
@@ -244,6 +237,21 @@
 ;;; ============================================================================
 ;;; Modeline
 
+(cl-defun cb:vc-state->letter (&optional (file (buffer-file-name)))
+  "Return a single letter to represent the current version-control status."
+  (case (ignore-errors (vc-state file))
+    ((edited)               "M")
+    ((needs-merge conflict) "!")
+    ((missing unregistered) "?")
+    ((added)                "A")
+    ((removed)              "D")
+    (t
+     " ")))
+
+(cl-defun cb:vc-file-uptodate? (&optional (file (buffer-file-name)))
+  "Non-nil if FILE is up-to-date."
+  (ignore-errors (equal 'up-to-date (vc-state file))))
+
 (when (display-graphic-p)
   (setq-default
    mode-line-format
@@ -261,8 +269,12 @@
      (:eval
       (cond (buffer-read-only
              (propertize " RO " 'face 'mode-line-read-only-face))
-            ((buffer-modified-p)
-             (propertize " M  " 'face 'mode-line-modified-face))
+            ((or (buffer-modified-p)
+                 (not (cb:vc-file-uptodate?)))
+             (propertize (format " %s%s "
+                                 (cb:vc-state->letter)
+                                 (if (buffer-modified-p) "*" " "))
+                         'face 'mode-line-modified-face))
             (t "    ")))
      " "
      ;; directory and buffer/file name
