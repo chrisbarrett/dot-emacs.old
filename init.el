@@ -261,7 +261,9 @@
         (output ""))
     (when (and path (equal "" (car path)))
       (setq path (cdr path)))
-    (while (and path (< (length output) (- max-length 4)))
+    ;; Ellipsize the path if it is too long.
+    ;; `2` is the length of the path separator + ellipsis.
+    (while (and path (< (length output) (- max-length 2)))
       (setq output (concat (car path) "/" output))
       (setq path (cdr path)))
     (when path
@@ -1625,24 +1627,14 @@
   :config
   (progn
 
-    (use-package cb-overtone
-      :commands (maybe-enable-overtone-mode cb:stop-overtone))
-
-    (use-package midje-mode
-      :ensure   t
-      :commands midje-mode
-      :diminish midje-mode
-      :init    (add-hook 'clojure-mode-hook 'midje-mode))
-
     (defun cb:switch-to-nrepl ()
       "Start nrepl or switch to an existing nrepl buffer."
       (interactive)
-      (if-let (buf (get-buffer "*nrepl*"))
-              (nrepl-switch-to-repl-buffer buf)
-              (nrepl-jack-in)))
+      (-if-let (buf (get-buffer "*nrepl*"))
+        (nrepl-switch-to-repl-buffer buf)
+        (nrepl-jack-in)))
 
     (hook-fn 'clojure-mode-hook
-      (maybe-enable-overtone-mode)
       (subword-mode +1)
       (local-set-key (kbd "C-c C-z") 'cb:switch-to-nrepl))))
 
@@ -1663,17 +1655,6 @@
       (if (equal major-mode 'nrepl-mode)
           (nrepl-bol)
         ad-do-it))
-
-    (use-package ac-nrepl
-      :ensure t
-      :commands (ac-nrepl-setup ac-nrepl-doc)
-      :init
-      (progn
-        (add-hook 'nrepl-mode-hook 'ac-nrepl-setup)
-        (add-hook 'nrepl-interaction-mode-hook 'ac-nrepl-setup)
-        (add-to-list 'ac-modes 'nrepl-mode))
-      :config
-      (define-key nrepl-interaction-mode-map (kbd "C-c C-d") 'ac-nrepl-popup-doc))
 
     (defun cb:switch-to-clojure ()
       "Switch to the last active clojure buffer."
@@ -1708,6 +1689,27 @@
         (local-set-key (kbd "C-c l")   'nrepl-clear-buffer)
         (local-set-key (kbd "C-c C-z") 'cb:switch-to-clojure)
         (local-set-key (kbd "C-c C-f") 'cb:eval-last-clj-buffer)))))
+
+(use-package ac-nrepl
+  :ensure t
+  :commands (ac-nrepl-setup ac-nrepl-doc)
+  :init
+  (progn
+    (add-hook 'nrepl-mode-hook 'ac-nrepl-setup)
+    (add-hook 'nrepl-interaction-mode-hook 'ac-nrepl-setup)
+    (add-to-list 'ac-modes 'nrepl-mode))
+  :config
+  (define-key nrepl-interaction-mode-map (kbd "C-c C-d") 'ac-nrepl-popup-doc))
+
+(use-package cb-overtone
+  :commands (maybe-enable-overtone-mode cb:stop-overtone)
+  :init     (add-hook 'clojure-mode-hook 'maybe-enable-overtone-mode))
+
+(use-package midje-mode
+  :ensure   t
+  :commands midje-mode
+  :diminish midje-mode
+  :init    (add-hook 'clojure-mode-hook 'midje-mode))
 
 ;;; Scheme
 
