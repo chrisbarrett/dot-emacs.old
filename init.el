@@ -2105,11 +2105,19 @@ Start an inferior ruby if necessary."
         ;; Revert window layout.
         (when (= 2 (length (window-list)))
           (delete-other-windows)))
-      ;; Evaluate text.
-      (if (region-active-p)
-          (ruby-send-region (region-beginning) (region-end))
-        (ruby-send-region (point-min) (point-max))))
-
+      (cond
+       ;; Evaluate active region.
+       ((region-active-p)
+        (ruby-send-region (region-beginning) (region-end)))
+       ;; Evaluate the block at or just before point.
+       ((when (or (thing-at-point-looking-at
+                   (rx (or "end" "]" "}" ")") (* space) (* "\n")))
+                  (ruby-block-contains-point (point)))
+          (ignore-errors (ruby-send-block))))
+       ;; Eval the block-like thing around point.
+       (t
+        (ruby-send-region (save-excursion (ruby-beginning-of-defun) (point))
+                          (save-excursion (ruby-end-of-defun) (point))))))
 
     (defun cb:format-irb-error (lines)
       "Return a propertized error string for the given LINES of an irb error message."
@@ -2118,32 +2126,32 @@ Start an inferior ruby if necessary."
         (concat (propertize (substring err 0 colon) 'face 'error)
                 (substring err colon))))
 
-(defun cb:apply-ruby-font-lock (str)
-  "Apply ruby font-locking to string STR."
-  (with-temp-buffer
-    (insert str)
-    (require 'ruby-mode)
-    ;; Configure ruby font-lock.
-    (set (make-local-variable 'font-lock-defaults)
-         '((ruby-font-lock-keywords) nil nil))
-    (set (make-local-variable 'syntax-propertize-function)
-         'ruby-syntax-propertize-function)
+    (defun cb:apply-ruby-font-lock (str)
+      "Apply ruby font-locking to string STR."
+      (with-temp-buffer
+        (insert str)
+        (require 'ruby-mode)
+        ;; Configure ruby font-lock.
+        (set (make-local-variable 'font-lock-defaults)
+             '((ruby-font-lock-keywords) nil nil))
+        (set (make-local-variable 'syntax-propertize-function)
+             'ruby-syntax-propertize-function)
 
-    (font-lock-fontify-buffer)
-    (buffer-string)))
+        (font-lock-fontify-buffer)
+        (buffer-string)))
 
     (defun cb:filter-irb-output (str &rest _)
       "Print IRB output to messages."
       (ignore-errors
         (when (and (fboundp 'inf-ruby-proc) (inf-ruby-proc))
-         (let ((lines
-                (->> (s-lines str)
-                  (--remove (or (s-contains? "--inf-ruby" it)
-                                (s-blank? it)
-                                (s-matches? inf-ruby-prompt-pattern it)))
-                  (-map 's-trim))))
-           (message (or (cb:format-irb-error lines)
-                        (cb:apply-ruby-font-lock (car (reverse lines))))))))
+          (let ((lines
+                 (->> (s-lines str)
+                   (--remove (or (s-contains? "--inf-ruby" it)
+                                 (s-blank? it)
+                                 (s-matches? inf-ruby-prompt-pattern it)))
+                   (-map 's-trim))))
+            (message (or (cb:format-irb-error lines)
+                         (cb:apply-ruby-font-lock (car (reverse lines))))))))
       str)
 
     (hook-fn 'ruby-mode-hook
