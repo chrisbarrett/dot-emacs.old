@@ -376,16 +376,18 @@
 (setq-default
  mode-line-format
  '(
-   ;; Position, including warning for 80 columns
+   ;; --------------------------------------------------------------------------
+   ;; Line and column number.
    (:propertize " %4l:" face mode-line-position-face)
-   (:eval (propertize "%3c" 'face
-                      (if (>= (current-column) 80)
-                          'mode-line-80col-face
-                        'mode-line-position-face)))
-   ;; emacsclient [default -- keep?]
-   mode-line-client
+   (:eval
+    ;; Warn if over 80 columns.
+    (propertize "%3c" 'face
+                (if (>= (current-column) 80)
+                    'mode-line-80col-face
+                  'mode-line-position-face)))
    " "
-   ;; read-only or modified status
+   ;; --------------------------------------------------------------------------
+   ;; File status.
    (:eval
     (let ((blank "    "))
       (cond
@@ -394,38 +396,41 @@
              (not (buffer-file-name)))
         blank)
 
+       ;; Show read-only indicator.
        (buffer-read-only
         (propertize " RO " 'face 'mode-line-read-only-face))
 
-       ((or (buffer-modified-p)
-            (and
-             (vc-git-root (buffer-file-name))
-             (not (cb:vc-file-uptodate?))))
+       ;; Show modified and vc status.
+       (t
         (format " %s%s "
-                (cb:vc-state->letter)
+                (if (vc-git-root (buffer-file-name)) (cb:vc-state->letter) " ")
                 (if (buffer-modified-p)
                     (propertize "*" 'face 'mode-line-modified-face)
-                  " ")))
-       (t blank))))
+                  " "))))))
    " "
-   ;; directory and buffer/file name
+   ;; --------------------------------------------------------------------------
+   ;; Buffer name and path.
    (:propertize (:eval (if (buffer-file-name)
                            (cb:shorten-directory default-directory 30)
                          ""))
                 face mode-line-directory-face)
    (:propertize "%b"
                 face mode-line-filename-face)
-   ;; narrow [default -- keep?]
+
+   ;; --------------------------------------------------------------------------
+   ;; Narrowing
    " %n "
 
-   ;; mode indicators: recursive edit, major mode, minor modes, process, global
+   ;; --------------------------------------------------------------------------
+   ;; Mode details.
 
+   ;; Major mode.
    " %["
    (:propertize mode-name
                 face mode-line-mode-face)
    "%] "
 
-   ;; Show ert test status.
+   ;; ERT status.
    (:eval (when (and (boundp 'ert-modeline-mode) ert-modeline-mode)
             (set-face-bold 'ertml-failing-face t)
             (let ((s (s-trim ertml--status-text)))
@@ -433,7 +438,7 @@
                   (propertize s 'face 'ertml-failing-face)
                 (propertize s 'face 'bold)))))
 
-   ;; Show minor modes.
+   ;; Minor modes.
    (:eval (propertize (format-mode-line minor-mode-alist)
                       'face 'mode-line-minor-mode-face))
    (:propertize mode-line-process
