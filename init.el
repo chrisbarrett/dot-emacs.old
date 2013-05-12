@@ -1237,9 +1237,11 @@
     (add-hook 'sgml-mode-hook 'yas-minor-mode))
   :config
   (progn
-    (setq yas/trigger-key (kbd "RET"))
+    (setq
+     yas-prompt-functions '(yas-dropdown-prompt)
+     yas/trigger-key (kbd "RET"))
     (add-to-list 'yas-snippet-dirs cb:yasnippet-dir)
-    (yas/global-mode t)
+    (yas-global-mode t)
     (hook-fn 'snippet-mode-hook
       (setq require-final-newline nil))))
 
