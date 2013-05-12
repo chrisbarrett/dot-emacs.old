@@ -2108,6 +2108,7 @@ Start an inferior ruby if necessary."
       (local-set-key (kbd "C-c C-z") 'cb:switch-to-ruby))
 
     (hook-fn 'inf-ruby-mode-hook
+      (local-set-key (kbd "C-c C-z") 'cb:switch-to-ruby)
       (add-hook 'comint-preoutput-filter-functions 'cb:filter-irb-output)
       ;; Stop IRB from echoing input.
       (setq comint-process-echoes t)
