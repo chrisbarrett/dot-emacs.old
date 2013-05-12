@@ -1429,6 +1429,7 @@
     (hook-fn 'cb:ruby-modes-hook
       (smart-insert-operator-hook)
       (local-set-key (kbd "=") 'cb:smart-equals-dwim)
+      (local-unset-key (kbd "%"))
       (local-unset-key (kbd "."))
       (local-unset-key (kbd ":")))
 
@@ -2101,7 +2102,7 @@ Start an inferior ruby if necessary."
         (--each filt
           (unless (or (s-blank? it) (s-matches? inf-ruby-prompt-pattern it))
             (message (s-trim it))))
-        (apply 'concat filt)))
+        str))
 
     (hook-fn 'ruby-mode-hook
       (local-set-key (kbd "C-c C-c") 'cb:ruby-eval-dwim)
