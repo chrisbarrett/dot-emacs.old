@@ -518,8 +518,8 @@
   "Generic programming mode configuration."
 
   ;; Error navigation keybindings.
-  (bind-key "M-N" 'next-error)
-  (bind-key "M-P" 'previous-error)
+  (local-set-key "M-N" 'next-error)
+  (local-set-key "M-P" 'previous-error)
 
   ;; Highlight special comments.
   (font-lock-add-keywords
@@ -714,9 +714,8 @@
 
 (use-package smex
   :ensure t
-  :commands (smex smex-major-mode-commands)
-  :bind   (("M-x" . smex)
-           ("M-X" . smex-major-mode-commands))
+  :commands smex
+  :init (bind-key* "M-x" 'smex)
   :config (smex-initialize))
 
 ;;;; Buffer/window management
