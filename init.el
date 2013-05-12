@@ -2011,13 +2011,13 @@
           (search-backward-regexp (rx bol "class") end t))))
 
     (ac-define-source ruby-class-keywords
-      '((candidates . (when (cb:inside-ruby-class-def?)
-                        '("public" "private" "protected")))
-        (symbol     . "m")))
+      '((available  . cb:inside-ruby-class-def?)
+        (candidates . '("public" "private" "protected"))
+        (symbol     . "s")))
 
     (ac-define-source ruby-class-attributes
-      '((candidates . (when (cb:inside-ruby-class-def?)
-                        '("attr_accessor" "attr_reader" "attr_writer")))
+      '((available  . cb:inside-ruby-class-def?)
+        (candidates . '("attr_accessor" "attr_reader" "attr_writer"))
         (action     . (lambda () (insert " :")))
         (symbol     . "m")))
 
