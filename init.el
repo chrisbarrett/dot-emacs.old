@@ -252,8 +252,8 @@
     ((needs-merge conflict) (propertize "!" 'face '(:foreground "red")))
     ((added)                (propertize "A" 'face '(:foreground "green")))
     ((removed)              (propertize "D" 'face '(:foreground "red")))
-    ((ignored)              (propertize "-" 'face '(:foreground "yellow")))
-    (t                      (propertize "?" 'face '(:foreground "yellow")))))
+    ((ignored)              (propertize "-" 'face 'modeline-vc-unknown-face))
+    (t                      (propertize "?" 'face 'modeline-vc-unknown-face))))
 
 (cl-defun cb:vc-file-uptodate? (&optional (file (buffer-file-name)))
   "Non-nil if FILE is up-to-date."
@@ -275,6 +275,16 @@
     output))
 
 ;; Extra mode line faces
+
+(defface modeline-vc-unknown-face
+  '((((type graphic) (background dark))
+     (:foreground "yellow"))
+    (((type graphic) (background light))
+     (:foreground "blue"))
+    (t
+     (:inherit 'mode-line-face)))
+  "Face for unknown vc file status."
+  :group 'modeline)
 
 (defface mode-line-read-only-face
   '((((type graphic))
