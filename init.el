@@ -1412,7 +1412,13 @@
   :ensure t
   :commands (smart-insert-operator smart-insert-operator-hook)
   :init
-  (progn
+  (macrolet
+      ((smart-op
+        (op)
+        `(lambda ()
+           ,(concat "Perform a smart-operator insertion for " op)
+           (interactive) (smart-insert-operator ,op))))
+
     (defun cb:smart-equals-dwim ()
       "Insert an '=' char padded by spaces, except in function arglists."
       (interactive)
@@ -1431,6 +1437,7 @@
     (hook-fn 'cb:ruby-modes-hook
       (smart-insert-operator-hook)
       (local-set-key (kbd "=") 'cb:smart-equals-dwim)
+      (local-set-key (kbd "~") (smart-op "~"))
       (local-unset-key (kbd "%"))
       (local-unset-key (kbd "/"))
       (local-unset-key (kbd "."))
