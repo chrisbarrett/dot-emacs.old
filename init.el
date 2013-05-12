@@ -373,6 +373,8 @@
   "Face for the warning when point is past column 80."
   :group 'modeline)
 
+(autoload 'vc-git-root "vc-git")
+
 (setq-default
  mode-line-format
  '(
