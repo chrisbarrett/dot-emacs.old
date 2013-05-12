@@ -1432,6 +1432,7 @@
       (smart-insert-operator-hook)
       (local-set-key (kbd "=") 'cb:smart-equals-dwim)
       (local-unset-key (kbd "%"))
+      (local-unset-key (kbd "/"))
       (local-unset-key (kbd "."))
       (local-unset-key (kbd ":")))
 
