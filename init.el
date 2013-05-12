@@ -67,22 +67,24 @@
 (use-package dash
   :ensure t)
 
-(use-package cb-macros)
-
 (use-package cl-lib)
+
+(use-package cb-macros
+  :init
+  (progn
 
 ;;;; Paths
 
-(cb:define-path cb:lib-dir       "lib/" t)
-(cb:define-path cb:lisp-dir      "lisp/" t)
-(cb:define-path cb:src-dir       "src")
-(cb:define-path cb:tmp-dir       "tmp/")
-(cb:define-path cb:elpa-dir      "elpa/")
-(cb:define-path cb:bin-dir       "bin/")
-(cb:define-path cb:etc-dir       "etc/")
-(cb:define-path cb:yasnippet-dir "snippets/")
-(cb:define-path cb:backups-dir   "backups/")
-(cb:define-path cb:autosaves-dir "tmp/autosaves/")
+    (cb:define-path cb:lib-dir       "lib/" t)
+    (cb:define-path cb:lisp-dir      "lisp/" t)
+    (cb:define-path cb:src-dir       "src")
+    (cb:define-path cb:tmp-dir       "tmp/")
+    (cb:define-path cb:elpa-dir      "elpa/")
+    (cb:define-path cb:bin-dir       "bin/")
+    (cb:define-path cb:etc-dir       "etc/")
+    (cb:define-path cb:yasnippet-dir "snippets/")
+    (cb:define-path cb:backups-dir   "backups/")
+    (cb:define-path cb:autosaves-dir "tmp/autosaves/")))
 
 ;;;; Initial Configuration
 
@@ -712,9 +714,10 @@
 
 (use-package smex
   :ensure t
-  :config (smex-initialize)
+  :commands (smex smex-major-mode-commands)
   :bind   (("M-x" . smex)
-           ("M-X" . smex-major-mode-commands)))
+           ("M-X" . smex-major-mode-commands))
+  :config (smex-initialize))
 
 ;;;; Buffer/window management
 
@@ -745,6 +748,10 @@
 
 (use-package popwin
   :ensure t
+  :commands popwin-mode
+  :init (hook-fn 'window-configuration-change-hook
+          (unless (and (boundp 'popwin-mode) popwin-mode)
+            (popwin-mode +1)))
   :config
   (progn
     (setq display-buffer-function 'popwin:display-buffer
@@ -765,9 +772,7 @@
             ("*shell*" :height 30)
             (".*overtone.log" :regexp t :height 30)
             ("*gists*" :height 30)
-            ("*sldb.*":regexp t :height 30)))
-
-    (popwin-mode +1)))
+            ("*sldb.*":regexp t :height 30)))))
 
 (use-package transpose-frame
   :bind (("C-x t" . transpose-frame)
@@ -784,7 +789,10 @@
    rotate-frame-anticlockwise))
 
 (use-package winner
-  :config (winner-mode +1))
+  :commands winner-mode
+  :init (hook-fn 'window-configuration-change-hook
+          (unless (and (boundp 'winner-mode) winner-mode)
+            (winner-mode +1))))
 
 (use-package window-number
   :ensure t
@@ -1072,9 +1080,11 @@
 (use-package evil
   :ensure t
   :commands evil-mode
-
-  :init
+  :init (evil-mode +1)
+  :config
   (progn
+    (require 'cb-evil)
+
     (defun cb:append-buffer ()
       "Enter insertion mode at the end of the current buffer."
       (interactive)
@@ -1082,13 +1092,7 @@
       (when (fboundp 'evil-append-line)
         (evil-append-line 1)))
 
-    (evil-mode +1)
-    (evil-global-set-key 'insert (kbd "S-TAB") 'tab-to-tab-stop)
-    (add-hook 'comint-mode-hook 'cb:append-buffer))
-
-  :config
-  (progn
-    (require 'cb-evil)
+    (add-hook 'comint-mode-hook 'cb:append-buffer)
 
     (defun cb:evil-undefine ()
       "Temporarily undefine a key for Evil minor mode."
@@ -1116,6 +1120,8 @@
       'undo-tree-visualize-redo)
     (define-key undo-tree-visualizer-mode-map [remap evil-previous-line]
       'undo-tree-visualize-undo)
+
+    (evil-global-set-key 'insert (kbd "S-TAB") 'tab-to-tab-stop)
 
     ;; Use ESC as quit command in most situations.
     (--each '(evil-normal-state-map
