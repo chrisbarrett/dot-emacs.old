@@ -2134,15 +2134,16 @@ Start an inferior ruby if necessary."
 
     (defun cb:filter-irb-output (str &rest _)
       "Print IRB output to messages."
-      (when (and (fboundp 'inf-ruby-proc) (inf-ruby-proc))
-        (let ((lines
-               (->> (s-lines str)
-                 (--remove (or (s-contains? "--inf-ruby" it)
-                               (s-blank? it)
-                               (s-matches? inf-ruby-prompt-pattern it)))
-                 (-map 's-trim))))
-          (message (or (cb:format-irb-error lines)
-                       (cb:apply-ruby-font-lock (car (reverse lines)))))))
+      (ignore-errors
+        (when (and (fboundp 'inf-ruby-proc) (inf-ruby-proc))
+         (let ((lines
+                (->> (s-lines str)
+                  (--remove (or (s-contains? "--inf-ruby" it)
+                                (s-blank? it)
+                                (s-matches? inf-ruby-prompt-pattern it)))
+                  (-map 's-trim))))
+           (message (or (cb:format-irb-error lines)
+                        (cb:apply-ruby-font-lock (car (reverse lines))))))))
       str)
 
     (hook-fn 'ruby-mode-hook
