@@ -1119,18 +1119,24 @@
   :bind ("M-t" . cb:shell-cycle)
   :init
   (defun cb:shell-cycle ()
-    "Toggle various shell window states."
+    "Cycle through various shell window states."
     (interactive)
     (cond
-     ;; If shell is maximized, hide it.
+     ;; If shell is maximized, restore previous window config.
      ((and (derived-mode-p 'shell-mode)
            (equal 1 (length (window-list))))
-      (bury-buffer))
+      (bury-buffer)
+      (jump-to-register :shell-fullscreen))
+
      ;; If we're looking at the shell, maximize it.
      ((derived-mode-p 'shell-mode)
       (delete-other-windows))
+
      ;; Otherwise show the shell.
-     (t (shell))))
+     (t
+      (window-configuration-to-register :shell-fullscreen)
+      (shell))))
+
   :config
   (progn
 
