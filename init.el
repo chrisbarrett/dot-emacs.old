@@ -1293,6 +1293,8 @@
   :commands (dired-jump dired-jump-other-window)
   :init
   (progn
+    (hook-fn 'dired-load-hook
+      (require 'dired-x))
     (bind-key* "M-d" 'dired-jump)
     (bind-key* "M-D" 'dired-jump-other-window)))
 
@@ -1439,6 +1441,7 @@
       (local-set-key (kbd "=") 'cb:smart-equals-dwim)
       (local-set-key (kbd "~") (smart-op "~"))
       (local-unset-key (kbd "%"))
+      (local-unset-key (kbd "&"))
       (local-unset-key (kbd "/"))
       (local-unset-key (kbd "."))
       (local-unset-key (kbd ":")))
@@ -2107,17 +2110,25 @@ Start an inferior ruby if necessary."
           (ruby-send-region (region-beginning) (region-end))
         (ruby-send-region (point-min) (point-max))))
 
+
+    (defun cb:format-irb-error (lines)
+      "Return a propertized error string for the given LINES of an irb error message."
+      (-when-let* ((err (--first (s-matches? "Error:" it) lines))
+                   (colon (s-index-of ":" err)))
+        (concat (propertize (substring err 0 colon) 'face 'error)
+                (substring err colon))))
+
     (defun cb:filter-irb-output (str &rest _)
       "Print IRB output to messages."
-      (ignore-errors
-        (when (and (fboundp 'inf-ruby-proc) (inf-ruby-proc))
-          (->> (s-lines str)
-            (nreverse)
-            (--first (not (or (s-contains? "--inf-ruby" it)
-                              (s-blank? it)
-                              (s-matches? inf-ruby-prompt-pattern it))))
-            (s-trim)
-            (message))))
+      (when (and (fboundp 'inf-ruby-proc) (inf-ruby-proc))
+        (let ((lines
+               (->> (s-lines str)
+                 (--remove (or (s-contains? "--inf-ruby" it)
+                               (s-blank? it)
+                               (s-matches? inf-ruby-prompt-pattern it)))
+                 (-map 's-trim))))
+          (message (or (cb:format-irb-error lines)
+                       (car (reverse lines))))))
       str)
 
     (hook-fn 'ruby-mode-hook
