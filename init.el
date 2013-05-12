@@ -218,12 +218,6 @@
 
 ;;; Editing Advice
 
-(defadvice ido-find-file (after find-file-sudo activate)
-  "Find file as root if necessary."
-  (unless (and buffer-file-name
-               (file-writable-p buffer-file-name))
-    (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
-
 (defadvice save-buffers-kill-emacs (around no-query-kill-emacs activate)
   "Suppress \"Active processes exist\" query when exiting Emacs."
   (flet ((process-list ()))
@@ -602,7 +596,8 @@
       (setq tags-file-name (concat (projectile-project-root) "TAGS")))))
 
 (use-package helm
-  :ensure   t
+  :ensure t
+  :defer t
   :init
   (progn
     (bind-key* "M-a" 'helm-apropos)
@@ -635,7 +630,29 @@
 
 (use-package ido
   :ensure t
-  :defer  nil
+  :commands (ido-mode
+             ido-find-file
+             ido-switch-buffer
+             ido-switch-buffer-other-window
+             ido-display-buffer
+             ido-kill-buffer
+             ido-insert-buffer
+             ido-switch-buffer-other-frame
+             ido-find-file-in-dir
+             ido-find-file-other-window
+             ido-find-alternate-file
+             ido-find-file-read-only
+             ido-find-file-read-only-other-window
+             ido-find-file-read-only-other-frame
+             ido-display-file
+             ido-find-file-other-frame
+             ido-write-file
+             ido-insert-file
+             ido-dired
+             ido-read-buffer
+             ido-read-file-name
+             ido-read-directory-name
+             ido-completing-read)
   :init
   (setq ido-enable-prefix            nil
         ido-save-directory-list-file (concat cb:tmp-dir "ido.last")
@@ -646,29 +663,43 @@
         ido-default-file-method      'selected-window)
   :config
   (progn
+
+    (defadvice ido-find-file (after find-file-sudo activate)
+      "Find file as root if necessary."
+      (unless (and buffer-file-name
+                   (file-writable-p buffer-file-name))
+        (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
+
     (ido-mode +1)
     (add-to-list 'ido-ignore-buffers "*helm mini*")
     (add-to-list 'ido-ignore-files "\\.DS_Store")))
 
 (use-package ido-hacks
   :ensure t
-  :config (ido-hacks-mode +1))
+  :commands ido-hacks-mode
+  :init (progn-after-load 'ido (ido-hacks-mode +1)))
 
 (use-package ido-ubiquitous
   :ensure t
-  :config (ido-ubiquitous-mode +1))
+  :commands ido-ubiquitous-mode
+  :init (progn-after-load 'ido (ido-ubiquitous-mode +1)))
 
 (use-package ido-yes-or-no
   :ensure t
-  :config (ido-yes-or-no-mode +1))
+  :commands ido-yes-or-no-mode
+  :init (progn-after-load 'ido (ido-yes-or-no-mode +1)))
 
 (use-package ido-better-flex
   :ensure t
-  :config (ido-better-flex/enable))
+  :commands ido-better-flex/enable
+  :init (progn-after-load 'ido (ido-better-flex/enable)))
 
-(use-package ido-speed-hack)
+(use-package ido-speed-hack
+  :defer t
+  :init (progn-after-load 'ido (require 'ido-speed-hack)))
 
 (use-package imenu
+  :commands imenu
   :config
   (hook-fn 'emacs-lisp-mode-hook
     "Display section headings."
@@ -757,7 +788,9 @@
 
 (use-package window-number
   :ensure t
-  :config (window-number-meta-mode +1))
+  :defer  t
+  :commands window-number-meta-mode
+  :init (hook-fn 'window-configuration-change-hook (window-number-meta-mode +1)))
 
 (use-package windmove
   :bind (("S-<left>"  . windmove-left)
@@ -769,12 +802,16 @@
   :bind (("s-f"     . cb:rotate-buffers)
          ("C-x C-o" . other-window))
 
-  :commands (cb:hide-dos-eol
+  :commands (cb:select-largest-window
+             cb:rotate-buffers
              cb:kill-current-buffer
-             cb:indent-dwim
+             cb:hide-dos-eol
+             cb:last-buffer-for-mode
              cb:insert-timestamp
+             cb:indent-buffer
+             cb:indent-dwim
              cb:rename-file-and-buffer
-             cb:last-buffer-for-mode)
+             cb:show-autoloads)
 
   :init     (add-hook 'find-file-hook 'cb:hide-dos-eol)
 
@@ -847,18 +884,17 @@
   :config (fringe-mode '(2 . 0)))
 
 (use-package ansi-color
+  :defer t
+  :init
+  (add-hook 'comint-mode-hook 'ansi-color-for-comint-mode-on)
   :config
-  (progn
-
-    (defadvice display-message-or-buffer (before ansi-color activate)
-      "Process ANSI color codes in shell output."
-      (let ((buf (ad-get-arg 0)))
-        (and (bufferp buf)
-             (string= (buffer-name buf) "*Shell Command Output*")
-             (with-current-buffer buf
-               (ansi-color-apply-on-region (point-min) (point-max))))))
-
-    (ansi-color-for-comint-mode-on)))
+  (defadvice display-message-or-buffer (before ansi-color activate)
+    "Process ANSI color codes in shell output."
+    (let ((buf (ad-get-arg 0)))
+      (and (bufferp buf)
+           (string= (buffer-name buf) "*Shell Command Output*")
+           (with-current-buffer buf
+             (ansi-color-apply-on-region (point-min) (point-max)))))))
 
 ;;;; Navigation
 
@@ -1010,6 +1046,7 @@
 ;;;; Themes
 
 (use-package color-theme
+  :if (display-graphic-p)
   :config (setq color-theme-is-global t))
 
 (use-package solarized-theme
@@ -1340,8 +1377,8 @@
 
 (use-package flyspell-lazy
   :ensure  t
-  :defines flyspell-lazy-mode
-  :config  (flyspell-lazy-mode +1))
+  :defer   t
+  :init (add-hook 'flyspell-mode-hook 'flyspell-lazy-mode))
 
 (use-package flycheck
   :ensure t
@@ -1356,7 +1393,11 @@
 
     (setq flycheck-highlighting-mode 'lines)
     (add-hook 'text-mode-hook maybe-enable-flycheck)
-    (add-hook 'prog-mode-hook maybe-enable-flycheck)))
+    (add-hook 'prog-mode-hook maybe-enable-flycheck))
+  :config
+  (defadvice projectile-project-root (around suppress-errors activate)
+    "Return nil instead of throwing errors."
+    (ignore-errors ad-do-it)))
 
 ;;;; Tags
 
@@ -2019,10 +2060,20 @@
       (add-to-list 'ac-sources 'ac-source-ruby-class-keywords)
       (add-to-list 'ac-sources 'ac-source-ruby-class-attributes)
       (local-set-key (kbd "M-q") 'cb:indent-dwim)
-      (subword-mode +1)
-      ;; Disable rubocop checker if we're not in a project.
-      (unless (projectile-project-p)
-        (flycheck-select-checker 'ruby)))))
+      (subword-mode +1))))
+
+(use-package rubocop
+  :ensure t
+  :commands (rubocop-run-on-project
+             rubocop-run-on-directory
+             rubocop-run-on-current-file))
+
+(use-package robe
+  :ensure t
+  :diminish robe-mode
+  :defer t
+  :commands robe-mode
+  :init (add-hook 'cb:rails-modes-hook 'robe-mode))
 
 (use-package rinari
   :ensure t

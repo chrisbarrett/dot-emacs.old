@@ -40,10 +40,12 @@
       ;; Select widest.
       (if (> x1 x2) win1 win2))))
 
+;;;###autoload
 (defun cb:select-largest-window ()
   (interactive)
   (select-window (-reduce 'cb:larger-window (window-list))))
 
+;;;###autoload
 (defun cb:rotate-buffers ()
   "Rotate active buffers, retaining the window layout. Changes
 the selected buffer."
@@ -72,6 +74,7 @@ the selected buffer."
 (defvar cb:kill-buffer-ignored-list
   '("*scratch*" "*Messages*" "*GROUP*" "*shell*" "*eshell*"))
 
+;;;###autoload
 (defun cb:kill-current-buffer ()
   "Kill the current buffer.
 If this buffer is a member of `kill-buffer-ignored-list, bury it rather than killing it."
@@ -80,11 +83,13 @@ If this buffer is a member of `kill-buffer-ignored-list, bury it rather than kil
       (bury-buffer)
     (kill-buffer (current-buffer))))
 
+;;;###autoload
 (defun cb:hide-dos-eol ()
   (setq buffer-display-table (make-display-table))
   (aset buffer-display-table ?\^M [])
   (aset buffer-display-table ?\^L []))
 
+;;;###autoload
 (cl-defun cb:last-buffer-for-mode (mode &optional (buffers (buffer-list)))
   "Return the previous buffer with major mode MODE."
   (--first (with-current-buffer it
@@ -94,17 +99,20 @@ If this buffer is a member of `kill-buffer-ignored-list, bury it rather than kil
 (defun cb:timestamp ()
   (format-time-string "%Y%m%d.%H%M" nil t))
 
+;;;###autoload
 (defun cb:insert-timestamp ()
   "Insert a package-conformant timestamp, of the format YYYYMMDD.HHMM at point."
   (interactive)
   (insert (cb:timestamp)))
 
+;;;###autoload
 (defun cb:indent-buffer ()
   "Indent the whole buffer."
   (interactive)
   (save-excursion
     (indent-region (point-min) (point-max))))
 
+;;;###autoload
 (defun cb:indent-dwim ()
   "Perform a context-sensitive indentation action."
   (interactive)
@@ -118,6 +126,7 @@ If this buffer is a member of `kill-buffer-ignored-list, bury it rather than kil
    (t
     (cb:indent-buffer))))
 
+;;;###autoload
 (defun cb:rename-file-and-buffer ()
   "Rename the current buffer and file it is visiting."
   (interactive)
@@ -132,6 +141,24 @@ If this buffer is a member of `kill-buffer-ignored-list, bury it rather than kil
           (rename-buffer new-name)
           (set-visited-file-name new-name)
           (set-buffer-modified-p nil)))))))
+
+(defun cb:find-autoloads (buffer)
+  (->> (with-current-buffer buffer
+         (buffer-substring-no-properties (point-min) (point-max)))
+    (s-match-strings-all (rx ";;;###autoload\n(" (+ (not space)) (+ space)
+                             (group (+ (not space)))))
+    (-map 'cadr)))
+
+;;;###autoload
+(cl-defun cb:show-autoloads (&optional (buffer (current-buffer)))
+  "Find the autoloaded definitions in BUFFER"
+  (interactive)
+  (-if-let (results (--map (s-append "\n" it)
+                           (cb:find-autoloads buffer)))
+    (with-output-to-temp-buffer "*autoloads*"
+      (-each results 'princ))
+
+    (error "No autoloads found in current buffer")))
 
 (provide 'cb-commands)
 
