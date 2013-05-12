@@ -2010,13 +2010,15 @@
         (let ((end (save-excursion (search-backward-regexp (rx bol "end") nil t))))
           (search-backward-regexp (rx bol "class") end t))))
 
-    (defconst cb:ruby-class-keywords
-      '("public" "private" "protected"
-        "attr_accessor" "attr_reader" "attr_writer"))
-
     (ac-define-source ruby-class-keywords
       '((candidates . (when (cb:inside-ruby-class-def?)
-                        cb:ruby-class-keywords))
+                        '("public" "private" "protected")))
+        (symbol     . "m")))
+
+    (ac-define-source ruby-class-attributes
+      '((candidates . (when (cb:inside-ruby-class-def?)
+                        '("attr_accessor" "attr_reader" "attr_writer")))
+        (action     . (lambda () (insert " :")))
         (symbol     . "m")))
 
     (add-to-list 'ac-modes 'ruby-mode)
@@ -2025,6 +2027,7 @@
     (hook-fn 'cb:ruby-modes-hook
       (add-to-list 'ac-sources 'ac-source-yasnippet)
       (add-to-list 'ac-sources 'ac-source-ruby-class-keywords)
+      (add-to-list 'ac-sources 'ac-source-ruby-class-attributes)
       (local-set-key (kbd "M-q") 'cb:indent-dwim)
       (subword-mode +1)
       ;; Disable rubocop checker if we're not in a project.
