@@ -2000,14 +2000,31 @@
          ("Thorfile\\'" . ruby-mode)
          ("Vagrantfile\\'" . ruby-mode)
          ("\\.jbuilder\\'" . ruby-mode))
+  :init
+  (add-to-list 'completion-ignored-extensions ".rbc")
   :config
   (progn
+
+    (defun cb:inside-ruby-class-def? ()
+      (save-excursion
+        (let ((end (save-excursion (search-backward-regexp (rx bol "end") nil t))))
+          (search-backward-regexp (rx bol "class") end t))))
+
+    (defconst cb:ruby-class-keywords
+      '("public" "private" "protected"
+        "attr_accessor" "attr_reader" "attr_writer"))
+
+    (ac-define-source ruby-class-keywords
+      '((candidates . (when (cb:inside-ruby-class-def?)
+                        cb:ruby-class-keywords))
+        (symbol     . "m")))
+
     (add-to-list 'ac-modes 'ruby-mode)
     (add-to-list 'ac-modes 'inf-ruby-mode)
-    (add-to-list 'completion-ignored-extensions ".rbc")
 
     (hook-fn 'cb:ruby-modes-hook
       (add-to-list 'ac-sources 'ac-source-yasnippet)
+      (add-to-list 'ac-sources 'ac-source-ruby-class-keywords)
       (local-set-key (kbd "M-q") 'cb:indent-dwim)
       (subword-mode +1)
       ;; Disable rubocop checker if we're not in a project.
