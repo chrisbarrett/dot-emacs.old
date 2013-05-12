@@ -37,8 +37,7 @@
 (defvar user-home-directory (getenv "HOME"))
 (add-to-list 'load-path (concat user-emacs-directory "lisp"))
 
-;;; ============================================================================
-;;; Initialize packages.
+;;;; Packages
 
 (require 'package)
 (add-to-list 'package-archives '("melpa"     . "http://melpa.milkbox.net/packages/"))
@@ -72,9 +71,7 @@
 
 (use-package cl-lib)
 
-;;; ============================================================================
-
-;;; Initialize paths
+;;;; Paths
 
 (cb:define-path cb:lib-dir       "lib/" t)
 (cb:define-path cb:lisp-dir      "lisp/" t)
@@ -86,6 +83,8 @@
 (cb:define-path cb:yasnippet-dir "snippets/")
 (cb:define-path cb:backups-dir   "backups/")
 (cb:define-path cb:autosaves-dir "tmp/autosaves/")
+
+;;;; Initial Configuration
 
 ;; Use the version of emacs in /src for info and source.
 (setq source-directory (format "%s/emacs-%s.%s" cb:src-dir
@@ -241,8 +240,7 @@
         (whitespace-tab-width tab-width))
     ad-do-it))
 
-;;; ============================================================================
-;;; Modeline
+;;;; Modeline
 
 (cl-defun cb:vc-state->letter (&optional (file (buffer-file-name)))
   "Return a single letter to represent the current version-control status."
@@ -448,7 +446,7 @@
    (global-mode-string global-mode-string)))
 
 ;;; ============================================================================
-;;; Mode groups
+;;;; Mode groups
 
 (defmacro cb:define-mode-group (name modes)
   "Create an ad-hoc relationship between language modes.
@@ -559,37 +557,8 @@
       (insert (concat "#!" env " " cmd))
       (newline 2))))
 
-;;; Forward-declare ac-modes so auto-complete can be safely loaded separately
-;;; from other modes.
+;;; Forward declaration.
 (defvar ac-modes nil)
-
-;;; ----------------------------------------------------------------------------
-
-;;; OS X-specific configuration.
-(when (equal system-type 'darwin)
-
-  ;; Set exec-path
-  (use-package exec-path-from-shell
-    :ensure t
-    :if     (display-graphic-p)
-    :config (exec-path-from-shell-initialize))
-
-  ;; Configure cut & paste in terminal.
-  (unless (window-system)
-
-    (defun cb:paste ()
-      (shell-command-to-string "pbpaste"))
-
-    (defun cb:copy (text &optional push)
-      (let ((process-connection-type nil))
-        (let ((proc (start-process "pbcopy" "*Messages*" "pbcopy")))
-          (process-send-string proc text)
-          (process-send-eof proc))))
-
-    (setq interprogram-cut-function   'cb:copy
-          interprogram-paste-function 'cb:paste)))
-
-;;; ----------------------------------------------------------------------------
 
 (use-package simple
   :diminish (visual-line-mode
@@ -598,7 +567,28 @@
   :config
   (add-hook 'text-mode-hook 'visual-line-mode))
 
-;;; Helm
+;;;; OS X
+
+(use-package exec-path-from-shell
+  :ensure t
+  :if (and (equal system-type 'darwin) (display-graphic-p))
+  :config (exec-path-from-shell-initialize))
+
+(defun cb:osx-paste ()
+  (shell-command-to-string "pbpaste"))
+
+(defun cb:osx-copy (text &optional push)
+  (let ((process-connection-type nil))
+    (let ((proc (start-process "pbcopy" "*Messages*" "pbcopy")))
+      (process-send-string proc text)
+      (process-send-eof proc))))
+
+(when (equal system-type 'darwin)
+  (unless window-system
+    (setq interprogram-cut-function   'cb:osx-copy
+          interprogram-paste-function 'cb:osx-paste)))
+
+;;;; Helm
 
 (use-package projectile
   :ensure   t
@@ -641,7 +631,7 @@
 
     (bind-key* "C-j" 'cb:helm-dwim)))
 
-;;; Ido
+;;;; Ido
 
 (use-package ido
   :ensure t
@@ -686,10 +676,8 @@
     (add-to-list 'imenu-generic-expression
                  `("SECTION"
                    ;; Match sections.
-                   ,(rx bol ";;;" (* space) (+ "-") (? "\n")
-                        ";;;" (* space)
-                        (group (1+ nonl))
-                        (* "-") eol) 1) t)))
+                   ,(rx bol ";;;;" (+ space) (group (+ nonl )))
+                   1) t)))
 
 (use-package smex
   :ensure t
@@ -697,7 +685,7 @@
   :bind   (("M-x" . smex)
            ("M-X" . smex-major-mode-commands)))
 
-;;; Buffer/window management
+;;;; Buffer/window management
 
 (use-package workgroups
   :if       (display-graphic-p)
@@ -796,7 +784,7 @@
     (when (= 2 (length (window-list)))
       (cb:select-largest-window))))
 
-;;; Backups & State
+;;;; Backups & State
 
 (use-package saveplace
   :init
@@ -844,7 +832,7 @@
   :diminish undo-tree-mode
   :config   (global-undo-tree-mode +1))
 
-;;; Cosmetic
+;;;; Cosmetic
 
 (use-package highlight
   :ensure t
@@ -872,7 +860,7 @@
 
     (ansi-color-for-comint-mode-on)))
 
-;;; Navigation
+;;;; Navigation
 
 (use-package ace-jump-mode
   :ensure t
@@ -895,7 +883,7 @@
   :commands hs-minor-mode
   :defer    t)
 
-;;; Web
+;;;; Web
 
 (use-package smtpmail
   :commands smtpmail-send-it
@@ -1019,7 +1007,7 @@
      erc-autojoin-channels-alist
      '((".*\\.freenode.net" "#emacs" "#haskell")))))
 
-;;; Themes
+;;;; Themes
 
 (use-package color-theme
   :config (setq color-theme-is-global t))
@@ -1042,7 +1030,7 @@
      ((or  (< 20 hour) (> 9 hour))  (solarized-dark))
      (t                             (solarized-light)))))
 
-;;; Vim & Evil
+;;;; Vim & Evil
 
 (use-package evil
   :ensure t
@@ -1124,7 +1112,7 @@
     (define-key evil-normal-state-map (kbd "-") 'evil-numbers/dec-at-pt)
     (define-key evil-normal-state-map (kbd "+") 'evil-numbers/inc-at-pt)))
 
-;;; Shells
+;;;; Shells
 
 (use-package eshell
   :commands eshell
@@ -1225,7 +1213,7 @@
     (define-key ac-completing-map "\t" 'ac-complete)
     (define-key ac-completing-map (kbd "M-RET") 'ac-help)))
 
-;;; Completion
+;;;; Completion
 
 (use-package yasnippet
   :ensure t
@@ -1263,7 +1251,7 @@
 (use-package fuzzy
   :ensure t)
 
-;;; Dired
+;;;; Dired
 
 (use-package dired
   :defer   t
@@ -1305,7 +1293,7 @@
   :commands dired-details-install
   :init     (add-hook 'dired-mode-hook 'dired-details-install))
 
-;;; Compilation & Checking
+;;;; Compilation & Checking
 
 (use-package compile
   :bind  (("C-c b" . compile)
@@ -1370,7 +1358,7 @@
     (add-hook 'text-mode-hook maybe-enable-flycheck)
     (add-hook 'prog-mode-hook maybe-enable-flycheck)))
 
-;;; Tags
+;;;; Tags
 
 (use-package cb-tags
   :commands cb:build-ctags
@@ -1391,7 +1379,7 @@
   :ensure   t
   :commands (etags-select-find-tag-at-point etags-select-find-tag))
 
-;;; Language utils
+;;;; Language utils
 
 (use-package smartparens
   :ensure t
@@ -1510,7 +1498,7 @@
   :init     (add-hook 'prog-mode-hook 'highlight-symbol-mode)
   :config   (setq highlight-symbol-idle-delay 0.5))
 
-;;; Markup
+;;;; Markup
 
 (use-package nxml-mode
   :commands nxml-mode
@@ -1578,7 +1566,7 @@
             ("h6"   "^###### \\(.*\\)$" 1)
             ("fn"   "^\\[\\^\\(.*\\)\\]" 1)))))
 
-;;; Lisps
+;;;; Lisps
 
 (use-package parenface-plus
   :ensure t)
@@ -1643,7 +1631,7 @@
   :init     (add-hook 'slime-modes-hook 'set-up-slime-ac)
   :config   (add-to-list 'ac-modes 'slime-repl-mode))
 
-;;; Elisp
+;;;; Elisp
 
 (use-package lisp-mode
   :defer t
@@ -1781,7 +1769,7 @@
   :bind   ("M-RET" . emr-show-refactor-menu)
   :config (require 'emr-elisp))
 
-;;; Clojure
+;;;; Clojure
 
 (use-package clojure-mode
   :ensure t
@@ -1872,7 +1860,7 @@
   :diminish midje-mode
   :init    (add-hook 'clojure-mode-hook 'midje-mode))
 
-;;; Scheme
+;;;; Scheme
 
 (use-package geiser
   :ensure t
@@ -1948,7 +1936,7 @@
            (lambda (url &rest _)
              (cb:w3m-browse-url-as-help (concat "file://" url)))))))
 
-;;; Python
+;;;; Python
 
 (use-package python
   :ensure   t
@@ -1980,7 +1968,7 @@
   :init     (add-hook 'cb:python-modes-hook 'jedi:setup)
   :config   (setq jedi:setup-keys t))
 
-;;; Ruby
+;;;; Ruby
 
 (define-derived-mode erb-mode html-mode
   "ERB" nil
@@ -2205,7 +2193,7 @@ Start an inferior ruby if necessary."
   :mode     (("\\.yaml$" . yaml-mode)
              ("\\.yml$"  . yaml-mode)))
 
-;;; Haskell
+;;;; Haskell
 
 (use-package haskell-mode
   :ensure t
@@ -2303,13 +2291,13 @@ Start an inferior ruby if necessary."
   :config
   (setq hs-lint-command (executable-find "hlint")))
 
-;;; C Languages
+;;;; C Languages
 
 (use-package google-c-style
-  :ensure t
-  :defer t
+  :ensure   t
+  :defer    t
   :commands google-set-c-style
-  :init (add-hook 'c-mode-common-hook 'google-set-c-style))
+  :init    (add-hook 'c-mode-common-hook 'google-set-c-style))
 
 (use-package disaster
   :ensure   t
@@ -2337,7 +2325,7 @@ Start an inferior ruby if necessary."
   :commands c-turn-on-eldoc-mode
   :init     (add-hook 'c-mode-hook 'c-turn-on-eldoc-mode))
 
-;;; SuperCollider
+;;;; SuperCollider
 
 (use-package sclang
   :commands (sclang-mode sclang-start)
@@ -2362,7 +2350,7 @@ Start an inferior ruby if necessary."
   :commands sclang-extensions-mode
   :init     (add-hook 'sclang-mode-hook 'sclang-extensions-mode))
 
-;;; Misc language modes
+;;;; Misc language modes
 
 (use-package make-mode
   :defer t
@@ -2374,18 +2362,17 @@ Start an inferior ruby if necessary."
       (setq indent-tabs-mode t))))
 
 (use-package json-mode
-  :ensure t
-  :commands json-mode
-  :mode ("\\.json$" . json-mode)
-  :config
-  (progn
-    (add-to-list 'ac-modes 'json-mode)
-    (defalias 'format-json 'beautify-json)))
+  :ensure    t
+  :commands (json-mode beautify-json)
+  :mode      ("\\.json$" . json-mode)
+  :init      (defalias 'format-json 'beautify-json)
+  :config    (add-to-list 'ac-modes 'json-mode))
 
 (use-package asm-mode
   :commands asm-mode
   :config
   (progn
+
     (defun cb:asm-toggling-tab ()
       (interactive)
       (if (equal (line-beginning-position)
@@ -2430,7 +2417,7 @@ Start an inferior ruby if necessary."
   :mode ((".gitignore$" . conf-mode)
          (".gitmodules$" . conf-mode)))
 
-;;; Git
+;;;; Git
 
 (use-package magit
   :ensure t
@@ -2496,7 +2483,7 @@ Start an inferior ruby if necessary."
 (use-package cb-ediff
   :commands cb:handle-git-merge)
 
-;;; Productivity
+;;;; Productivity
 
 (use-package key-chord
   :ensure t
@@ -2585,8 +2572,7 @@ Start an inferior ruby if necessary."
              ack-and-a-half-find-file
              ack-and-a-half-find-file-same))
 
-;;; ----------------------------------------------------------------------------
-;;; Misc commands
+;;;; Misc commands
 
 (defun cb:swap-with-previous-buffer ()
   "Switch to previously open buffer.
@@ -2596,7 +2582,7 @@ Repeated invocations toggle between the two most recently open buffers."
 
 (bind-key* "C-;" 'cb:swap-with-previous-buffer)
 
-;;; Byte compilation
+;;;; Byte compilation
 
 (defun cb:byte-compile-conf ()
   "Recompile all configuration files."
@@ -2610,8 +2596,7 @@ Repeated invocations toggle between the two most recently open buffers."
   (interactive)
   (byte-recompile-directory (concat user-emacs-directory "elpa") 0 t))
 
-;;; ----------------------------------------------------------------------------
-;;; Show quote if 'fortune' is installed.
+;;;; Fortune
 
 (defun fortune ()
   "Display a quotation from the 'fortune' program."
@@ -2620,7 +2605,7 @@ Repeated invocations toggle between the two most recently open buffers."
     (message (s-trim (shell-command-to-string "fortune -s -n 250")))))
 
 (hook-fn 'after-init-hook
-  ;; Show fortune.
+  "Show fortune."
   (run-with-idle-timer 0.1 nil 'fortune)
 
   ;; Load site-file.
