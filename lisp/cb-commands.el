@@ -25,6 +25,8 @@
 
 ;;; Code:
 
+(require 'dash)
+
 ;;; Buffers
 
 (defun cb:larger-window (win1 win2)
@@ -92,18 +94,31 @@ If this buffer is a member of `kill-buffer-ignored-list, bury it rather than kil
 (defun cb:timestamp ()
   (format-time-string "%Y%m%d.%H%M" nil t))
 
-(defun insert-timestamp ()
+(defun cb:insert-timestamp ()
   "Insert a package-conformant timestamp, of the format YYYYMMDD.HHMM at point."
   (interactive)
   (insert (cb:timestamp)))
 
-(defun indent-buffer ()
+(defun cb:indent-buffer ()
   "Indent the whole buffer."
   (interactive)
   (save-excursion
     (indent-region (point-min) (point-max))))
 
-(defun rename-file-and-buffer ()
+(defun cb:indent-dwim ()
+  "Perform a context-sensitive indentation action."
+  (interactive)
+  (cond
+   ((region-active-p)
+    (indent-region (region-beginning) (region-end)))
+   ((thing-at-point 'defun)
+    (save-excursion
+      (mark-defun)
+      (indent-region (region-beginning) (region-end))))
+   (t
+    (cb:indent-buffer))))
+
+(defun cb:rename-file-and-buffer ()
   "Rename the current buffer and file it is visiting."
   (interactive)
   (let ((filename (buffer-file-name)))

@@ -781,9 +781,9 @@
 
   :commands (cb:hide-dos-eol
              cb:kill-current-buffer
-             indent-buffer
-             insert-timestamp
-             rename-file-and-buffer
+             cb:indent-dwim
+             cb:insert-timestamp
+             cb:rename-file-and-buffer
              cb:last-buffer-for-mode)
 
   :init     (add-hook 'find-file-hook 'cb:hide-dos-eol)
@@ -1995,6 +1995,7 @@
 
     (hook-fn 'cb:ruby-modes-hook
       (add-to-list 'ac-sources 'ac-source-yasnippet)
+      (local-set-key (kbd "M-q") 'cb:indent-dwim)
       (subword-mode +1)
       ;; Disable rubocop checker if we're not in a project.
       (unless (projectile-project-p)
