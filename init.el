@@ -2098,11 +2098,12 @@ Start an inferior ruby if necessary."
 
     (defun cb:filter-irb-output (str &rest _)
       "Print IRB output to messages if we're in a ruby buffer."
-      (let ((filt (--remove (s-contains? "--inf-ruby" it) (s-lines str))))
-        (--each filt
-          (unless (or (s-blank? it) (s-matches? inf-ruby-prompt-pattern it))
-            (message (s-trim it))))
-        str))
+      (ignore-errors
+        (let ((filt (--remove (s-contains? "--inf-ruby" it) (s-lines str))))
+          (--each filt
+            (unless (or (s-blank? it) (s-matches? inf-ruby-prompt-pattern it))
+              (message (s-trim it))))))
+      str)
 
     (hook-fn 'ruby-mode-hook
       (local-set-key (kbd "C-c C-c") 'cb:ruby-eval-dwim)
