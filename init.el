@@ -376,15 +376,23 @@
    " "
    ;; read-only or modified status
    (:eval
-    (cond (buffer-read-only
-           (propertize " RO " 'face 'mode-line-read-only-face))
-          ((or (buffer-modified-p)
-               (not (cb:vc-file-uptodate?)))
-           (propertize (format " %s%s "
-                               (cb:vc-state->letter)
-                               (if (buffer-modified-p) "*" " "))
-                       'face 'mode-line-modified-face))
-          (t "    ")))
+    (let ((blank "    "))
+      (cond
+       ;; Do not show status for special buffers.
+       ((and (s-starts-with? "*" (buffer-name))
+             (not (buffer-file-name)))
+        blank)
+
+       (buffer-read-only
+        (propertize " RO " 'face 'mode-line-read-only-face))
+
+       ((or (buffer-modified-p)
+            (not (cb:vc-file-uptodate?)))
+        (propertize (format " %s%s "
+                            (cb:vc-state->letter)
+                            (if (buffer-modified-p) "*" " "))
+                    'face 'mode-line-modified-face))
+       (t blank))))
    " "
    ;; directory and buffer/file name
    (:propertize (:eval (if (buffer-file-name)
@@ -708,7 +716,7 @@
             ("*Occur*" :noselect t)
             ("\\*Slime Description.*" :noselect t :regexp t :height 30)
             ("*magit-commit*" :noselect t :height 40 :width 80)
-            ("*magit-diff*" :noselect t :height 40 :width 80)
+            ("*magit-diff*" :height 40 :width 80)
             ("*magit-edit-log*" :noselect t :height 15 :width 80)
             ("\\*Slime Inspector.*" :regexp t :height 30)
             ("*Ido Completions*" :noselect t :height 30)
@@ -1959,19 +1967,8 @@
     (add-to-list 'ac-modes 'inf-ruby-mode)
     (add-to-list 'completion-ignored-extensions ".rbc")
 
-    (defun cb:switch-to-ruby ()
-      "Toggle between irb and the last ruby buffer.
-Start an inferior ruby if necessary."
-      (interactive)
-      (if (derived-mode-p 'inf-ruby-mode)
-          (switch-to-buffer-other-window
-           (cb:last-buffer-for-mode 'ruby-mode))
-        (run-ruby)
-        (cb:append-buffer)))
-
     (hook-fn 'cb:ruby-modes-hook
       (add-to-list 'ac-sources 'ac-source-yasnippet)
-      (local-set-key (kbd "C-c C-z") 'cb:switch-to-ruby)
       (subword-mode +1)
       ;; Disable rubocop checker if we're not in a project.
       (unless (projectile-project-p)
@@ -2044,9 +2041,19 @@ Start an inferior ruby if necessary."
 
 (use-package inf-ruby
   :ensure   t
-  :commands inf-ruby-mode
+  :commands (inf-ruby-mode ruby-send-region)
   :init
   (progn
+
+    (defun cb:switch-to-ruby ()
+      "Toggle between irb and the last ruby buffer.
+Start an inferior ruby if necessary."
+      (interactive)
+      (if (derived-mode-p 'inf-ruby-mode)
+          (switch-to-buffer-other-window
+           (cb:last-buffer-for-mode 'ruby-mode))
+        (run-ruby)
+        (cb:append-buffer)))
 
     (defun cb:ruby-eval-dwim ()
       "Perform a context-sensitive evaluation."
@@ -2063,9 +2070,6 @@ Start an inferior ruby if necessary."
           (ruby-send-region (region-beginning) (region-end))
         (ruby-send-region (point-min) (point-max))))
 
-    (hook-fn 'ruby-mode-hook
-      (local-set-key (kbd "C-c C-c") 'cb:ruby-eval-dwim))
-
     (defun cb:filter-irb-output (str &rest _)
       "Print IRB output to messages if we're in a ruby buffer."
       (let ((filt (--remove (s-contains? "--inf-ruby" it) (s-lines str))))
@@ -2073,6 +2077,10 @@ Start an inferior ruby if necessary."
           (unless (or (s-blank? it) (s-matches? inf-ruby-prompt-pattern it))
             (message (s-trim it))))
         (apply 'concat filt)))
+
+    (hook-fn 'ruby-mode-hook
+      (local-set-key (kbd "C-c C-c") 'cb:ruby-eval-dwim)
+      (local-set-key (kbd "C-c C-z") 'cb:switch-to-ruby))
 
     (hook-fn 'inf-ruby-mode-hook
       (add-hook 'comint-preoutput-filter-functions 'cb:filter-irb-output)
