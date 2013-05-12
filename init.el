@@ -2100,12 +2100,16 @@ Start an inferior ruby if necessary."
         (ruby-send-region (point-min) (point-max))))
 
     (defun cb:filter-irb-output (str &rest _)
-      "Print IRB output to messages if we're in a ruby buffer."
+      "Print IRB output to messages."
       (ignore-errors
-        (let ((filt (--remove (s-contains? "--inf-ruby" it) (s-lines str))))
-          (--each filt
-            (unless (or (s-blank? it) (s-matches? inf-ruby-prompt-pattern it))
-              (message (s-trim it))))))
+        (when (and (fboundp 'inf-ruby-proc) (inf-ruby-proc))
+          (->> (s-lines str)
+            (nreverse)
+            (--first (not (or (s-contains? "--inf-ruby" it)
+                              (s-blank? it)
+                              (s-matches? inf-ruby-prompt-pattern it))))
+            (s-trim)
+            (message))))
       str)
 
     (hook-fn 'ruby-mode-hook
