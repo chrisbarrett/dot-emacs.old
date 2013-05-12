@@ -247,12 +247,13 @@
 (cl-defun cb:vc-state->letter (&optional (file (buffer-file-name)))
   "Return a single letter to represent the current version-control status."
   (case (ignore-errors (vc-state file))
-    ((edited)               "M")
-    ((needs-merge conflict) "!")
-    ((missing unregistered) "?")
-    ((added)                "A")
-    ((removed)              "D")
-    (t                      " ")))
+    ((up-to-date)           " ")
+    ((edited)               (propertize "M" 'face '(:foreground "red")))
+    ((needs-merge conflict) (propertize "!" 'face '(:foreground "red")))
+    ((added)                (propertize "A" 'face '(:foreground "green")))
+    ((removed)              (propertize "D" 'face '(:foreground "red")))
+    ((ignored)              (propertize "-" 'face '(:foreground "yellow")))
+    (t                      (propertize "?" 'face '(:foreground "yellow")))))
 
 (cl-defun cb:vc-file-uptodate? (&optional (file (buffer-file-name)))
   "Non-nil if FILE is up-to-date."
@@ -387,11 +388,14 @@
         (propertize " RO " 'face 'mode-line-read-only-face))
 
        ((or (buffer-modified-p)
-            (not (cb:vc-file-uptodate?)))
-        (propertize (format " %s%s "
-                            (cb:vc-state->letter)
-                            (if (buffer-modified-p) "*" " "))
-                    'face 'mode-line-modified-face))
+            (and
+             (vc-git-root (buffer-file-name))
+             (not (cb:vc-file-uptodate?))))
+        (format " %s%s "
+                (cb:vc-state->letter)
+                (if (buffer-modified-p)
+                    (propertize "*" 'face 'mode-line-modified-face)
+                  " ")))
        (t blank))))
    " "
    ;; directory and buffer/file name
