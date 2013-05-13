@@ -130,12 +130,6 @@
  fill-column                  80)
 (icomplete-mode +1)
 
-(hook-fn 'text-mode-hook
-  (unless (derived-mode-p 'sgml-mode 'nxhtml-mode)
-    (turn-on-auto-fill)))
-
-(defalias 'yes-or-no-p 'y-or-n-p)
-
 ;;; Typefaces
 
 (defun cb:font (&rest fonts)
@@ -445,6 +439,40 @@
    (global-mode-string global-mode-string)))
 
 ;;; ============================================================================
+
+;;;; Common hooks
+
+(hook-fn 'prog-mode-hook
+  "Generic programming mode configuration."
+
+  (defun cb:next-dwim ()
+    "Perform a context-sensitive 'next' action."
+    (interactive)
+    (cond
+     ((and (boundp 'edebug-active) edebug-active)
+      (edebug-next-mode))
+     (t
+      (next-error))))
+
+  ;; Error navigation keybindings.
+  (local-set-key (kbd "M-N") 'cb:next-dwim)
+  (local-set-key (kbd "M-P") 'previous-error)
+
+  ;; Highlight special comments.
+  (font-lock-add-keywords
+   major-mode '(("\\<\\(FIX\\|TODO\\|FIXME\\|HACK\\|REFACTOR\\):"
+                 1 font-lock-warning-face t))))
+
+(hook-fn 'Buffer-menu-mode-hook
+  "Buffer menu only shows files on disk."
+  (Buffer-menu-toggle-files-only +1))
+
+(hook-fn 'text-mode-hook
+  (unless (derived-mode-p 'sgml-mode 'nxhtml-mode)
+    (turn-on-auto-fill)))
+
+(defalias 'yes-or-no-p 'y-or-n-p)
+
 ;;;; Mode groups
 
 (defmacro cb:define-mode-group (name modes)
@@ -516,31 +544,6 @@
     orgstruct++-mode) )
 
 ;;; ----------------------------------------------------------------------------
-
-(hook-fn 'prog-mode-hook
-  "Generic programming mode configuration."
-
-  (defun cb:next-dwim ()
-    "Perform a context-sensitive 'next' action."
-    (interactive)
-    (cond
-     ((and (boundp 'edebug-active) edebug-active)
-      (edebug-next-mode))
-     (t
-      (next-error))))
-
-  ;; Error navigation keybindings.
-  (local-set-key (kbd "M-N") 'cb:next-dwim)
-  (local-set-key (kbd "M-P") 'previous-error)
-
-  ;; Highlight special comments.
-  (font-lock-add-keywords
-   major-mode '(("\\<\\(FIX\\|TODO\\|FIXME\\|HACK\\|REFACTOR\\):"
-                 1 font-lock-warning-face t))))
-
-(hook-fn 'Buffer-menu-mode-hook
-  "Buffer menu only shows files on disk."
-  (Buffer-menu-toggle-files-only +1))
 
 ;;; Shebang insertion
 
@@ -694,6 +697,7 @@
 
     (ido-mode +1)
     (add-to-list 'ido-ignore-buffers "\\.*helm\\.*")
+    (add-to-list 'ido-ignore-files "\\.swp")
     (add-to-list 'ido-ignore-files "\\.DS_Store")))
 
 (use-package ido-hacks
@@ -722,7 +726,7 @@
 
 (use-package imenu
   :commands imenu
-  :config
+  :init
   (hook-fn 'emacs-lisp-mode-hook
     "Display section headings."
     (setq imenu-prev-index-position-function nil)
@@ -1095,7 +1099,11 @@
 
 (use-package cb-colour
   :if (display-graphic-p)
-  :config
+  :commands
+  (solarized-light
+   solarized-dark
+   ir-black)
+  :init
   ;; Set colour by time of day.
   (let ((hour (string-to-number (format-time-string "%H"))))
     (cond
@@ -1332,7 +1340,7 @@
     (auto-revert-mode +1))
   :config
   (progn
-  (setq dired-auto-revert-buffer t)
+    (setq dired-auto-revert-buffer t)
     (when (equal system-type 'darwin)
       ;; Use GNU version of ls if available.
       (-when-let (gls (executable-find "gls"))
@@ -1809,8 +1817,10 @@
 (use-package edebug
   :defer t
   :init
-  (hook-fn 'emacs-lisp-mode-hook
-    (local-set-key (kbd "C-x X d") 'edebug-defun)))
+  (progn
+    (autoload 'edebug-next-mode "edebug")
+    (hook-fn 'emacs-lisp-mode-hook
+      (local-set-key (kbd "C-x X d") 'edebug-defun))))
 
 (use-package ert-modeline
   :defer    t

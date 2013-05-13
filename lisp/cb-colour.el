@@ -31,6 +31,7 @@
            (< emacs-minor-version 3))
   (defalias 'set-face-bold 'set-face-bold-p))
 
+;;;###autoload
 (defun solarized-light ()
   "Switch to Solarized Light theme with customizations."
   (interactive)
@@ -51,6 +52,7 @@
   (after "parenface-plus"
     (set-face-foreground  'paren-face "grey80")))
 
+;;;###autoload
 (defun solarized-dark ()
   "Switch to Solarized Dark theme with customizations."
   (interactive)
@@ -73,6 +75,7 @@
   (after "parenface-plus"
     (set-face-foreground  'paren-face "grey30")))
 
+;;;###autoload
 (defun ir-black ()
   "Switch to IR-Black theme with customizations.
 Most of these are stolen from Solarized Dark."
