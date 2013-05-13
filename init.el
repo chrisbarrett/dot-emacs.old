@@ -725,8 +725,11 @@
 
 (use-package smex
   :ensure t
-  :commands smex
-  :init (bind-key* "M-x" 'smex)
+  :commands (smex smex-major-mode-commands)
+  :init
+  (progn
+    (bind-key* "M-X" 'smex-major-mode-commands)
+    (bind-key* "M-x" 'smex))
   :config (smex-initialize))
 
 ;;;; Buffer/window management
