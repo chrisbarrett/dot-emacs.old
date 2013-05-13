@@ -32,11 +32,20 @@
   (defalias 'set-face-bold 'set-face-bold-p))
 
 ;;;###autoload
-(defun solarized-light ()
-  "Switch to Solarized Light theme with customizations."
-  (interactive)
-  (load-theme 'solarized-light 'no-confirm)
+(defvar cb:color-theme-changed-hook nil
+  "Run when the theme is changed. Passes the command that was used an argument.")
 
+(defmacro cb:define-theme (sym &rest body)
+  "Define a theme."
+  (declare (indent 1))
+  `(defun ,sym ()
+     (interactive)
+     ,@body
+     (run-hook-with-args 'cb:color-theme-changed-hook ',sym)))
+
+;;;###autoload
+(cb:define-theme solarized-light
+  (load-theme 'solarized-light 'no-confirm)
   (set-face-underline 'hl-line nil)
 
   (after "helm"
@@ -53,13 +62,9 @@
     (set-face-foreground  'paren-face "grey80")))
 
 ;;;###autoload
-(defun solarized-dark ()
-  "Switch to Solarized Dark theme with customizations."
-  (interactive)
+(cb:define-theme solarized-dark
   (load-theme 'solarized-dark 'no-confirm)
-
   (set-face-underline 'hl-line nil)
-
   (set-face-foreground 'mode-line-filename-face "#b58900")
 
   (after "helm"
@@ -76,12 +81,8 @@
     (set-face-foreground  'paren-face "grey30")))
 
 ;;;###autoload
-(defun ir-black ()
-  "Switch to IR-Black theme with customizations.
-Most of these are stolen from Solarized Dark."
-  (interactive)
+(cb:define-theme ir-black
   (load-theme 'ir-black 'no-confirm)
-
   (let* ((class '((class color) (min-colors 89)))
          ;; Solarized palette
          (base03    "#002b36")
@@ -872,9 +873,9 @@ Most of these are stolen from Solarized Dark."
        ((,class (:foreground ,solarized-comments :background ,solarized-comments))))))
 
   (set-face-attribute 'mode-line nil
-   :box '(:line-width 1 :color "gray30" :style nil))
+                      :box '(:line-width 1 :color "gray30" :style nil))
   (set-face-attribute 'mode-line-inactive nil
-   :box '(:line-width 1 :color "gray10" :style nil)))
+                      :box '(:line-width 1 :color "gray10" :style nil)))
 
 (provide 'cb-colour)
 

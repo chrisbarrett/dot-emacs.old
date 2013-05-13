@@ -1085,10 +1085,6 @@
 
 ;;;; Themes
 
-(use-package color-theme
-  :if (display-graphic-p)
-  :config (setq color-theme-is-global t))
-
 (use-package solarized-theme
   :ensure t
   :defer t)
@@ -1100,16 +1096,21 @@
 (use-package cb-colour
   :if (display-graphic-p)
   :commands
-  (solarized-light
+  (cb:load-theme
+   solarized-light
    solarized-dark
    ir-black)
   :init
   ;; Set colour by time of day.
-  (let ((hour (string-to-number (format-time-string "%H"))))
-    (cond
-     ((and (<= 0 hour) (>= 6 hour)) (ir-black))
-     ((or  (< 20 hour) (> 9 hour))  (solarized-dark))
-     (t                             (solarized-light)))))
+  (progn
+    (defconst cb:last-theme (concat cb:tmp-dir "last-theme"))
+    (load cb:last-theme t nil t))
+  :config
+  (add-hook 'cb:color-theme-changed-hook
+            (lambda (cmd)
+              (with-temp-buffer
+                (insert (prin1-to-string (list cmd)))
+                (write-file cb:last-theme)))))
 
 ;;;; Vim & Evil
 
