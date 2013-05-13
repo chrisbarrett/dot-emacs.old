@@ -25,12 +25,15 @@
 
 ;;; Code:
 
+(message "Emacs %s.%s %s"
+         emacs-major-version emacs-minor-version system-configuration)
+
 ;;; Disable intrusive GUI elements.
 
-(ignore-errors (scroll-bar-mode   -1))
-(ignore-errors (tool-bar-mode     -1))
-(ignore-errors (blink-cursor-mode -1))
-(ignore-errors (menu-bar-mode (if (display-graphic-p) +1 -1)))
+(scroll-bar-mode   -1)
+(tool-bar-mode     -1)
+(blink-cursor-mode -1)
+(menu-bar-mode (if (display-graphic-p) +1 -1))
 
 ;;; Fully-qualify `user-emacs-directory'.
 (setq user-emacs-directory (expand-file-name user-emacs-directory))
