@@ -1743,6 +1743,12 @@
     (hook-fn 'emacs-lisp-mode-hook
       (add-hook 'after-save-hook 'cb:elisp-after-save t 'local))
 
+    (hook-fn 'flycheck-mode-hook
+      "Disable flycheck mode for scratch buffer."
+      (when (and (equal 'emacs-lisp-mode major-mode)
+                 (equal "*scratch*" (buffer-name)))
+        (add-hook 'flycheck-before-syntax-check-hook (lambda () (flycheck-mode -1)) nil t)))
+
     (defadvice eval-buffer (after buffer-evaluated-feedback activate)
       "Message that the buffer has been evaluated."
       (when (buffer-file-name)
