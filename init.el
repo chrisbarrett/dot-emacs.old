@@ -520,8 +520,17 @@
 (hook-fn 'prog-mode-hook
   "Generic programming mode configuration."
 
+  (defun cb:next-dwim ()
+    "Perform a context-sensitive 'next' action."
+    (interactive)
+    (cond
+     ((and (boundp 'edebug-active) edebug-active)
+      (edebug-next-mode))
+     (t
+      (next-error))))
+
   ;; Error navigation keybindings.
-  (local-set-key (kbd "M-N") 'next-error)
+  (local-set-key (kbd "M-N") 'cb:next-dwim)
   (local-set-key (kbd "M-P") 'previous-error)
 
   ;; Highlight special comments.
@@ -1796,6 +1805,12 @@
              (group (+ (regex "\[^ )\n\]"))))
 
         (1 font-lock-type-face))))))
+
+(use-package edebug
+  :defer t
+  :init
+  (hook-fn 'emacs-lisp-mode-hook
+    (local-set-key (kbd "C-x X d") 'edebug-defun)))
 
 (use-package ert-modeline
   :defer    t
