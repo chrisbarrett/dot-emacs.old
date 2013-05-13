@@ -396,7 +396,9 @@
        ;; Show modified and vc status.
        (t
         (format " %s%s "
-                (if (vc-git-root (buffer-file-name)) (cb:vc-state->letter) " ")
+                (if (ignore-errors (vc-git-root (buffer-file-name)))
+                    (cb:vc-state->letter)
+                  " ")
                 (if (buffer-modified-p)
                     (propertize "*" 'face 'mode-line-modified-face)
                   " "))))))
@@ -2451,6 +2453,14 @@ Start an inferior ruby if necessary."
           sclang-eval-line-forward         nil
           sclang-show-workspace-on-startup nil)
     (add-hook 'sclang-mode-hook 'smartparens-mode)))
+
+(use-package sclang-snippets
+  :ensure t
+  :defer t
+  :init
+  (hook-fn 'sclang-mode
+    (sclang-snippets-initialize)
+    (add-to-list 'ac-sources 'ac-source-yasnippet)))
 
 (use-package sclang-extensions
   :ensure   t
