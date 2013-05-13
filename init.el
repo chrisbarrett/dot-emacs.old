@@ -27,10 +27,10 @@
 
 ;;; Disable intrusive GUI elements.
 
-(scroll-bar-mode   -1)
-(tool-bar-mode     -1)
-(blink-cursor-mode -1)
-(menu-bar-mode (if (display-graphic-p) +1 -1))
+(ignore-errors (scroll-bar-mode   -1))
+(ignore-errors (tool-bar-mode     -1))
+(ignore-errors (blink-cursor-mode -1))
+(ignore-errors (menu-bar-mode (if (display-graphic-p) +1 -1)))
 
 ;;; Fully-qualify `user-emacs-directory'.
 (setq user-emacs-directory (expand-file-name user-emacs-directory))
@@ -518,8 +518,8 @@
   "Generic programming mode configuration."
 
   ;; Error navigation keybindings.
-  (local-set-key "M-N" 'next-error)
-  (local-set-key "M-P" 'previous-error)
+  (local-set-key (kbd "M-N") 'next-error)
+  (local-set-key (kbd "M-P") 'previous-error)
 
   ;; Highlight special comments.
   (font-lock-add-keywords
@@ -656,13 +656,21 @@
              ido-read-directory-name
              ido-completing-read)
   :init
-  (setq ido-enable-prefix            nil
-        ido-save-directory-list-file (concat cb:tmp-dir "ido.last")
-        ido-enable-flex-matching     t
-        ido-create-new-buffer        'always
-        ido-use-filename-at-point    'guess
-        ido-max-prospects            10
-        ido-default-file-method      'selected-window)
+  (progn
+    (bind-key "C-x C-f" 'ido-find-file)
+    (bind-key "C-x C-d" 'ido-dired)
+    (bind-key "C-x i"   'ido-insert-file)
+    (bind-key "C-x C-w" 'ido-write-file)
+    (bind-key "C-x k"   'ido-kill-buffer)
+    (bind-key "C-x b"   'ido-switch-buffer)
+
+    (setq ido-enable-prefix            nil
+          ido-save-directory-list-file (concat cb:tmp-dir "ido.last")
+          ido-enable-flex-matching     t
+          ido-create-new-buffer        'always
+          ido-use-filename-at-point    'guess
+          ido-max-prospects            10
+          ido-default-file-method      'selected-window))
   :config
   (progn
 
@@ -673,7 +681,7 @@
         (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
 
     (ido-mode +1)
-    (add-to-list 'ido-ignore-buffers "*helm mini*")
+    (add-to-list 'ido-ignore-buffers "\\.*helm\\.*")
     (add-to-list 'ido-ignore-files "\\.DS_Store")))
 
 (use-package ido-hacks
@@ -753,10 +761,16 @@
             (popwin-mode +1)))
   :config
   (progn
+    (hook-fn 'popwin:after-popup-hook
+      "Quit popups with Q"
+      (when (fboundp 'evil-define-key)
+        (evil-local-set-key 'normal "q" (lambda () (interactive) (quit-window t)))))
+
     (setq display-buffer-function 'popwin:display-buffer
           popwin:special-display-config
           '(("*Help*"  :height 30 :stick t)
             ("*Completions*" :noselect t)
+            ("*Shell Command Output*")
             ("*compilation*" :noselect t)
             ("*Messages*" :height 30)
             ("*Occur*" :noselect t)
@@ -1801,8 +1815,8 @@
 
     ;; Make M-. work in normal state.
     (when (featurep 'evil)
-      (define-key evil-normal-state-map (kbd "M-.")
-        'elisp-slime-nav-find-elisp-thing-at-point))))
+      (evil-local-set-key 'normal (kbd "M-.")
+                          'elisp-slime-nav-find-elisp-thing-at-point))))
 
 (use-package litable
   :ensure   t
@@ -2149,8 +2163,7 @@
   :ensure   t
   :commands (inf-ruby-mode ruby-send-region)
   :init
-  (progn
-
+  (progn-after-load 'ruby-mode
     (defun cb:switch-to-ruby ()
       "Toggle between irb and the last ruby buffer.
 Start an inferior ruby if necessary."
@@ -2176,14 +2189,14 @@ Start an inferior ruby if necessary."
        ((region-active-p)
         (ruby-send-region (region-beginning) (region-end)))
        ;; Evaluate the block at or just before point.
-       ((when (or (thing-at-point-looking-at
-                   (rx (or "end" "]" "}" ")") (* space) (* "\n")))
-                  (ruby-block-contains-point (point)))
-          (ignore-errors (ruby-send-block))))
+       ((or (thing-at-point-looking-at
+             (rx (or "end" "]" "}" ")") (* space) (* "\n")))
+            (ruby-block-contains-point (point)))
+        (ruby-send-block))
        ;; Eval the block-like thing around point.
        (t
-        (ruby-send-region (save-excursion (ruby-beginning-of-defun) (point))
-                          (save-excursion (ruby-end-of-defun) (point))))))
+        (ruby-send-region (line-beginning-position)
+                          (line-end-position)))))
 
     (defun cb:format-irb-error (lines)
       "Return a propertized error string for the given LINES of an irb error message."
