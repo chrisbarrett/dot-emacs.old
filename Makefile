@@ -45,7 +45,7 @@ elpa :
 
 # Byte-compile all elisp files.
 .PHONY: compile
-compile : conf elpa tags
+compile : conf tags
 
 # ----------------------------------------------------------------------------
 # Cleaning

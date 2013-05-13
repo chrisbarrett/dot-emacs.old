@@ -25,7 +25,7 @@
 
 ;;; Code:
 
-(autoload 'progn-after-load "cb-macros")
+(autoload 'after "cb-macros")
 
 (when (and (<= emacs-major-version 24)
            (< emacs-minor-version 3))
@@ -38,17 +38,17 @@
 
   (set-face-underline 'hl-line nil)
 
-  (progn-after-load "helm"
+  (after "helm"
     (set-face-background  'helm-selection "white")
     (set-face-underline   'helm-selection nil)
     (set-face-foreground  'helm-selection "black"))
 
-  (progn-after-load "paren"
+  (after "paren"
     (set-face-foreground  'show-paren-match-face "#fdf6e3")
     (set-face-background  'show-paren-match-face "black")
     (set-face-bold        'show-paren-match-face t))
 
-  (progn-after-load "parenface-plus"
+  (after "parenface-plus"
     (set-face-foreground  'paren-face "grey80")))
 
 (defun solarized-dark ()
@@ -60,17 +60,17 @@
 
   (set-face-foreground 'mode-line-filename-face "#b58900")
 
-  (progn-after-load "helm"
+  (after "helm"
     (set-face-background  'helm-selection "black")
     (set-face-underline   'helm-selection nil)
     (set-face-foreground  'helm-selection "white"))
 
-  (progn-after-load "paren"
+  (after "paren"
     (set-face-foreground  'show-paren-match-face "#002b36")
     (set-face-background  'show-paren-match-face "white")
     (set-face-bold        'show-paren-match-face t))
 
-  (progn-after-load "parenface-plus"
+  (after "parenface-plus"
     (set-face-foreground  'paren-face "grey30")))
 
 (defun ir-black ()

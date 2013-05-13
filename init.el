@@ -690,26 +690,26 @@
 (use-package ido-hacks
   :ensure t
   :commands ido-hacks-mode
-  :init (progn-after-load 'ido (ido-hacks-mode +1)))
+  :init (after 'ido (ido-hacks-mode +1)))
 
 (use-package ido-ubiquitous
   :ensure t
   :commands ido-ubiquitous-mode
-  :init (progn-after-load 'ido (ido-ubiquitous-mode +1)))
+  :init (after 'ido (ido-ubiquitous-mode +1)))
 
 (use-package ido-yes-or-no
   :ensure t
   :commands ido-yes-or-no-mode
-  :init (progn-after-load 'ido (ido-yes-or-no-mode +1)))
+  :init (after 'ido (ido-yes-or-no-mode +1)))
 
 (use-package ido-better-flex
   :ensure t
   :commands ido-better-flex/enable
-  :init (progn-after-load 'ido (ido-better-flex/enable)))
+  :init (after 'ido (ido-better-flex/enable)))
 
 (use-package ido-speed-hack
   :defer t
-  :init (progn-after-load 'ido (require 'ido-speed-hack)))
+  :init (after 'ido (require 'ido-speed-hack)))
 
 (use-package imenu
   :commands imenu
@@ -1126,7 +1126,7 @@
     (define-key evil-insert-state-map (kbd "C-z") 'cb:evil-undefine)
     (define-key evil-visual-state-map (kbd "C-z") 'cb:evil-undefine)
 
-    (progn-after-load "man"
+    (after "man"
       (evil-declare-key 'normal Man-mode-map (kbd "q") 'Man-kill))
 
     ;; Ensure undo-tree commands are remapped. The referenced keymap in
@@ -1755,7 +1755,7 @@
        ;; General keywords
        (,(rx "(" (group (or "use-package"
                             "hook-fn"
-                            "progn-after-load"
+                            "after"
                             "ac-define-source"
                             "flycheck-declare-checker"
                             "cl-destructuring-bind"
@@ -1932,7 +1932,7 @@
   :ensure t
   :commands run-geiser
   :init
-  (progn-after-load "auto-complete"
+  (after "auto-complete"
     (autoload 'geiser-company--prefix-at-point "geiser-company")
     (autoload 'geiser-company--doc "geiser-company")
 
@@ -2169,7 +2169,7 @@
   :ensure   t
   :commands (inf-ruby-mode ruby-send-region)
   :init
-  (progn-after-load 'ruby-mode
+  (after 'ruby-mode
     (defun cb:switch-to-ruby ()
       "Toggle between irb and the last ruby buffer.
 Start an inferior ruby if necessary."
@@ -2568,7 +2568,7 @@ Start an inferior ruby if necessary."
     (key-chord-define-global "x;" 'cb:kill-current-buffer)
 
     ;; Paredit keys.
-    (progn-after-load 'paredit
+    (after 'paredit
       (key-chord-define paredit-mode-map "qj" 'paredit-backward-slurp-sexp)
       (key-chord-define paredit-mode-map "qk" 'cb:paredit-forward-slurp-sexp-neatly)
       (key-chord-define paredit-mode-map "ql" 'paredit-splice-sexp-killing-backward)
