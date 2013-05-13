@@ -1112,7 +1112,8 @@
             (lambda (cmd)
               (with-temp-buffer
                 (insert (prin1-to-string (list cmd)))
-                (write-file cb:last-theme)))))
+                (write-file cb:last-theme))
+              (message nil))))
 
 ;;;; Vim & Evil
 
