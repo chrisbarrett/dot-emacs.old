@@ -553,36 +553,6 @@
     orgstruct-mode
     orgstruct++-mode) )
 
-(cb:define-combined-hook cb:magit-command-hook
-  '(magit-automatic-merge-command-hook
-    magit-manual-merge-command-hook
-    magit-checkout-command-hook
-    magit-create-branch-command-hook
-    magit-reset-head-command-hook
-    magit-reset-head-hard-command-hook
-    magit-reset-working-tree-command-hook
-    magit-fetch-command-hook
-    magit-fetch-current-command-hook
-    magit-remote-update-command-hook
-    magit-pull-command-hook
-    magit-push-tags-command-hook
-    magit-push-command-hook
-    magit-tag-command-hook
-    magit-annotated-tag-command-hook
-    magit-stash-command-hook
-    magit-stash-snapshot-command-hook
-    magit-log-ranged-command-hook
-    magit-log-command-hook
-    magit-log-long-ranged-command-hook
-    magit-log-long-command-hook
-    magit-reflog-command-hook
-    magit-reflog-ranged-command-hook
-    magit-diff-command-hook
-    magit-diff-working-tree-command-hook
-    magit-single-file-log-command-hook
-    magit-branch-manager-command-hook
-    magit-grep-command-hook))
-
 ;;; ----------------------------------------------------------------------------
 
 ;;; Shebang insertion
@@ -2591,6 +2561,16 @@ Start an inferior ruby if necessary."
         (interactive)
         (kill-buffer)
         (jump-to-register :magit-fullscreen)))
+
+    (cb:define-combined-hook cb:magit-command-hook
+      ;; Search through interned symbols for magit hooks.
+      (let (hooks)
+        (mapatoms (lambda (sym)
+                    (let ((str (symbol-name sym)))
+                      (when (and (s-starts-with? "magit-" str)
+                                 (s-ends-with? "-command-hook" str))
+                        (setq hooks (cons sym hooks))))))
+        hooks))
 
     (hook-fn 'cb:magit-command-hook
       "Update modelines to ensure vc status is up-to-date."
