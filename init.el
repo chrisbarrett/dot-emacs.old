@@ -553,6 +553,21 @@
     orgstruct-mode
     orgstruct++-mode) )
 
+(after 'magit
+  (cb:define-combined-hook cb:magit-command-hook
+    ;; Search through interned symbols for magit hooks.
+    (let (hooks)
+      (mapatoms (lambda (sym)
+                  (let ((str (symbol-name sym)))
+                    (when (and (s-starts-with? "magit-" str)
+                               (s-ends-with? "-command-hook" str))
+                      (setq hooks (cons sym hooks))))))
+      hooks))
+
+  (hook-fn 'cb:magit-command-hook
+    "Update modelines to ensure vc status is up-to-date."
+    (force-mode-line-update t)))
+
 ;;; ----------------------------------------------------------------------------
 
 ;;; Shebang insertion
@@ -2561,20 +2576,6 @@ Start an inferior ruby if necessary."
         (interactive)
         (kill-buffer)
         (jump-to-register :magit-fullscreen)))
-
-    (cb:define-combined-hook cb:magit-command-hook
-      ;; Search through interned symbols for magit hooks.
-      (let (hooks)
-        (mapatoms (lambda (sym)
-                    (let ((str (symbol-name sym)))
-                      (when (and (s-starts-with? "magit-" str)
-                                 (s-ends-with? "-command-hook" str))
-                        (setq hooks (cons sym hooks))))))
-        hooks))
-
-    (hook-fn 'cb:magit-command-hook
-      "Update modelines to ensure vc status is up-to-date."
-      (force-mode-line-update t))
 
     (add-hook 'magit-log-edit-mode-hook 'cb:append-buffer)
     (add-hook 'magit-mode-hook 'magit-load-config-extensions)))
