@@ -568,6 +568,31 @@
     "Update modelines to ensure vc status is up-to-date."
     (force-mode-line-update t)))
 
+(cb:define-mode-group cb:prompt-modes
+  '(comint-mode
+    inf-ruby-mode
+    inferior-python-mode
+    ielm-mode
+    slime-repl-mode
+    inferior-scheme-mode
+    inferior-haskell-mode
+    sclang-post-buffer-mode))
+
+(defun cb:clear-shell ()
+  "Erase all but the last line of the current buffer."
+  (interactive)
+  (let ((inhibit-read-only t)
+        (last-line (save-excursion
+                     (goto-char (point-max))
+                     (forward-line -1)
+                     (line-end-position))))
+    (delete-region (point-min) last-line)))
+
+(hook-fn 'cb:prompt-modes-hook
+  (cb:append-buffer)
+  (local-set-key (kbd "C-l") 'cb:clear-shell)
+  (local-set-key (kbd "M->") 'cb:append-buffer))
+
 ;;; ----------------------------------------------------------------------------
 
 ;;; Shebang insertion
@@ -1155,8 +1180,6 @@
       (when (fboundp 'evil-append-line)
         (evil-append-line 1)))
 
-    (add-hook 'comint-mode-hook 'cb:append-buffer)
-
     (defun cb:evil-undefine ()
       "Temporarily undefine a key for Evil minor mode."
       (interactive)
@@ -1254,15 +1277,7 @@
 
   :config
   (progn
-
-    (defun cb:clear-shell ()
-      (interactive)
-      (erase-buffer)
-      (comint-send-input))
-
     (hook-fn 'shell-mode-hook
-      (local-set-key (kbd "C-l") 'cb:clear-shell)
-      (local-set-key (kbd "M->") 'cb:append-buffer)
       (setq ac-sources '(ac-source-filename)))
 
     (hook-fn 'window-configuration-change-hook
@@ -2235,8 +2250,7 @@ Start an inferior ruby if necessary."
       (if (derived-mode-p 'inf-ruby-mode)
           (switch-to-buffer-other-window
            (cb:last-buffer-for-mode 'ruby-mode))
-        (run-ruby)
-        (cb:append-buffer)))
+        (run-ruby)))
 
     (defun cb:ruby-eval-dwim ()
       "Perform a context-sensitive evaluation."
@@ -2476,7 +2490,8 @@ Start an inferior ruby if necessary."
     (setq sclang-auto-scroll-post-buffer   t
           sclang-eval-line-forward         nil
           sclang-show-workspace-on-startup nil)
-    (add-hook 'sclang-mode-hook 'smartparens-mode)))
+    (hook-fn 'sclang-mode-hook
+      (smartparens-mode +1))))
 
 (use-package sclang-snippets
   :ensure t
