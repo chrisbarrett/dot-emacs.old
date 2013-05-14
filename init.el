@@ -553,21 +553,6 @@
     orgstruct-mode
     orgstruct++-mode) )
 
-(after 'magit
-  (cb:define-combined-hook cb:magit-command-hook
-    ;; Search through interned symbols for magit hooks.
-    (let (hooks)
-      (mapatoms (lambda (sym)
-                  (let ((str (symbol-name sym)))
-                    (when (and (s-starts-with? "magit-" str)
-                               (s-ends-with? "-command-hook" str))
-                      (setq hooks (cons sym hooks))))))
-      hooks))
-
-  (hook-fn 'cb:magit-command-hook
-    "Update modelines to ensure vc status is up-to-date."
-    (force-mode-line-update t)))
-
 (cb:define-mode-group cb:prompt-modes
   '(comint-mode
     inf-ruby-mode
@@ -578,7 +563,7 @@
     inferior-haskell-mode
     sclang-post-buffer-mode))
 
-(defun cb:clear-shell ()
+(defun cb:clear-scrollback ()
   "Erase all but the last line of the current buffer."
   (interactive)
   (let ((inhibit-read-only t)
@@ -590,7 +575,7 @@
 
 (hook-fn 'cb:prompt-modes-hook
   (cb:append-buffer)
-  (local-set-key (kbd "C-l") 'cb:clear-shell)
+  (local-set-key (kbd "C-l") 'cb:clear-scrollback)
   (local-set-key (kbd "M->") 'cb:append-buffer))
 
 ;;; ----------------------------------------------------------------------------
@@ -2580,6 +2565,20 @@ Start an inferior ruby if necessary."
   :bind   ("M-g" . magit-status)
   :config
   (progn
+    (cb:define-combined-hook cb:magit-command-hook
+      ;; Search through interned symbols for magit hooks.
+      (let (hooks)
+        (mapatoms (lambda (sym)
+                    (let ((str (symbol-name sym)))
+                      (when (and (s-starts-with? "magit-" str)
+                                 (s-ends-with? "-command-hook" str))
+                        (setq hooks (cons sym hooks))))))
+        hooks))
+
+    (hook-fn 'cb:magit-command-hook
+      "Update modelines to ensure vc status is up-to-date."
+      (force-mode-line-update t))
+
     (defadvice magit-status (around magit-fullscreen activate)
       (window-configuration-to-register :magit-fullscreen)
       ad-do-it
