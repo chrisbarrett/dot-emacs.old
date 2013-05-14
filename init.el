@@ -830,6 +830,7 @@
             ("*Shell Command Output*")
             ("*compilation*" :noselect t)
             ("*Messages*" :height 30)
+            ("*Directory*")
             ("*Occur*" :noselect t)
             ("\\*Slime Description.*" :noselect t :regexp t :height 30)
             ("*magit-commit*" :noselect t :height 40 :width 80)
