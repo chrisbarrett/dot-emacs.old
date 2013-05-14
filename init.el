@@ -571,12 +571,15 @@
                      (goto-char (point-max))
                      (forward-line -1)
                      (line-end-position))))
-    (delete-region (point-min) last-line)))
+    (delete-region (point-min) last-line)
+    (cb:append-buffer)))
 
 (hook-fn 'cb:prompt-modes-hook
-  (cb:append-buffer)
+  (local-set-key (kbd "C-a") 'move-beginning-of-line)
+  (local-set-key (kbd "C-e") 'move-end-of-line)
   (local-set-key (kbd "C-l") 'cb:clear-scrollback)
-  (local-set-key (kbd "M->") 'cb:append-buffer))
+  (local-set-key (kbd "M->") 'cb:append-buffer)
+  (cb:append-buffer))
 
 ;;; ----------------------------------------------------------------------------
 
@@ -708,7 +711,7 @@
   :init
   (progn
     (bind-key "C-x C-f" 'ido-find-file)
-    (bind-key "C-x C-d" 'ido-dired)
+    (bind-key "C-x d"   'ido-dired)
     (bind-key "C-x i"   'ido-insert-file)
     (bind-key "C-x C-w" 'ido-write-file)
     (bind-key "C-x k"   'ido-kill-buffer)
