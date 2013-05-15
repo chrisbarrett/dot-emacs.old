@@ -2732,6 +2732,12 @@ an irb error message."
              gist-region-or-buffer
              gist-region-or-buffer-private))
 
+(use-package gitconfig-mode
+  :ensure t
+  :defer  t
+  :modes (("/\\.gitconfig\\'"  . gitconfig-mode)
+          ("/\\.git/config\\'" . gitconfig-mode)))
+
 (use-package ediff
   :commands (ediff ediff-merge-files-with-ancestor)
   :init
