@@ -584,11 +584,11 @@
 
 ;;; ----------------------------------------------------------------------------
 
-(cl-defmacro require-after-idle (feature &key action (delay 1))
-  "Load FEATURE after DELAY seconds, optionally performing ACTION."
+(cl-defmacro require-after-idle (feature &key (delay 1))
+  "Load FEATURE after DELAY seconds."
   `(run-with-idle-timer ,delay nil (lambda ()
-                                    (require ,feature)
-                                    ,action)))
+                                     (flet ((message (&rest nil)))
+                                       (require ,feature)))))
 
 ;;; Shebang insertion
 
@@ -658,6 +658,7 @@
   :ensure   t
   :commands (projectile-project-p projectile-project-root)
   :diminish projectile-mode
+  :init (require-after-idle 'projectile :delay 2)
   :config
   (progn
     (projectile-global-mode)
@@ -670,6 +671,8 @@
   :defer t
   :init
   (progn
+    (require-after-idle 'helm :delay 2)
+
     (after 'helm
       (define-key helm-map (kbd "C-[") 'helm-keyboard-quit))
 
@@ -688,6 +691,8 @@
   :commands helm-projectile
   :init
   (progn
+    (require-after-idle 'helm-projectile :delay 2)
+
     (defun cb:helm-dwim ()
       "Show helm-projectile, failling back to helm-mini if not in a project."
       (interactive)
@@ -831,9 +836,12 @@
 (use-package popwin
   :ensure t
   :commands popwin-mode
-  :init (hook-fn 'window-configuration-change-hook
-          (unless (and (boundp 'popwin-mode) popwin-mode)
-            (popwin-mode +1)))
+  :init
+  (progn
+    (require-after-idle 'popwin)
+    (hook-fn 'window-configuration-change-hook
+      (unless (and (boundp 'popwin-mode) popwin-mode)
+        (popwin-mode +1))))
   :config
   (progn
     (hook-fn 'popwin:after-popup-hook
@@ -921,18 +929,23 @@
 ;;;; Backups & State
 
 (use-package saveplace
+  :defer t
   :init
+  (hook-fn 'after-find-file (require 'saveplace) )
+  :config
   (progn
-    (setq save-place-file (concat cb:tmp-dir "saved-places"))
-    (setq-default save-place t)))
+    (setq save-place-file (concat cb:tmp-dir "saved-places") )
+    (setq-default saveplace t)))
 
 (use-package recentf
   :defer t
   :init
   (progn
+    (hook-fn 'find-file-hook (require 'recentf))
     (require-after-idle 'recentf)
     (setq
      recentf-save-file       (concat cb:tmp-dir "recentf")
+     recentf-auto-cleanup    5
      recentf-keep            '(file-remote-p file-readable-p)
      recentf-max-saved-items 100
      recentf-max-menu-items  25
@@ -945,6 +958,11 @@
                        ".gz"))))
 
 (use-package backup-dir
+  :defer t
+  :init
+  (progn
+    (require-after-idle 'backup-dir)
+    (hook-fn 'find-file-hook (require 'backup-dir)))
   :config
   (setq auto-save-file-name-transforms `((".*" ,(concat cb:autosaves-dir "\\1") t))
         backup-by-copying        t
@@ -956,7 +974,7 @@
         version-control          t))
 
 (use-package savehist
-  :config
+  :init
   (progn
     (setq
      savehist-additional-variables '(search ring regexp-search-ring)
@@ -966,12 +984,15 @@
 
 (use-package undo-tree
   :ensure   t
-  :defer t
+  :defer    t
+  :bind     ("C-x u" . undo-tree-visualize)
   :diminish undo-tree-mode
   :init
   (progn
     (require-after-idle 'undo-tree)
-    (after 'undo-tree (global-undo-tree-mode +1))))
+    (hook-fn 'find-file-hook (require 'undo-tree)))
+  :config
+  (global-undo-tree-mode +1))
 
 ;;;; Cosmetic
 
@@ -1245,7 +1266,10 @@
 
 (use-package surround
   :ensure t
-  :init (require-after-idle 'surround :action (global-surround-mode +1)))
+  :defer  t
+  :init   (require-after-idle 'surround)
+  :config (global-surround-mode +1))
+
 
 (use-package evil-numbers
   :ensure t
@@ -1398,9 +1422,11 @@
 (use-package dired
   :defer   t
   :init
-  (hook-fn 'dired-mode-hook
-    (set (make-local-variable 'auto-revert-interval) 0.1)
-    (auto-revert-mode +1))
+  (progn
+    (require-after-idle 'dired)
+    (hook-fn 'dired-mode-hook
+      (set (make-local-variable 'auto-revert-interval) 0.1)
+      (auto-revert-mode +1)))
   :config
   (progn
     (setq dired-auto-revert-buffer t)
@@ -1413,10 +1439,12 @@
 (use-package dired-aux
   :defer t
   :init
-  (hook-fn 'dired-mode-hook
-    (evil-local-set-key 'normal (kbd "TAB") 'dired-hide-subdir)
-    (evil-local-set-key 'normal [backtab] 'dired-hide-all)
-    (evil-local-set-key 'normal [backspace] 'dired-kill-subdir))
+  (progn
+    (after 'dired (require 'dired-aux))
+    (hook-fn 'dired-mode-hook
+      (evil-local-set-key 'normal (kbd "TAB") 'dired-hide-subdir)
+      (evil-local-set-key 'normal [backtab] 'dired-hide-all)
+      (evil-local-set-key 'normal [backspace] 'dired-kill-subdir)))
   :config
   (add-to-list 'dired-compress-file-suffixes
                '("\\.zip\\'" ".zip" "unzip")))
@@ -1425,8 +1453,7 @@
   :commands (dired-jump dired-jump-other-window)
   :init
   (progn
-    (hook-fn 'dired-load-hook
-      (require 'dired-x))
+    (after 'dired (require 'dired-x))
     (bind-key* "M-d" 'dired-jump)
     (bind-key* "M-D" 'dired-jump-other-window)))
 
@@ -1619,7 +1646,9 @@
 
 (use-package lambda-mode
   :diminish lambda-mode
-  :config
+  :commands lambda-mode
+  :defer t
+  :init
   (progn
     (setq lambda-symbol (string (make-char 'greek-iso8859-7 107)))
     (add-hook 'cb:scheme-modes-hook    'lambda-mode)
@@ -1630,7 +1659,12 @@
     (add-hook 'cb:slime-modes-hook     'lambda-mode)))
 
 (use-package paren
-  :init (require-after-idle 'paren :action (show-paren-mode +1)))
+  :defer  t
+  :init
+  (progn
+    (hook-fn 'prog-mode-hook (require 'paren))
+    (require-after-idle 'paren))
+  :config (show-paren-mode +1))
 
 (use-package highlight-parentheses
   :ensure t
@@ -1716,7 +1750,12 @@
 ;;;; Lisps
 
 (use-package parenface-plus
-  :ensure t)
+  :ensure t
+  :defer  t
+  :init
+  (progn
+    (require-after-idle 'parenface-plus)
+    (hook-fn 'prog-mode-hook (require 'parenface-plus))))
 
 (use-package eval-sexp-fu
   :commands eval-sexp-fu-flash-mode
@@ -2607,7 +2646,10 @@ Start an inferior ruby if necessary."
 (use-package magit
   :ensure t
   :defer  t
-  :init (bind-key* "M-g" 'magit-status)
+  :init
+  (progn
+    (require-after-idle 'magit :delay 3)
+    (bind-key* "M-g" 'magit-status))
   :config
   (progn
     (cb:define-combined-hook cb:magit-command-hook
@@ -2687,6 +2729,11 @@ Start an inferior ruby if necessary."
 
 (use-package key-chord
   :ensure t
+  :defer  t
+  :init
+  (progn
+    (require-after-idle 'key-chord)
+    (hook-fn 'find-file-hook (require 'key-chord)))
   :config
   (progn
     ;; Global keys.
