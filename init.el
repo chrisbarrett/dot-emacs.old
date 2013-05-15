@@ -1,4 +1,4 @@
-;;; init --- My emacs configuration.
+;;; init.el --- My emacs configuration
 
 ;; Copyright (C) 2013 Chris Barrett
 
@@ -178,7 +178,13 @@
 ;;; Rebind to C-c r q ("really quit"), so you're less likely to kill Emacs
 ;;; accidently with Org key-commands.
 (bind-key* "C-x C-c" (lambda () (interactive) (message "Type <C-c r q> to exit Emacs")))
-(bind-key* "C-c r q" 'save-buffers-kill-emacs)
+(bind-key* "C-c r q" 'cb:exit-emacs-dwim)
+
+(defun cb:exit-emacs-dwim ()
+  (interactive)
+  (if (daemonp)
+      (server-save-buffers-kill-terminal nil)
+    (save-buffers-kill-emacs)))
 
 ;;; Help commands
 
@@ -625,17 +631,18 @@ The exact time is based on priority."
   :config
   (add-hook 'text-mode-hook 'visual-line-mode))
 
-;;;; OS X
-
 (use-package exec-path-from-shell
   :ensure t
-  :if    (and (equal system-type 'darwin) (display-graphic-p))
+  :if    (or (equal system-type 'darwin)
+             (daemonp))
   :defer  t
   :init
   (progn
     (hook-fn 'find-file-hook (require 'exec-path-from-shell))
     (require-after-idle 'exec-path-from-shell :priority 0))
   :config (exec-path-from-shell-initialize))
+
+;;;; OS X
 
 (defun cb:osx-paste ()
   (shell-command-to-string "pbpaste"))
