@@ -123,6 +123,7 @@
  truncate-partial-width-windows     nil
  confirm-nonexistent-file-or-buffer nil
  vc-handled-backends          '(Git)
+ system-uses-terminfo         nil
  )
 (setq-default
  tab-width                    4
@@ -572,7 +573,7 @@
                      (forward-line -1)
                      (line-end-position))))
     (delete-region (point-min) last-line)
-    (cb:append-buffer)))
+    (goto-char (point-max))))
 
 (hook-fn 'cb:prompt-modes-hook
   (local-set-key (kbd "C-a") 'move-beginning-of-line)
@@ -633,6 +634,14 @@
       (process-send-eof proc))))
 
 (when (equal system-type 'darwin)
+  ;; Set terminfo so ansi-term displays shells correctly.
+  (let ((terminfo (expand-file-name "~/.terminfo")))
+    (unless (file-exists-p terminfo)
+      (start-process
+       "tic" " tic" "tic"
+       "-o" terminfo
+       "/Applications/Emacs.app/Contents/Resources/etc/e/eterm-color.ti")))
+
   (unless window-system
     (setq interprogram-cut-function   'cb:osx-copy
           interprogram-paste-function 'cb:osx-paste)))
@@ -1241,44 +1250,55 @@
                   (abbreviate-file-name (eshell/pwd))
                   (if (= (user-uid) 0) " # " " % ")))))
 
-(use-package shell
-  :commands shell
-  :bind ("M-t" . cb:shell-cycle)
+(use-package term
+  :bind ("M-t" . cb:term-cycle)
+  :defer t
+
   :init
-  (defun cb:shell-cycle ()
-    "Cycle through various shell window states."
+  (defun cb:term-cycle ()
+    "Cycle through various terminal window states."
     (interactive)
     (cond
-     ;; If shell is maximized, restore previous window config.
-     ((and (derived-mode-p 'shell-mode)
+     ;; If terminal is maximized, restore previous window config.
+     ((and (derived-mode-p 'term-mode)
            (equal 1 (length (window-list))))
       (bury-buffer)
-      (jump-to-register :shell-fullscreen))
+      (jump-to-register :term-fullscreen))
 
-     ;; If we're looking at the shell, maximize it.
-     ((derived-mode-p 'shell-mode)
+     ;; If we're looking at the terminal, maximize it.
+     ((derived-mode-p 'term-mode)
       (delete-other-windows))
 
-     ;; Otherwise show the shell.
+     ;; Otherwise show the terminal.
      (t
-      (window-configuration-to-register :shell-fullscreen)
-      (shell))))
+      (window-configuration-to-register :term-fullscreen)
+      (-if-let (buf (get-buffer "*ansi-term*"))
+        (switch-to-buffer-other-window buf)
+        (ansi-term (executable-find "zsh"))))))
 
   :config
   (progn
-    (hook-fn 'shell-mode-hook
-      (setq ac-sources '(ac-source-filename)))
+    (add-to-list 'ac-modes 'term-mode)
+
+    (hook-fn 'term-mode-hook
+      (define-key term-raw-map (kbd "M-t") 'cb:term-cycle)
+      (define-key term-mode-map (kbd "M-t") 'cb:term-cycle)
+      (setq ac-sources '(ac-source-filename))
+      ;; Yasnippet causes tab-completion to fail.
+      (yas-minor-mode -1))
 
     (hook-fn 'window-configuration-change-hook
       "Change process window size."
-      (when (derived-mode-p 'comint-mode)
+      (when (derived-mode-p 'comint-mode 'term-mode)
         (set-process-window-size (get-buffer-process (current-buffer))
                                  (window-height)
                                  (window-width))))
 
-    (defadvice shell (after move-to-end-of-buffer activate)
+    (defadvice ansi-term (after move-to-end-of-buffer activate)
       "Move to the end of the shell buffer and enter insertion state."
       (cb:append-buffer))))
+
+;;;; Completion
 
 (use-package auto-complete
   :ensure t
@@ -1322,8 +1342,6 @@
     (define-key ac-completing-map (kbd "C-p") 'ac-previous)
     (define-key ac-completing-map "\t" 'ac-complete)
     (define-key ac-completing-map (kbd "M-RET") 'ac-help)))
-
-;;;; Completion
 
 (use-package yasnippet
   :ensure t
@@ -1464,7 +1482,6 @@
                          (s-contains? cb:src-dir  (or (buffer-file-name) ""))))
              (flycheck-mode +1)))))
 
-    (setq flycheck-highlighting-mode 'lines)
     (add-hook 'text-mode-hook maybe-enable-flycheck)
     (add-hook 'prog-mode-hook maybe-enable-flycheck))
   :config
@@ -2328,6 +2345,13 @@ Start an inferior ruby if necessary."
   :commands yaml-mode
   :mode     (("\\.yaml$" . yaml-mode)
              ("\\.yml$"  . yaml-mode)))
+
+(use-package rvm
+  :ensure t
+  :commands  (rvm-use-default
+              rvm-activate-corresponding-ruby
+              rvm-use
+              rvm-open-gem))
 
 ;;;; Haskell
 
