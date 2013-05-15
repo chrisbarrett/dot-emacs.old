@@ -1216,7 +1216,6 @@ The exact time is based on priority."
    solarized-dark
    ir-black)
   :init
-  ;; Set colour by time of day.
   (progn
     (defconst cb:last-theme (concat cb:tmp-dir "last-theme"))
     (load cb:last-theme t nil t))
