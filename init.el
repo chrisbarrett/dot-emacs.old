@@ -587,7 +587,7 @@
 (cl-defmacro require-after-idle (feature &key (priority 1))
   "Load FEATURE after an idle delay once emacs has started.
 The exact time is based on priority."
-  `(run-with-idle-timer ,(+ 0.1 (* 0.5 priority))
+  `(run-with-idle-timer ,(+ 0.1 priority)
                         nil (lambda ()
                               (flet ((message (&rest nil)))
                                 (require ,feature)))))
@@ -928,7 +928,10 @@ The exact time is based on priority."
              cb:rename-file-and-buffer
              cb:show-autoloads)
 
-  :init     (add-hook 'find-file-hook 'cb:hide-dos-eol)
+  :init
+  (progn
+    (require-after-idle 'cb-commands)
+    (add-hook 'find-file-hook 'cb:hide-dos-eol))
 
   :config
   (defadvice cb:rotate-buffers (after select-largest-window activate)
