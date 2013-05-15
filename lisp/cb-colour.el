@@ -523,7 +523,7 @@
      `(jedi:highlight-function-argument ((,class (:inherit bold))))
 
      ;; linum-mode
-     `(linum ((,class (:foreground ,solarized-fg :background ,solarized-bg))))
+     `(linum ((,class (:foreground "gray30" :background "gray10"))))
 
      ;; magit
      `(magit-section-title ((,class (:foreground ,yellow :weight bold))))
