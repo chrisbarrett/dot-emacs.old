@@ -1365,7 +1365,7 @@ The exact time is based on priority."
 
   :init
   (progn
-    (require-after-idle 'auto-complete :priority 3)
+    (require-after-idle 'auto-complete :priority 4)
     (add-hook 'prog-mode-hook 'auto-complete-mode)
     (add-hook 'comint-mode-hook 'auto-complete-mode))
 
@@ -1408,7 +1408,7 @@ The exact time is based on priority."
   :diminish yas-minor-mode
   :init
   (progn
-    (require-after-idle 'yasnippet :priority 3)
+    (require-after-idle 'yasnippet :priority 4)
     (add-hook 'prog-mode-hook 'yas-minor-mode)
     (add-hook 'sgml-mode-hook 'yas-minor-mode))
   :config
