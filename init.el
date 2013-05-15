@@ -2763,9 +2763,6 @@ an irb error message."
           ediff-window-setup-function 'ediff-setup-windows-plain)
     (add-hook 'ediff-startup-hook 'turn-off-evil-mode)))
 
-(use-package cb-ediff
-  :commands cb:handle-git-merge)
-
 ;;;; Productivity
 
 (use-package key-chord
