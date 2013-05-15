@@ -584,11 +584,13 @@
 
 ;;; ----------------------------------------------------------------------------
 
-(cl-defmacro require-after-idle (feature &key (delay 1))
-  "Load FEATURE after DELAY seconds."
-  `(run-with-idle-timer ,delay nil (lambda ()
-                                     (flet ((message (&rest nil)))
-                                       (require ,feature)))))
+(cl-defmacro require-after-idle (feature &key (priority 1))
+  "Load FEATURE after an idle delay once emacs has started.
+The exact time is based on priority."
+  `(run-with-idle-timer ,(+ 0.1 (* 0.5 priority))
+                        nil (lambda ()
+                              (flet ((message (&rest nil)))
+                                (require ,feature)))))
 
 ;;; Shebang insertion
 
@@ -627,7 +629,12 @@
 
 (use-package exec-path-from-shell
   :ensure t
-  :if (and (equal system-type 'darwin) (display-graphic-p))
+  :if    (and (equal system-type 'darwin) (display-graphic-p))
+  :defer  t
+  :init
+  (progn
+    (hook-fn 'find-file-hook (require 'exec-path-from-shell))
+    (require-after-idle 'exec-path-from-shell :priority 0))
   :config (exec-path-from-shell-initialize))
 
 (defun cb:osx-paste ()
@@ -658,7 +665,7 @@
   :ensure   t
   :commands (projectile-project-p projectile-project-root)
   :diminish projectile-mode
-  :init (require-after-idle 'projectile :delay 2)
+  :init (require-after-idle 'projectile)
   :config
   (progn
     (projectile-global-mode)
@@ -671,7 +678,7 @@
   :defer t
   :init
   (progn
-    (require-after-idle 'helm :delay 2)
+    (require-after-idle 'helm)
 
     (after 'helm
       (define-key helm-map (kbd "C-[") 'helm-keyboard-quit))
@@ -691,7 +698,7 @@
   :commands helm-projectile
   :init
   (progn
-    (require-after-idle 'helm-projectile :delay 2)
+    (require-after-idle 'helm-projectile)
 
     (defun cb:helm-dwim ()
       "Show helm-projectile, failling back to helm-mini if not in a project."
@@ -731,7 +738,7 @@
              ido-completing-read)
   :init
   (progn
-    (require-after-idle 'ido :delay 0.5)
+    (require-after-idle 'ido)
     (after 'ido
       (defadvice ido-find-file (after find-file-sudo activate)
         "Find file as root if necessary."
@@ -802,6 +809,7 @@
   :commands (smex smex-major-mode-commands)
   :init
   (progn
+    (require-after-idle 'smex)
     (bind-key* "M-X" 'smex-major-mode-commands)
     (bind-key* "M-x" 'smex))
   :config (smex-initialize))
@@ -816,21 +824,23 @@
              ("s-4" . wg-switch-to-index-3)
              ("s-5" . wg-switch-to-index-4)
              )
+  :defer    t
   :ensure   t
   :diminish workgroups-mode
   :commands workgroups-mode
   :init
+
+  :config
   (progn
     (setq
      wg-morph-vsteps 6
      wg-prefix-key (kbd "C-c w")
      wg-default-session-file (concat cb:etc-dir "workgroups"))
-    (add-hook 'after-init-hook 'workgroups-mode))
-  :config
-  (progn
-   (defadvice wg-mode-line-add-display (around wg-suppress-error activate)
-     "Ignore errors in modeline display function caused by custom modeline."
-     (ignore-errors ad-do-it))
+
+    (defadvice wg-mode-line-add-display (around wg-suppress-error activate)
+      "Ignore errors in modeline display function caused by custom modeline."
+      (ignore-errors ad-do-it))
+
     (ignore-errors (wg-load wg-default-session-file))))
 
 (use-package popwin
@@ -931,14 +941,20 @@
 (use-package saveplace
   :defer t
   :init
-  (hook-fn 'after-find-file (require 'saveplace) )
+  (progn
+    (setq-default saveplace t)
+    (require-after-idle 'saveplace)
+    (hook-fn 'after-find-file (require 'saveplace) ))
   :config
   (progn
-    (setq save-place-file (concat cb:tmp-dir "saved-places") )
-    (setq-default saveplace t)))
+    (setq save-place-file (concat cb:tmp-dir "saved-places") )))
 
 (use-package recentf
   :defer t
+  :config
+  (defadvice recentf-cleanup (around hide-messages activate)
+    (flet ((message (&rest args)))
+      ad-do-it))
   :init
   (progn
     (hook-fn 'find-file-hook (require 'recentf))
@@ -1001,12 +1017,16 @@
   :defer t)
 
 (use-package hl-line
-  :if (display-graphic-p)
+  :if     (display-graphic-p)
+  :defer  t
+  :init   (require-after-idle 'hl-line)
   :config (global-hl-line-mode t))
 
 (use-package fringe
-  :if     (display-graphic-p)
-  :config (fringe-mode '(2 . 0)))
+  :if       (display-graphic-p)
+  :commands (fringe-mode)
+  :init     (require-after-idle 'fringe)
+  :config   (fringe-mode '(2 . 0)))
 
 (use-package ansi-color
   :defer t
@@ -1345,6 +1365,7 @@
 
   :init
   (progn
+    (require-after-idle 'auto-complete :priority 3)
     (add-hook 'prog-mode-hook 'auto-complete-mode)
     (add-hook 'comint-mode-hook 'auto-complete-mode))
 
@@ -1387,6 +1408,7 @@
   :diminish yas-minor-mode
   :init
   (progn
+    (require-after-idle 'yasnippet :priority 3)
     (add-hook 'prog-mode-hook 'yas-minor-mode)
     (add-hook 'sgml-mode-hook 'yas-minor-mode))
   :config
@@ -1774,6 +1796,8 @@
   :commands (paredit-mode enable-paredit-mode disable-paredit-mode)
   :init
   (progn
+
+    (require-after-idle 'paredit)
 
     (hook-fn 'minibuffer-setup-hook
       "Use paredit in the minibuffer."
@@ -2338,7 +2362,8 @@ Start an inferior ruby if necessary."
                           (line-end-position)))))
 
     (defun cb:format-irb-error (lines)
-      "Return a propertized error string for the given LINES of an irb error message."
+      "Return a propertized error string for the given LINES of
+an irb error message."
       (-when-let* ((err (--first (s-matches? "Error:" it) lines))
                    (colon (s-index-of ":" err)))
         (concat (propertize (substring err 0 colon) 'face 'error)
@@ -2648,7 +2673,7 @@ Start an inferior ruby if necessary."
   :defer  t
   :init
   (progn
-    (require-after-idle 'magit :delay 3)
+    (require-after-idle 'magit)
     (bind-key* "M-g" 'magit-status))
   :config
   (progn
@@ -2848,8 +2873,11 @@ Repeated invocations toggle between the two most recently open buffers."
 (defun fortune ()
   "Display a quotation from the 'fortune' program."
   (interactive)
-  (when (executable-find "fortune")
-    (message (s-trim (shell-command-to-string "fortune -s -n 250")))))
+  (-when-let (fortune (--first (ignore-errors (file-exists-p it))
+                               (list (executable-find "fortune")
+                                     "/usr/bin/fortune"
+                                     "/usr/local/bin/fortune" )))
+    (message (s-trim (shell-command-to-string (concat fortune " -s -n 250"))))))
 
 (hook-fn 'after-init-hook
   "Show fortune."
