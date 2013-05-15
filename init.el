@@ -214,7 +214,7 @@
 
 ;;; Misc commands
 (bind-key "C-c e e" 'toggle-debug-on-error)
-(bind-key "s-`"     'other-window)
+(bind-key* "s-`"     'other-window)
 
 ;;; Editing Advice
 
@@ -584,6 +584,12 @@
 
 ;;; ----------------------------------------------------------------------------
 
+(cl-defmacro require-after-idle (feature &key action (delay 1))
+  "Load FEATURE after DELAY seconds, optionally performing ACTION."
+  `(run-with-idle-timer ,delay nil (lambda ()
+                                    (require ,feature)
+                                    ,action)))
+
 ;;; Shebang insertion
 
 (defconst cb:extension->cmd (make-hash-table :test 'equal))
@@ -664,6 +670,9 @@
   :defer t
   :init
   (progn
+    (after 'helm
+      (define-key helm-map (kbd "C-[") 'helm-keyboard-quit))
+
     (bind-key* "M-a" 'helm-apropos)
     (bind-key* "M-b" 'helm-buffers-list)
     (bind-key* "C-x C-b" 'helm-buffers-list)
@@ -672,9 +681,7 @@
     (bind-key* "M-f" 'helm-etags-select)
     (bind-key* "M-m" 'helm-man-woman)
     (bind-key* "M-w" 'helm-w3m-bookmarks)
-    (bind-key* "M-k" 'helm-show-kill-ring))
-  :config
-  (define-key helm-map (kbd "C-[") 'helm-keyboard-quit))
+    (bind-key* "M-k" 'helm-show-kill-ring)))
 
 (use-package helm-projectile
   :ensure t
@@ -719,6 +726,19 @@
              ido-completing-read)
   :init
   (progn
+    (require-after-idle 'ido :delay 0.5)
+    (after 'ido
+      (defadvice ido-find-file (after find-file-sudo activate)
+        "Find file as root if necessary."
+        (unless (and buffer-file-name
+                     (file-writable-p buffer-file-name))
+          (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
+
+      (ido-mode +1)
+      (add-to-list 'ido-ignore-buffers "\\.*helm\\.*")
+      (add-to-list 'ido-ignore-files "\\.swp")
+      (add-to-list 'ido-ignore-files "\\.DS_Store"))
+
     (bind-key "C-x C-f" 'ido-find-file)
     (bind-key "C-x d"   'ido-dired)
     (bind-key "C-x i"   'ido-insert-file)
@@ -732,20 +752,7 @@
           ido-create-new-buffer        'always
           ido-use-filename-at-point    'guess
           ido-max-prospects            10
-          ido-default-file-method      'selected-window))
-  :config
-  (progn
-
-    (defadvice ido-find-file (after find-file-sudo activate)
-      "Find file as root if necessary."
-      (unless (and buffer-file-name
-                   (file-writable-p buffer-file-name))
-        (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
-
-    (ido-mode +1)
-    (add-to-list 'ido-ignore-buffers "\\.*helm\\.*")
-    (add-to-list 'ido-ignore-files "\\.swp")
-    (add-to-list 'ido-ignore-files "\\.DS_Store")))
+          ido-default-file-method      'selected-window)))
 
 (use-package ido-hacks
   :ensure t
@@ -755,7 +762,9 @@
 (use-package ido-ubiquitous
   :ensure t
   :commands ido-ubiquitous-mode
-  :init (after 'ido (ido-ubiquitous-mode +1)))
+  :init (after 'ido
+          (ido-mode +1)
+          (ido-ubiquitous-mode +1)))
 
 (use-package ido-yes-or-no
   :ensure t
@@ -918,19 +927,22 @@
     (setq-default save-place t)))
 
 (use-package recentf
+  :defer t
   :init
-  (setq
-   recentf-save-file       (concat cb:tmp-dir "recentf")
-   recentf-keep            '(file-remote-p file-readable-p)
-   recentf-max-saved-items 100
-   recentf-max-menu-items  25
-   recentf-exclude '(".newsrc"
-                     "Emacs.app"
-                     "-autoloads.el"
-                     "recentf"
-                     ".ido.last"
-                     "TAGS"
-                     ".gz")))
+  (progn
+    (require-after-idle 'recentf)
+    (setq
+     recentf-save-file       (concat cb:tmp-dir "recentf")
+     recentf-keep            '(file-remote-p file-readable-p)
+     recentf-max-saved-items 100
+     recentf-max-menu-items  25
+     recentf-exclude '(".newsrc"
+                       "Emacs.app"
+                       "-autoloads.el"
+                       "recentf"
+                       ".ido.last"
+                       "TAGS"
+                       ".gz"))))
 
 (use-package backup-dir
   :config
@@ -954,8 +966,12 @@
 
 (use-package undo-tree
   :ensure   t
+  :defer t
   :diminish undo-tree-mode
-  :config   (global-undo-tree-mode +1))
+  :init
+  (progn
+    (require-after-idle 'undo-tree)
+    (after 'undo-tree (global-undo-tree-mode +1))))
 
 ;;;; Cosmetic
 
@@ -1229,7 +1245,7 @@
 
 (use-package surround
   :ensure t
-  :config (global-surround-mode +1))
+  :init (require-after-idle 'surround :action (global-surround-mode +1)))
 
 (use-package evil-numbers
   :ensure t
@@ -1281,8 +1297,6 @@
     (add-to-list 'ac-modes 'term-mode)
 
     (hook-fn 'term-mode-hook
-      (define-key term-raw-map (kbd "M-t") 'cb:term-cycle)
-      (define-key term-mode-map (kbd "M-t") 'cb:term-cycle)
       (setq ac-sources '(ac-source-filename))
       ;; Yasnippet causes tab-completion to fail.
       (yas-minor-mode -1))
@@ -1503,8 +1517,9 @@
 
 (use-package ctags-update
   :ensure   t
+  :defer    t
   :diminish ctags-auto-update-mode
-  :config   (add-hook 'prog-mode-hook 'turn-on-ctags-auto-update-mode))
+  :init   (add-hook 'prog-mode-hook 'turn-on-ctags-auto-update-mode))
 
 (use-package etags-select
   :ensure   t
@@ -1615,12 +1630,13 @@
     (add-hook 'cb:slime-modes-hook     'lambda-mode)))
 
 (use-package paren
-  :config (show-paren-mode +1))
+  :init (require-after-idle 'paren :action (show-paren-mode +1)))
 
 (use-package highlight-parentheses
   :ensure t
+  :defer  t
   :diminish highlight-parentheses-mode
-  :config (add-hook 'prog-mode-hook 'highlight-parentheses-mode))
+  :init (add-hook 'prog-mode-hook 'highlight-parentheses-mode))
 
 (use-package highlight-symbol
   :ensure   t
@@ -2590,7 +2606,8 @@ Start an inferior ruby if necessary."
 
 (use-package magit
   :ensure t
-  :bind   ("M-g" . magit-status)
+  :defer  t
+  :init (bind-key* "M-g" 'magit-status)
   :config
   (progn
     (cb:define-combined-hook cb:magit-command-hook
