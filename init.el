@@ -61,6 +61,9 @@
            "Ubuntu Mono Regular" "Courier"))
 
 (set-frame-font (format "%s 11" (cb:monospace-font)) nil t)
+(add-hook 'after-make-frame-functions
+          (lambda (f)
+            (set-frame-font (format "%s 11" (cb:monospace-font)) nil t)))
 
 ;;; Fully-qualify `user-emacs-directory'.
 (setq user-emacs-directory (expand-file-name user-emacs-directory))
@@ -617,16 +620,14 @@ The exact time is based on priority."
   (gethash (car-safe (last (split-string name "[.]" t)))
            cb:extension->cmd))
 
-(defun insert-shebang ()
+(defun insert-shebang (cmd)
   "Insert a shebang line at the top of the current buffer."
-  (interactive)
-  (let* ((env (shell-command-to-string "where env"))
-         (env (replace-regexp-in-string "[\r\n]*" "" env))
-         (cmd (cb:bufname->cmd buffer-file-name)))
-    (save-excursion
-      (goto-char (point-min))
-      (insert (concat "#!" env " " cmd))
-      (newline 2))))
+  (interactive (list (or (cb:bufname->cmd buffer-file-name)
+                         (read-string "Command name: " nil t))))
+  (save-excursion
+    (goto-char (point-min))
+    (insert (concat "#!/usr/bin/env " cmd))
+    (newline 2)))
 
 ;;; Forward declaration.
 (defvar ac-modes nil)
@@ -849,6 +850,7 @@ The exact time is based on priority."
      wg-morph-vsteps 6
      wg-prefix-key (kbd "C-c w")
      wg-default-session-file (concat cb:etc-dir "workgroups"))
+    (wg-set-prefix-key)
 
     (defadvice wg-mode-line-add-display (around wg-suppress-error activate)
       "Ignore errors in modeline display function caused by custom modeline."
