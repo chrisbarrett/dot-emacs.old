@@ -633,7 +633,7 @@ The exact time is based on priority."
 
 (use-package exec-path-from-shell
   :ensure t
-  :if    (or (equal system-type 'darwin)
+  :if    (or (and (equal system-type 'darwin) (window-system))
              (daemonp))
   :defer  t
   :init
