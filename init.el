@@ -35,6 +35,33 @@
 (blink-cursor-mode -1)
 (menu-bar-mode (if (display-graphic-p) +1 -1))
 
+;;;; Typefaces
+
+;;; These are customized early so that we don't see types changing in the
+;;; minibuffer during load.
+
+(autoload 'cl-remove-if "cl-lib")
+
+(defun cb:font (&rest fonts)
+  "Return the first available font in FONTS."
+  (let  ((fonts (mapcar (lambda (it) (when (find-font (font-spec :name it))
+                                       it))
+                        fonts)))
+    (car (cl-remove-if 'null fonts))))
+
+(defun cb:serif-font ()
+  (cb:font "Palatino" "Cambria" "Times New Roman"))
+
+(defun cb:sans-serif-font ()
+  (cb:font "Lucida Grande" "Ubuntu Regular" "Segoe UI"
+           "Helvetica Neue" "Calibri" "Helvetica" "Verdana" "Arial"))
+
+(defun cb:monospace-font ()
+  (cb:font "Menlo" "Consolas" "Inconsolata" "DejaVu Sans Mono"
+           "Ubuntu Mono Regular" "Courier"))
+
+(set-frame-font (format "%s 11" (cb:monospace-font)) nil t)
+
 ;;; Fully-qualify `user-emacs-directory'.
 (setq user-emacs-directory (expand-file-name user-emacs-directory))
 (defvar user-home-directory (getenv "HOME"))
@@ -91,6 +118,14 @@
 
 ;;;; Initial Configuration
 
+(hook-fn 'text-mode-hook
+  "Use a sans-serif font for text-mode."
+  (when (equal major-mode 'text-mode)
+    (buffer-face-set `(:family ,(cb:sans-serif-font) :height 120))))
+
+(hook-fn 'Info-mode-hook
+  (buffer-face-set `(:family ,(cb:serif-font) :height 140)))
+
 ;; Use the version of emacs in /src for info and source.
 (setq source-directory (format "%s/emacs-%s.%s" cb:src-dir
                                emacs-major-version
@@ -130,34 +165,6 @@
  indent-tabs-mode             nil
  fill-column                  80)
 (icomplete-mode +1)
-
-;;; Typefaces
-
-(defun cb:font (&rest fonts)
-  "Return the first available font in FONTS."
-  (--first (find-font (font-spec :name it)) fonts))
-
-(defvar cb:serif-font
-  (cb:font "Palatino" "Cambria" "Times New Roman"))
-
-(defvar cb:sans-serif-font
-  (cb:font "Lucida Grande" "Ubuntu Regular" "Segoe UI"
-           "Helvetica Neue" "Calibri" "Helvetica" "Verdana" "Arial"))
-
-(defvar cb:monospace-font
-  (cb:font "Menlo" "Consolas" "Inconsolata" "DejaVu Sans Mono"
-           "Ubuntu Mono Regular" "Courier"))
-
-(hook-fn 'text-mode-hook
-  "Use a sans-serif font for text-mode."
-  (when (equal major-mode 'text-mode)
-    (buffer-face-set `(:family ,cb:sans-serif-font :height 120))))
-
-(hook-fn 'Info-mode-hook
-  (buffer-face-set `(:family ,cb:serif-font :height 140)))
-
-(set-frame-font (format "%s 11" cb:monospace-font)
-                nil t)
 
 ;; Encodings
 
@@ -322,11 +329,11 @@
 
 (defface mode-line-position-face
   `((((type graphic) (background dark))
-     (:family ,cb:monospace-font
+     (:family ,(cb:monospace-font)
       :height 100
       :foreground "gray60"))
     (((type graphic) (background light))
-     (:family ,cb:monospace-font
+     (:family ,(cb:monospace-font)
       :height 100
       :foreground "gray50"))
     (t
@@ -824,7 +831,6 @@ The exact time is based on priority."
 ;;;; Buffer/window management
 
 (use-package workgroups
-  :if       (display-graphic-p)
   :bind     (("s-1" . wg-switch-to-index-0)
              ("s-2" . wg-switch-to-index-1)
              ("s-3" . wg-switch-to-index-2)
@@ -1027,13 +1033,11 @@ The exact time is based on priority."
   :defer t)
 
 (use-package hl-line
-  :if     (display-graphic-p)
   :defer  t
   :init   (require-after-idle 'hl-line)
   :config (global-hl-line-mode t))
 
 (use-package fringe
-  :if       (display-graphic-p)
   :commands (fringe-mode)
   :init     (require-after-idle 'fringe)
   :config   (fringe-mode '(2 . 0)))
@@ -1180,7 +1184,7 @@ The exact time is based on priority."
   :config
   (hook-fn 'w3m-mode-hook
     (buffer-face-set
-     `(:family ,cb:serif-font :height 130))))
+     `(:family ,(cb:serif-font) :height 130))))
 
 (use-package erc
   :defer t
@@ -1209,7 +1213,6 @@ The exact time is based on priority."
   :defer t)
 
 (use-package cb-colour
-  :if (display-graphic-p)
   :commands
   (cb:load-theme
    solarized-light
@@ -1217,15 +1220,15 @@ The exact time is based on priority."
    ir-black)
   :init
   (progn
+    (setq color-theme-is-global nil)
     (defconst cb:last-theme (concat cb:tmp-dir "last-theme"))
-    (load cb:last-theme t nil t))
-  :config
-  (add-hook 'cb:color-theme-changed-hook
-            (lambda (cmd)
-              (with-temp-buffer
-                (insert (prin1-to-string (list cmd)))
-                (write-file cb:last-theme))
-              (message nil))))
+    (load cb:last-theme t t t)
+    (add-hook 'cb:color-theme-changed-hook
+              (lambda (cmd)
+                (with-temp-buffer
+                  (insert (prin1-to-string (list cmd)))
+                  (write-file cb:last-theme))
+                (message nil)))))
 
 ;;;; Vim & Evil
 
@@ -1766,7 +1769,7 @@ The exact time is based on priority."
          ("\\.[mM]arkdown$" . markdown-mode))
   :config
   (hook-fn 'markdown-mode-hook
-    (buffer-face-set `(:family ,cb:serif-font :height 130))
+    (buffer-face-set `(:family ,(cb:serif-font) :height 130))
     (setq imenu-generic-expression
           '(("title"  "^\\(.*\\)[\n]=+$" 1)
             ("h2-"    "^\\(.*\\)[\n]-+$" 1)
@@ -2891,16 +2894,15 @@ Repeated invocations toggle between the two most recently open buffers."
                                      "/usr/local/bin/fortune" )))
     (message (s-trim (shell-command-to-string (concat fortune " -s -n 250"))))))
 
-(hook-fn 'after-init-hook
-  "Show fortune if started without a file to visit."
+(hook-fn 'after-make-frame-functions
+ "Show fortune if started without a file to visit."
   (run-with-idle-timer
    0.1 nil
    (lambda ()
      (when (equal (get-buffer "*scratch*") (current-buffer))
-       (fortune))))
+       (fortune)))))
 
-
-  ;; Load site-file.
+(hook-fn 'after-init-hook
   (load (concat user-emacs-directory "site-file.el") t t))
 
 ;; Local Variables:
