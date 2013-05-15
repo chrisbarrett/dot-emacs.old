@@ -37,8 +37,9 @@
 
 ;;; Fully-qualify `user-emacs-directory'.
 (setq user-emacs-directory (expand-file-name user-emacs-directory))
-(defvar user-home-directory (getenv "HOME"))
+(defvar user-home-directory (format "%s/" (getenv "HOME")))
 (add-to-list 'load-path (concat user-emacs-directory "lisp"))
+(setq-default default-directory user-home-directory)
 
 ;;;; Packages
 
@@ -936,6 +937,8 @@ The exact time is based on priority."
 
   :init
   (progn
+    (setq cb:kill-buffer-ignored-list
+          '("*scratch*" "*Messages*" "*GROUP*" "*shell*" "*eshell*" "*ansi-term*"))
     (require-after-idle 'cb-commands)
     (add-hook 'find-file-hook 'cb:hide-dos-eol))
 
@@ -2897,6 +2900,7 @@ Repeated invocations toggle between the two most recently open buffers."
        (fortune)))))
 
 (hook-fn 'after-init-hook
+  (setq default-directory user-home-directory)
   (load (concat user-emacs-directory "site-file.el") t t))
 
 ;; Local Variables:

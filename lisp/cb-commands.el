@@ -72,8 +72,7 @@ the selected buffer."
           (set-window-start w2 s1)
           (setq i (1+ i))))))))
 
-(defvar cb:kill-buffer-ignored-list
-  '("*scratch*" "*Messages*" "*GROUP*" "*shell*" "*eshell*"))
+(defvar cb:kill-buffer-ignored-list nil)
 
 ;;;###autoload
 (defun cb:kill-current-buffer ()
