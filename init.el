@@ -35,36 +35,6 @@
 (blink-cursor-mode -1)
 (menu-bar-mode (if (display-graphic-p) +1 -1))
 
-;;;; Typefaces
-
-;;; These are customized early so that we don't see types changing in the
-;;; minibuffer during load.
-
-(autoload 'cl-remove-if "cl-lib")
-
-(defun cb:font (&rest fonts)
-  "Return the first available font in FONTS."
-  (let  ((fonts (mapcar (lambda (it) (when (find-font (font-spec :name it))
-                                       it))
-                        fonts)))
-    (car (cl-remove-if 'null fonts))))
-
-(defun cb:serif-font ()
-  (cb:font "Palatino" "Cambria" "Times New Roman"))
-
-(defun cb:sans-serif-font ()
-  (cb:font "Lucida Grande" "Ubuntu Regular" "Segoe UI"
-           "Helvetica Neue" "Calibri" "Helvetica" "Verdana" "Arial"))
-
-(defun cb:monospace-font ()
-  (cb:font "Menlo" "Consolas" "Inconsolata" "DejaVu Sans Mono"
-           "Ubuntu Mono Regular" "Courier"))
-
-(set-frame-font (format "%s 11" (cb:monospace-font)) nil t)
-(add-hook 'after-make-frame-functions
-          (lambda (f)
-            (set-frame-font (format "%s 11" (cb:monospace-font)) nil t)))
-
 ;;; Fully-qualify `user-emacs-directory'.
 (setq user-emacs-directory (expand-file-name user-emacs-directory))
 (defvar user-home-directory (getenv "HOME"))
@@ -249,6 +219,33 @@
   (let ((whitespace-indent-tabs-mode indent-tabs-mode)
         (whitespace-tab-width tab-width))
     ad-do-it))
+
+;;;; Typefaces
+
+(defun cb:font (&rest fonts)
+  "Return the first available font in FONTS."
+  (--first (find-font (font-spec :name it)) fonts))
+
+(defun cb:serif-font ()
+  (cb:font "Palatino" "Cambria" "Times New Roman"))
+
+(defun cb:sans-serif-font ()
+  (cb:font "Lucida Grande" "Ubuntu Regular" "Segoe UI"
+           "Helvetica Neue" "Calibri" "Helvetica" "Verdana" "Arial"))
+
+(defun cb:monospace-font ()
+  (or "Menlo"
+      (cb:font "Menlo" "Consolas" "Inconsolata" "DejaVu Sans Mono"
+               "Ubuntu Mono Regular" "Courier")))
+
+(set-frame-font (format "%s 11" (cb:monospace-font)) t t)
+
+(hook-fn 'server-visit-hook
+  (set-frame-font (format "%s 11" (cb:monospace-font)) nil t))
+(hook-fn 'server-switch-hook
+  (set-frame-font (format "%s 11" (cb:monospace-font)) nil t))
+(hook-fn 'after-make-frame-functions
+  (set-frame-font (format "%s 11" (cb:monospace-font)) nil t))
 
 ;;;; Modeline
 
