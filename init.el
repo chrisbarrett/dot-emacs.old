@@ -2890,8 +2890,9 @@ Repeated invocations toggle between the two most recently open buffers."
     (message (s-trim (shell-command-to-string (concat fortune " -s -n 250"))))))
 
 (hook-fn 'after-init-hook
-  "Show fortune."
-  (run-with-idle-timer 0.1 nil 'fortune)
+  "Show fortune if started without a file to visit."
+  (when (equal (get-buffer "*scratch*") (current-buffer))
+    (run-with-idle-timer 0.1 nil 'fortune))
 
   ;; Load site-file.
   (load (concat user-emacs-directory "site-file.el") t t))
