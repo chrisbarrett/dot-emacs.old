@@ -920,12 +920,6 @@ The exact time is based on priority."
   :commands window-number-meta-mode
   :init (hook-fn 'window-configuration-change-hook (window-number-meta-mode +1)))
 
-(use-package windmove
-  :bind (("S-<left>"  . windmove-left)
-         ("S-<right>" . windmove-right)
-         ("S-<up>"    . windmove-up)
-         ("S-<down>"  . windmove-down)))
-
 (use-package cb-commands
   :bind (("s-f"     . cb:rotate-buffers)
          ("C-x C-o" . other-window))
