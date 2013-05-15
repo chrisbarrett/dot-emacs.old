@@ -37,10 +37,14 @@ The arguments passed to the hook function are bound to the symbol 'args'.
 * DOCSTRING optionally documents the forms.  Otherwise, it is
   evaluated as part of BODY.
 
-* BODY is a list of forms to evaluate when the hook is run."
+* BODY is a list of forms to evaluate when the hook is run.
+The arguments to the hook are bound to 'arg1', 'arg2'.. 'arg9'.
+The entire argument list is bound to 'args'."
   (declare (indent 1) (doc-string 2))
   `(add-hook ,hook (lambda (&rest args)
-                     ,@(cons docstring body))))
+                     (destructuring-bind (&optional arg1 arg2 arg3 arg4 arg5 arg6
+                                                    arg7 arg8 arg9) args
+                       ,@(cons docstring body)))))
 
 (defmacro after (feature &rest body)
   "Execute BODY forms after FEATURE is loaded."

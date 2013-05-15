@@ -137,7 +137,7 @@
 (setq-default
  tab-width                    4
  indent-tabs-mode             nil
- fill-column                  80)
+ fill-column                  75)
 (icomplete-mode +1)
 
 ;; Encodings
@@ -1219,12 +1219,12 @@ The exact time is based on priority."
     (setq color-theme-is-global nil)
     (defconst cb:last-theme (concat cb:tmp-dir "last-theme"))
     (load cb:last-theme t t t)
-    (add-hook 'cb:color-theme-changed-hook
-              (lambda (cmd)
-                (with-temp-buffer
-                  (insert (prin1-to-string (list cmd)))
-                  (write-file cb:last-theme))
-                (message nil)))))
+    (hook-fn 'cb:color-theme-changed-hook
+      (set-face-font 'default (format "%s 11" (cb:monospace-font)) t)
+      (with-temp-buffer
+        (insert (prin1-to-string (list arg1)))
+        (write-file cb:last-theme))
+      (message nil))))
 
 ;;;; Vim & Evil
 
