@@ -1347,6 +1347,7 @@ The exact time is based on priority."
 
     (hook-fn 'term-mode-hook
       (setq ac-sources '(ac-source-filename))
+      (define-key term-raw-map (kbd "M-t") 'cb:term-cycle)
       ;; Yasnippet causes tab-completion to fail.
       (yas-minor-mode -1))
 
