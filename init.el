@@ -232,9 +232,9 @@
            "Helvetica Neue" "Calibri" "Helvetica" "Verdana" "Arial"))
 
 (defun cb:monospace-font ()
-  (or "Menlo"
-      (cb:font "Menlo" "Consolas" "Inconsolata" "DejaVu Sans Mono"
-               "Ubuntu Mono Regular" "Courier")))
+  (or (cb:font "Menlo" "Consolas" "Inconsolata" "DejaVu Sans Mono"
+               "Ubuntu Mono Regular" "Courier")
+      "Menlo"))
 
 (set-frame-font (format "%s 11" (cb:monospace-font)) t t)
 
