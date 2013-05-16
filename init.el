@@ -881,7 +881,7 @@ The exact time is based on priority."
             ("\\*Slime Inspector.*" :regexp t :height 30)
             ("*Ido Completions*" :noselect t :height 30)
             ("*eshell*" :height 30)
-            ("\\*ansi-term\\*.*" :regexp t :height 30)
+            ;("\\*ansi-term\\*.*" :regexp t :height 30)
             ("*shell*" :height 30)
             (".*overtone.log" :regexp t :height 30)
             ("*gists*" :height 30)
@@ -1433,6 +1433,7 @@ The exact time is based on priority."
     (require-after-idle 'dired)
     (hook-fn 'dired-mode-hook
       (set (make-local-variable 'auto-revert-interval) 0.1)
+      (set (make-local-variable 'auto-revert-verbose) nil)
       (auto-revert-mode +1)))
   :config
   (progn
