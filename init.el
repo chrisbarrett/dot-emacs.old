@@ -1220,7 +1220,7 @@ The exact time is based on priority."
     (defconst cb:last-theme (concat cb:tmp-dir "last-theme"))
     (load cb:last-theme t t t)
     (hook-fn 'cb:color-theme-changed-hook
-      (set-face-font 'default (format "%s 11" (cb:monospace-font)) t)
+      (set-face-font 'default (format "%s 11" (cb:monospace-font)))
       (with-temp-buffer
         (insert (prin1-to-string (list arg1)))
         (write-file cb:last-theme))
