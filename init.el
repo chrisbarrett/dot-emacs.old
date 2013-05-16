@@ -35,13 +35,16 @@
 (blink-cursor-mode -1)
 (menu-bar-mode (if (display-graphic-p) +1 -1))
 
-;;; Fully-qualify `user-emacs-directory'.
+;;;; Basic paths.
+
 (setq user-emacs-directory (expand-file-name user-emacs-directory))
 (defvar user-home-directory (format "%s/" (getenv "HOME")))
+(defvar user-dropbox-directory (concat user-home-directory "Dropbox/"))
+(add-to-list 'load-path user-dropbox-directory)
 (add-to-list 'load-path (concat user-emacs-directory "lisp"))
 (setq-default default-directory user-home-directory)
 
-;;;; Packages
+;;; Configure packages.
 
 (require 'package)
 (add-to-list 'package-archives '("melpa"     . "http://melpa.milkbox.net/packages/"))
@@ -106,13 +109,9 @@
                                emacs-minor-version))
 (setenv "INFOPATH" (concat source-directory "/info/"))
 
-;;; Describe me.
-
-(setq
- user-full-name    "Chris Barrett"
- user-mail-address "chris.d.barrett@me.com")
-
 ;;; Basic configuration.
+
+(require 'personal-config nil t)
 
 (setq
  redisplay-dont-pause         t
@@ -1079,28 +1078,14 @@ The exact time is based on priority."
 (use-package smtpmail
   :commands smtpmail-send-it
   :init
-  (setq
-   mail-signature (concat "\nCheers,\n\n" user-full-name)
-   send-mail-function 'smtpmail-send-it
-   message-send-mail-function 'smtpmail-send-it
-
-   smtpmail-mail-address user-mail-address
-   smtpmail-smtp-server "smtp.mail.me.com"
-   smtpmail-smtp-service 587))
+  (setq send-mail-function 'smtpmail-send-it
+        message-send-mail-function 'smtpmail-send-it))
 
 (use-package gnus
   :commands gnus
   :defer t
   :config
-  (setq
-   gnus-select-method '(nnml "mail")
-   gnus-secondary-select-methods
-   `((nnimap "mail"
-             (nnimap-address ,smtpmail-smtp-server)
-             (nnimap-list-pattern ("INBOX" "mail/*"))
-             (nnimap-server-port 587)
-             (nnimap-stream ssl)
-             (nnimap-authenticator login)))))
+  (setq gnus-select-method '(nnml "mail")))
 
 (use-package bbdb
   :ensure t
@@ -1109,7 +1094,7 @@ The exact time is based on priority."
   (progn
     (add-hook 'gnus-startup-hook 'bbdb-insinuate-gnus)
     (add-hook 'message-mode-hook 'bbdb-insinuate-mail)
-    (setq bbdb-file "~/Dropbox/.bbdb"))
+    (setq bbdb-file (concat user-dropbox-directory ".bbdb")))
   :config
   (progn
     (setq
@@ -1193,10 +1178,7 @@ The exact time is based on priority."
 
      erc-track-exclude-types
      '("JOIN" "NICK" "PART" "QUIT" "MODE"
-       "324" "329" "332" "333" "353" "477")
-
-     erc-autojoin-channels-alist
-     '((".*\\.freenode.net" "#emacs" "#haskell")))))
+       "324" "329" "332" "333" "353" "477"))))
 
 ;;;; Themes
 
