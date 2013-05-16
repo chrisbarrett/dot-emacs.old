@@ -236,14 +236,10 @@
                "Ubuntu Mono Regular" "Courier")
       "Menlo"))
 
-(set-frame-font (format "%s 11" (cb:monospace-font)) t t)
-
-(hook-fn 'server-visit-hook
-  (set-frame-font (format "%s 11" (cb:monospace-font)) nil t))
-(hook-fn 'server-switch-hook
-  (set-frame-font (format "%s 11" (cb:monospace-font)) nil t))
+(set-frame-font (format "%s 11" (cb:monospace-font)) t)
 (hook-fn 'after-make-frame-functions
-  (set-frame-font (format "%s 11" (cb:monospace-font)) nil t))
+  (set-frame-font (format "%s 11" (cb:monospace-font)) t
+                  (list (car (frame-list)))))
 
 ;;;; Modeline
 
