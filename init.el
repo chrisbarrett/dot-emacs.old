@@ -1315,6 +1315,13 @@ The exact time is based on priority."
 
      ;; Otherwise show the terminal.
      (t
+      ;; First we hide the term window if it's visible. Then we save this
+      ;; configuration to a register so that it can be restored at for
+      ;; later positions in the cycle.
+      (-when-let (win (--first (equal (buffer-name (window-buffer it))
+                                      "*ansi-term*")
+                               (window-list)))
+        (delete-window win))
       (window-configuration-to-register :term-fullscreen)
       (-if-let (buf (get-buffer "*ansi-term*"))
         (switch-to-buffer-other-window buf)
