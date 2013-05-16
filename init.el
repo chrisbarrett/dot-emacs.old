@@ -1444,6 +1444,8 @@ The exact time is based on priority."
       (auto-revert-mode +1)))
   :config
   (progn
+    (define-key dired-mode-map (kbd "M-N") 'dired-next-subdir)
+    (define-key dired-mode-map (kbd "M-P") 'dired-prev-subdir)
     (setq dired-auto-revert-buffer t)
     (when (equal system-type 'darwin)
       ;; Use GNU version of ls if available.
