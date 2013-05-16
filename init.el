@@ -2898,6 +2898,9 @@ an irb error message."
              ack-and-a-half-find-file
              ack-and-a-half-find-file-same))
 
+(use-package smooth-scrolling
+  :ensure t)
+
 ;;;; Misc commands
 
 (defun cb:swap-with-previous-buffer ()
