@@ -1743,44 +1743,45 @@ The exact time is based on priority."
 
 ;;;; Markup
 
+(defun cb:reformat-markup-in-region (begin end)
+  (save-excursion
+    (let ((end end))
+      (nxml-mode)
+      (goto-char begin)
+      (while (search-forward-regexp "\>[ \\t]*\<" nil t)
+        (backward-char)
+        (insert "\n")
+        (cl-incf end))
+      (indent-region begin end))))
+
+(defun cb:reformat-markup ()
+  "Insert newlines and indent XML. Operates on region, or the whole buffer if no region is defined."
+  (interactive)
+  (save-excursion
+    (let ((start (or (ignore-errors (region-beginning))
+                     (point-min)))
+          (end   (or (ignore-errors (region-end))
+                     (point-max))))
+      (cb:reformat-markup-in-region start end))))
+
 (use-package nxml-mode
   :commands nxml-mode
   :config
-  (progn
-
-    (defun cb:reformat-xml-in-region (begin end)
-      (save-excursion
-        (let ((end end))
-          (nxml-mode)
-          (goto-char begin)
-          (while (search-forward-regexp "\>[ \\t]*\<" nil t)
-            (backward-char)
-            (insert "\n")
-            (cl-incf end))
-          (indent-region begin end))))
-
-    (defun cb:reformat-xml ()
-      "Insert newlines and indent XML. Operates on region, or the whole buffer if no region is defined."
-      (interactive)
-      (save-excursion
-        (let ((start (or (ignore-errors (region-beginning))
-                         (point-min)))
-              (end   (or (ignore-errors (region-end))
-                         (point-max))))
-          (cb:reformat-xml-in-region start end))))
-
-    (hook-fn 'find-file-hook
-      "Enable nxml-mode if this is an XML file."
-      (when (or (s-ends-with? ".xml" (buffer-file-name))
-                (s-starts-with? "<?xml " (buffer-string)))
-        (nxml-mode)
-        (local-set-key (kbd "M-q") 'cb:reformat-xml)))))
+  (hook-fn 'find-file-hook
+    "Enable nxml-mode if this is an XML file."
+    (when (or (s-ends-with? ".xml" (buffer-file-name))
+              (s-starts-with? "<?xml " (buffer-string)))
+      (nxml-mode)
+      (local-set-key (kbd "M-q") 'cb:reformat-markup))))
 
 (use-package sgml-mode
   :defer t
   :init
-  (hook-fn 'html-mode-hook
-    (setq sgml-xml-mode t)))
+  (progn
+    (hook-fn 'sgml-mode-hook
+      (local-set-key (kbd "M-q") 'cb:reformat-markup))
+    (hook-fn 'html-mode-hook
+      (setq sgml-xml-mode t))))
 
 (use-package tagedit
   :ensure   t
