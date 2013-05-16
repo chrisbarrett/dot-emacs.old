@@ -198,9 +198,7 @@
 (put 'narrow-to-page   'disabled nil)
 (put 'narrow-to-region 'disabled nil)
 
-;;; Misc commands
 (bind-key "C-c e e" 'toggle-debug-on-error)
-(bind-key* "s-`"     'other-window)
 
 ;;; Editing Advice
 
