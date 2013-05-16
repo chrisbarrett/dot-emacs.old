@@ -615,6 +615,10 @@ The exact time is based on priority."
                               (flet ((message (&rest nil)))
                                 (require ,feature)))))
 
+(defun cb:truthy? (sym)
+  "Test whether SYM is bound and non-nil."
+  (and (boundp sym) (eval sym)))
+
 ;;; Forward declaration.
 (defvar ac-modes nil)
 
@@ -1354,8 +1358,19 @@ The exact time is based on priority."
   (progn
     (add-to-list 'ac-modes 'term-mode)
 
+    (defun cb:ansi-term-paste ()
+      "Correct paste handling in ansi-term."
+      (interactive)
+      (process-send-string
+       (get-buffer-process (current-buffer))
+       (current-kill 0)))
+
     (hook-fn 'term-mode-hook
       (setq ac-sources '(ac-source-filename))
+
+      (when (cb:truthy? 'evil-mode)
+        (evil-local-set-key 'normal "p" 'cb:ansi-term-paste))
+
       (define-key term-raw-map (kbd "M-t") 'cb:term-cycle)
       ;; Yasnippet causes tab-completion to fail.
       (yas-minor-mode -1))
@@ -2871,10 +2886,6 @@ an irb error message."
       "Like `ignore-errors', but returns t if the result was nil
       and no errors were thrown."
       (ignore-errors (or (progn ,@forms) t)))
-
-    (defun cb:truthy? (sym)
-      "Test whether SYM is bound and non-nil."
-      (and (boundp sym) (eval sym)))
 
     (defun cb:backward-slurp ()
       (interactive)
