@@ -2211,6 +2211,17 @@ The exact time is based on priority."
   (add-to-list 'completion-ignored-extensions ".rbc")
   :config
   (progn
+    (defun cb:rockets->hash-syntax ()
+      "Convert old-style rockets to newer SYMBOL: syntax in the current buffer."
+      (interactive)
+      (save-excursion
+        (goto-char (point-min))
+        (while (search-forward-regexp (rx ":" (group-n 1 (+ (not space)))
+                                          (* space)
+                                          "=>"
+                                          (* space))
+                                      nil t)
+          (replace-match "\\1: " t nil))))
 
     (defun cb:inside-ruby-class-def? ()
       (save-excursion
