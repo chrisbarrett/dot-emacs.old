@@ -640,17 +640,27 @@ The exact time is based on priority."
 
 (with-elapsed-timer "Configuring OS X"
 
-(defun cb:osx-paste ()
-  (shell-command-to-string "pbpaste"))
+;; Enable mouse support in terminal.
+(use-package mouse
+  :if (not (display-graphic-p))
+  :config
+  (progn
+    (xterm-mouse-mode t)
+    (defun track-mouse (e))
+    (setq mouse-sel-mode t)
 
-(defun cb:osx-copy (text &optional push)
-  (let ((process-connection-type nil))
-    (let ((proc (start-process "pbcopy" "*Messages*" "pbcopy")))
-      (process-send-string proc text)
-      (process-send-eof proc))))
+    (when (equal system-type 'darwin)
+     (global-set-key [mouse-4] '(lambda ()
+                                  (interactive)
+                                  (scroll-down 1)))
+     (global-set-key [mouse-5] '(lambda ()
+                                  (interactive)
+                                  (scroll-up 1))))))
 
 (when (equal system-type 'darwin)
+
   ;; Set terminfo so ansi-term displays shells correctly.
+
   (let ((terminfo (expand-file-name "~/.terminfo")))
     (unless (file-exists-p terminfo)
       (start-process
@@ -658,7 +668,19 @@ The exact time is based on priority."
        "-o" terminfo
        "/Applications/Emacs.app/Contents/Resources/etc/e/eterm-color.ti")))
 
+  ;; Use system clipboard.
+
   (unless window-system
+
+    (defun cb:osx-paste ()
+      (shell-command-to-string "pbpaste"))
+
+    (defun cb:osx-copy (text &optional push)
+      (let ((process-connection-type nil))
+        (let ((proc (start-process "pbcopy" "*Messages*" "pbcopy")))
+          (process-send-string proc text)
+          (process-send-eof proc))))
+
     (setq interprogram-cut-function   'cb:osx-copy
           interprogram-paste-function 'cb:osx-paste)))
 
