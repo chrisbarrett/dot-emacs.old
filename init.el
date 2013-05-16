@@ -452,17 +452,17 @@
 
 ;;;; Common hooks
 
+(defun cb:next-dwim ()
+  "Perform a context-sensitive 'next' action."
+  (interactive)
+  (cond
+   ((and (boundp 'edebug-active) edebug-active)
+    (edebug-next-mode))
+   (t
+    (next-error))))
+
 (hook-fn 'prog-mode-hook
   "Generic programming mode configuration."
-
-  (defun cb:next-dwim ()
-    "Perform a context-sensitive 'next' action."
-    (interactive)
-    (cond
-     ((and (boundp 'edebug-active) edebug-active)
-      (edebug-next-mode))
-     (t
-      (next-error))))
 
   ;; Error navigation keybindings.
   (local-set-key (kbd "M-N") 'cb:next-dwim)
