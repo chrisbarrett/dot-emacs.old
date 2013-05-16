@@ -1439,13 +1439,36 @@ The exact time is based on priority."
   (progn
     (require-after-idle 'dired)
     (hook-fn 'dired-mode-hook
+      (evil-local-set-key 'normal (kbd "SPC") 'dired-hide-subdir)
+      (evil-local-set-key 'normal (kbd "S-SPC") 'dired-hide-all)
+      (local-set-key (kbd "M-N") 'dired-next-subdir)
+      (local-set-key (kbd "M-P") 'dired-prev-subdir)
       (set (make-local-variable 'auto-revert-interval) 0.1)
       (set (make-local-variable 'auto-revert-verbose) nil)
       (auto-revert-mode +1)))
   :config
   (progn
-    (define-key dired-mode-map (kbd "M-N") 'dired-next-subdir)
-    (define-key dired-mode-map (kbd "M-P") 'dired-prev-subdir)
+    (after 'hl-line
+
+      (defun cb:line-is-dired-header? ()
+        (equal 'dired-header
+               (ignore-errors
+                 (save-excursion
+                   (move-to-column 3)
+                   (face-at-point)))))
+
+      (defadvice global-hl-line-highlight (around suppress-on-subdir-header activate)
+        "Do not highlight the line if looking at a dired header."
+        (if (and (derived-mode-p 'dired-mode) (cb:line-is-dired-header?))
+            (global-hl-line-unhighlight)
+          ad-do-it))
+
+      (defadvice hl-line-highlight (around suppress-on-subdir-header activate)
+        "Do not highlight the line if looking at a dired header."
+        (if (and (derived-mode-p 'dired-mode) (cb:line-is-dired-header?))
+            (hl-line-unhighlight)
+          ad-do-it)))
+
     (setq dired-auto-revert-buffer t)
     (when (equal system-type 'darwin)
       ;; Use GNU version of ls if available.
