@@ -1743,17 +1743,35 @@ The exact time is based on priority."
 
 ;;;; Markup
 
+(defun cb:xml-one-liner? (str)
+  (save-match-data
+    (-when-let (match (s-match (rx bol (* (any space "\t"))
+                                   "<" (group (+ word)) (* nonl) ">"
+                                   (group (+ nonl))
+                                   "</" (group (* word)) ">"
+                                   (* (any space "\t")) eol
+                                   )
+                               str))
+      (and (equal (nth 1 match)
+                  (nth 3 match))
+           (not (s-contains? "<" (nth 2 match)))))))
+
 (defun cb:reformat-markup-string (str)
   (with-temp-buffer
     (insert str)
     (nxml-mode)
     (goto-char (point-min))
+
     (while (search-forward-regexp
             (rx (not (any "%")) ">"
-                (group-n 1 (* (any space "\t")))
+                (group-n 1 (* (any space "	")))
                 "<" (not (any "%")))
             nil t)
-      (replace-match "\n" nil nil nil 1))
+      (unless (cb:xml-one-liner? (buffer-substring
+                                  (line-beginning-position)
+                                  (line-end-position)))
+        (replace-match "\n" nil nil nil 1)))
+
     (indent-region (point-min) (point-max))
     (buffer-string)))
 
@@ -1761,15 +1779,17 @@ The exact time is based on priority."
   "Insert newlines and indent XML.
 Operates on region, or the whole buffer if no region is defined."
   (interactive)
-  (save-excursion
-    (atomic-change-group
-      (let ((bufstr (buffer-substring
-                     (or (ignore-errors (region-beginning))
-                         (point-min))
-                     (or (ignore-errors (region-end))
-                         (point-max)))))
-        (delete-region (point-min) (point-max))
-        (insert (cb:reformat-markup-string bufstr))))))
+  (atomic-change-group
+    (let ((pt (point)))
+      (save-excursion
+        (let ((bufstr (buffer-substring
+                       (or (ignore-errors (region-beginning))
+                           (point-min))
+                       (or (ignore-errors (region-end))
+                           (point-max)))))
+          (delete-region (point-min) (point-max))
+          (insert (cb:reformat-markup-string bufstr))))
+      (goto-char pt))))
 
 (use-package nxml-mode
   :commands nxml-mode
