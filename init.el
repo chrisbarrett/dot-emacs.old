@@ -57,6 +57,7 @@
 (unless (package-installed-p 'use-package)
   (package-install 'use-package))
 (require 'use-package)
+(autoload 'with-elapsed-timer "use-package")
 
 (defadvice use-package-ensure-elpa (around ignore-errs activate)
   "Ignore errors caused by package generation."
@@ -95,6 +96,8 @@
 
 ;;;; Initial Configuration
 
+(with-elapsed-timer "Loading base config"
+
 (hook-fn 'text-mode-hook
   "Use a sans-serif font for text-mode."
   (when (equal major-mode 'text-mode)
@@ -111,7 +114,7 @@
 
 ;;; Basic configuration.
 
-(require 'personal-config nil t)
+(use-package personal-config)
 
 (setq
  redisplay-dont-pause         t
@@ -207,18 +210,17 @@
   (flet ((process-list ()))
     ad-do-it))
 
-(defadvice kill-line (after kill-line-cleanup-whitespace activate compile)
-  "Trim whitespace on `kill-line'."
-  (unless (bolp)
-    (delete-region (point) (progn (skip-chars-forward " \t") (point)))))
-
 (defadvice whitespace-cleanup (around whitespace-cleanup-indent-tab activate)
   "Fix `whitespace-cleanup' bug when using `indent-tabs-mode'."
   (let ((whitespace-indent-tabs-mode indent-tabs-mode)
         (whitespace-tab-width tab-width))
     ad-do-it))
 
+)
+
 ;;;; Typefaces
+
+(with-elapsed-timer "Loading typefaces"
 
 (defun cb:font (&rest fonts)
   "Return the first available font in FONTS."
@@ -241,7 +243,11 @@
   (set-frame-font (format "%s 11" (cb:monospace-font)) t
                   (list (car (frame-list)))))
 
+)
+
 ;;;; Modeline
+
+(with-elapsed-timer "Loading modeline"
 
 (cl-defun cb:vc-state->letter (&optional (file (buffer-file-name)))
   "Return a single letter to represent the current version-control status."
@@ -448,9 +454,13 @@
                 face mode-line-process-face)
    (global-mode-string global-mode-string)))
 
+)
+
 ;;; ============================================================================
 
 ;;;; Common hooks
+
+(with-elapsed-timer "Configuring basic hooks"
 
 (defun cb:next-dwim ()
   "Perform a context-sensitive 'next' action."
@@ -483,7 +493,11 @@
 
 (defalias 'yes-or-no-p 'y-or-n-p)
 
+)
+
 ;;;; Mode groups
+
+(with-elapsed-timer "Configuring mode groups"
 
 (defmacro cb:define-combined-hook (name hooks)
   "Create a hook that is run after each hook in HOOKS."
@@ -589,6 +603,8 @@
   (local-set-key (kbd "M->") 'cb:append-buffer)
   (cb:append-buffer))
 
+)
+
 ;;; ----------------------------------------------------------------------------
 
 (cl-defmacro require-after-idle (feature &key (priority 1))
@@ -598,27 +614,6 @@ The exact time is based on priority."
                         nil (lambda ()
                               (flet ((message (&rest nil)))
                                 (require ,feature)))))
-
-;;; Shebang insertion
-
-(defconst cb:extension->cmd (make-hash-table :test 'equal))
-(puthash "py" "python" cb:extension->cmd)
-(puthash "sh" "bash"   cb:extension->cmd)
-(puthash "rb" "ruby"   cb:extension->cmd)
-(puthash "el" "emacs"  cb:extension->cmd)
-
-(defun cb:bufname->cmd (name)
-  (gethash (car-safe (last (split-string name "[.]" t)))
-           cb:extension->cmd))
-
-(defun insert-shebang (cmd)
-  "Insert a shebang line at the top of the current buffer."
-  (interactive (list (or (cb:bufname->cmd buffer-file-name)
-                         (read-string "Command name: " nil t))))
-  (save-excursion
-    (goto-char (point-min))
-    (insert (concat "#!/usr/bin/env " cmd))
-    (newline 2)))
 
 ;;; Forward declaration.
 (defvar ac-modes nil)
@@ -643,6 +638,8 @@ The exact time is based on priority."
 
 ;;;; OS X
 
+(with-elapsed-timer "Configuring OS X"
+
 (defun cb:osx-paste ()
   (shell-command-to-string "pbpaste"))
 
@@ -664,6 +661,8 @@ The exact time is based on priority."
   (unless window-system
     (setq interprogram-cut-function   'cb:osx-copy
           interprogram-paste-function 'cb:osx-paste)))
+
+)
 
 ;;;; Helm
 
@@ -926,7 +925,8 @@ The exact time is based on priority."
              cb:indent-buffer
              cb:indent-dwim
              cb:rename-file-and-buffer
-             cb:show-autoloads)
+             cb:show-autoloads
+             cb:insert-shebang)
 
   :init
   (progn
@@ -1210,7 +1210,7 @@ The exact time is based on priority."
   :init (evil-mode +1)
   :config
   (progn
-    (require 'cb-evil)
+    (use-package cb-evil)
 
     (defun cb:append-buffer ()
       "Enter insertion mode at the end of the current buffer."

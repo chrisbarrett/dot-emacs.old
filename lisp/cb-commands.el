@@ -166,6 +166,29 @@ If this buffer is a member of `kill-buffer-ignored-list, bury it rather than kil
 
     (error "No autoloads found in current buffer")))
 
+;;; Shebang insertion
+
+(defconst cb:extension->cmd (make-hash-table :test 'equal))
+(puthash "py" "python" cb:extension->cmd)
+(puthash "sh" "bash"   cb:extension->cmd)
+(puthash "rb" "ruby"   cb:extension->cmd)
+(puthash "el" "emacs"  cb:extension->cmd)
+
+(defun cb:bufname->cmd (name)
+  (gethash (car-safe (last (split-string name "[.]" t)))
+           cb:extension->cmd))
+
+;;;###autoload
+(defun cb:insert-shebang (cmd)
+  "Insert a shebang line at the top of the current buffer."
+  (interactive (list (or (cb:bufname->cmd buffer-file-name)
+                         (read-string "Command name: " nil t))))
+  (save-excursion
+    (goto-char (point-min))
+    (insert (concat "#!/usr/bin/env " cmd))
+    (newline 2)))
+
+
 (provide 'cb-commands)
 
 ;;; cb-commands.el ends here
