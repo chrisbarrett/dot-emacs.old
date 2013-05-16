@@ -993,6 +993,7 @@ The exact time is based on priority."
      recentf-max-saved-items 100
      recentf-max-menu-items  25
      recentf-exclude '(".newsrc"
+                       "tmp"
                        "Emacs.app"
                        "-autoloads.el"
                        "recentf"
@@ -1515,6 +1516,9 @@ The exact time is based on priority."
   :commands (dired-jump dired-jump-other-window)
   :init
   (progn
+    ;; Don't bind C-x C-j to dired-jump - this interferes with bindings in
+    ;; ansi-term.
+    (setq dired-bind-jump nil)
     (after 'dired (require 'dired-x))
     (bind-key* "M-d" 'dired-jump)
     (bind-key* "M-D" 'dired-jump-other-window)))
@@ -2612,6 +2616,25 @@ an irb error message."
 
 ;;;; C Languages
 
+(use-package cedit
+  :commands
+  (cedit-forward-char
+   cedit-backward-char
+   cedit-end-of-statement
+   cedit-beginning-of-statement
+   cedit-down-block
+   cedit-up-block-backward
+   cedit-up-block-forward
+   cedit-slurp
+   cedit-wrap-brace
+   cedit-barf
+   cedit-splice-killing-backward
+   cedit-raise
+   cedit-or-paredit-slurp
+   cedit-or-paredit-barf
+   cedit-or-paredit-splice-killing-backward
+   cedit-or-paredit-raise))
+
 (use-package google-c-style
   :ensure   t
   :defer    t
@@ -2843,17 +2866,63 @@ an irb error message."
     (hook-fn 'find-file-hook (require 'key-chord)))
   :config
   (progn
-    ;; Global keys.
+
+    (defmacro try (&rest forms)
+      "Like `ignore-errors', but returns t if the result was nil
+      and no errors were thrown."
+      (ignore-errors (or (progn ,@forms) t)))
+
+    (defun cb:truthy? (sym)
+      "Test whether SYM is bound and non-nil."
+      (and (boundp sym) (eval sym)))
+
+    (defun cb:backward-slurp ()
+      (interactive)
+      (cond ((cb:truthy? 'paredit-mode)
+             (paredit-backward-slurp-sexp))))
+
+    (defun cb:forward-slurp ()
+      (interactive)
+      (cond ((cb:truthy? 'tagedit-mode)
+             (tagedit-forward-slurp-tag))
+            ((cb:truthy? 'paredit-mode)
+             (paredit-forward-slurp-sexp))
+            (t
+             (cedit-or-paredit-slurp))))
+
+    (defun cb:splice-killing-backward ()
+      (interactive)
+      (or (try ))
+
+      (cond ((cb:truthy? 'tagedit-mode)
+             (tagedit-splice-tag))
+            ((cb:truthy? 'paredit-mode)
+             (paredit-splice-sexp-killing-backward))
+            (t
+             (cedit-or-paredit-splice-killing-backward))))
+
+    (defun cb:backward-barf ()
+      (interactive)
+      (cond ((cb:truthy? 'paredit-mode)
+             (paredit-backward-barf-sexp))
+            ((cb:truthy? 'tagedit-mode)
+             (tagedit-backward-barf-tag))))
+
+    (defun cb:forward-barf ()
+      (interactive)
+      (cond ((cb:truthy? 'tagedit-mode)
+             (tagedit-forward-barf-tag))
+            ((cb:truthy? 'paredit-mode)
+             (paredit-forward-barf-sexp))
+            (t
+             (cedit-or-paredit-barf))))
+
     (key-chord-define-global "x;" 'cb:kill-current-buffer)
-
-    ;; Paredit keys.
-    (after 'paredit
-      (key-chord-define paredit-mode-map "qj" 'paredit-backward-slurp-sexp)
-      (key-chord-define paredit-mode-map "qk" 'cb:paredit-forward-slurp-sexp-neatly)
-      (key-chord-define paredit-mode-map "ql" 'paredit-splice-sexp-killing-backward)
-      (key-chord-define paredit-mode-map "qn" 'paredit-backward-barf-sexp)
-      (key-chord-define paredit-mode-map "qm" 'paredit-forward-barf-sexp))
-
+    (key-chord-define-global "qj" 'cb:backward-slurp)
+    (key-chord-define-global "qk" 'cb:forward-slurp)
+    (key-chord-define-global "ql" 'cb:splice-killing-backward)
+    (key-chord-define-global "qn" 'cb:backward-barf)
+    (key-chord-define-global "qm" 'cb:forward-barf)
     (key-chord-mode +1)))
 
 (use-package scratch

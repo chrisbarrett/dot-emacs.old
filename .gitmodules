@@ -22,3 +22,6 @@
 [submodule "lib/slime"]
     path = lib/slime
     url = git://github.com/nablaone/slime.git
+[submodule "lib/cedit"]
+	path = lib/cedit
+	url = git://github.com/zk-phi/cedit.git

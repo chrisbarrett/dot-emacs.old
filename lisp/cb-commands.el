@@ -151,7 +151,8 @@ If this buffer is a member of `kill-buffer-ignored-list, bury it rather than kil
 (defun cb:find-autoloads (buffer)
   (->> (with-current-buffer buffer
          (buffer-substring-no-properties (point-min) (point-max)))
-    (s-match-strings-all (rx ";;;###autoload\n(" (+ (not space)) (+ space) (? "'")
+    (s-match-strings-all (rx ";;;###autoload" "\n"
+                             (* space) "("(+ (not space)) (+ space) (? "'")
                              (group (+ (not space)))))
     (-map 'cadr)))
 
