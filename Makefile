@@ -5,6 +5,7 @@ etc        = $(CURDIR)/etc
 lisp       = $(CURDIR)/lisp
 bin        = $(CURDIR)/bin
 tmp        = $(CURDIR)/tmp
+modules    = $(CURDIR)/.git/modules
 emacs      = emacs
 
 emacs_exec    = $(emacs) --batch -nw -l init.el -f
@@ -14,12 +15,11 @@ emacs_version = $(shell $(emacs) -Q --batch --exec \
 # ----------------------------------------------------------------------------
 
 .PHONY: default
-default : conf tags
+default : $(modules) conf tags
 
 .PHONY: all
-all : $(emacs_src_d) compile tags ruby supercollider python clang scheme
+all : $(modules) $(emacs_src_d) compile tags ruby supercollider python clang scheme
 
-# Build tags file.
 .PHONY: tags
 tags :
 	$(emacs_exec) 'cb:build-ctags'
@@ -29,6 +29,9 @@ tags :
 $(etc) :; mkdir $(etc)
 $(src) :; mkdir $(src)
 $(tmp) :; mkdir $(tmp)
+
+$(modules) :
+	git submodule update --init
 
 # ----------------------------------------------------------------------------
 # Byte-compilation

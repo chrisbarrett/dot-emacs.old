@@ -1635,6 +1635,32 @@ The exact time is based on priority."
 
 ;;;; Language utils
 
+(use-package paredit
+  :ensure   t
+  :diminish paredit-mode
+  :commands (paredit-mode enable-paredit-mode disable-paredit-mode)
+  :init
+  (progn
+
+    (require-after-idle 'paredit)
+
+    (hook-fn 'minibuffer-setup-hook
+      "Use paredit in the minibuffer."
+      (when (eq this-command 'eval-expression)
+        (paredit-mode t)))
+
+    (hook-fn 'paredit-mode-hook
+      "Turn off smart parens."
+      (when (featurep 'smartparens)
+        (turn-off-smartparens-mode))))
+
+  :config
+  (progn
+    (use-package cb-paredit)
+    (add-hook 'cb:lisp-modes-hook 'enable-paredit-mode)
+    (add-hook 'inferior-lisp-mode-hook 'paredit-mode)
+    (add-hook 'repl-mode-hook 'paredit-mode)))
+
 (use-package smartparens
   :ensure t
   :diminish smartparens-mode
@@ -1750,6 +1776,7 @@ The exact time is based on priority."
 (use-package highlight-parentheses
   :ensure t
   :defer  t
+  :commands highlight-parentheses-mode
   :diminish highlight-parentheses-mode
   :init (add-hook 'prog-mode-hook 'highlight-parentheses-mode))
 
@@ -1876,32 +1903,6 @@ Operates on region, or the whole buffer if no region is defined."
   :diminish eldoc-mode
   :init
   (add-hook 'cb:lisp-modes-hook 'turn-on-eldoc-mode))
-
-(use-package paredit
-  :ensure   t
-  :diminish paredit-mode
-  :commands (paredit-mode enable-paredit-mode disable-paredit-mode)
-  :init
-  (progn
-
-    (require-after-idle 'paredit)
-
-    (hook-fn 'minibuffer-setup-hook
-      "Use paredit in the minibuffer."
-      (when (eq this-command 'eval-expression)
-        (paredit-mode t)))
-
-    (hook-fn 'paredit-mode-hook
-      "Turn off smart parens."
-      (when (featurep 'smartparens)
-        (turn-off-smartparens-mode))))
-
-  :config
-  (progn
-    (use-package cb-paredit)
-    (add-hook 'cb:lisp-modes-hook 'enable-paredit-mode)
-    (add-hook 'inferior-lisp-mode-hook 'paredit-mode)
-    (add-hook 'repl-mode-hook 'paredit-mode)))
 
 (use-package slime
   :defer t
