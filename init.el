@@ -2322,7 +2322,7 @@ Operates on region, or the whole buffer if no region is defined."
   :config
   (progn
     (defun cb:rockets->hash-syntax ()
-      "Convert old-style rockets to newer SYMBOL: syntax in the current buffer."
+      "Convert old-style rockets to new hash literal syntax in the current buffer."
       (interactive)
       (save-excursion
         (goto-char (point-min))
