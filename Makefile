@@ -41,11 +41,6 @@ $(modules) :
 conf :
 	$(emacs_exec) 'cb:byte-compile-conf'
 
-# Byte-compile files in ./elpa
-.PHONY: elpa
-elpa :
-	$(emacs_exec) 'cb:byte-compile-elpa'
-
 # Byte-compile all elisp files.
 .PHONY: compile
 compile : conf tags

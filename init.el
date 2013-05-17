@@ -3035,11 +3035,6 @@ Repeated invocations toggle between the two most recently open buffers."
   (byte-recompile-directory cb:lib-dir 0 t)
   (byte-recompile-directory cb:lisp-dir 0 t))
 
-(defun cb:byte-compile-elpa ()
-  "Recompile all lisp files in the package directory."
-  (interactive)
-  (byte-recompile-directory (concat user-emacs-directory "elpa") 0 t))
-
 ;;;; Fortune
 
 (with-elapsed-timer "Configuring fortune"
