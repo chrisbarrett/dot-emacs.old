@@ -1858,19 +1858,22 @@ Operates on region, or the whole buffer if no region is defined."
   :init
   (progn
     (hook-fn 'sgml-mode-hook
+      (setq sgml-xml-mode t)
       (local-set-key (kbd "M-q") 'cb:reformat-markup))
     (hook-fn 'html-mode-hook
       (setq sgml-xml-mode t))))
 
 (use-package tagedit
   :ensure   t
-  :commands (tagedit-add-paredit-like-keybindings)
+  :commands
+  (tagedit-mode
+   tagedit-add-experimental-features
+   tagedit-add-paredit-like-keybindings)
   :init
   (hook-fn 'sgml-mode-hook
     (tagedit-mode +1)
     (tagedit-add-experimental-features)
-    (tagedit-add-paredit-like-keybindings)
-    (setq sgml-xml-mode t)))
+    (tagedit-add-paredit-like-keybindings)))
 
 (use-package markdown-mode
   :ensure t
