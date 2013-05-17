@@ -1050,6 +1050,7 @@ The exact time is based on priority."
 
 (use-package hl-line
   :defer  t
+  :if (or (daemonp) (display-graphic-p))
   :init   (require-after-idle 'hl-line)
   :config (global-hl-line-mode t))
 
@@ -3041,6 +3042,8 @@ Repeated invocations toggle between the two most recently open buffers."
 
 ;;;; Fortune
 
+(with-elapsed-timer "Configuring fortune"
+
 (defun fortune ()
   "Display a quotation from the 'fortune' program."
   (interactive)
@@ -3050,13 +3053,18 @@ Repeated invocations toggle between the two most recently open buffers."
                                      "/usr/local/bin/fortune" )))
     (message (s-trim (shell-command-to-string (concat fortune " -s -n 250"))))))
 
-(hook-fn 'after-make-frame-functions
- "Show fortune if started without a file to visit."
+(defun cb:show-fortune ()
+  "Show fortune if started without a file to visit."
   (run-with-idle-timer
    0.1 nil
-   (lambda ()
+   (lambda nil
      (when (equal (get-buffer "*scratch*") (current-buffer))
        (fortune)))))
+
+(hook-fn 'after-make-frame-functions (cb:show-fortune))
+(add-hook 'after-init-hook 'cb:show-fortune)
+
+)
 
 (hook-fn 'after-init-hook
   (setq default-directory user-home-directory)
