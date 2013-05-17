@@ -1867,6 +1867,7 @@ Operates on region, or the whole buffer if no region is defined."
   :commands (tagedit-add-paredit-like-keybindings)
   :init
   (hook-fn 'sgml-mode-hook
+    (tagedit-mode +1)
     (tagedit-add-experimental-features)
     (tagedit-add-paredit-like-keybindings)
     (setq sgml-xml-mode t)))
@@ -2891,11 +2892,6 @@ an irb error message."
   :config
   (progn
 
-    (defmacro try (&rest forms)
-      "Like `ignore-errors', but returns t if the result was nil
-      and no errors were thrown."
-      (ignore-errors (or (progn ,@forms) t)))
-
     (defun cb:backward-slurp ()
       (interactive)
       (cond ((cb:truthy? 'paredit-mode)
@@ -2912,8 +2908,6 @@ an irb error message."
 
     (defun cb:splice-killing-backward ()
       (interactive)
-      (or (try ))
-
       (cond ((cb:truthy? 'tagedit-mode)
              (tagedit-splice-tag))
             ((cb:truthy? 'paredit-mode)
