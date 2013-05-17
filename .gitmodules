@@ -1,18 +1,18 @@
 [submodule "lib/emacs-refactor"]
-        path = lib/emacs-refactor
-        url = git://github.com/chrisbarrett/emacs-refactor.git
+    path = lib/emacs-refactor
+    url = git://github.com/chrisbarrett/emacs-refactor.git
 [submodule "lib/ert-modeline"]
-        path = lib/ert-modeline
-        url = git://github.com/chrisbarrett/ert-modeline.git
+    path = lib/ert-modeline
+    url = git://github.com/chrisbarrett/ert-modeline.git
 [submodule "lib/ido-speed-hack"]
-        path = lib/ido-speed-hack
-        url = git://github.com/orfelyus/ido-speed-hack.git
+    path = lib/ido-speed-hack
+    url = git://github.com/orfelyus/ido-speed-hack.git
 [submodule "lib/sclang-extensions"]
-        path = lib/sclang-extensions
-        url = git://github.com/chrisbarrett/sclang-extensions.git
+    path = lib/sclang-extensions
+    url = git://github.com/chrisbarrett/sclang-extensions.git
 [submodule "lib/info-lookmore"]
-        path = lib/info-lookmore
-        url = git://github.com/emacsmirror/info-lookmore.git
+    path = lib/info-lookmore
+    url = git://github.com/emacsmirror/info-lookmore.git
 [submodule "lib/clang-complete-async"]
     path = lib/clang-complete-async
     url = git://github.com/Golevka/emacs-clang-complete-async.git
@@ -23,5 +23,6 @@
     path = lib/slime
     url = git://github.com/nablaone/slime.git
 [submodule "lib/cedit"]
-	path = lib/cedit
-	url = git://github.com/zk-phi/cedit.git
+    path = lib/cedit
+    url = git://github.com/zk-phi/cedit.git
+    ignore = dirty
