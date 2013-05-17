@@ -133,7 +133,7 @@ If this buffer is a member of `kill-buffer-ignored-list, bury it rather than kil
          (cb:indent-buffer))))
 
 ;;;###autoload
-(defun cb:rename-file-and-buffer ()
+(defun cb:rename-buffer-and-file ()
   "Rename the current buffer and file it is visiting."
   (interactive)
   (let ((filename (buffer-file-name)))
@@ -147,6 +147,20 @@ If this buffer is a member of `kill-buffer-ignored-list, bury it rather than kil
           (rename-buffer new-name)
           (set-visited-file-name new-name)
           (set-buffer-modified-p nil)))))))
+
+;;;###autoload
+(defun cb:delete-buffer-and-file ()
+  "Removes file connected to current buffer and kills buffer."
+  (interactive)
+  (let ((filename (buffer-file-name))
+        (buffer (current-buffer))
+        (name (buffer-name)))
+    (if (not (and filename (file-exists-p filename)))
+        (ido-kill-buffer)
+      (when (yes-or-no-p "Are you sure you want to remove this file? ")
+        (delete-file filename)
+        (kill-buffer buffer)
+        (message "File '%s' successfully removed" filename)))))
 
 (defun cb:find-autoloads (buffer)
   (->> (with-current-buffer buffer

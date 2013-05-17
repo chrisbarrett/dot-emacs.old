@@ -548,6 +548,7 @@
     ,@cb:elisp-modes
     ,@cb:slime-modes
     common-lisp-mode
+    inferior-lisp-mode
     lisp-mode
     repl-mode))
 
@@ -612,10 +613,10 @@
 
 ;;; ----------------------------------------------------------------------------
 
-(cl-defmacro require-after-idle (feature &key (priority 1))
+(cl-defmacro require-after-idle (feature &key (seconds 2))
   "Load FEATURE after an idle delay once emacs has started.
 The exact time is based on priority."
-  `(run-with-idle-timer ,(+ 0.1 priority)
+  `(run-with-idle-timer ,(+ 0.1 seconds)
                         nil (lambda ()
                               (flet ((message (&rest nil)))
                                 (require ,feature)))))
@@ -641,8 +642,7 @@ The exact time is based on priority."
   :defer  t
   :init
   (progn
-    (hook-fn 'find-file-hook (require 'exec-path-from-shell))
-    (require-after-idle 'exec-path-from-shell :priority 0))
+    (hook-fn 'after-init-hook (require 'exec-path-from-shell)))
   :config (exec-path-from-shell-initialize))
 
 ;;;; OS X
@@ -782,6 +782,16 @@ The exact time is based on priority."
                      (file-writable-p buffer-file-name))
           (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
 
+      (hook-fn 'ido-setup-hook
+        ;; Typing ~ resets ido prompt to home directory.
+        (define-key ido-file-completion-map
+          (kbd "~")
+          (lambda ()
+            (interactive)
+            (if (looking-back "/")
+                (insert "~/")
+              (call-interactively 'self-insert-command)))))
+
       (ido-mode +1)
       (add-to-list 'ido-ignore-buffers "\\.*helm\\.*")
       (add-to-list 'ido-ignore-files "\\.swp")
@@ -811,6 +821,17 @@ The exact time is based on priority."
   :ensure t
   :commands ido-ubiquitous-mode
   :init (after 'ido
+          (macrolet
+              ((use-new-completing-read
+                (cmd package)
+                `(eval-after-load ,package
+                   '(defadvice ,cmd (around ido-ubiquitous-new activate)
+                      (let ((ido-ubiquitous-enable-compatibility nil))
+                        ad-do-it)))))
+
+            (use-new-completing-read yas/expand 'yasnippet)
+            (use-new-completing-read yas/visit-snippet-file 'yasnippet))
+
           (ido-mode +1)
           (ido-ubiquitous-mode +1)))
 
@@ -947,17 +968,19 @@ The exact time is based on priority."
   :bind (("s-f"     . cb:rotate-buffers)
          ("C-x C-o" . other-window))
 
-  :commands (cb:select-largest-window
-             cb:rotate-buffers
-             cb:kill-current-buffer
-             cb:hide-dos-eol
-             cb:last-buffer-for-mode
-             cb:insert-timestamp
-             cb:indent-buffer
-             cb:indent-dwim
-             cb:rename-file-and-buffer
-             cb:show-autoloads
-             cb:insert-shebang)
+  :commands
+  (cb:select-largest-window
+   cb:rotate-buffers
+   cb:kill-current-buffer
+   cb:hide-dos-eol
+   cb:last-buffer-for-mode
+   cb:insert-timestamp
+   cb:indent-buffer
+   cb:indent-dwim
+   cb:rename-buffer-and-file
+   cb:delete-buffer-and-file
+   cb:show-autoloads
+   cb:insert-shebang)
 
   :init
   (progn
@@ -1450,7 +1473,7 @@ The exact time is based on priority."
   :diminish yas-minor-mode
   :init
   (progn
-    (require-after-idle 'yasnippet :priority 4)
+    (require-after-idle 'yasnippet)
     (add-hook 'prog-mode-hook 'yas-minor-mode)
     (add-hook 'sgml-mode-hook 'yas-minor-mode))
   :config
@@ -1553,7 +1576,8 @@ The exact time is based on priority."
 (use-package dired-details
   :ensure   t
   :commands dired-details-install
-  :init     (add-hook 'dired-mode-hook 'dired-details-install))
+  :init     (add-hook 'dired-mode-hook 'dired-details-install)
+  :config   (setq-default dired-details-hidden-string "--- "))
 
 ;;;; Compilation & Checking
 
@@ -1669,9 +1693,18 @@ The exact time is based on priority."
   :config
   (progn
     (use-package cb-paredit)
-    (add-hook 'cb:lisp-modes-hook 'enable-paredit-mode)
-    (add-hook 'inferior-lisp-mode-hook 'paredit-mode)
-    (add-hook 'repl-mode-hook 'paredit-mode)))
+
+    (defun cb:paredit-wrap-round-from-behind ()
+      (interactive)
+      (forward-sexp -1)
+      (paredit-wrap-round)
+      (insert " ")
+      (forward-char -1))
+
+    (define-key paredit-mode-map (kbd "M-)")
+      'cb:paredit-wrap-round-from-behind)
+
+    (add-hook 'cb:lisp-modes-hook 'enable-paredit-mode)))
 
 (use-package smartparens
   :ensure t
@@ -2031,6 +2064,7 @@ Operates on region, or the whole buffer if no region is defined."
      `(
        ;; General keywords
        (,(rx "(" (group (or "use-package"
+                            "require-after-idle"
                             "hook-fn"
                             "after"
                             "ac-define-source"
@@ -2042,6 +2076,7 @@ Operates on region, or the whole buffer if no region is defined."
 
        ;; Identifiers after keywords
        (,(rx "(" (group (or "use-package"
+                            "require-after-idle"
                             "ac-define-source"
                             "flycheck-declare-checker"))
              (+ space)
@@ -2051,7 +2086,7 @@ Operates on region, or the whole buffer if no region is defined."
        ;; definition forms
        (,(rx "("
              (group (* (not space)) (or "cl-" "--" "/" ":") "def"
-                    (* (not space)))
+                    (+ (not space)))
              (+ space)
              (group (+ (regex "\[^ )\n\]"))))
         (1 font-lock-keyword-face)
@@ -2982,23 +3017,28 @@ an irb error message."
   :ensure t
   :defer t
   :init
-  (macrolet ((maybe (f) `(lambda ()
-                           (unless (derived-mode-p
-                                    'org-mode
-                                    'sgml-mode
-                                    'magit-log-edit-mode)
-                             (funcall ,f)))))
+  (progn
+    (require-after-idle 'org)
 
     (hook-fn 'cb:org-minor-modes-hook
       "Diminish org minor modes."
       (--each cb:org-minor-modes
         (ignore-errors (diminish it))))
 
-    ;; Use org commands in other modes.
-    (add-hook 'message-mode-hook 'turn-on-orgstruct++)
-    (add-hook 'message-mode-hook 'turn-on-orgtbl)
-    (add-hook 'text-mode-hook (maybe 'turn-on-orgstruct++))
-    (add-hook 'text-mode-hook (maybe 'turn-on-orgtbl)))
+    (macrolet
+        ((maybe
+          (f)
+          `(lambda ()
+             (unless (derived-mode-p
+                      'org-mode
+                      'sgml-mode
+                      'magit-log-edit-mode)
+               (funcall ,f)))))
+      ;; Use org commands in other modes.
+      (add-hook 'message-mode-hook 'turn-on-orgstruct++)
+      (add-hook 'message-mode-hook 'turn-on-orgtbl)
+      (add-hook 'text-mode-hook (maybe 'turn-on-orgstruct++))
+      (add-hook 'text-mode-hook (maybe 'turn-on-orgtbl))))
   :config
   (progn
     (setq org-catch-invisible-edits 'smart)
