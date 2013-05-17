@@ -1406,16 +1406,17 @@ The exact time is based on priority."
 
   :init
   (progn
-    (require-after-idle 'auto-complete :priority 4)
+    (after 'auto-complete (global-auto-complete-mode +1))
+    (require-after-idle 'auto-complete)
     (add-hook 'prog-mode-hook 'auto-complete-mode)
     (add-hook 'comint-mode-hook 'auto-complete-mode))
 
   :config
   (progn
-    ;; Enable for everything except text modes.
-    (global-auto-complete-mode +1)
+    ;; Enable for everything except text mode.
     (hook-fn 'text-mode-hook
-      (auto-complete-mode -1))
+      (when (equal major-mode 'text-mode)
+        (auto-complete-mode -1)))
 
     (use-package auto-complete-config
       :config (ac-config-default))
@@ -1868,9 +1869,35 @@ Operates on region, or the whole buffer if no region is defined."
 (use-package sgml-mode
   :defer t
   :init
-  (hook-fn 'sgml-mode-hook
-    (setq-default sgml-xml-mode t)
-    (local-set-key (kbd "M-q") 'cb:reformat-markup)))
+  (progn
+    (hook-fn 'sgml-mode-hook
+      (setq-default sgml-xml-mode t)
+      (local-set-key (kbd "M-q") 'cb:reformat-markup))))
+
+(use-package html-mode
+  :defer t
+  :init
+  (after 'auto-complete
+    (ac-define-source html-tag-source
+      '((candidates . (-when-let (tag (te/current-tag))
+                        (and (te/eligible-for-auto-attribute-insert?)
+                             (not (s-starts-with? "%" (te/get tag :name)))
+                             (not (te/has-attribute "class" tag))
+
+                             '("class"))))
+        (symbol     . "a")
+        (requires   . '(tagedit))
+        (action     . (lambda ()
+                        (insert "=\"\"")
+                        (unless (thing-at-point-looking-at ">")
+                          (just-one-space))
+                        (search-backward "=")
+                        (forward-char 2)))))
+
+    (add-to-list 'ac-modes 'html-mode)
+    (hook-fn 'html-mode-hook
+      (auto-complete-mode +1)
+      (add-to-list 'ac-sources 'ac-source-html-tag-source))))
 
 (use-package tagedit
   :ensure   t
@@ -2300,6 +2327,8 @@ Operates on region, or the whole buffer if no region is defined."
     (flycheck-mode -1)))
 
 (add-to-list 'auto-mode-alist `("\\.html\\.erb" . erb-mode))
+(after 'auto-complete
+  (add-to-list 'ac-modes 'erb-mode))
 
 (use-package ruby-mode
   :ensure t
