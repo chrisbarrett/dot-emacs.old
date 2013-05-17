@@ -2536,7 +2536,9 @@ an irb error message."
   :commands  (rvm-use-default
               rvm-activate-corresponding-ruby
               rvm-use
-              rvm-open-gem))
+              rvm-open-gem)
+  :init
+  (add-hook 'ruby-mode-hook 'rvm-activate-corresponding-ruby))
 
 ;;;; Haskell
 
