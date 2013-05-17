@@ -1212,6 +1212,7 @@ The exact time is based on priority."
   :defer t)
 
 (use-package cb-colour
+  :if (or (daemonp) (window-system))
   :commands
   (cb:load-theme
    solarized-light
@@ -1221,7 +1222,11 @@ The exact time is based on priority."
   (progn
     (setq color-theme-is-global nil)
     (defconst cb:last-theme (concat cb:tmp-dir "last-theme"))
-    (load cb:last-theme t t t)
+
+    (condition-case _
+        (load cb:last-theme nil t t)
+      (error (solarized-light)))
+
     (hook-fn 'cb:color-theme-changed-hook
       (set-face-font 'default (format "%s 11" (cb:monospace-font)))
       (with-temp-buffer
