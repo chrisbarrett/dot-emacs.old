@@ -1856,12 +1856,9 @@ Operates on region, or the whole buffer if no region is defined."
 (use-package sgml-mode
   :defer t
   :init
-  (progn
-    (hook-fn 'sgml-mode-hook
-      (setq sgml-xml-mode t)
-      (local-set-key (kbd "M-q") 'cb:reformat-markup))
-    (hook-fn 'html-mode-hook
-      (setq sgml-xml-mode t))))
+  (hook-fn 'sgml-mode-hook
+    (setq-default sgml-xml-mode t)
+    (local-set-key (kbd "M-q") 'cb:reformat-markup)))
 
 (use-package tagedit
   :ensure   t
