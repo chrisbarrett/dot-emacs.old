@@ -1673,6 +1673,7 @@ The exact time is based on priority."
   :commands (smartparens-mode smartparens-global-mode)
   :init
   (progn
+    (require-after-idle 'smartparens)
     (add-hook 'text-mode-hook 'smartparens-mode)
     (add-hook 'comint-mode-hook 'smartparens-mode)
     (hook-fn 'prog-mode-hook
@@ -1745,6 +1746,8 @@ The exact time is based on priority."
       (local-unset-key (kbd "-"))
       (local-unset-key (kbd "+"))
       (local-set-key (kbd "*") 'c-electric-star))
+
+    (require-after-idle 'smart-operator)
     )
   :config
   (defadvice smart-insert-operator (around normal-insertion-for-string activate)
@@ -1763,6 +1766,7 @@ The exact time is based on priority."
   :defer t
   :init
   (progn
+    (require-after-idle 'lambda-mode)
     (setq lambda-symbol (string (make-char 'greek-iso8859-7 107)))
     (add-hook 'cb:scheme-modes-hook    'lambda-mode)
     (add-hook 'inferior-lisp-mode-hook 'lambda-mode)
@@ -1845,13 +1849,16 @@ Operates on region, or the whole buffer if no region is defined."
 
 (use-package nxml-mode
   :commands nxml-mode
-  :config
-  (hook-fn 'find-file-hook
-    "Enable nxml-mode if this is an XML file."
-    (when (or (s-ends-with? ".xml" (buffer-file-name))
-              (s-starts-with? "<?xml " (buffer-string)))
-      (nxml-mode)
-      (local-set-key (kbd "M-q") 'cb:reformat-markup))))
+  :modes ("\\.xml" . nxml-mode)
+  :init
+  (progn
+    (hook-fn 'nxml-mode-hook
+      (local-set-key (kbd "M-q") 'cb:reformat-markup))
+
+    (hook-fn 'find-file-hook
+      "Enable nxml-mode if when visiting a file with a DTD."
+      (when (s-starts-with? "<?xml " (buffer-string))
+        (nxml-mode)))))
 
 (use-package sgml-mode
   :defer t
@@ -1861,16 +1868,17 @@ Operates on region, or the whole buffer if no region is defined."
     (local-set-key (kbd "M-q") 'cb:reformat-markup)))
 
 (use-package tagedit
-  :ensure   t
+  :ensure t
   :commands
   (tagedit-mode
    tagedit-add-experimental-features
    tagedit-add-paredit-like-keybindings)
   :init
-  (hook-fn 'sgml-mode-hook
-    (tagedit-mode +1)
-    (tagedit-add-experimental-features)
-    (tagedit-add-paredit-like-keybindings)))
+  (--each '(sgml-mode-hook nxml-mode-hook)
+    (hook-fn it
+      (tagedit-mode +1)
+      (tagedit-add-experimental-features)
+      (tagedit-add-paredit-like-keybindings))))
 
 (use-package markdown-mode
   :ensure t
