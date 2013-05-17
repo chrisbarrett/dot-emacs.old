@@ -4,13 +4,16 @@ This is my Emacs configuration. It is obviously very personalized - my key bindi
 
 # Installation
 
+Requires GNU Make, curl and Git.
+
 ```bash
 cd
 mv .emacs.d .emacs.d.backup
 git clone git@github.com:chrisbarrett/dot-emacs.git .emacs.d
 cd .emacs.d
-make all
+make
 ```
+Additional features require specific language runtimes to be installed. You can install these features with `make all`, or using their individual make tasks (eg `make ruby`).
 
 # Notes
 

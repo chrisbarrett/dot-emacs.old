@@ -15,10 +15,10 @@ emacs_version = $(shell $(emacs) -Q --batch --exec \
 # ----------------------------------------------------------------------------
 
 .PHONY: default
-default : $(modules) conf tags
+default : $(modules) conf tags | $(emacs_src_d)
 
 .PHONY: all
-all : $(modules) $(emacs_src_d) compile tags ruby supercollider python clang scheme
+all : $(modules) compile tags ruby supercollider python clang scheme | $(emacs_src_d)
 
 .PHONY: tags
 tags :
