@@ -570,6 +570,11 @@
   `(,@cb:ruby-modes
     erb-mode))
 
+(cb:define-mode-group cb:markup-modes
+  `(sgml-mode
+    markdown-mode
+    nxml-mode))
+
 (cb:define-mode-group cb:org-minor-modes
   '(orgtbl-mode
     orgstruct-mode
@@ -1868,17 +1873,9 @@ Operates on region, or the whole buffer if no region is defined."
     (local-set-key (kbd "M-q") 'cb:reformat-markup)))
 
 (use-package tagedit
-  :ensure t
-  :commands
-  (tagedit-mode
-   tagedit-add-experimental-features
-   tagedit-add-paredit-like-keybindings)
-  :init
-  (--each '(sgml-mode-hook nxml-mode-hook)
-    (hook-fn it
-      (tagedit-mode +1)
-      (tagedit-add-experimental-features)
-      (tagedit-add-paredit-like-keybindings))))
+  :ensure   t
+  :commands tagedit-mode
+  :init    (add-hook 'cb:markup-modes-hook 'tagedit-mode))
 
 (use-package markdown-mode
   :ensure t
