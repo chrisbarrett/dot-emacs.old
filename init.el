@@ -166,6 +166,8 @@
 (bind-key* "C-c k k" 'cb:exit-emacs-dwim)
 (bind-key* "C-c k e" 'cb:exit-emacs)
 
+(autoload 'ido-yes-or-no-p "ido-yes-or-no")
+
 (defun cb:exit-emacs ()
   (interactive)
   (when (ido-yes-or-no-p "Kill Emacs? ")
@@ -623,7 +625,7 @@
 
 ;;; ----------------------------------------------------------------------------
 
-(cl-defmacro require-after-idle (feature &key (seconds 2))
+(cl-defmacro require-after-idle (feature &key (seconds 5))
   "Load FEATURE after an idle delay once emacs has started.
 The exact time is based on priority."
   `(run-with-idle-timer ,(+ 0.1 seconds)
@@ -3067,8 +3069,10 @@ an irb error message."
 
     (setq
      org-directory (concat user-home-directory "org/")
-     org-default-notes-file (concat org-directory "notes.org")
-     initial-buffer-choice org-default-notes-file)
+     org-default-notes-file (concat org-directory "notes.org"))
+
+    (when (or (daemonp) (display-graphic-p))
+      (setq initial-buffer-choice org-default-notes-file))
 
     (macrolet ((maybe (f) `(lambda ()
                              (unless (derived-mode-p
