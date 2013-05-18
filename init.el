@@ -586,6 +586,7 @@
     inf-ruby-mode
     inferior-python-mode
     ielm-mode
+    erc-mode
     slime-repl-mode
     inferior-scheme-mode
     inferior-haskell-mode
@@ -872,31 +873,30 @@ The exact time is based on priority."
 ;;;; Buffer/window management
 
 (use-package workgroups
-  :bind     (("s-1" . wg-switch-to-index-0)
-             ("s-2" . wg-switch-to-index-1)
-             ("s-3" . wg-switch-to-index-2)
-             ("s-4" . wg-switch-to-index-3)
-             ("s-5" . wg-switch-to-index-4)
-             )
-  :defer    t
   :ensure   t
+  :defer    t
+  :bind
+  (("s-1" . wg-switch-to-index-0)
+   ("s-2" . wg-switch-to-index-1)
+   ("s-3" . wg-switch-to-index-2)
+   ("s-4" . wg-switch-to-index-3)
+   ("s-5" . wg-switch-to-index-4))
   :diminish workgroups-mode
   :commands workgroups-mode
   :init
-
+  (require-after-idle 'workgroups)
   :config
   (progn
     (setq
+     wg-display-current-workgroup-left-decor "["
+     wg-display-current-workgroup-right-decor "]"
      wg-morph-vsteps 6
-     wg-prefix-key (kbd "C-c w")
-     wg-default-session-file (concat cb:etc-dir "workgroups"))
+     wg-prefix-key (kbd "C-c w"))
     (wg-set-prefix-key)
 
     (defadvice wg-mode-line-add-display (around wg-suppress-error activate)
       "Ignore errors in modeline display function caused by custom modeline."
-      (ignore-errors ad-do-it))
-
-    (ignore-errors (wg-load wg-default-session-file))))
+      (ignore-errors ad-do-it))))
 
 (use-package popwin
   :ensure t
@@ -964,8 +964,9 @@ The exact time is based on priority."
   :init (hook-fn 'window-configuration-change-hook (window-number-meta-mode +1)))
 
 (use-package cb-commands
-  :bind (("s-f"     . cb:rotate-buffers)
-         ("C-x C-o" . other-window))
+  :bind
+  (("s-f"     . cb:rotate-buffers)
+   ("C-x C-o" . other-window))
 
   :commands
   (cb:select-largest-window
@@ -979,16 +980,20 @@ The exact time is based on priority."
    cb:rename-buffer-and-file
    cb:delete-buffer-and-file
    cb:show-autoloads
-   cb:insert-shebang)
+   cb:insert-shebang
+   cb:move-line-up
+   cb:move-line-down)
 
   :init
   (progn
+    (require-after-idle 'cb-commands)
     (setq cb:kill-buffer-ignored-list
           '("*scratch*" "*Messages*" "*GROUP*"
             "*shell*" "*eshell*" "*ansi-term*"
             "notes.org"))
-    (require-after-idle 'cb-commands)
-    (add-hook 'find-file-hook 'cb:hide-dos-eol))
+    (add-hook 'find-file-hook 'cb:hide-dos-eol)
+    (bind-key "C-<up>" 'cb:move-line-up)
+    (bind-key "C-<down>" 'cb:move-line-down))
 
   :config
   (defadvice cb:rotate-buffers (after select-largest-window activate)
@@ -1220,7 +1225,11 @@ The exact time is based on priority."
     (erc-autojoin-mode +1)
     (erc-track-mode +1)
     (setq
-     erc-hide-list '("JOIN" "PART" "QUIT" "NICK")
+     erc-hide-list
+     '("JOIN" "PART" "QUIT" "NICK")
+
+     erc-prompt
+     (lambda () (format "%s>" (erc-current-nick)))
 
      erc-track-exclude-types
      '("JOIN" "NICK" "PART" "QUIT" "MODE"
@@ -3023,7 +3032,11 @@ an irb error message."
     (--each '("NOTES" "COMMENTS")
       (add-to-list 'org-drawers it))
 
-    (add-hook 'org-mode-hook 'cb:append-buffer)
+    (hook-fn 'org-mode-hook
+      "Append to buffer for org-mode popups."
+      (unless (buffer-file-name)
+       (cb:append-buffer)))
+
     (define-key org-mode-map (kbd "M-p") 'org-metaup)
     (define-key org-mode-map (kbd "M-n") 'org-metadown)))
 
