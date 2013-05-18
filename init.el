@@ -590,7 +590,7 @@
 (cb:define-mode-group cb:org-minor-modes
   '(orgtbl-mode
     orgstruct-mode
-    orgstruct++-mode) )
+    orgstruct++-mode))
 
 (cb:define-mode-group cb:prompt-modes
   '(comint-mode
@@ -624,14 +624,6 @@
 )
 
 ;;; ----------------------------------------------------------------------------
-
-(cl-defmacro require-after-idle (feature &key (seconds 5))
-  "Load FEATURE after an idle delay once emacs has started.
-The exact time is based on priority."
-  `(run-with-idle-timer ,(+ 0.1 seconds)
-                        nil (lambda ()
-                              (flet ((message (&rest nil)))
-                                (require ,feature)))))
 
 (defun cb:truthy? (sym)
   "Test whether SYM is bound and non-nil."
@@ -711,7 +703,7 @@ The exact time is based on priority."
   :ensure   t
   :commands (projectile-project-p projectile-project-root)
   :diminish projectile-mode
-  :init (require-after-idle 'projectile)
+  :idle (require 'projectile)
   :config
   (progn
     (projectile-global-mode)
@@ -721,12 +713,11 @@ The exact time is based on priority."
 
 (use-package helm
   :ensure t
-  :defer t
+  :defer  t
+  :idle   (require 'helm)
   :init
   (progn
-    (require-after-idle 'helm)
-
-    (after 'helm
+     (after 'helm
       (define-key helm-map (kbd "C-[") 'helm-keyboard-quit))
 
     (bind-key* "M-a" 'helm-apropos)
@@ -742,11 +733,10 @@ The exact time is based on priority."
 (use-package helm-projectile
   :ensure t
   :commands helm-projectile
+  :idle (require 'helm-projectile)
   :init
   (progn
-    (require-after-idle 'helm-projectile)
-
-    (defun cb:helm-dwim ()
+      (defun cb:helm-dwim ()
       "Show helm-projectile, failling back to helm-mini if not in a project."
       (interactive)
       (if (projectile-project-p)
@@ -759,6 +749,7 @@ The exact time is based on priority."
 
 (use-package ido
   :ensure t
+  :idle   (require 'ido)
   :commands
   (ido-mode
    ido-find-file
@@ -785,7 +776,6 @@ The exact time is based on priority."
    ido-completing-read)
   :init
   (progn
-    (require-after-idle 'ido)
     (after 'ido
       (defadvice ido-find-file (after find-file-sudo activate)
         "Find file as root if necessary."
@@ -875,12 +865,12 @@ The exact time is based on priority."
 
 (use-package smex
   :ensure t
+  :idle   (require 'smex)
   :commands
   (smex
    smex-major-mode-commands)
   :init
   (progn
-    (require-after-idle 'smex)
     (bind-key* "M-X" 'smex-major-mode-commands)
     (bind-key* "M-x" 'smex))
   :config (smex-initialize))
@@ -888,8 +878,9 @@ The exact time is based on priority."
 ;;;; Buffer/window management
 
 (use-package workgroups
-  :ensure   t
-  :defer    t
+  :ensure t
+  :defer  t
+  :idle   (require 'workgroups)
   :bind
   (("s-1" . wg-switch-to-index-0)
    ("s-2" . wg-switch-to-index-1)
@@ -898,8 +889,6 @@ The exact time is based on priority."
    ("s-5" . wg-switch-to-index-4))
   :diminish workgroups-mode
   :commands workgroups-mode
-  :init
-  (require-after-idle 'workgroups)
   :config
   (progn
     (setq
@@ -915,13 +904,12 @@ The exact time is based on priority."
 
 (use-package popwin
   :ensure t
+  :idle   (require 'popwin)
   :commands popwin-mode
   :init
-  (progn
-    (require-after-idle 'popwin)
-    (hook-fn 'window-configuration-change-hook
-      (unless (and (boundp 'popwin-mode) popwin-mode)
-        (popwin-mode +1))))
+  (hook-fn 'window-configuration-change-hook
+    (unless (and (boundp 'popwin-mode) popwin-mode)
+      (popwin-mode +1)))
   :config
   (progn
     (hook-fn 'popwin:after-popup-hook
@@ -946,7 +934,7 @@ The exact time is based on priority."
             ("\\*Slime Inspector.*" :regexp t :height 30)
             ("*Ido Completions*" :noselect t :height 30)
             ("*eshell*" :height 30)
-            ;("\\*ansi-term\\*.*" :regexp t :height 30)
+                                        ;("\\*ansi-term\\*.*" :regexp t :height 30)
             ("*shell*" :height 30)
             (".*overtone.log" :regexp t :height 30)
             ("*gists*" :height 30)
@@ -980,6 +968,7 @@ The exact time is based on priority."
   :init (hook-fn 'window-configuration-change-hook (window-number-meta-mode +1)))
 
 (use-package cb-commands
+  :idle (require 'cb-commands)
   :bind
   (("s-f"     . cb:rotate-buffers)
    ("C-x C-o" . other-window))
@@ -1002,7 +991,6 @@ The exact time is based on priority."
 
   :init
   (progn
-    (require-after-idle 'cb-commands)
     (setq cb:kill-buffer-ignored-list
           '("*scratch*" "*Messages*" "*GROUP*"
             "*shell*" "*eshell*" "*ansi-term*"
@@ -1027,6 +1015,7 @@ The exact time is based on priority."
 
 (use-package recentf
   :defer t
+  :idle  (require 'recentf)
   :config
   (defadvice recentf-cleanup (around hide-messages activate)
     (flet ((message (&rest args)))
@@ -1034,7 +1023,6 @@ The exact time is based on priority."
   :init
   (progn
     (hook-fn 'find-file-hook (require 'recentf))
-    (require-after-idle 'recentf)
     (setq
      recentf-save-file       (concat cb:tmp-dir "recentf")
      recentf-auto-cleanup    5
@@ -1052,10 +1040,9 @@ The exact time is based on priority."
 
 (use-package backup-dir
   :defer t
+  :idle  (require 'backup-dir)
   :init
-  (progn
-    (require-after-idle 'backup-dir)
-    (hook-fn 'find-file-hook (require 'backup-dir)))
+  (hook-fn 'find-file-hook (require 'backup-dir))
   :config
   (setq auto-save-file-name-transforms `((".*" ,(concat cb:autosaves-dir "\\1") t))
         backup-by-copying        t
@@ -1078,12 +1065,11 @@ The exact time is based on priority."
 (use-package undo-tree
   :ensure   t
   :defer    t
+  :idle     (require 'undo-tree)
   :bind     ("C-x u" . undo-tree-visualize)
   :diminish undo-tree-mode
   :init
-  (progn
-    (require-after-idle 'undo-tree)
-    (hook-fn 'find-file-hook (require 'undo-tree)))
+  (hook-fn 'find-file-hook (require 'undo-tree))
   :config
   (global-undo-tree-mode +1))
 
@@ -1094,14 +1080,14 @@ The exact time is based on priority."
   :defer t)
 
 (use-package hl-line
-  :defer  t
   :if (or (daemonp) (display-graphic-p))
-  :init   (require-after-idle 'hl-line)
+  :defer  t
+  :idle   (require 'hl-line)
   :config (global-hl-line-mode t))
 
 (use-package fringe
-  :commands (fringe-mode)
-  :init     (require-after-idle 'fringe)
+  :idle     (require 'fringe)
+  :commands fringe-mode
   :config   (fringe-mode '(2 . 0)))
 
 (use-package ansi-color
@@ -1357,7 +1343,7 @@ The exact time is based on priority."
 (use-package surround
   :ensure t
   :defer  t
-  :init   (require-after-idle 'surround)
+  :idle   (require 'surround)
   :config (global-surround-mode +1))
 
 
@@ -1447,10 +1433,14 @@ The exact time is based on priority."
       "Move to the end of the shell buffer and enter insertion state."
       (cb:append-buffer))))
 
+(use-package sh-script
+  :mode (("\\.zsh" . shell-script-mode )))
+
 ;;;; Completion
 
 (use-package auto-complete
   :ensure t
+  :idle   (require 'auto-complete)
   :diminish auto-complete-mode
   :commands
   (global-auto-complete-mode
@@ -1459,7 +1449,6 @@ The exact time is based on priority."
   :init
   (progn
     (after 'auto-complete (global-auto-complete-mode +1))
-    (require-after-idle 'auto-complete)
     (add-hook 'prog-mode-hook 'auto-complete-mode)
     (add-hook 'comint-mode-hook 'auto-complete-mode))
 
@@ -1498,13 +1487,13 @@ The exact time is based on priority."
 
 (use-package yasnippet
   :ensure t
+  :idle   (require 'yasnippet)
   :diminish yas-minor-mode
   :commands
   (yas-global-mode
    yas-minor-mode)
   :init
   (progn
-    (require-after-idle 'yasnippet)
     (add-hook 'prog-mode-hook 'yas-minor-mode)
     (add-hook 'sgml-mode-hook 'yas-minor-mode))
   :config
@@ -1538,10 +1527,10 @@ The exact time is based on priority."
 ;;;; Dired
 
 (use-package dired
-  :defer   t
+  :defer t
+  :idle  (require 'dired)
   :init
   (progn
-    (require-after-idle 'dired)
     (hook-fn 'dired-mode-hook
       (evil-local-set-key 'normal (kbd "SPC") 'dired-hide-subdir)
       (evil-local-set-key 'normal (kbd "S-SPC") 'dired-hide-all)
@@ -1709,7 +1698,8 @@ The exact time is based on priority."
 ;;;; Language utils
 
 (use-package paredit
-  :ensure   t
+  :ensure t
+  :idle   (require 'paredit)
   :diminish paredit-mode
   :commands
   (paredit-mode
@@ -1717,8 +1707,6 @@ The exact time is based on priority."
    disable-paredit-mode)
   :init
   (progn
-
-    (require-after-idle 'paredit)
 
     (hook-fn 'minibuffer-setup-hook
       "Use paredit in the minibuffer."
@@ -1748,13 +1736,13 @@ The exact time is based on priority."
 
 (use-package smartparens
   :ensure t
+  :idle   (require 'smartparens)
   :diminish smartparens-mode
   :commands
   (smartparens-mode
    smartparens-global-mode)
   :init
   (progn
-    (require-after-idle 'smartparens)
     (add-hook 'text-mode-hook 'turn-on-smartparens-mode)
     (hook-fn 'comint-mode-hook (smartparens-mode +1))
 
@@ -1774,6 +1762,7 @@ The exact time is based on priority."
 
 (use-package smart-operator
   :ensure t
+  :idle   (require 'smart-operator)
   :commands
   (smart-insert-operator
    smart-insert-operator-hook)
@@ -1832,10 +1821,8 @@ The exact time is based on priority."
       (local-unset-key (kbd ":"))
       (local-unset-key (kbd "-"))
       (local-unset-key (kbd "+"))
-      (local-set-key (kbd "*") 'c-electric-star))
+      (local-set-key (kbd "*") 'c-electric-star)))
 
-    (require-after-idle 'smart-operator)
-    )
   :config
   (defadvice smart-insert-operator (around normal-insertion-for-string activate)
     "Do not perform smart insertion if looking at a string."
@@ -1848,12 +1835,12 @@ The exact time is based on priority."
       ad-do-it)))
 
 (use-package lambda-mode
+  :defer t
+  :idle  (require 'lambda-mode)
   :diminish lambda-mode
   :commands lambda-mode
-  :defer t
   :init
   (progn
-    (require-after-idle 'lambda-mode)
     (setq lambda-symbol (string (make-char 'greek-iso8859-7 107)))
     (add-hook 'cb:scheme-modes-hook    'lambda-mode)
     (add-hook 'inferior-lisp-mode-hook 'lambda-mode)
@@ -1863,11 +1850,9 @@ The exact time is based on priority."
     (add-hook 'cb:slime-modes-hook     'lambda-mode)))
 
 (use-package paren
-  :defer  t
-  :init
-  (progn
-    (hook-fn 'prog-mode-hook (require 'paren))
-    (require-after-idle 'paren))
+  :defer t
+  :idle  (require 'paren)
+  :init (hook-fn 'prog-mode-hook (require 'paren))
   :config (show-paren-mode +1))
 
 (use-package highlight-parentheses
@@ -2008,10 +1993,9 @@ Operates on region, or the whole buffer if no region is defined."
 (use-package parenface-plus
   :ensure t
   :defer  t
+  :idle   (require 'parenface-plus)
   :init
-  (progn
-    (require-after-idle 'parenface-plus)
-    (hook-fn 'prog-mode-hook (require 'parenface-plus))))
+  (hook-fn 'prog-mode-hook (require 'parenface-plus)))
 
 (use-package eval-sexp-fu
   :commands eval-sexp-fu-flash-mode
@@ -2119,7 +2103,6 @@ Operates on region, or the whole buffer if no region is defined."
      `(
        ;; General keywords
        (,(rx "(" (group (or "use-package"
-                            "require-after-idle"
                             "hook-fn"
                             "after"
                             "ac-define-source"
@@ -2131,7 +2114,6 @@ Operates on region, or the whole buffer if no region is defined."
 
        ;; Identifiers after keywords
        (,(rx "(" (group (or "use-package"
-                            "require-after-idle"
                             "ac-define-source"
                             "flycheck-declare-checker"))
              (+ space)
@@ -2935,6 +2917,20 @@ an irb error message."
   ((".gitignore$" . conf-mode)
    (".gitmodules$" . conf-mode)))
 
+(use-package sml-mode
+  :ensure t
+  :mode (("\\.cm"  . sml-cm-mode)
+         ("\\.sml" . sml-mode)
+         ("\\.sig" . sml-mode)
+         ("\\.grm" . sml-yacc-mode))
+  :init
+  (progn
+   (--each '(".cm/" "CM/")
+     (add-to-list 'completion-ignored-extensions it)))
+  :config
+  (setq
+   sml-indent-level 2))
+
 ;;;; Git
 
 (define-prefix-command 'git-map)
@@ -2943,7 +2939,7 @@ an irb error message."
 (use-package magit
   :ensure t
   :defer  t
-
+  :idle   (require 'magit)
   :bind
   (("M-g"     . magit-status)
    ("C-x g t" . magit-stash)
@@ -2956,9 +2952,6 @@ an irb error message."
    ("C-x g X" . magit-reset-head-hard)
    ("C-x g d" . magit-diff-working-tree)
    ("C-x g D" . magit-diff))
-
-  :init
-  (require-after-idle 'magit)
   :config
   (progn
 
@@ -3057,10 +3050,10 @@ an irb error message."
 
 (use-package org
   :ensure t
-  :defer t
+  :defer  t
+  :idle   (require 'org)
   :init
   (progn
-    (require-after-idle 'org)
 
     (hook-fn 'cb:org-minor-modes-hook
       "Diminish org minor modes."
@@ -3119,9 +3112,9 @@ an irb error message."
 (use-package key-chord
   :ensure t
   :defer  t
+  :idle   (require 'key-chord)
   :init
   (progn
-    (require-after-idle 'key-chord)
     (hook-fn 'find-file-hook (require 'key-chord)))
   :config
   (progn
