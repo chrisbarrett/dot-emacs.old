@@ -2891,10 +2891,7 @@ an irb error message."
    ("C-x g D" . magit-diff))
 
   :init
-  (progn
-    (require-after-idle 'magit)
-    )
-
+  (require-after-idle 'magit)
   :config
   (progn
 
