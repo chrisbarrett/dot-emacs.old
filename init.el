@@ -999,15 +999,10 @@ The exact time is based on priority."
 ;;;; Backups & State
 
 (use-package saveplace
-  :defer t
   :init
   (progn
-    (setq-default saveplace t)
-    (require-after-idle 'saveplace)
-    (hook-fn 'after-find-file (require 'saveplace) ))
-  :config
-  (progn
-    (setq save-place-file (concat cb:tmp-dir "saved-places") )))
+    (setq save-place-file (concat cb:tmp-dir "saved-places"))
+    (setq-default saveplace t)))
 
 (use-package recentf
   :defer t
@@ -1543,7 +1538,8 @@ The exact time is based on priority."
             (hl-line-unhighlight)
           ad-do-it)))
 
-    (setq dired-auto-revert-buffer t)
+    (setq dired-auto-revert-buffer t
+          dired-listing-switches "-al --group-directories-first")
     (when (equal system-type 'darwin)
       ;; Use GNU version of ls if available.
       (-when-let (gls (executable-find "gls"))
@@ -2981,9 +2977,6 @@ an irb error message."
 
 ;;;; Org
 
-(use-package org-capture
-  :bind ("M-o" . org-capture))
-
 (use-package org
   :ensure t
   :defer t
@@ -3027,9 +3020,15 @@ an irb error message."
 
      org-catch-invisible-edits 'smart)
 
+    (--each '("NOTES" "COMMENTS")
+      (add-to-list 'org-drawers it))
+
     (add-hook 'org-mode-hook 'cb:append-buffer)
     (define-key org-mode-map (kbd "M-p") 'org-metaup)
     (define-key org-mode-map (kbd "M-n") 'org-metadown)))
+
+(use-package org-capture
+  :bind ("M-o" . org-capture))
 
 ;;;; Productivity
 
