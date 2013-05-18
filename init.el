@@ -1754,8 +1754,11 @@ The exact time is based on priority."
   (progn
     (require-after-idle 'smartparens)
     (add-hook 'text-mode-hook 'turn-on-smartparens-mode)
-    (add-hook 'comint-mode-hook 'turn-on-smartparens-mode)
-    (add-hook 'term-mode-hook 'turn-on-smartparens-mode)
+    (hook-fn 'comint-mode-hook (smartparens-mode +1))
+
+    (hook-fn 'term-mode-hook
+      (run-with-timer 0.25 nil (lambda () (smartparens-mode +1))))
+
     (hook-fn 'prog-mode-hook
       "Ensure Paredit is used for Lisps."
       (if (-contains? cb:lisp-modes major-mode)
