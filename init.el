@@ -783,7 +783,7 @@ The exact time is based on priority."
 
       (hook-fn 'ido-setup-hook
         ;; Typing ~ resets ido prompt to home directory.
-        (define-key ido-file-completion-map
+        (define-key ido-common-completion-map
           (kbd "~")
           (lambda ()
             (interactive)
