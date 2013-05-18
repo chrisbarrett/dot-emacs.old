@@ -632,17 +632,15 @@ The exact time is based on priority."
   :diminish (visual-line-mode
              global-visual-line-mode
              auto-fill-mode)
-  :config
+  :init
   (add-hook 'text-mode-hook 'visual-line-mode))
 
 (use-package exec-path-from-shell
   :ensure t
-  :if    (or (and (equal system-type 'darwin) (window-system))
-             (daemonp))
   :defer  t
-  :init
-  (progn
-    (hook-fn 'after-init-hook (require 'exec-path-from-shell)))
+  :if     (or (daemonp)
+              (and (equal system-type 'darwin) (window-system)))
+  :init   (hook-fn 'after-init-hook (require 'exec-path-from-shell))
   :config (exec-path-from-shell-initialize))
 
 ;;;; OS X
@@ -1576,8 +1574,8 @@ The exact time is based on priority."
 (use-package dired-details
   :ensure   t
   :commands dired-details-install
-  :init     (add-hook 'dired-mode-hook 'dired-details-install)
-  :config   (setq-default dired-details-hidden-string "--- "))
+  :init     (after 'dired (dired-details-install))
+  :config   (setq-default dired-details-hidden-string "… "))
 
 ;;;; Compilation & Checking
 
