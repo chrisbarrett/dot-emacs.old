@@ -2876,14 +2876,24 @@ an irb error message."
 (use-package magit
   :ensure t
   :defer  t
-  :bind   (("C-x g l" . magit-log)
-           ("C-x g d" . magit-diff-working-tree)
-           ("C-x g D" . magit-diff))
+
+  :bind
+  (("M-g"     . magit-status)
+   ("C-x g t" . magit-stash)
+   ("C-x g c" . magit-checkout)
+   ("C-x g u" . magit-pull)
+   ("C-x g r" . magit-reflog)
+   ("C-x g l" . magit-log)
+   ("C-x g s" . magit-show)
+   ("C-x g x" . magit-reset-head)
+   ("C-x g X" . magit-reset-head-hard)
+   ("C-x g d" . magit-diff-working-tree)
+   ("C-x g D" . magit-diff))
 
   :init
   (progn
     (require-after-idle 'magit)
-    (bind-key* "M-g" 'magit-status))
+    )
 
   :config
   (progn
