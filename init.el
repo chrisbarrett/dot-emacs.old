@@ -2005,7 +2005,8 @@ Operates on region, or the whole buffer if no region is defined."
 
 (use-package lisp-mode
   :defer t
-  :modes ("\\.dirlocals" . emacs-lisp-mode)
+  :mode (("\\.dir-locals" . emacs-lisp-mode)
+         ("Carton"        . emacs-lisp-mode))
   :config
   (progn
 
@@ -2029,20 +2030,25 @@ Operates on region, or the whole buffer if no region is defined."
       (-when-let (buf (cb:last-elisp-buffer))
         (switch-to-buffer-other-window buf)))
 
-    (add-to-list 'auto-mode-alist '("Carton$" . emacs-lisp-mode))
     (define-key emacs-lisp-mode-map (kbd "C-c C-t") 'ert)
     (define-key emacs-lisp-mode-map (kbd "C-c e b") 'eval-buffer)
     (define-key emacs-lisp-mode-map (kbd "C-c e f") 'emacs-lisp-byte-compile-and-load)
     (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'cb:switch-to-ielm)
     (define-key emacs-lisp-mode-map (kbd "C-c e r") 'eval-region)
 
-    (hook-fn 'ielm-mode-hook (local-set-key (kbd "C-c C-z") 'cb:switch-to-elisp))
+    (hook-fn 'ielm-mode-hook
+      (local-set-key (kbd "C-c C-z") 'cb:switch-to-elisp))
+
+    (defun cb:special-elisp-file? ()
+      (and (derived-mode-p 'emacs-lisp-mode)
+           (-contains? '("*scratch*" ".dir-locals")
+                       (buffer-name))))
 
     (defun cb:elisp-after-save ()
       "Check parens are balanced and byte-compile."
       (check-parens)
       (ignore-errors
-        (unless (equal "Carton" (file-name-nondirectory (buffer-file-name)))
+        (unless (or (cb:special-elisp-file?) no-byte-compile)
           (byte-compile-file (buffer-file-name)))))
 
     (hook-fn 'emacs-lisp-mode-hook
@@ -2050,9 +2056,7 @@ Operates on region, or the whole buffer if no region is defined."
 
     (hook-fn 'flycheck-mode-hook
       "Disable flycheck mode for scratch buffer."
-      (when (and (equal 'emacs-lisp-mode major-mode)
-                 (-contains?  '("*scratch*" ".dirlocals")
-                              (buffer-name)))
+      (when (cb:special-elisp-file?)
         (add-hook 'flycheck-before-syntax-check-hook (lambda () (flycheck-mode -1)) nil t)))
 
     (defadvice eval-buffer (after buffer-evaluated-feedback activate)
@@ -2866,15 +2870,22 @@ an irb error message."
 
 ;;;; Git
 
+(define-prefix-command 'git-map)
+(bind-key "C-x g" 'git-map)
+
 (use-package magit
   :ensure t
   :defer  t
+  :bind   ("C-x g l" . magit-log)
+
   :init
   (progn
     (require-after-idle 'magit)
     (bind-key* "M-g" 'magit-status))
+
   :config
   (progn
+
     (cb:define-combined-hook cb:magit-command-hook
       ;; Search through interned symbols for magit hooks.
       (let (hooks)
@@ -2904,13 +2915,17 @@ an irb error message."
     (add-hook 'magit-log-edit-mode-hook 'cb:append-buffer)
     (add-hook 'magit-mode-hook 'magit-load-config-extensions)))
 
+(use-package magit-blame
+  :commands magit-blame-mode
+  :bind ("C-x g b" . magit-blame-mode))
+
 (use-package git-auto-commit-mode
   :ensure t
   :commands git-auto-commit-mode)
 
 (use-package git-gutter
   :ensure t
-  :bind ("C-x g" . git-gutter:toggle)
+  :bind ("C-x g g" . git-gutter:toggle)
   :commands (git-gutter:toggle
              git-gutter:clean
              git-gutter))
