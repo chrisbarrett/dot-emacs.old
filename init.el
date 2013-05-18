@@ -2003,8 +2003,7 @@ Operates on region, or the whole buffer if no region is defined."
 
 (use-package lisp-mode
   :defer t
-  :mode (("\\.dir-locals" . emacs-lisp-mode)
-         ("Carton"        . emacs-lisp-mode))
+  :mode  (("Carton" . emacs-lisp-mode))
   :config
   (progn
 
@@ -2039,7 +2038,7 @@ Operates on region, or the whole buffer if no region is defined."
 
     (defun cb:special-elisp-file? ()
       (and (derived-mode-p 'emacs-lisp-mode)
-           (-contains? '("*scratch*" ".dir-locals")
+           (-contains? '("*scratch*" ".dir-locals.el")
                        (buffer-name))))
 
     (defun cb:elisp-after-save ()
@@ -2968,6 +2967,56 @@ an irb error message."
           ediff-window-setup-function 'ediff-setup-windows-plain)
     (add-hook 'ediff-startup-hook 'turn-off-evil-mode)))
 
+;;;; Org
+
+(use-package org-capture
+  :bind ("M-o" . org-capture))
+
+(use-package org
+  :ensure t
+  :defer t
+  :init
+  (progn
+    (require-after-idle 'org)
+
+    (hook-fn 'cb:org-minor-modes-hook
+      "Diminish org minor modes."
+      (--each cb:org-minor-modes
+        (ignore-errors (diminish it))))
+
+    (setq
+     org-directory (concat user-home-directory "org/")
+     org-default-notes-file (concat org-directory "notes.org")
+     initial-buffer-choice org-default-notes-file)
+
+    (macrolet ((maybe (f) `(lambda ()
+                             (unless (derived-mode-p
+                                      'org-mode
+                                      'sgml-mode
+                                      'magit-log-edit-mode)
+                               (funcall ,f)))))
+      ;; Use org commands in other modes.
+      (add-hook 'message-mode-hook 'turn-on-orgstruct++)
+      (add-hook 'message-mode-hook 'turn-on-orgtbl)
+      (add-hook 'text-mode-hook (maybe 'turn-on-orgstruct++))
+      (add-hook 'text-mode-hook (maybe 'turn-on-orgtbl))))
+  :config
+  (progn
+    (setq
+     org-capture-templates
+
+     '(("t" "Todo" entry (file+headline (concat cb:org-dir "todo.org") "Tasks")
+        "* TODO %?\n %i\n")
+
+       ("l" "Link" plain (file (concat cb:org-dir "links.org"))
+        "- %?\n %x\n"))
+
+     org-catch-invisible-edits 'smart)
+
+    (add-hook 'org-mode-hook 'cb:append-buffer)
+    (define-key org-mode-map (kbd "M-p") 'org-metaup)
+    (define-key org-mode-map (kbd "M-n") 'org-metadown)))
+
 ;;;; Productivity
 
 (use-package key-chord
@@ -3031,53 +3080,6 @@ an irb error message."
   :ensure   t
   :commands scratch
   :bind     ("C-c e s" . scratch) )
-
-(use-package org
-  :ensure t
-  :bind ("M-o" . org-capture)
-  :init
-  (progn
-    (require-after-idle 'org)
-
-    (hook-fn 'cb:org-minor-modes-hook
-      "Diminish org minor modes."
-      (--each cb:org-minor-modes
-        (ignore-errors (diminish it))))
-
-    (macrolet
-        ((maybe
-          (f)
-          `(lambda ()
-             (unless (derived-mode-p
-                      'org-mode
-                      'sgml-mode
-                      'magit-log-edit-mode)
-               (funcall ,f)))))
-      ;; Use org commands in other modes.
-      (add-hook 'message-mode-hook 'turn-on-orgstruct++)
-      (add-hook 'message-mode-hook 'turn-on-orgtbl)
-      (add-hook 'text-mode-hook (maybe 'turn-on-orgstruct++))
-      (add-hook 'text-mode-hook (maybe 'turn-on-orgtbl))))
-  :config
-  (progn
-    (defvar cb:org-dir (concat user-home-directory "org/"))
-
-    (setq
-     org-default-notes-file (concat cb:org-dir "notes.org")
-
-     org-capture-templates
-
-     '(("t" "Todo" entry (file+headline (concat cb:org-dir "todo.org") "Tasks")
-        "* TODO %?\n %i\n")
-
-       ("l" "Link" plain (file (concat cb:org-dir "links.org"))
-        "- %?\n %x\n"))
-
-     org-catch-invisible-edits 'smart)
-
-    (add-hook 'org-mode-hook 'cb:append-buffer)
-    (define-key org-mode-map (kbd "M-p") 'org-metaup)
-    (define-key org-mode-map (kbd "M-n") 'org-metadown)))
 
 (use-package iedit
   :ensure   t
@@ -3157,7 +3159,9 @@ Repeated invocations toggle between the two most recently open buffers."
   (run-with-idle-timer
    0.1 nil
    (lambda nil
-     (when (equal (get-buffer "*scratch*") (current-buffer))
+     (when (-contains? '("*scratch*"
+                         "todo.org")
+                  (buffer-name))
        (fortune)))))
 
 (hook-fn 'after-make-frame-functions (cb:show-fortune))
@@ -3169,6 +3173,18 @@ Repeated invocations toggle between the two most recently open buffers."
   (setq default-directory user-home-directory)
   (load (concat user-emacs-directory "site-file.el") t t))
 
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(safe-local-variable-values (quote ((gac-automatically-push-p . t)))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
 ;; Local Variables:
 ;; byte-compile-warnings: (not free-vars obsolete)
 ;; End:
