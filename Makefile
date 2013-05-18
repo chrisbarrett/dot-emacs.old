@@ -7,6 +7,7 @@ bin        = $(CURDIR)/bin
 tmp        = $(CURDIR)/tmp
 modules    = $(CURDIR)/.git/modules
 emacs      = emacs
+emacs_src  = $(src)/emacs-$(emacs_version)
 
 emacs_exec    = $(emacs) --batch -nw -l init.el -f
 emacs_version = $(shell $(emacs) -Q --batch --exec \
@@ -15,10 +16,10 @@ emacs_version = $(shell $(emacs) -Q --batch --exec \
 # ----------------------------------------------------------------------------
 
 .PHONY: default
-default : $(modules) conf tags | $(emacs_src_d)
+default : $(modules) conf tags $(emacs_src)
 
 .PHONY: all
-all : $(modules) compile tags ruby supercollider python clang scheme | $(emacs_src_d)
+all : $(modules) compile tags ruby supercollider python clang scheme $(emacs_src)
 
 .PHONY: tags
 tags :
@@ -80,7 +81,6 @@ clean-tmp :
 # ----------------------------------------------------------------------------
 # Emacs source
 
-emacs_src_d = $(src)/emacs-$(emacs_version)
 emacs_ftp   = http://gnu.mirror.uber.com.au/emacs/emacs-$(emacs_version).tar.gz
 emacs_gz    = $(src)/emacs-$(emacs_version).tar.gz
 
@@ -89,7 +89,7 @@ emacs_gz    = $(src)/emacs-$(emacs_version).tar.gz
 $(emacs_gz) :| $(src)
 	curl $(emacs_ftp) -o $(emacs_gz)
 
-$(emacs_src_d) :| $(emacs_gz)
+$(emacs_src) :| $(emacs_gz)
 	tar xvfz $(emacs_gz) --directory=$(src)
 
 # ----------------------------------------------------------------------------
