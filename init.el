@@ -158,16 +158,25 @@
 
 ;;; Exiting Emacs
 ;;;
-;;; Rebind to C-c r q ("really quit"), so you're less likely to kill Emacs
-;;; accidently with Org key-commands.
-(bind-key* "C-x C-c" (lambda () (interactive) (message "Type <C-c r q> to exit Emacs")))
-(bind-key* "C-c r q" 'cb:exit-emacs-dwim)
+;;; Rebind to C-c k k ("kill") to prevent accidentally exiting when
+;;; using Org bindings.
+(bind-key* "C-x C-c" (lambda ()
+                       (interactive)
+                       (message "Type <C-c k e> to exit Emacs")))
+(bind-key* "C-c k k" 'cb:exit-emacs-dwim)
+(bind-key* "C-c k e" 'cb:exit-emacs)
+
+(defun cb:exit-emacs ()
+  (interactive)
+  (when (ido-yes-or-no-p "Kill Emacs? ")
+    (save-buffers-kill-emacs)))
 
 (defun cb:exit-emacs-dwim ()
   (interactive)
-  (if (daemonp)
-      (server-save-buffers-kill-terminal nil)
-    (save-buffers-kill-emacs)))
+  (when (ido-yes-or-no-p "Kill Emacs? ")
+   (if (daemonp)
+       (server-save-buffers-kill-terminal nil)
+     (save-buffers-kill-emacs))))
 
 ;;; Help commands
 
@@ -1744,8 +1753,9 @@ The exact time is based on priority."
   :init
   (progn
     (require-after-idle 'smartparens)
-    (add-hook 'text-mode-hook 'smartparens-mode)
-    (add-hook 'comint-mode-hook 'smartparens-mode)
+    (add-hook 'text-mode-hook 'turn-on-smartparens-mode)
+    (add-hook 'comint-mode-hook 'turn-on-smartparens-mode)
+    (add-hook 'term-mode-hook 'turn-on-smartparens-mode)
     (hook-fn 'prog-mode-hook
       "Ensure Paredit is used for Lisps."
       (if (-contains? cb:lisp-modes major-mode)
