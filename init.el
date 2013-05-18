@@ -748,29 +748,30 @@ The exact time is based on priority."
 
 (use-package ido
   :ensure t
-  :commands (ido-mode
-             ido-find-file
-             ido-switch-buffer
-             ido-switch-buffer-other-window
-             ido-display-buffer
-             ido-kill-buffer
-             ido-insert-buffer
-             ido-switch-buffer-other-frame
-             ido-find-file-in-dir
-             ido-find-file-other-window
-             ido-find-alternate-file
-             ido-find-file-read-only
-             ido-find-file-read-only-other-window
-             ido-find-file-read-only-other-frame
-             ido-display-file
-             ido-find-file-other-frame
-             ido-write-file
-             ido-insert-file
-             ido-dired
-             ido-read-buffer
-             ido-read-file-name
-             ido-read-directory-name
-             ido-completing-read)
+  :commands
+  (ido-mode
+   ido-find-file
+   ido-switch-buffer
+   ido-switch-buffer-other-window
+   ido-display-buffer
+   ido-kill-buffer
+   ido-insert-buffer
+   ido-switch-buffer-other-frame
+   ido-find-file-in-dir
+   ido-find-file-other-window
+   ido-find-alternate-file
+   ido-find-file-read-only
+   ido-find-file-read-only-other-window
+   ido-find-file-read-only-other-frame
+   ido-display-file
+   ido-find-file-other-frame
+   ido-write-file
+   ido-insert-file
+   ido-dired
+   ido-read-buffer
+   ido-read-file-name
+   ido-read-directory-name
+   ido-completing-read)
   :init
   (progn
     (require-after-idle 'ido)
@@ -819,20 +820,21 @@ The exact time is based on priority."
 (use-package ido-ubiquitous
   :ensure t
   :commands ido-ubiquitous-mode
-  :init (after 'ido
-          (macrolet
-              ((use-new-completing-read
-                (cmd package)
-                `(eval-after-load ,package
-                   '(defadvice ,cmd (around ido-ubiquitous-new activate)
-                      (let ((ido-ubiquitous-enable-compatibility nil))
-                        ad-do-it)))))
+  :init
+  (after 'ido
+    (macrolet
+        ((use-new-completing-read
+          (cmd package)
+          `(eval-after-load ,package
+             '(defadvice ,cmd (around ido-ubiquitous-new activate)
+                (let ((ido-ubiquitous-enable-compatibility nil))
+                  ad-do-it)))))
 
-            (use-new-completing-read yas/expand 'yasnippet)
-            (use-new-completing-read yas/visit-snippet-file 'yasnippet))
+      (use-new-completing-read yas/expand 'yasnippet)
+      (use-new-completing-read yas/visit-snippet-file 'yasnippet))
 
-          (ido-mode +1)
-          (ido-ubiquitous-mode +1)))
+    (ido-mode +1)
+    (ido-ubiquitous-mode +1)))
 
 (use-package ido-yes-or-no
   :ensure t
@@ -862,7 +864,9 @@ The exact time is based on priority."
 
 (use-package smex
   :ensure t
-  :commands (smex smex-major-mode-commands)
+  :commands
+  (smex
+   smex-major-mode-commands)
   :init
   (progn
     (require-after-idle 'smex)
@@ -938,10 +942,11 @@ The exact time is based on priority."
             ("*sldb.*":regexp t :height 30)))))
 
 (use-package transpose-frame
-  :bind (("C-x t" . transpose-frame)
-         ("s-t"   . transpose-frame)
-         ("C-x f" . rotate-frame)
-         ("s-r"   . rotate-frame))
+  :bind
+  (("C-x t" . transpose-frame)
+   ("s-t"   . transpose-frame)
+   ("C-x f" . rotate-frame)
+   ("s-r"   . rotate-frame))
 
   :commands
   (transpose-frame
@@ -1004,7 +1009,7 @@ The exact time is based on priority."
 ;;;; Backups & State
 
 (use-package saveplace
-  :init
+  :config
   (progn
     (setq save-place-file (concat cb:tmp-dir "saved-places"))
     (setq-default saveplace t)))
@@ -1105,10 +1110,11 @@ The exact time is based on priority."
 
 (use-package ace-jump-mode
   :ensure t
-  :bind (("C-L" . ace-jump-line-mode)
-         ("C-SPC" . ace-jump-word-mode)
-         ;; Needed for terminal.
-         ("C-@" . ace-jump-word-mode))
+  :bind
+  (("C-L" . ace-jump-line-mode)
+   ("C-SPC" . ace-jump-word-mode)
+   ;; Needed for terminal.
+   ("C-@" . ace-jump-word-mode))
   :config
   (progn
     (hook-fn 'ace-jump-mode-end-hook
@@ -1167,9 +1173,10 @@ The exact time is based on priority."
     (bbdb-initialize)))
 
 (use-package bbdb-vcard
-  :commands (bbdb-vcard-import-file
-             bbdb-vcard-import-buffer
-             bbdb-vcard-export)
+  :commands
+  (bbdb-vcard-import-file
+   bbdb-vcard-import-buffer
+   bbdb-vcard-export)
   :config
   ;; HACK: calls functions that appear not to exist.
   (progn
@@ -1185,7 +1192,9 @@ The exact time is based on priority."
 
 (use-package w3m
   :ensure   t
-  :commands (w3m-find-file w3m-browse-url)
+  :commands
+  (w3m-find-file
+   w3m-browse-url)
   :init
   (progn
     (setq browse-url-browser-function 'w3m-browse-url)
@@ -1343,7 +1352,9 @@ The exact time is based on priority."
 
 (use-package evil-numbers
   :ensure t
-  :commands (evil-numbers/dec-at-pt evil-numbers/inc-at-pt)
+  :commands
+  (evil-numbers/dec-at-pt
+   evil-numbers/inc-at-pt)
   :config
   (progn
     (define-key evil-normal-state-map (kbd "-") 'evil-numbers/dec-at-pt)
@@ -1430,7 +1441,9 @@ The exact time is based on priority."
 (use-package auto-complete
   :ensure t
   :diminish auto-complete-mode
-  :commands (global-auto-complete-mode auto-complete-mode)
+  :commands
+  (global-auto-complete-mode
+   auto-complete-mode)
 
   :init
   (progn
@@ -1474,8 +1487,10 @@ The exact time is based on priority."
 
 (use-package yasnippet
   :ensure t
-  :commands (yas-global-mode yas-minor-mode)
   :diminish yas-minor-mode
+  :commands
+  (yas-global-mode
+   yas-minor-mode)
   :init
   (progn
     (require-after-idle 'yasnippet)
@@ -1569,7 +1584,9 @@ The exact time is based on priority."
                '("\\.zip\\'" ".zip" "unzip")))
 
 (use-package dired-x
-  :commands (dired-jump dired-jump-other-window)
+  :commands
+  (dired-jump
+   dired-jump-other-window)
   :init
   (progn
     ;; Don't bind C-x C-j to dired-jump - this interferes with bindings in
@@ -1588,8 +1605,9 @@ The exact time is based on priority."
 ;;;; Compilation & Checking
 
 (use-package compile
-  :bind  (("C-c b" . compile)
-          ("C-c C-b" . recompile))
+  :bind
+  (("C-c b" . compile)
+   ("C-c C-b" . recompile))
   :config
   (progn
     (defun cb:compile-autoclose (buffer string)
@@ -1613,8 +1631,9 @@ The exact time is based on priority."
 
 (use-package mode-compile
   :ensure t
-  :bind (("C-c ."   . mode-compile-kill)
-         ("C-c C-c" . mode-compile))
+  :bind
+  (("C-c ."   . mode-compile-kill)
+   ("C-c C-c" . mode-compile))
   :config
   (setq mode-compile-expert-p             t
         mode-compile-always-save-buffer-p t))
@@ -1657,8 +1676,9 @@ The exact time is based on priority."
 
 (use-package cb-tags
   :commands cb:build-ctags
-  :bind (("C-]"     . cb:find-tag)
-         ("C-c C-r" . cb:load-ctags))
+  :bind
+  (("C-]"     . cb:find-tag)
+   ("C-c C-r" . cb:load-ctags))
   :config
   (progn
     ;; Ensure tags searches are case-sensitive.
@@ -1680,7 +1700,10 @@ The exact time is based on priority."
 (use-package paredit
   :ensure   t
   :diminish paredit-mode
-  :commands (paredit-mode enable-paredit-mode disable-paredit-mode)
+  :commands
+  (paredit-mode
+   enable-paredit-mode
+   disable-paredit-mode)
   :init
   (progn
 
@@ -1715,7 +1738,9 @@ The exact time is based on priority."
 (use-package smartparens
   :ensure t
   :diminish smartparens-mode
-  :commands (smartparens-mode smartparens-global-mode)
+  :commands
+  (smartparens-mode
+   smartparens-global-mode)
   :init
   (progn
     (require-after-idle 'smartparens)
@@ -1734,7 +1759,9 @@ The exact time is based on priority."
 
 (use-package smart-operator
   :ensure t
-  :commands (smart-insert-operator smart-insert-operator-hook)
+  :commands
+  (smart-insert-operator
+   smart-insert-operator-hook)
   :init
   (macrolet
       ((smart-op
@@ -1984,7 +2011,9 @@ Operates on region, or the whole buffer if no region is defined."
 
 (use-package slime
   :defer t
-  :commands (slime-mode slime)
+  :commands
+  (slime-mode
+   slime)
   :init
   (progn
     (setq slime-lisp-implementations `((lisp ("sbcl" "--noinform"))))
@@ -2238,7 +2267,9 @@ Operates on region, or the whole buffer if no region is defined."
 
 (use-package ac-nrepl
   :ensure t
-  :commands (ac-nrepl-setup ac-nrepl-doc)
+  :commands
+  (ac-nrepl-setup
+   ac-nrepl-doc)
   :init
   (progn
     (add-hook 'nrepl-mode-hook 'ac-nrepl-setup)
@@ -2248,7 +2279,9 @@ Operates on region, or the whole buffer if no region is defined."
   (define-key nrepl-interaction-mode-map (kbd "C-c C-d") 'ac-nrepl-popup-doc))
 
 (use-package cb-overtone
-  :commands (maybe-enable-overtone-mode cb:stop-overtone)
+  :commands
+  (maybe-enable-overtone-mode
+   cb:stop-overtone)
   :init     (add-hook 'clojure-mode-hook 'maybe-enable-overtone-mode))
 
 (use-package midje-mode
@@ -2378,17 +2411,18 @@ Operates on region, or the whole buffer if no region is defined."
 
 (use-package ruby-mode
   :ensure t
-  :mode (("\\.rake\\'" . ruby-mode)
-         ("Rakefile\\'" . ruby-mode)
-         ("\\.gemspec\\'" . ruby-mode)
-         ("\\.ru\\'" . ruby-mode)
-         ("Gemfile\\'" . ruby-mode)
-         ("Guardfile\\'" . ruby-mode)
-         ("Capfile\\'" . ruby-mode)
-         ("\\.thor\\'" . ruby-mode)
-         ("Thorfile\\'" . ruby-mode)
-         ("Vagrantfile\\'" . ruby-mode)
-         ("\\.jbuilder\\'" . ruby-mode))
+  :mode
+  (("\\.rake\\'". ruby-mode)
+   ("Rakefile\\'" . ruby-mode)
+   ("\\.gemspec\\'" . ruby-mode)
+   ("\\.ru\\'" . ruby-mode)
+   ("Gemfile\\'" . ruby-mode)
+   ("Guardfile\\'" . ruby-mode)
+   ("Capfile\\'" . ruby-mode)
+   ("\\.thor\\'" . ruby-mode)
+   ("Thorfile\\'" . ruby-mode)
+   ("Vagrantfile\\'" . ruby-mode)
+   ("\\.jbuilder\\'" . ruby-mode))
   :init
   (add-to-list 'completion-ignored-extensions ".rbc")
   :config
@@ -2511,7 +2545,9 @@ Operates on region, or the whole buffer if no region is defined."
 
 (use-package inf-ruby
   :ensure   t
-  :commands (inf-ruby-mode ruby-send-region)
+  :commands
+  (inf-ruby-mode
+   ruby-send-region)
   :init
   (after 'ruby-mode
     (defun cb:switch-to-ruby ()
@@ -2609,15 +2645,17 @@ an irb error message."
 (use-package yaml-mode
   :ensure   t
   :commands yaml-mode
-  :mode     (("\\.yaml$" . yaml-mode)
-             ("\\.yml$"  . yaml-mode)))
+  :mode
+  (("\\.yaml$" . yaml-mode)
+   ("\\.yml$"  . yaml-mode)))
 
 (use-package rvm
   :ensure t
-  :commands  (rvm-use-default
-              rvm-activate-corresponding-ruby
-              rvm-use
-              rvm-open-gem)
+  :commands
+  (rvm-use-default
+   rvm-activate-corresponding-ruby
+   rvm-use
+   rvm-open-gem)
   :init
   (add-hook 'ruby-mode-hook 'rvm-activate-corresponding-ruby))
 
@@ -2625,7 +2663,11 @@ an irb error message."
 
 (use-package haskell-mode
   :ensure t
-  :commands (haskell-mode haskell-c-mode haskell-cabal-mode hoogle)
+  :commands
+  (haskell-mode
+   haskell-c-mode
+   haskell-cabal-mode
+   hoogle)
   :mode
   (("\\.hs$"    . haskell-mode)
    ("\\.hsc$"   . haskell-c-mode)
@@ -2775,7 +2817,9 @@ an irb error message."
 ;;;; SuperCollider
 
 (use-package sclang
-  :commands (sclang-mode sclang-start)
+  :commands
+  (sclang-mode
+   sclang-start)
   :mode ("\\.sc$" . sclang-mode)
   :init
   (defun supercollider ()
@@ -2819,7 +2863,9 @@ an irb error message."
 
 (use-package json-mode
   :ensure    t
-  :commands (json-mode beautify-json)
+  :commands
+  (json-mode
+   beautify-json)
   :mode      ("\\.json$" . json-mode)
   :init      (defalias 'format-json 'beautify-json)
   :config    (add-to-list 'ac-modes 'json-mode))
@@ -2870,8 +2916,9 @@ an irb error message."
     (add-hook 'fsharp-mode-hook 'electric-layout-mode)))
 
 (use-package conf-mode
-  :mode ((".gitignore$" . conf-mode)
-         (".gitmodules$" . conf-mode)))
+  :mode
+  ((".gitignore$" . conf-mode)
+   (".gitmodules$" . conf-mode)))
 
 ;;;; Git
 
@@ -2935,32 +2982,39 @@ an irb error message."
 
 (use-package git-auto-commit-mode
   :ensure t
-  :commands git-auto-commit-mode)
+  :commands git-auto-commit-mode
+  :init
+  (add-to-list 'safe-local-variable-values '(gac-automatically-push-p . t)))
 
 (use-package git-gutter
   :ensure t
   :bind ("C-x g g" . git-gutter:toggle)
-  :commands (git-gutter:toggle
-             git-gutter:clean
-             git-gutter))
+  :commands
+  (git-gutter:toggle
+   git-gutter:clean
+   git-gutter))
 
 (use-package gist
   :ensure t
-  :commands (gist-list
-             gist-region
-             gist-region-private
-             gist-buffergist-buffer-private
-             gist-region-or-buffer
-             gist-region-or-buffer-private))
+  :commands
+  (gist-list
+   gist-region
+   gist-region-private
+   gist-buffergist-buffer-private
+   gist-region-or-buffer
+   gist-region-or-buffer-private))
 
 (use-package gitconfig-mode
   :ensure t
   :defer  t
-  :modes (("/\\.gitconfig\\'"  . gitconfig-mode)
-          ("/\\.git/config\\'" . gitconfig-mode)))
+  :modes
+  (("/\\.gitconfig\\'"  . gitconfig-mode)
+   ("/\\.git/config\\'" . gitconfig-mode)))
 
 (use-package ediff
-  :commands (ediff ediff-merge-files-with-ancestor)
+  :commands
+  (ediff
+   ediff-merge-files-with-ancestor)
   :init
   (progn
 
@@ -3109,10 +3163,12 @@ an irb error message."
 
 (use-package iedit
   :ensure   t
-  :commands (iedit-mode
-             iedit-replace-occurrences
-             iedit-done)
-  :bind     ("C-<return>" . iedit-mode)
+  :bind
+  ("C-<return>" . iedit-mode)
+  :commands
+  (iedit-mode
+   iedit-replace-occurrences
+   iedit-done)
   :init
   (progn
 
@@ -3141,9 +3197,10 @@ an irb error message."
 
 (use-package ack-and-a-half
   :ensure t
-  :commands (ack-and-a-half-same
-             ack-and-a-half-find-file
-             ack-and-a-half-find-file-same))
+  :commands
+  (ack-and-a-half-same
+   ack-and-a-half-find-file
+   ack-and-a-half-find-file-same))
 
 (use-package smooth-scrolling
   :ensure t)
@@ -3192,6 +3249,7 @@ Repeated invocations toggle between the two most recently open buffers."
        (fortune)))))
 
 (hook-fn 'after-make-frame-functions (cb:show-fortune))
+
 (add-hook 'after-init-hook 'cb:show-fortune)
 
 )
@@ -3200,18 +3258,6 @@ Repeated invocations toggle between the two most recently open buffers."
   (setq default-directory user-home-directory)
   (load (concat user-emacs-directory "site-file.el") t t))
 
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(safe-local-variable-values (quote ((gac-automatically-push-p . t)))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
 ;; Local Variables:
 ;; byte-compile-warnings: (not free-vars obsolete)
 ;; End:
