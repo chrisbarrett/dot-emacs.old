@@ -3197,8 +3197,8 @@ an irb error message."
       (iedit-replace-occurrences replacement)
       (iedit-done))
 
-    (bind-key* "M-r" 'cb:rename-symbol-in-defun)
-    (bind-key* "M-R" 'cb:rename-symbol-in-buffer)))
+    (bind-key "M-r" 'cb:rename-symbol-in-defun)
+    (bind-key "M-R" 'cb:rename-symbol-in-buffer)))
 
 (use-package info-lookmore
   :commands info-lookmore-elisp-cl
