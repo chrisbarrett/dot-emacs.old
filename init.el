@@ -922,6 +922,7 @@ The exact time is based on priority."
             ("*compilation*" :noselect t)
             ("*Messages*" :height 30)
             ("*Directory*")
+            ("*Org Note*")
             ("*Occur*" :noselect t)
             ("\\*Slime Description.*" :noselect t :regexp t :height 30)
             ("*magit-commit*" :noselect t :height 40 :width 80)
@@ -983,7 +984,9 @@ The exact time is based on priority."
   :init
   (progn
     (setq cb:kill-buffer-ignored-list
-          '("*scratch*" "*Messages*" "*GROUP*" "*shell*" "*eshell*" "*ansi-term*"))
+          '("*scratch*" "*Messages*" "*GROUP*"
+            "*shell*" "*eshell*" "*ansi-term*"
+            "notes.org"))
     (require-after-idle 'cb-commands)
     (add-hook 'find-file-hook 'cb:hide-dos-eol))
 
@@ -2873,7 +2876,9 @@ an irb error message."
 (use-package magit
   :ensure t
   :defer  t
-  :bind   ("C-x g l" . magit-log)
+  :bind   (("C-x g l" . magit-log)
+           ("C-x g d" . magit-diff-working-tree)
+           ("C-x g D" . magit-diff))
 
   :init
   (progn
@@ -3003,13 +3008,15 @@ an irb error message."
   :config
   (progn
     (setq
-     org-capture-templates
 
+     org-capture-templates
      '(("t" "Todo" entry (file+headline (concat cb:org-dir "todo.org") "Tasks")
         "* TODO %?\n %i\n")
-
        ("l" "Link" plain (file (concat cb:org-dir "links.org"))
         "- %?\n %x\n"))
+
+     org-todo-keywords
+     '((sequence "TODO(t)" "WAIT(w@/!)" "|" "DONE(d!)" "CANCELED(c@)"))
 
      org-catch-invisible-edits 'smart)
 
@@ -3160,6 +3167,7 @@ Repeated invocations toggle between the two most recently open buffers."
    0.1 nil
    (lambda nil
      (when (-contains? '("*scratch*"
+                         "notes.org"
                          "todo.org")
                   (buffer-name))
        (fortune)))))
