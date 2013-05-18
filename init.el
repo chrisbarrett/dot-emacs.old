@@ -2005,6 +2005,7 @@ Operates on region, or the whole buffer if no region is defined."
 
 (use-package lisp-mode
   :defer t
+  :modes ("\\.dirlocals" . emacs-lisp-mode)
   :config
   (progn
 
@@ -2050,7 +2051,8 @@ Operates on region, or the whole buffer if no region is defined."
     (hook-fn 'flycheck-mode-hook
       "Disable flycheck mode for scratch buffer."
       (when (and (equal 'emacs-lisp-mode major-mode)
-                 (equal "*scratch*" (buffer-name)))
+                 (-contains?  '("*scratch*" ".dirlocals")
+                              (buffer-name)))
         (add-hook 'flycheck-before-syntax-check-hook (lambda () (flycheck-mode -1)) nil t)))
 
     (defadvice eval-buffer (after buffer-evaluated-feedback activate)
@@ -2902,6 +2904,10 @@ an irb error message."
     (add-hook 'magit-log-edit-mode-hook 'cb:append-buffer)
     (add-hook 'magit-mode-hook 'magit-load-config-extensions)))
 
+(use-package git-auto-commit-mode
+  :ensure t
+  :commands git-auto-commit-mode)
+
 (use-package git-gutter
   :ensure t
   :bind ("C-x g" . git-gutter:toggle)
@@ -3015,7 +3021,7 @@ an irb error message."
 
 (use-package org
   :ensure t
-  :defer t
+  :bind ("M-o" . org-capture)
   :init
   (progn
     (require-after-idle 'org)
@@ -3041,7 +3047,22 @@ an irb error message."
       (add-hook 'text-mode-hook (maybe 'turn-on-orgtbl))))
   :config
   (progn
-    (setq org-catch-invisible-edits 'smart)
+    (defvar cb:org-dir (concat user-home-directory "org/"))
+
+    (setq
+     org-default-notes-file (concat cb:org-dir "notes.org")
+
+     org-capture-templates
+
+     '(("t" "Todo" entry (file+headline (concat cb:org-dir "todo.org") "Tasks")
+        "* TODO %?\n %i\n")
+
+       ("l" "Link" plain (file (concat cb:org-dir "links.org"))
+        "- %?\n %x\n"))
+
+     org-catch-invisible-edits 'smart)
+
+    (add-hook 'org-mode-hook 'cb:append-buffer)
     (define-key org-mode-map (kbd "M-p") 'org-metaup)
     (define-key org-mode-map (kbd "M-n") 'org-metadown)))
 
