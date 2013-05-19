@@ -207,18 +207,24 @@ If this buffer is a member of `kill-buffer-ignored-list, bury it rather than kil
 (defun cb:move-line-up ()
   "Move the current line up."
   (interactive)
-  (transpose-lines 1)
-  (forward-line -2)
-  (indent-according-to-mode))
+  (if (derived-mode-p 'org-mode)
+      (org-move-item-up)
+
+    (transpose-lines 1)
+    (forward-line -2)
+    (indent-according-to-mode)))
 
 ;;;###autoload
 (defun cb:move-line-down ()
   "Move the current line up."
   (interactive)
-  (forward-line 1)
-  (transpose-lines 1)
-  (forward-line -1)
-  (indent-according-to-mode))
+  (if (derived-mode-p 'org-mode)
+      (org-move-item-down)
+
+    (forward-line 1)
+    (transpose-lines 1)
+    (forward-line -1)
+    (indent-according-to-mode)))
 
 (provide 'cb-commands)
 

@@ -3116,10 +3116,14 @@ an irb error message."
     (setq
 
      org-capture-templates
-     '(("t" "Todo" entry (file+headline (concat cb:org-dir "todo.org") "Tasks")
+     '(("t" "Todo" entry (file+headline org-default-notes-file "Tasks")
         "* TODO %?\n %i\n")
-       ("l" "Link" plain (file (concat cb:org-dir "links.org"))
-        "- %?\n %x\n"))
+
+       ("l" "Link" item (file (concat org-directory "links.org"))
+        "- %?\n %x\n")
+
+       ("r" "To Read" checkitem (file (concat org-directory "toread.org"))
+        "- %?\n %i\n"))
 
      org-todo-keywords
      '((sequence "TODO(t)" "WAIT(w@/!)" "|" "DONE(d!)" "CANCELED(c@)"))
