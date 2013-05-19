@@ -611,9 +611,8 @@
   `(,@cb:ruby-modes
     erb-mode))
 
-(cb:define-mode-group cb:markup-modes
-  `(sgml-mode
-    markdown-mode
+(cb:define-mode-group cb:xml-modes
+  '(sgml-mode
     nxml-mode))
 
 (cb:define-mode-group cb:org-minor-modes
@@ -1672,7 +1671,7 @@
   (progn
     (setq ispell-dictionary "english")
     (add-hook 'text-mode-hook 'flyspell-mode)
-    (hook-fn 'cb:markup-modes-hook
+    (hook-fn 'cb:xml-modes-hook
       (unless (derived-mode-p 'markdown-mode)
         (flyspell-prog-mode)))
     (add-hook 'prog-mode-hook 'flyspell-prog-mode))
@@ -1837,6 +1836,9 @@
       (local-unset-key (kbd "."))
       (local-unset-key (kbd ":")))
 
+    (hook-fn 'cb:markup-modes-hook
+      (local-set-key (kbd ",") (smart-op ",")))
+
     (hook-fn 'cb:haskell-modes-hook
       (smart-insert-operator-hook)
       (local-unset-key (kbd ":"))
@@ -1999,7 +2001,7 @@ Puts each XML node on a separate line, except for one-liners."
 (use-package tagedit
   :ensure   t
   :commands tagedit-mode
-  :init    (add-hook 'cb:markup-modes-hook 'tagedit-mode))
+  :init     (add-hook 'cb:xml-modes-hook 'tagedit-mode))
 
 (use-package markdown-mode
   :ensure t
@@ -3130,7 +3132,7 @@ an irb error message."
     (hook-fn 'org-mode-hook
       "Append to buffer for org-mode popups."
       (unless (buffer-file-name)
-       (cb:append-buffer)))
+        (cb:append-buffer)))
 
     (define-key org-mode-map (kbd "M-p") 'org-metaup)
     (define-key org-mode-map (kbd "M-n") 'org-metadown)))
