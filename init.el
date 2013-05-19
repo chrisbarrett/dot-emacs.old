@@ -1558,15 +1558,14 @@
   :defer t
   :idle  (require 'dired)
   :init
-  (progn
-    (hook-fn 'dired-mode-hook
-      (evil-local-set-key 'normal (kbd "SPC") 'dired-hide-subdir)
-      (evil-local-set-key 'normal (kbd "S-SPC") 'dired-hide-all)
-      (local-set-key (kbd "M-N") 'dired-next-subdir)
-      (local-set-key (kbd "M-P") 'dired-prev-subdir)
-      (set (make-local-variable 'auto-revert-interval) 0.1)
-      (set (make-local-variable 'auto-revert-verbose) nil)
-      (auto-revert-mode +1)))
+  (hook-fn 'dired-mode-hook
+    (evil-local-set-key 'normal (kbd "SPC") 'dired-hide-subdir)
+    (evil-local-set-key 'normal (kbd "S-SPC") 'dired-hide-all)
+    (local-set-key (kbd "M-N") 'dired-next-subdir)
+    (local-set-key (kbd "M-P") 'dired-prev-subdir)
+    (set (make-local-variable 'auto-revert-interval) 0.1)
+    (set (make-local-variable 'auto-revert-verbose) nil)
+    (auto-revert-mode +1))
   :config
   (progn
     (after 'hl-line
@@ -1892,9 +1891,9 @@
     (add-hook 'cb:slime-modes-hook     'lambda-mode)))
 
 (use-package paren
-  :defer t
-  :idle  (require 'paren)
-  :init (hook-fn 'prog-mode-hook (require 'paren))
+  :defer  t
+  :idle   (require 'paren)
+  :init   (hook-fn 'prog-mode-hook (require 'paren))
   :config (show-paren-mode +1))
 
 (use-package highlight-parentheses
@@ -1970,10 +1969,9 @@ Puts each XML node on a separate line, except for one-liners."
 (use-package sgml-mode
   :defer t
   :init
-  (progn
-    (hook-fn 'sgml-mode-hook
-      (setq-default sgml-xml-mode t)
-      (local-set-key (kbd "M-q") 'cb:reformat-xml))))
+  (hook-fn 'sgml-mode-hook
+    (setq-default sgml-xml-mode t)
+    (local-set-key (kbd "M-q") 'cb:reformat-xml)))
 
 (use-package html-mode
   :defer t
@@ -2963,9 +2961,8 @@ an irb error message."
          ("\\.sig" . sml-mode)
          ("\\.grm" . sml-yacc-mode))
   :init
-  (progn
-   (--each '(".cm/" "CM/")
-     (add-to-list 'completion-ignored-extensions it)))
+  (--each '(".cm/" "CM/")
+    (add-to-list 'completion-ignored-extensions it))
   :config
   (setq
    sml-indent-level 2))
