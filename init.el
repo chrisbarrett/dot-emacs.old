@@ -279,7 +279,7 @@
 
 (with-elapsed-timer "Loading modeline"
 
-(cl-defun cb:vc-state->letter (&optional (file (buffer-file-name)))
+(defun* cb:vc-state->letter (&optional (file (buffer-file-name)))
   "Return a single letter to represent the current version-control status."
   (case (ignore-errors (vc-state file))
     ((up-to-date)           " ")
@@ -290,11 +290,11 @@
     ((ignored)              (propertize "-" 'face 'modeline-vc-unknown-face))
     (t                      (propertize "?" 'face 'modeline-vc-unknown-face))))
 
-(cl-defun cb:vc-file-uptodate? (&optional (file (buffer-file-name)))
+(defun* cb:vc-file-uptodate? (&optional (file (buffer-file-name)))
   "Non-nil if FILE is up-to-date."
   (ignore-errors (equal 'up-to-date (vc-state file))))
 
-(defun cb:shorten-directory (dir max-length)
+(defun* cb:shorten-directory (dir &optional (max-length 30))
   "Show up to MAX-LENGTH characters of a directory name DIR."
   (let ((path (reverse (split-string (abbreviate-file-name dir) "/")))
         (output ""))
@@ -308,6 +308,50 @@
     (when path
       (setq output (concat "…/" output)))
     output))
+
+(defun* cb:propertize-file-directory
+    (&optional (filepath (file-name-directory (buffer-file-name))))
+  "Separate tramp info from the given filepath."
+  (flet ((face
+          (str face)
+          (propertize str 'face face)))
+
+    (destructuring-bind (&optional method user host file &rest _)
+        (mapcar 'identity (ignore-errors
+                            (tramp-dissect-file-name filepath)))
+      (concat
+       (when host
+         (concat
+          (face "/" 'mode-line-tramp-separator-face)
+          (face method 'mode-line-tramp-method-face)
+          (face ":" 'mode-line-tramp-separator-face)
+          (face user 'mode-line-tramp-user-face)
+          (face "@" 'mode-line-tramp-separator-face)
+          host
+          (face ":" 'mode-line-tramp-separator-face)))
+       (face (cb:shorten-directory (or file filepath)) 'mode-line-directory-face)))))
+
+(defface mode-line-tramp-separator-face
+  '((((type graphic) (background dark))
+     (:foreground "gray45"))
+    (((type graphic) (background light))
+     (:foreground "gray80"))
+    (t
+     (:inherit 'mode-line-face)))
+  "Face for separator characters in modeline."
+  :group 'modeline)
+
+(defface mode-line-tramp-method-face
+  '((t (:inherit 'mode-line-face)))
+  "Face for tramp method in modeline."
+  :group 'modeline)
+
+(defface mode-line-tramp-user-face
+  '((((type graphic))
+     (:foreground "VioletRed3"))
+    (t (:inherit 'mode-line-face)))
+  "Face for tramp user indicator in modeline."
+  :group 'modeline)
 
 ;; Extra mode line faces
 
@@ -327,14 +371,6 @@
       :box '(:line-width 2 :color "#4271ae")))
     (t (:inherit 'mode-line-face)))
   "Face for readonly indicator."
-  :group 'modeline)
-
-(defface mode-line-sudo-face
-  '((((type graphic))
-     (:foreground "VioletRed3"
-      :box '(:line-width 2 :color "VioletRed2")))
-    (t (:inherit 'mode-line-face)))
-  "Face for sudo-edit indicator."
   :group 'modeline)
 
 (defface mode-line-modified-face
@@ -420,7 +456,7 @@
 
 (setq-default
  mode-line-format
- '(
+ `(
    ;; --------------------------------------------------------------------------
    ;; Line and column number.
    (:propertize " %4l:" face mode-line-position-face)
@@ -445,10 +481,6 @@
        (buffer-read-only
         (propertize " RO " 'face 'mode-line-read-only-face))
 
-       ;; Show sudo-editing indicator.
-       (sudo-editing
-        (propertize " sudo " 'face 'mode-line-sudo-face))
-
        ;; Show modified and vc status.
        (t
         (format " %s%s "
@@ -461,12 +493,8 @@
    " "
    ;; --------------------------------------------------------------------------
    ;; Buffer name and path.
-   (:propertize (:eval (if (buffer-file-name)
-                           (cb:shorten-directory default-directory 30)
-                         ""))
-                face mode-line-directory-face)
-   (:propertize "%b"
-                face mode-line-filename-face)
+   (:eval (if (buffer-file-name) (cb:propertize-file-directory) ""))
+   (:propertize "%b" face mode-line-filename-face)
 
    ;; --------------------------------------------------------------------------
    ;; Narrowing
@@ -494,9 +522,7 @@
                       'face 'mode-line-minor-mode-face))
    (:propertize mode-line-process
                 face mode-line-process-face)
-   (global-mode-string global-mode-string)))
-
-)
+   (global-mode-string global-mode-string))))
 
 ;;; ============================================================================
 
