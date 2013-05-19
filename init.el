@@ -329,8 +329,8 @@
 
 (defface mode-line-sudo-face
   '((((type graphic))
-     (:foreground "#4271ae"
-      :box '(:line-width 2 :color "#4271ae")))
+     (:foreground "VioletRed3"
+      :box '(:line-width 2 :color "VioletRed2")))
     (t (:inherit 'mode-line-face)))
   "Face for sudo-edit indicator."
   :group 'modeline)
