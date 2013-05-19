@@ -174,16 +174,18 @@
 (defun cb:exit-emacs ()
   (interactive)
   (when (ido-yes-or-no-p "Kill Emacs? ")
-    (tramp-cleanup-all-buffers)
+    (when (featurep 'tramp)
+      (tramp-cleanup-all-buffers))
     (save-buffers-kill-emacs)))
 
 (defun cb:exit-emacs-dwim ()
   (interactive)
   (when (ido-yes-or-no-p "Kill Emacs? ")
-   (if (daemonp)
-       (server-save-buffers-kill-terminal nil)
-     (tramp-cleanup-all-buffers)
-     (save-buffers-kill-emacs))))
+    (if (daemonp)
+        (server-save-buffers-kill-terminal nil)
+      (when (featurep 'tramp)
+        (tramp-cleanup-all-buffers))
+      (save-buffers-kill-emacs))))
 
 ;;; Help commands
 
@@ -2155,10 +2157,13 @@ Puts each XML node on a separate line, except for one-liners."
 
        ;; definition forms
        (,(rx "("
-             (group (* (not space)) (or "cl-" "--" "/" ":") "def"
-                    (+ (not space)))
+             (group-n 1
+                      (or (group (* (not space))
+                                 (or "cl-" "--" "/" ":") "def" "declare")
+                          "declare")
+                      (+ (not space)))
              (+ space)
-             (group (+ (regex "\[^ )\n\]"))))
+             (group-n 2 (+ (regex "\[^ )\n\]"))))
         (1 font-lock-keyword-face)
         (2 font-lock-function-name-face))
 
@@ -3002,17 +3007,28 @@ an irb error message."
       "Update modelines to ensure vc status is up-to-date."
       (force-mode-line-update t))
 
-    (defadvice magit-status (around magit-fullscreen activate)
-      (window-configuration-to-register :magit-fullscreen)
-      ad-do-it
-      (delete-other-windows))
+    (defmacro* declare-register-wrapper (command &optional (quit-key "q"))
+      "Make a given command restore window state when finished."
+      `(defadvice ,command (around
+                            ,(intern (format "%s-wrapper" command))
+                            activate)
+         "Auto-generated wrapper that saves window state before performing command."
+         ;; Save window state before executing COMMAND.
+         (window-configuration-to-register ',command)
+         ad-do-it
+         (delete-other-windows)
+         ;; Quit key command restores window state.
+         (local-set-key
+          (kbd ,quit-key) (lambda ()
+                            (interactive)
+                            (kill-buffer)
+                            (jump-to-register ',command)))))
 
-    (define-key magit-status-mode-map (kbd "q")
-      (lambda ()
-        "Quit magit."
-        (interactive)
-        (kill-buffer)
-        (jump-to-register :magit-fullscreen)))
+    (declare-register-wrapper magit-status)
+    (declare-register-wrapper magit-log)
+    (declare-register-wrapper magit-reflog)
+    (declare-register-wrapper magit-diff-working-tree)
+    (declare-register-wrapper magit-diff)
 
     (add-hook 'magit-log-edit-mode-hook 'cb:append-buffer)
     (add-hook 'magit-mode-hook 'magit-load-config-extensions)))
