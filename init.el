@@ -823,7 +823,8 @@
      ido-use-filename-at-point    'guess
      ido-max-prospects            10
      ido-default-file-method      'selected-window)
-    (add-to-list 'ido-ignore-buffers "\\.*helm\\.*")
+    (add-to-list 'ido-ignore-buffers "\\*helm.*")
+    (add-to-list 'ido-ignore-buffers "\\Minibuf.*")
     (add-to-list 'ido-ignore-files "\\.swp")
     (add-to-list 'ido-ignore-files "\\.DS_Store")
 
@@ -1671,6 +1672,9 @@
   (progn
     (setq ispell-dictionary "english")
     (add-hook 'text-mode-hook 'flyspell-mode)
+    (hook-fn 'cb:markup-modes-hook
+      (unless (derived-mode-p 'markdown-mode)
+        (flyspell-prog-mode)))
     (add-hook 'prog-mode-hook 'flyspell-prog-mode))
   :config
   (bind-key* "C-'" 'flyspell-auto-correct-word))
@@ -1758,6 +1762,14 @@
     (define-key paredit-mode-map (kbd "M-)")
       'cb:paredit-wrap-round-from-behind)
 
+    (define-key paredit-mode-map (kbd "M-[")
+      'paredit-wrap-square)
+
+    (define-key paredit-mode-map (kbd "M-{")
+      'paredit-wrap-curly)
+
+    (define-key paredit-mode-map (kbd "M-r") nil)
+
     (add-hook 'cb:lisp-modes-hook 'enable-paredit-mode)))
 
 (use-package smartparens
@@ -1805,7 +1817,7 @@
       (interactive)
       (if (string-match-p
            (rx (* space) "def ")
-           (buffer-substring (line-beginning-position) (line-end-position)))
+           (thing-at-point 'line))
           (insert-string "=")
         (smart-insert-operator "=")))
 
@@ -1899,51 +1911,44 @@
 
 (defun cb:xml-one-liner? (str)
   (save-match-data
-    (-when-let (match (s-match (rx bol (* (any space "\t"))
-                                   "<" (group (+ word)) (* nonl) ">"
-                                   (group (+ nonl))
-                                   "</" (group (* word)) ">"
-                                   (* (any space "\t")) eol
-                                   )
-                               str))
+    (-when-let (match (->> str (s-match
+                                (rx bol (* (any space "\t"))
+                                    "<" (group (+ word)) (* nonl) ">"
+                                    (group (+ nonl))
+                                    "</" (group (* word)) ">"
+                                    (* (any space "\t")) eol))))
       (and (equal (nth 1 match)
                   (nth 3 match))
            (not (s-contains? "<" (nth 2 match)))))))
 
-(defun cb:reformat-markup-string (str)
+(defun cb:pp-xml (xml)
+  "Return a reformatted version of an XML string.
+Puts each XML node on a separate line, except for one-liners."
   (with-temp-buffer
-    (insert str)
+    (insert xml)
     (nxml-mode)
     (goto-char (point-min))
-
     (while (search-forward-regexp
             (rx (not (any "%")) ">"
                 (group-n 1 (* (any space "	")))
                 "<" (not (any "%")))
             nil t)
-      (unless (cb:xml-one-liner? (buffer-substring
-                                  (line-beginning-position)
-                                  (line-end-position)))
+      (unless (cb:xml-one-liner? (thing-at-point 'line))
         (replace-match "\n" nil nil nil 1)))
-
-    (indent-region (point-min) (point-max))
     (buffer-string)))
 
-(defun cb:reformat-markup ()
+(defun cb:reformat-xml ()
   "Insert newlines and indent XML.
-Operates on region, or the whole buffer if no region is defined."
+  Operates on region, or the whole buffer if no region is defined."
   (interactive)
-  (atomic-change-group
-    (let ((pt (point)))
-      (save-excursion
-        (let ((bufstr (buffer-substring
-                       (or (ignore-errors (region-beginning))
-                           (point-min))
-                       (or (ignore-errors (region-end))
-                           (point-max)))))
-          (delete-region (point-min) (point-max))
-          (insert (cb:reformat-markup-string bufstr))))
-      (goto-char pt))))
+  (let* ((reg (if (region-active-p)
+                  (list (region-beginning) (region-end))
+                (list (point-min) (point-max))))
+         (str (apply 'buffer-substring region)))
+    (atomic-change-group
+      (apply 'delete-region reg)
+      (insert (cb:pp-xml str))
+      (apply 'indent-region reg))))
 
 (use-package nxml-mode
   :commands nxml-mode
@@ -1951,7 +1956,7 @@ Operates on region, or the whole buffer if no region is defined."
   :init
   (progn
     (hook-fn 'nxml-mode-hook
-      (local-set-key (kbd "M-q") 'cb:reformat-markup))
+      (local-set-key (kbd "M-q") 'cb:reformat-xml))
 
     (hook-fn 'find-file-hook
       "Enable nxml-mode if when visiting a file with a DTD."
@@ -1964,7 +1969,7 @@ Operates on region, or the whole buffer if no region is defined."
   (progn
     (hook-fn 'sgml-mode-hook
       (setq-default sgml-xml-mode t)
-      (local-set-key (kbd "M-q") 'cb:reformat-markup))))
+      (local-set-key (kbd "M-q") 'cb:reformat-xml))))
 
 (use-package html-mode
   :defer t
