@@ -96,9 +96,6 @@
 
 ;;;; Initial Configuration
 
-(defvar-local sudo-editing nil
-  "Non-nil when editing buffer as sudo. Set by `sudo-edit'")
-
 (with-elapsed-timer "Loading base config"
 
 (hook-fn 'text-mode-hook
@@ -227,13 +224,26 @@
   "Edit FILE with sudo if permissions require it."
   (interactive)
   (when file
-    (unless (or (directory-p file) (file-writable-p file))
-      (when (and (ido-yes-or-no-p "Edit file with sudo?  ")
-                 (find-alternate-file (concat "/sudo:root@localhost:" file)))
-        (add-hook 'kill-buffer-hook 'tramp-cleanup-this-connection nil t)
-        (setq sudo-editing t)))))
+    (cond
+     ((directory-p file)
+      (error "%s is a directory" file))
 
-(add-hook 'find-file-hook 'sudo-edit)
+     ((file-writable-p file)
+      (error "%s: sudo editing not needed" file))
+
+     ;; Prompt user whether to escalate. Ensure the tramp connection is
+     ;; cleaned up afterwards.
+     ((and (ido-yes-or-no-p "Edit file with sudo?  ")
+           (find-alternate-file (concat "/sudo:root@localhost:" file)))
+      (add-hook 'kill-buffer-hook 'tramp-cleanup-this-connection nil t)))))
+
+(bind-key* "C-x e" 'sudo-edit)
+
+(hook-fn 'find-file-hook
+  "Offer to create a file with sudo if necessary."
+  (unless (or (file-writable-p (buffer-file-name))
+              (file-exists-p (buffer-file-name)))
+    (sudo-edit)))
 
 (defadvice save-buffers-kill-emacs (around no-query-kill-emacs activate)
   "Suppress \"Active processes exist\" query when exiting Emacs."
@@ -510,7 +520,7 @@
    "%] "
 
    ;; ERT status.
-   (:eval (when (and (boundp 'ert-modeline-mode) ert-modeline-mode)
+   (:eval (when (cb:truthy? 'ert-modeline-mode)
             (set-face-bold 'ertml-failing-face t)
             (let ((s (s-trim ertml--status-text)))
               (if (s-matches? (rx digit) s)
@@ -534,7 +544,7 @@
   "Perform a context-sensitive 'next' action."
   (interactive)
   (cond
-   ((and (boundp 'edebug-active) edebug-active)
+   ((cb:truthy? 'edebug-active)
     (edebug-next-mode))
    (t
     (next-error))))
@@ -681,12 +691,12 @@
 
 ;;; ----------------------------------------------------------------------------
 
+;;; Forward declaration.
+(defvar ac-modes nil)
+
 (defun cb:truthy? (sym)
   "Test whether SYM is bound and non-nil."
   (and (boundp sym) (eval sym)))
-
-;;; Forward declaration.
-(defvar ac-modes nil)
 
 (use-package simple
   :diminish (visual-line-mode
@@ -961,7 +971,7 @@
   :commands popwin-mode
   :init
   (hook-fn 'window-configuration-change-hook
-    (unless (and (boundp 'popwin-mode) popwin-mode)
+    (unless (cb:truthy? 'popwin-mode)
       (popwin-mode +1)))
   :config
   (progn
@@ -1011,7 +1021,7 @@
 (use-package winner
   :commands winner-mode
   :init (hook-fn 'window-configuration-change-hook
-          (unless (and (boundp 'winner-mode) winner-mode)
+          (unless (cb:truthy? 'winner-mode)
             (winner-mode +1))))
 
 (use-package window-number
