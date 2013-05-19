@@ -706,6 +706,8 @@
   :idle (require 'projectile)
   :config
   (progn
+    (setq projectile-known-projects-file
+          (concat cb:tmp-dir "projectile-bookmarks.eld"))
     (projectile-global-mode)
     (defadvice find-tag (before set-tags-directory activate)
       "Ensure the TAGS path is set before searching for tags."
