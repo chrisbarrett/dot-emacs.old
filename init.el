@@ -1478,6 +1478,8 @@
     (hook-fn 'term-mode-hook
       (setq ac-sources '(ac-source-filename))
 
+      (local-set-key (kbd "s-v") 'cb:ansi-term-paste)
+
       (when (cb:truthy? 'evil-mode)
         (evil-local-set-key 'normal "p" 'cb:ansi-term-paste))
 
