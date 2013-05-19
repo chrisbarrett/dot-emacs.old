@@ -541,7 +541,7 @@
 
 (with-elapsed-timer "Configuring mode groups"
 
-(defmacro cb:define-combined-hook (name hooks)
+(defmacro define-combined-hook (name hooks)
   "Create a hook that is run after each hook in HOOKS."
   (declare (indent 1))
   `(progn
@@ -552,7 +552,7 @@
        (hook-fn it
          (run-hooks ',name)))))
 
-(defmacro cb:define-mode-group (name modes)
+(defmacro define-mode-group (name modes)
   "Create an ad-hoc relationship between language modes.
 * Creates a special var with NAME to contain the grouping.
 * Declares a hook NAME-hook that runs after any of MODES are initialized."
@@ -562,29 +562,29 @@
        ;; Define modes variable.
        (defconst ,name ,modes "Auto-generated variable for language grouping.")
        ;; Create a combined hook for MODES.
-       (cb:define-combined-hook ,hook
+       (define-combined-hook ,hook
          (--map (intern (concat (symbol-name it) "-hook"))
                 ,modes)))))
 
-(cb:define-mode-group cb:scheme-modes
+(define-mode-group cb:scheme-modes
   '(scheme-mode
     inferior-scheme-mode
     geiser-repl-mode
     geiser-mode))
 
-(cb:define-mode-group cb:clojure-modes
+(define-mode-group cb:clojure-modes
   '(clojure-mode
     clojurescript-mode))
 
-(cb:define-mode-group cb:elisp-modes
+(define-mode-group cb:elisp-modes
   '(emacs-lisp-mode
     ielm-mode))
 
-(cb:define-mode-group cb:slime-modes
+(define-mode-group cb:slime-modes
   '(slime-mode
     slime-repl-mode))
 
-(cb:define-mode-group cb:lisp-modes
+(define-mode-group cb:lisp-modes
   `(,@cb:scheme-modes
     ,@cb:clojure-modes
     ,@cb:elisp-modes
@@ -594,35 +594,35 @@
     lisp-mode
     repl-mode))
 
-(cb:define-mode-group cb:haskell-modes
+(define-mode-group cb:haskell-modes
   '(haskell-mode
     inferior-haskell-mode
     haskell-interactive-mode
     haskell-c-mode
     haskell-cabal-mode))
 
-(cb:define-mode-group cb:python-modes
+(define-mode-group cb:python-modes
   '(python-mode
     inferior-python-mode))
 
-(cb:define-mode-group cb:ruby-modes
+(define-mode-group cb:ruby-modes
   '(inf-ruby-mode
     ruby-mode))
 
-(cb:define-mode-group cb:rails-modes
+(define-mode-group cb:rails-modes
   `(,@cb:ruby-modes
     erb-mode))
 
-(cb:define-mode-group cb:xml-modes
+(define-mode-group cb:xml-modes
   '(sgml-mode
     nxml-mode))
 
-(cb:define-mode-group cb:org-minor-modes
+(define-mode-group cb:org-minor-modes
   '(orgtbl-mode
     orgstruct-mode
     orgstruct++-mode))
 
-(cb:define-mode-group cb:prompt-modes
+(define-mode-group cb:prompt-modes
   '(comint-mode
     inf-ruby-mode
     inferior-python-mode
@@ -2160,7 +2160,8 @@ Puts each XML node on a separate line, except for one-liners."
              (group-n 1
                       (or (group (* (not space))
                                  (or "cl-" "--" "/" ":") "def" "declare")
-                          "declare")
+                          "declare"
+                          "define")
                       (+ (not space)))
              (+ space)
              (group-n 2 (+ (regex "\[^ )\n\]"))))
@@ -2993,7 +2994,7 @@ an irb error message."
   :config
   (progn
 
-    (cb:define-combined-hook cb:magit-command-hook
+    (define-combined-hook cb:magit-command-hook
       ;; Search through interned symbols for magit hooks.
       (let (hooks)
         (mapatoms (lambda (sym)
