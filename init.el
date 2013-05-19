@@ -231,9 +231,7 @@
         (add-hook 'kill-buffer-hook 'tramp-cleanup-this-connection nil t)
         (setq sudo-editing t)))))
 
-(defadvice find-file (after find-file activate)
-  "Edit file with sudo if necessary."
-  (sudo-edit))
+(add-hook 'find-file-hook 'sudo-edit)
 
 (defadvice save-buffers-kill-emacs (around no-query-kill-emacs activate)
   "Suppress \"Active processes exist\" query when exiting Emacs."
@@ -828,10 +826,6 @@
     (add-to-list 'ido-ignore-buffers "\\.*helm\\.*")
     (add-to-list 'ido-ignore-files "\\.swp")
     (add-to-list 'ido-ignore-files "\\.DS_Store")
-
-    (defadvice ido-find-file (after find-file-sudo activate)
-      "Find file as root if necessary."
-      (sudo-edit))
 
     (hook-fn 'ido-setup-hook
       ;; Typing ~ resets ido prompt to home directory.
