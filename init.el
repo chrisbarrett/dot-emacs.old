@@ -3031,6 +3031,10 @@ an irb error message."
     (declare-register-wrapper magit-diff-working-tree)
     (declare-register-wrapper magit-diff)
 
+    (defadvice magit-show (after delete-window-on-kill activate)
+      "When the buffer is killed, delete its corresponding window."
+      (add-hook 'kill-buffer-hook 'delete-window nil t))
+
     (add-hook 'magit-log-edit-mode-hook 'cb:append-buffer)
     (add-hook 'magit-mode-hook 'magit-load-config-extensions)))
 
