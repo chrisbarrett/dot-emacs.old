@@ -171,8 +171,6 @@
 (defun cb:exit-emacs ()
   (interactive)
   (when (ido-yes-or-no-p "Kill Emacs? ")
-    (when (featurep 'tramp)
-      (tramp-cleanup-all-buffers))
     (save-buffers-kill-emacs)))
 
 (defun cb:exit-emacs-dwim ()
@@ -180,8 +178,6 @@
   (when (ido-yes-or-no-p "Kill Emacs? ")
     (if (daemonp)
         (server-save-buffers-kill-terminal nil)
-      (when (featurep 'tramp)
-        (tramp-cleanup-all-buffers))
       (save-buffers-kill-emacs))))
 
 ;;; Help commands
@@ -249,6 +245,11 @@
   "Suppress \"Active processes exist\" query when exiting Emacs."
   (flet ((process-list ()))
     ad-do-it))
+
+(hook-fn 'kill-emacs-hook
+  "Ensure tramp resources are released on exit."
+  (when (fboundp 'tramp-cleanup-all-buffers)
+    (tramp-cleanup-all-buffers)))
 
 (defadvice whitespace-cleanup (around whitespace-cleanup-indent-tab activate)
   "Fix `whitespace-cleanup' bug when using `indent-tabs-mode'."
