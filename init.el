@@ -904,7 +904,6 @@
 
 (use-package popwin
   :ensure t
-  :idle   (require 'popwin)
   :commands popwin-mode
   :init
   (hook-fn 'window-configuration-change-hook
@@ -3214,6 +3213,11 @@ an irb error message."
 
 (use-package smooth-scrolling
   :ensure t)
+
+(use-package midnight
+  :ensure t
+  :defer  t
+  :idle (require 'midnight))
 
 ;;;; Misc commands
 
