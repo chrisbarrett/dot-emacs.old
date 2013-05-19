@@ -1984,7 +1984,7 @@ Puts each XML node on a separate line, except for one-liners."
   (let* ((reg (if (region-active-p)
                   (list (region-beginning) (region-end))
                 (list (point-min) (point-max))))
-         (str (apply 'buffer-substring region)))
+         (str (apply 'buffer-substring reg)))
     (atomic-change-group
       (apply 'delete-region reg)
       (insert (cb:pp-xml str))
