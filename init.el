@@ -96,6 +96,9 @@
 
 ;;;; Initial Configuration
 
+(defvar-local sudo-editing nil
+  "Non-nil when editing buffer as sudo. Set by `sudo-edit'")
+
 (with-elapsed-timer "Loading base config"
 
 (hook-fn 'text-mode-hook
@@ -171,6 +174,7 @@
 (defun cb:exit-emacs ()
   (interactive)
   (when (ido-yes-or-no-p "Kill Emacs? ")
+    (tramp-cleanup-all-buffers)
     (save-buffers-kill-emacs)))
 
 (defun cb:exit-emacs-dwim ()
@@ -178,6 +182,7 @@
   (when (ido-yes-or-no-p "Kill Emacs? ")
    (if (daemonp)
        (server-save-buffers-kill-terminal nil)
+     (tramp-cleanup-all-buffers)
      (save-buffers-kill-emacs))))
 
 ;;; Help commands
@@ -215,6 +220,20 @@
 (bind-key "C-c e e" 'toggle-debug-on-error)
 
 ;;; Editing Advice
+
+(defun* sudo-edit (&optional (file (buffer-file-name)))
+  "Edit FILE with sudo if permissions require it."
+  (interactive)
+  (when file
+    (unless (or (directory-p file) (file-writable-p file))
+      (when (and (ido-yes-or-no-p "Edit file with sudo?  ")
+                 (find-alternate-file (concat "/sudo:root@localhost:" file)))
+        (add-hook 'kill-buffer-hook 'tramp-cleanup-this-connection nil t)
+        (setq sudo-editing t)))))
+
+(defadvice find-file (after find-file activate)
+  "Edit file with sudo if necessary."
+  (sudo-edit))
 
 (defadvice save-buffers-kill-emacs (around no-query-kill-emacs activate)
   "Suppress \"Active processes exist\" query when exiting Emacs."
@@ -308,6 +327,14 @@
       :box '(:line-width 2 :color "#4271ae")))
     (t (:inherit 'mode-line-face)))
   "Face for readonly indicator."
+  :group 'modeline)
+
+(defface mode-line-sudo-face
+  '((((type graphic))
+     (:foreground "#4271ae"
+      :box '(:line-width 2 :color "#4271ae")))
+    (t (:inherit 'mode-line-face)))
+  "Face for sudo-edit indicator."
   :group 'modeline)
 
 (defface mode-line-modified-face
@@ -417,6 +444,10 @@
        ;; Show read-only indicator.
        (buffer-read-only
         (propertize " RO " 'face 'mode-line-read-only-face))
+
+       ;; Show sudo-editing indicator.
+       (sudo-editing
+        (propertize " sudo " 'face 'mode-line-sudo-face))
 
        ;; Show modified and vc status.
        (t
@@ -778,42 +809,41 @@
    ido-completing-read)
   :init
   (progn
-    (after 'ido
-      (defadvice ido-find-file (after find-file-sudo activate)
-        "Find file as root if necessary."
-        (unless (and buffer-file-name
-                     (file-writable-p buffer-file-name))
-          (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
-
-      (hook-fn 'ido-setup-hook
-        ;; Typing ~ resets ido prompt to home directory.
-        (define-key ido-common-completion-map
-          (kbd "~")
-          (lambda ()
-            (interactive)
-            (if (looking-back "/")
-                (insert "~/")
-              (call-interactively 'self-insert-command)))))
-
-      (ido-mode +1)
-      (add-to-list 'ido-ignore-buffers "\\.*helm\\.*")
-      (add-to-list 'ido-ignore-files "\\.swp")
-      (add-to-list 'ido-ignore-files "\\.DS_Store"))
-
     (bind-key "C-x C-f" 'ido-find-file)
     (bind-key "C-x d"   'ido-dired)
     (bind-key "C-x i"   'ido-insert-file)
     (bind-key "C-x C-w" 'ido-write-file)
     (bind-key "C-x k"   'ido-kill-buffer)
-    (bind-key "C-x b"   'ido-switch-buffer)
+    (bind-key "C-x b"   'ido-switch-buffer))
+  :config
+  (progn
+    (setq
+     ido-enable-prefix            nil
+     ido-save-directory-list-file (concat cb:tmp-dir "ido.last")
+     ido-enable-flex-matching     t
+     ido-create-new-buffer        'always
+     ido-use-filename-at-point    'guess
+     ido-max-prospects            10
+     ido-default-file-method      'selected-window)
+    (add-to-list 'ido-ignore-buffers "\\.*helm\\.*")
+    (add-to-list 'ido-ignore-files "\\.swp")
+    (add-to-list 'ido-ignore-files "\\.DS_Store")
 
-    (setq ido-enable-prefix            nil
-          ido-save-directory-list-file (concat cb:tmp-dir "ido.last")
-          ido-enable-flex-matching     t
-          ido-create-new-buffer        'always
-          ido-use-filename-at-point    'guess
-          ido-max-prospects            10
-          ido-default-file-method      'selected-window)))
+    (defadvice ido-find-file (after find-file-sudo activate)
+      "Find file as root if necessary."
+      (sudo-edit))
+
+    (hook-fn 'ido-setup-hook
+      ;; Typing ~ resets ido prompt to home directory.
+      (define-key ido-common-completion-map
+        (kbd "~")
+        (lambda ()
+          (interactive)
+          (if (looking-back "/")
+              (insert "~/")
+            (call-interactively 'self-insert-command)))))
+
+    (ido-mode +1)))
 
 (use-package ido-hacks
   :ensure t
@@ -1032,6 +1062,7 @@
      recentf-max-menu-items  25
      recentf-exclude '(".newsrc"
                        "tmp"
+                       "^/?sudo"
                        "Emacs.app"
                        "-autoloads.el"
                        "recentf"
