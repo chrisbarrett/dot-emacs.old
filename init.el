@@ -1981,14 +1981,20 @@ Puts each XML node on a separate line, except for one-liners."
   "Insert newlines and indent XML.
   Operates on region, or the whole buffer if no region is defined."
   (interactive)
-  (let* ((reg (if (region-active-p)
+  (let* ((line (line-number-at-pos))
+         (col  (current-column))
+         (reg (if (region-active-p)
                   (list (region-beginning) (region-end))
                 (list (point-min) (point-max))))
          (str (apply 'buffer-substring reg)))
     (atomic-change-group
       (apply 'delete-region reg)
       (insert (cb:pp-xml str))
-      (apply 'indent-region reg))))
+      (apply 'indent-region reg))
+    ;; Return to original position.
+    (goto-char (point-min))
+    (forward-line (1- line))
+    (move-to-column col)))
 
 (use-package nxml-mode
   :commands nxml-mode
