@@ -1146,8 +1146,6 @@
 
 (use-package hl-line
   :if (or (daemonp) (display-graphic-p))
-  :defer  t
-  :idle   (require 'hl-line)
   :config (global-hl-line-mode t))
 
 (use-package fringe
