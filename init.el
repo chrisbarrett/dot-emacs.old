@@ -160,9 +160,7 @@
 ;;;
 ;;; Rebind to C-c k k ("kill") to prevent accidentally exiting when
 ;;; using Org bindings.
-(bind-key* "C-x C-c" (lambda ()
-                       (interactive)
-                       (message "Type <C-c k e> to exit Emacs")))
+(bind-key* "C-x C-c" (command (message "Type <C-c k e> to exit Emacs")))
 (bind-key* "C-c k k" 'cb:exit-emacs-dwim)
 (bind-key* "C-c k e" 'cb:exit-emacs)
 
@@ -698,16 +696,6 @@
 (defun cb:truthy? (sym)
   "Test whether SYM is bound and non-nil."
   (and (boundp sym) (eval sym)))
-
-(defmacro command (&rest body)
-  "Declare an `interactive' command with BODY forms.
-The arguments are bound as 'args', with individual arguments bound to a0..a9"
-  `(lambda (&rest args)
-     (interactive)
-     (destructuring-bind
-         (&optional a0 a1 a2 a3 a4 a5 a6 a7 a8 a9)
-         args
-       ,@body)))
 
 (use-package simple
   :diminish (visual-line-mode

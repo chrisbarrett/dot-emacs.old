@@ -51,6 +51,16 @@ The entire argument list is bound to 'args'."
   (declare (indent 1))
   `(eval-after-load ,feature '(progn ,@body)))
 
+(defmacro command (&rest body)
+  "Declare an `interactive' command with BODY forms.
+The arguments are bound as 'args', with individual arguments bound to a0..a9"
+  `(lambda (&rest args)
+     (interactive)
+     (destructuring-bind
+         (&optional a0 a1 a2 a3 a4 a5 a6 a7 a8 a9)
+         args
+       ,@body)))
+
 ;;; ----------------------------------------------------------------------------
 
 (defun directory-p (f)
