@@ -1283,20 +1283,28 @@ The arguments are bound as 'args', with individual arguments bound to a0..a9"
 
     (defun cb:w3m-browse-url-as-help (url)
       "Browse the given URL in a help window."
-      (interactive "sURL: ")
+      (interactive
+       (list
+        (read-string "Go to URL: "
+                     (thing-at-point-url-at-point)
+                     t)))
       (let ((win (or (cb:find-window-with-mode 'w3m-mode) (split-window))))
         (select-window win)
         (w3m-browse-url url)))
 
     (defun cb:w3m-browse-dwim (url)
       "Browse to URL, ensuring it begins with http:// as reqiured by w3m."
-      (interactive "sGo to URL: ")
+      (interactive
+       (list
+        (read-string "Go to URL: "
+                     (thing-at-point-url-at-point)
+                     t)))
       (w3m-browse-url
        (if (s-starts-with? "http://" url)
            url
          (concat "http://" url))))
 
-    (bind-key "M-e" 'cb:w3m-browse-dwim)
+    (bind-key* "M-e" 'cb:w3m-browse-dwim)
     )
   :config
   (hook-fn 'w3m-mode-hook
