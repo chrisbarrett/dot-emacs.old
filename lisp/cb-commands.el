@@ -42,12 +42,12 @@
       (if (> x1 x2) win1 win2))))
 
 ;;;###autoload
-(defun cb:select-largest-window ()
+(defun select-largest-window ()
   (interactive)
   (select-window (-reduce 'cb:larger-window (window-list))))
 
 ;;;###autoload
-(defun cb:rotate-buffers ()
+(defun rotate-buffers ()
   "Rotate active buffers, retaining the window layout. Changes
 the selected buffer."
   (interactive)
@@ -75,16 +75,16 @@ the selected buffer."
 (defvar cb:kill-buffer-ignored-list nil)
 
 ;;;###autoload
-(defun cb:kill-current-buffer ()
+(defun kill-current-buffer ()
   "Kill the current buffer.
-If this buffer is a member of `kill-buffer-ignored-list, bury it rather than killing it."
+If this buffer is a member of `cb:kill-buffer-ignored-list, bury it rather than killing it."
   (interactive)
   (if (member (buffer-name (current-buffer)) cb:kill-buffer-ignored-list)
       (bury-buffer)
     (kill-buffer (current-buffer))))
 
 ;;;###autoload
-(defun cb:clean-buffers ()
+(defun clean-buffers ()
   "Close all buffers not in the ignore list."
   (interactive)
   (delete-other-windows)
@@ -94,13 +94,13 @@ If this buffer is a member of `kill-buffer-ignored-list, bury it rather than kil
       (kill-buffer it))))
 
 ;;;###autoload
-(defun cb:hide-dos-eol ()
+(defun hide-dos-eol ()
   (setq buffer-display-table (make-display-table))
   (aset buffer-display-table ?\^M [])
   (aset buffer-display-table ?\^L []))
 
 ;;;###autoload
-(cl-defun cb:last-buffer-for-mode (mode &optional (buffers (buffer-list)))
+(defun* last-buffer-for-mode (mode &optional (buffers (buffer-list)))
   "Return the previous buffer with major mode MODE."
   (--first (with-current-buffer it
              (equal mode major-mode))
@@ -110,20 +110,20 @@ If this buffer is a member of `kill-buffer-ignored-list, bury it rather than kil
   (format-time-string "%Y%m%d.%H%M" nil t))
 
 ;;;###autoload
-(defun cb:insert-timestamp ()
-  "Insert a package-conformant timestamp, of the format YYYYMMDD.HHMM at point."
+(defun insert-timestamp ()
+  "Insert a package-conformant cb:timestamp, of the format YYYYMMDD.HHMM at point."
   (interactive)
   (insert (cb:timestamp)))
 
 ;;;###autoload
-(defun cb:indent-buffer ()
+(defun indent-buffer ()
   "Indent the whole buffer."
   (interactive)
   (save-excursion
     (indent-region (point-min) (point-max))))
 
 ;;;###autoload
-(defun cb:indent-dwim ()
+(defun indent-dwim ()
   "Perform a context-sensitive indentation action."
   (interactive)
   (cond ((region-active-p)
@@ -140,10 +140,10 @@ If this buffer is a member of `kill-buffer-ignored-list, bury it rather than kil
            (mark-defun)
            (indent-region (region-beginning) (region-end))))
         (t
-         (cb:indent-buffer))))
+         (indent-buffer))))
 
 ;;;###autoload
-(defun cb:rename-buffer-and-file ()
+(defun rename-buffer-and-file ()
   "Rename the current buffer and file it is visiting."
   (interactive)
   (let ((filename (buffer-file-name)))
@@ -159,7 +159,7 @@ If this buffer is a member of `kill-buffer-ignored-list, bury it rather than kil
           (set-buffer-modified-p nil)))))))
 
 ;;;###autoload
-(defun cb:delete-buffer-and-file ()
+(defun delete-buffer-and-file ()
   "Removes file connected to current buffer and kills buffer."
   (interactive)
   (let ((filename (buffer-file-name))
@@ -181,7 +181,7 @@ If this buffer is a member of `kill-buffer-ignored-list, bury it rather than kil
     (-map 'cadr)))
 
 ;;;###autoload
-(cl-defun cb:show-autoloads (&optional (buffer (current-buffer)))
+(defun* show-autoloads (&optional (buffer (current-buffer)))
   "Find the autoloaded definitions in BUFFER"
   (interactive)
   (-if-let (results (--map (s-append "\n" it)
@@ -204,7 +204,7 @@ If this buffer is a member of `kill-buffer-ignored-list, bury it rather than kil
            cb:extension->cmd))
 
 ;;;###autoload
-(defun cb:insert-shebang (cmd)
+(defun insert-shebang (cmd)
   "Insert a shebang line at the top of the current buffer."
   (interactive (list (or (cb:bufname->cmd buffer-file-name)
                          (read-string "Command name: " nil t))))
@@ -214,7 +214,7 @@ If this buffer is a member of `kill-buffer-ignored-list, bury it rather than kil
     (newline 2)))
 
 ;;;###autoload
-(defun cb:move-line-up ()
+(defun move-line-up ()
   "Move the current line up."
   (interactive)
   (if (derived-mode-p 'org-mode)
@@ -225,7 +225,7 @@ If this buffer is a member of `kill-buffer-ignored-list, bury it rather than kil
     (indent-according-to-mode)))
 
 ;;;###autoload
-(defun cb:move-line-down ()
+(defun move-line-down ()
   "Move the current line up."
   (interactive)
   (if (derived-mode-p 'org-mode)
@@ -235,6 +235,17 @@ If this buffer is a member of `kill-buffer-ignored-list, bury it rather than kil
     (transpose-lines 1)
     (forward-line -1)
     (indent-according-to-mode)))
+
+;;;###autoload
+(defun goto-first-occurence ()
+  "Move to the first occurence the symbol at point."
+  (interactive)
+  (eval
+   `(progn
+      (goto-char (point-min))
+      (search-forward-regexp
+       (rx symbol-start ,(thing-at-point 'symbol) symbol-end))
+      (beginning-of-thing 'symbol))))
 
 (provide 'cb-commands)
 

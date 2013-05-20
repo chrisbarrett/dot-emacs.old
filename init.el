@@ -1039,25 +1039,26 @@ The arguments are bound as 'args', with individual arguments bound to a0..a9"
 (use-package cb-commands
   :idle (require 'cb-commands)
   :bind
-  (("s-f"     . cb:rotate-buffers)
+  (("s-f"     . rotate-buffers)
    ("C-x C-o" . other-window))
 
   :commands
-  (cb:select-largest-window
-   cb:rotate-buffers
-   cb:kill-current-buffer
-   cb:clean-buffers
+  (select-largest-window
+   rotate-buffers
+   kill-current-buffer
+   clean-buffers
    cb:hide-dos-eol
    cb:last-buffer-for-mode
-   cb:insert-timestamp
-   cb:indent-buffer
-   cb:indent-dwim
-   cb:rename-buffer-and-file
-   cb:delete-buffer-and-file
-   cb:show-autoloads
-   cb:insert-shebang
-   cb:move-line-up
-   cb:move-line-down)
+   insert-timestamp
+   indent-buffer
+   indent-dwim
+   rename-buffer-and-file
+   delete-buffer-and-file
+   show-autoloads
+   insert-shebang
+   move-line-up
+   move-line-down
+   goto-first-occurence)
 
   :init
   (progn
@@ -1065,15 +1066,15 @@ The arguments are bound as 'args', with individual arguments bound to a0..a9"
           '("*scratch*" "*Messages*" "*GROUP*"
             "*shell*" "*eshell*" "*ansi-term*"))
     (add-hook 'find-file-hook 'cb:hide-dos-eol)
-    (bind-key "C-c k b" 'cb:clean-buffers)
-    (bind-key "C-<up>" 'cb:move-line-up)
-    (bind-key "C-<down>" 'cb:move-line-down))
+    (bind-key "C-c k b" 'clean-buffers)
+    (bind-key "C-<up>" 'move-line-up)
+    (bind-key "C-<down>" 'move-line-down))
 
   :config
-  (defadvice cb:rotate-buffers (after select-largest-window activate)
+  (defadvice rotate-buffers (after select-largest-window activate)
     "Switch to the largest window if using a 2-up window configuration."
     (when (= 2 (length (window-list)))
-      (cb:select-largest-window))))
+      (select-largest-window))))
 
 ;;;; Backups & State
 
@@ -2558,7 +2559,7 @@ Puts each XML node on a separate line, except for one-liners."
       (add-to-list 'ac-sources 'ac-source-yasnippet)
       (add-to-list 'ac-sources 'ac-source-ruby-class-keywords)
       (add-to-list 'ac-sources 'ac-source-ruby-class-attributes)
-      (local-set-key (kbd "M-q") 'cb:indent-dwim)
+      (local-set-key (kbd "M-q") 'indent-dwim)
       (subword-mode +1))))
 
 (use-package rubocop
@@ -3287,7 +3288,7 @@ an irb error message."
             (t
              (cedit-or-paredit-barf))))
 
-    (key-chord-define-global "x;" 'cb:kill-current-buffer)
+    (key-chord-define-global "x;" 'kill-current-buffer)
     (key-chord-define-global "qj" 'cb:backward-slurp)
     (key-chord-define-global "qk" 'cb:forward-slurp)
     (key-chord-define-global "ql" 'cb:splice-killing-backward)
