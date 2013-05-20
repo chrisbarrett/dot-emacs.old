@@ -3182,14 +3182,21 @@ an irb error message."
      org-catch-invisible-edits 'smart
 
      org-capture-templates
-     '(("t" "Todo" entry (file+headline org-default-notes-file "Tasks")
+     '(("t" "Todo" entry
+        (file+headline org-default-notes-file "Tasks")
         "* TODO %?\n %i\n")
 
-       ("r" "To Read" item (file+headline org-default-notes-file "Reading List")
-        "- %?\n %i\n")
+       ("r" "Reading List" entry
+        (file+headline org-default-notes-file "Reading List")
+        "* %?\n %i\n")
 
-       ("l" "Link" entry (file+headline org-default-notes-file "Links")
-        "* %?\n %i\n"))
+       ("l" "Link" entry
+        (file+headline org-default-notes-file "Links")
+        "* %?\n %i\n")
+
+       ("n" "Note" item
+        (file+headline org-default-notes-file "Notes")
+        "- %?\n %i\n"))
 
      org-todo-keywords
      '((sequence "TODO(t)" "WAIT(w@/!)" "|" "DONE(d!)" "CANCELED(c@)")))
