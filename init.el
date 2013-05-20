@@ -1061,6 +1061,7 @@
             "*shell*" "*eshell*" "*ansi-term*"
             "notes.org"))
     (add-hook 'find-file-hook 'cb:hide-dos-eol)
+    (bind-key "C-c k b" 'cb:clean-buffers)
     (bind-key "C-<up>" 'cb:move-line-up)
     (bind-key "C-<down>" 'cb:move-line-down))
 
@@ -3178,21 +3179,20 @@ an irb error message."
   :config
   (progn
     (setq
+     org-catch-invisible-edits 'smart
 
      org-capture-templates
      '(("t" "Todo" entry (file+headline org-default-notes-file "Tasks")
         "* TODO %?\n %i\n")
 
-       ("l" "Link" item (file (concat org-directory "links.org"))
-        "- %?\n %x\n")
+       ("r" "To Read" item (file+headline org-default-notes-file "Reading List")
+        "- %?\n %i\n")
 
-       ("r" "To Read" checkitem (file (concat org-directory "toread.org"))
-        "- %?\n %i\n"))
+       ("l" "Link" entry (file+headline org-default-notes-file "Links")
+        "* %?\n %i\n"))
 
      org-todo-keywords
-     '((sequence "TODO(t)" "WAIT(w@/!)" "|" "DONE(d!)" "CANCELED(c@)"))
-
-     org-catch-invisible-edits 'smart)
+     '((sequence "TODO(t)" "WAIT(w@/!)" "|" "DONE(d!)" "CANCELED(c@)")))
 
     (--each '("NOTES" "COMMENTS")
       (add-to-list 'org-drawers it))
