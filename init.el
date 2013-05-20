@@ -699,6 +699,16 @@
   "Test whether SYM is bound and non-nil."
   (and (boundp sym) (eval sym)))
 
+(defmacro command (&rest body)
+  "Declare an interactive command.
+The arguments are bound as 'args', with individual arguments bound to a0..a9"
+  `(lambda (&rest args)
+     (interactive)
+     (destructuring-bind
+         (&optional a0 a1 a2 a3 a4 a5 a6 a7 a8 a9)
+         args
+       ,@body)))
+
 (use-package simple
   :diminish (visual-line-mode
              global-visual-line-mode
@@ -728,12 +738,8 @@
     (setq mouse-sel-mode t)
 
     (when (equal system-type 'darwin)
-     (global-set-key [mouse-4] '(lambda ()
-                                  (interactive)
-                                  (scroll-down 1)))
-     (global-set-key [mouse-5] '(lambda ()
-                                  (interactive)
-                                  (scroll-up 1))))))
+     (global-set-key [mouse-4] (command (scroll-down 1)))
+     (global-set-key [mouse-5] (command (scroll-up 1))))))
 
 (when (equal system-type 'darwin)
 
@@ -870,11 +876,10 @@
       ;; Typing ~ resets ido prompt to home directory.
       (define-key ido-common-completion-map
         (kbd "~")
-        (lambda ()
-          (interactive)
-          (if (looking-back "/")
-              (insert "~/")
-            (call-interactively 'self-insert-command)))))
+        (command
+         (if (looking-back "/")
+             (insert "~/")
+           (call-interactively 'self-insert-command)))))
 
     (ido-mode +1)))
 
@@ -979,7 +984,7 @@
     (hook-fn 'popwin:after-popup-hook
       "Quit popups with Q"
       (when (fboundp 'evil-define-key)
-        (evil-local-set-key 'normal "q" (lambda () (interactive) (quit-window t)))))
+        (evil-local-set-key 'normal "q" (command (quit-window t)))))
 
     (setq display-buffer-function 'popwin:display-buffer
           popwin:special-display-config
@@ -3162,6 +3167,9 @@ an irb error message."
      org-directory (concat user-home-directory "org/")
      org-default-notes-file (concat org-directory "notes.org"))
 
+    (bind-key "M-O" (command (find-file org-default-notes-file)))
+
+
     (when (or (daemonp) (display-graphic-p))
       (setq initial-buffer-choice org-default-notes-file))
 
@@ -3364,7 +3372,7 @@ Repeated invocations toggle between the two most recently open buffers."
   "Show fortune if started without a file to visit."
   (run-with-idle-timer
    0.1 nil
-   (lambda nil
+   (lambda ()
      (when (-contains? '("*scratch*"
                          "notes.org"
                          "todo.org")
