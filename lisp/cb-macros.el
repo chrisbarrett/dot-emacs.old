@@ -79,6 +79,26 @@ If ADD-PATH is non-nil, add DIR and its children to the load-path."
 This directory tree will be added to the load path if ADD-PATH is non-nil."
   `(defconst ,sym (cb:prepare-load-dir ,path ,add-path)))
 
+;;; ----------------------------------------------------------------------------
+
+(defun cb:tree-replace (target rep tree)
+  "Replace TARGET with REP in TREE."
+  (cond ((equal target tree) rep)
+        ((atom tree)         tree)
+        (t
+         (--map (cb:tree-replace target rep it) tree))))
+
+(defmacro with-window-restore (&rest body)
+  "Declare an action that will eventually restore window state.
+The original state can be restored by calling (restore) in BODY."
+  (declare (indent 0))
+  (let ((register (cl-gensym)))
+    `(progn
+       (window-configuration-to-register ',register)
+       ,@(cb:tree-replace '(restore)
+                          `(jump-to-register ',register)
+                          body))))
+
 (provide 'cb-macros)
 
 ;;; cb-macros.el ends here

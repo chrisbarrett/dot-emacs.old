@@ -709,25 +709,6 @@ The arguments are bound as 'args', with individual arguments bound to a0..a9"
          args
        ,@body)))
 
-(defun cb:tree-replace (target rep tree)
-  "Replace TARGET with REP in TREE."
-  (cond ((equal target tree) rep)
-        ((atom tree)         tree)
-        (t
-         (--map (cb:tree-replace target rep it) tree))))
-
-(defmacro with-window-restore (&rest body)
-  "Declare an action that will eventually restore window state.
-The original state can be restored by calling (restore) in BODY."
-  (declare (indent 0))
-  (flet ()
-    (let ((register (cl-gensym)))
-      `(progn
-         (window-configuration-to-register ',register)
-         ,@(cb:tree-replace '(restore)
-                            `(jump-to-register ',register)
-                            body)))))
-
 (use-package simple
   :diminish (visual-line-mode
              global-visual-line-mode
@@ -3185,7 +3166,8 @@ an irb error message."
       (with-window-restore
         (find-file org-default-notes-file)
         (delete-other-windows)
-        (add-hook 'kill-buffer-hook (lambda () (restore)) nil t)))
+        (add-hook 'kill-buffer-hook (lambda () (restore)) nil t)
+        (local-set-key (kbd "M-O") (command (kill-buffer)))))
 
     (bind-key "M-O" 'cb:show-org-notes)
 
