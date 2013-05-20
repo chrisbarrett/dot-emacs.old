@@ -774,9 +774,7 @@ The arguments are bound as 'args', with individual arguments bound to a0..a9"
 
 (use-package projectile
   :ensure   t
-  :commands (projectile-project-p projectile-project-root)
   :diminish projectile-mode
-  :idle (require 'projectile)
   :config
   (progn
     (setq projectile-known-projects-file
@@ -1047,8 +1045,8 @@ The arguments are bound as 'args', with individual arguments bound to a0..a9"
    rotate-buffers
    kill-current-buffer
    clean-buffers
-   cb:hide-dos-eol
-   cb:last-buffer-for-mode
+   hide-dos-eol
+   last-buffer-for-mode
    insert-timestamp
    indent-buffer
    indent-dwim
@@ -1065,7 +1063,7 @@ The arguments are bound as 'args', with individual arguments bound to a0..a9"
     (setq cb:kill-buffer-ignored-list
           '("*scratch*" "*Messages*" "*GROUP*"
             "*shell*" "*eshell*" "*ansi-term*"))
-    (add-hook 'find-file-hook 'cb:hide-dos-eol)
+    (add-hook 'find-file-hook 'hide-dos-eol)
     (bind-key "C-c k b" 'clean-buffers)
     (bind-key "C-<up>" 'move-line-up)
     (bind-key "C-<down>" 'move-line-down))
@@ -2331,13 +2329,13 @@ Puts each XML node on a separate line, except for one-liners."
     (defun cb:switch-to-clojure ()
       "Switch to the last active clojure buffer."
       (interactive)
-      (-when-let (buf (cb:last-buffer-for-mode 'clojure-mode))
+      (-when-let (buf (last-buffer-for-mode 'clojure-mode))
         (pop-to-buffer buf)))
 
     (defun cb:eval-last-clj-buffer ()
       "Evaluate that last active clojure buffer without leaving the repl."
       (interactive)
-      (-when-let (buf (cb:last-buffer-for-mode 'clojure-mode))
+      (-when-let (buf (last-buffer-for-mode 'clojure-mode))
         (with-current-buffer buf
           (nrepl-eval-buffer))))
 
@@ -2480,7 +2478,7 @@ Puts each XML node on a separate line, except for one-liners."
     (defun cb:switch-to-python ()
       "Switch to the last active Python buffer."
       (interactive)
-      (-when-let (buf (cb:last-buffer-for-mode 'python-mode))
+      (-when-let (buf (last-buffer-for-mode 'python-mode))
         (pop-to-buffer buf)))
 
     (define-key python-mode-map (kbd ",") 'cb:comma-then-space)
@@ -2653,7 +2651,7 @@ Start an inferior ruby if necessary."
       (interactive)
       (if (derived-mode-p 'inf-ruby-mode)
           (switch-to-buffer-other-window
-           (cb:last-buffer-for-mode 'ruby-mode))
+           (last-buffer-for-mode 'ruby-mode))
         (run-ruby)))
 
     (defun cb:ruby-eval-dwim ()
@@ -2785,7 +2783,7 @@ an irb error message."
     (defun cb:switch-to-haskell ()
       "Switch to the last active Haskell buffer."
       (interactive)
-      (-when-let (buf (cb:last-buffer-for-mode 'haskell-mode))
+      (-when-let (buf (last-buffer-for-mode 'haskell-mode))
         (pop-to-buffer buf)))
 
     (hook-fn 'inferior-haskell-mode-hook
@@ -3400,7 +3398,9 @@ Repeated invocations toggle between the two most recently open buffers."
 )
 
 (hook-fn 'after-init-hook
-  (setq default-directory user-home-directory)
+  (setq
+   default-directory user-home-directory
+   use-package-verbose nil)
   (load (concat user-emacs-directory "site-file.el") t t))
 
 ;; Local Variables:
