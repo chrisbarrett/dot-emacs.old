@@ -1288,9 +1288,11 @@ The arguments are bound as 'args', with individual arguments bound to a0..a9"
         (read-string "Go to URL: "
                      (thing-at-point-url-at-point)
                      t)))
-      (let ((win (or (cb:find-window-with-mode 'w3m-mode) (split-window))))
-        (select-window win)
-        (w3m-browse-url url)))
+      (with-window-restore
+        (let ((win (or (cb:find-window-with-mode 'w3m-mode) (split-window))))
+          (select-window win)
+          (w3m-browse-url url))
+        (local-set-key (kbd "q") (command (restore)))))
 
     (defun cb:w3m-browse-dwim (url)
       "Browse to URL, ensuring it begins with http:// as reqiured by w3m."
@@ -1299,10 +1301,12 @@ The arguments are bound as 'args', with individual arguments bound to a0..a9"
         (read-string "Go to URL: "
                      (thing-at-point-url-at-point)
                      t)))
-      (w3m-browse-url
-       (if (s-starts-with? "http://" url)
-           url
-         (concat "http://" url))))
+      (with-window-restore
+        (w3m-browse-url
+         (if (s-starts-with? "http://" url)
+             url
+           (concat "http://" url)))
+        (local-set-key (kbd "q") (command (restore)))))
 
     (bind-key* "M-e" 'cb:w3m-browse-dwim)
     )
