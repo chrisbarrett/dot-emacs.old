@@ -3236,7 +3236,12 @@ an irb error message."
     (define-key org-mode-map (kbd "M-n") 'org-metadown)))
 
 (use-package org-capture
-  :bind ("M-o" . org-capture))
+  :bind ("M-o" . org-capture)
+  :init
+  (hook-fn 'org-capture-mode-hook
+    (when (fboundp 'evil-insert)
+      (evil-insert 0))))
+
 
 ;;;; Productivity
 
