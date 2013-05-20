@@ -135,6 +135,7 @@
  confirm-nonexistent-file-or-buffer nil
  vc-handled-backends          '(Git)
  system-uses-terminfo         nil
+ bookmark-default-file        (concat cb:tmp-dir "bookmarks")
  )
 (setq-default
  tab-width                    4
