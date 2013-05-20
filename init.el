@@ -709,6 +709,25 @@ The arguments are bound as 'args', with individual arguments bound to a0..a9"
          args
        ,@body)))
 
+(defun cb:tree-replace (target rep tree)
+  "Replace TARGET with REP in TREE."
+  (cond ((equal target tree) rep)
+        ((atom tree)         tree)
+        (t
+         (--map (cb:tree-replace target rep it) tree))))
+
+(defmacro with-window-restore (&rest body)
+  "Declare an action that will eventually restore window state.
+The original state can be restored by calling (restore) in BODY."
+  (declare (indent 0))
+  (flet ()
+    (let ((register (cl-gensym)))
+      `(progn
+         (window-configuration-to-register ',register)
+         ,@(cb:tree-replace '(restore)
+                            `(jump-to-register ',register)
+                            body)))))
+
 (use-package simple
   :diminish (visual-line-mode
              global-visual-line-mode
@@ -3057,28 +3076,22 @@ an irb error message."
       "Update modelines to ensure vc status is up-to-date."
       (force-mode-line-update t))
 
-    (defmacro* declare-register-wrapper (command &optional (quit-key "q"))
-      "Make a given command restore window state when finished."
+    (defmacro* declare-magit-wrapper (command)
+      "Advise a given magit command to restore window state when finished."
       `(defadvice ,command (around
                             ,(intern (format "%s-wrapper" command))
                             activate)
-         "Auto-generated wrapper that saves window state before performing command."
-         ;; Save window state before executing COMMAND.
-         (window-configuration-to-register ',command)
-         ad-do-it
-         (delete-other-windows)
-         ;; Quit key command restores window state.
-         (local-set-key
-          (kbd ,quit-key) (lambda ()
-                            (interactive)
-                            (kill-buffer)
-                            (jump-to-register ',command)))))
+         "Auto-generated window restoration wrapper for magit."
+         (with-window-restore
+          ad-do-it
+          (delete-other-windows)
+          (local-set-key (kbd "q") (command (kill-buffer) (restore))))))
 
-    (declare-register-wrapper magit-status)
-    (declare-register-wrapper magit-log)
-    (declare-register-wrapper magit-reflog)
-    (declare-register-wrapper magit-diff-working-tree)
-    (declare-register-wrapper magit-diff)
+    (declare-magit-wrapper magit-status)
+    (declare-magit-wrapper magit-log)
+    (declare-magit-wrapper magit-reflog)
+    (declare-magit-wrapper magit-diff-working-tree)
+    (declare-magit-wrapper magit-diff)
 
     (defadvice magit-show (after delete-window-on-kill activate)
       "When the buffer is killed, delete its corresponding window."
