@@ -700,7 +700,7 @@
   (and (boundp sym) (eval sym)))
 
 (defmacro command (&rest body)
-  "Declare an interactive command.
+  "Declare an `interactive' command with BODY forms.
 The arguments are bound as 'args', with individual arguments bound to a0..a9"
   `(lambda (&rest args)
      (interactive)
@@ -1082,8 +1082,7 @@ The original state can be restored by calling (restore) in BODY."
   (progn
     (setq cb:kill-buffer-ignored-list
           '("*scratch*" "*Messages*" "*GROUP*"
-            "*shell*" "*eshell*" "*ansi-term*"
-            "notes.org"))
+            "*shell*" "*eshell*" "*ansi-term*"))
     (add-hook 'find-file-hook 'cb:hide-dos-eol)
     (bind-key "C-c k b" 'cb:clean-buffers)
     (bind-key "C-<up>" 'cb:move-line-up)
@@ -3180,7 +3179,15 @@ an irb error message."
      org-directory (concat user-home-directory "org/")
      org-default-notes-file (concat org-directory "notes.org"))
 
-    (bind-key "M-O" (command (find-file org-default-notes-file)))
+    (defun cb:show-org-notes ()
+      "Show the default org notes file."
+      (interactive)
+      (with-window-restore
+        (find-file org-default-notes-file)
+        (delete-other-windows)
+        (add-hook 'kill-buffer-hook (lambda () (restore)) nil t)))
+
+    (bind-key "M-O" 'cb:show-org-notes)
 
 
     (when (or (daemonp) (display-graphic-p))
