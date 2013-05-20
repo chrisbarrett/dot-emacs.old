@@ -862,7 +862,7 @@
      ido-max-prospects            10
      ido-default-file-method      'selected-window)
     (add-to-list 'ido-ignore-buffers "\\*helm.*")
-    (add-to-list 'ido-ignore-buffers "\\Minibuf.*")
+    (add-to-list 'ido-ignore-buffers "\\*Minibuf.*")
     (add-to-list 'ido-ignore-files "\\.swp")
     (add-to-list 'ido-ignore-files "\\.DS_Store")
 
@@ -1041,6 +1041,7 @@
   (cb:select-largest-window
    cb:rotate-buffers
    cb:kill-current-buffer
+   cb:clean-buffers
    cb:hide-dos-eol
    cb:last-buffer-for-mode
    cb:insert-timestamp
@@ -1504,8 +1505,8 @@
 ;;;; Completion
 
 (use-package auto-complete
-  :ensure t
-  :idle   (require 'auto-complete)
+  :ensure   t
+  :idle     (require 'auto-complete)
   :diminish auto-complete-mode
   :commands
   (global-auto-complete-mode
@@ -1514,15 +1515,12 @@
   :init
   (progn
     (after 'auto-complete (global-auto-complete-mode +1))
-    (add-hook 'prog-mode-hook 'auto-complete-mode)
-    (add-hook 'comint-mode-hook 'auto-complete-mode))
+    (add-hook 'find-file-hook 'auto-complete-mode))
 
   :config
   (progn
     ;; Enable for everything except text mode.
-    (hook-fn 'text-mode-hook
-      (when (equal major-mode 'text-mode)
-        (auto-complete-mode -1)))
+
 
     (use-package auto-complete-config
       :config (ac-config-default))
@@ -2020,13 +2018,18 @@ Puts each XML node on a separate line, except for one-liners."
   :defer t
   :init
   (after 'auto-complete
+    (defconst cb:html-tag-attrs
+      '("class" "id")
+      "Global attributes that appear in HTML tags.")
+
     (ac-define-source html-tag-source
       '((candidates . (-when-let (tag (te/current-tag))
                         (and (te/eligible-for-auto-attribute-insert?)
                              (not (s-starts-with? "%" (te/get tag :name)))
-                             (not (te/has-attribute "class" tag))
+                             (--none? (te/has-attribute it tag)
+                                      cb:html-tag-attrs)
 
-                             '("class"))))
+                             cb:html-tag-attrs)))
         (symbol     . "a")
         (requires   . '(tagedit))
         (action     . (lambda ()

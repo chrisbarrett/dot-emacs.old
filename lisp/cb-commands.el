@@ -84,6 +84,15 @@ If this buffer is a member of `kill-buffer-ignored-list, bury it rather than kil
     (kill-buffer (current-buffer))))
 
 ;;;###autoload
+(defun cb:clean-buffers ()
+  "Close all buffers not in the ignore list."
+  (interactive)
+  (delete-other-windows)
+  (--each (buffer-list)
+    (unless (-contains? cb:kill-buffer-ignored-list (buffer-name it))
+      (kill-buffer it))))
+
+;;;###autoload
 (defun cb:hide-dos-eol ()
   (setq buffer-display-table (make-display-table))
   (aset buffer-display-table ?\^M [])
