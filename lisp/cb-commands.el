@@ -89,7 +89,8 @@ If this buffer is a member of `kill-buffer-ignored-list, bury it rather than kil
   (interactive)
   (delete-other-windows)
   (--each (buffer-list)
-    (unless (-contains? cb:kill-buffer-ignored-list (buffer-name it))
+    (unless (or (-contains? cb:kill-buffer-ignored-list (buffer-name it))
+                (get-buffer-process it))
       (kill-buffer it))))
 
 ;;;###autoload
