@@ -1750,15 +1750,17 @@ The arguments are bound as 'args', with individual arguments bound to a0..a9"
   :ensure t
   :commands (flycheck-may-enable-mode flycheck-mode)
   :init
-  (let ((maybe-enable-flycheck
-         (lambda ()
-           (when (flycheck-may-enable-mode)
-             (unless (or (s-contains? cb:elpa-dir (or (buffer-file-name) ""))
-                         (s-contains? cb:src-dir  (or (buffer-file-name) ""))))
-             (flycheck-mode +1)))))
+  (progn
 
-    (add-hook 'text-mode-hook maybe-enable-flycheck)
-    (add-hook 'prog-mode-hook maybe-enable-flycheck))
+    (defun cb:maybe-enable-flycheck ()
+      (when (flycheck-may-enable-mode)
+        (unless (or (s-contains? cb:elpa-dir (or (buffer-file-name) ""))
+                    (s-contains? cb:src-dir  (or (buffer-file-name) ""))
+                    (equal last-command 'scratch)))
+        (flycheck-mode +1)))
+
+    (add-hook 'text-mode-hook 'cb:maybe-enable-flycheck)
+    (add-hook 'prog-mode-hook 'cb:maybe-enable-flycheck))
   :config
   (defadvice projectile-project-root (around suppress-errors activate)
     "Return nil instead of throwing errors."
