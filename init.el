@@ -1415,17 +1415,11 @@
           evil-default-cursor t)
     (setq-default evil-shift-width 2)))
 
-;; (use-package evil-paredit
-;;   :ensure   t
-;;   :commands evil-paredit-mode
-;;   :init     (add-hook 'paredit-mode-hook 'evil-paredit-mode))
-
 (use-package surround
   :ensure t
   :defer  t
   :idle   (require 'surround)
   :config (global-surround-mode +1))
-
 
 (use-package evil-numbers
   :ensure t
