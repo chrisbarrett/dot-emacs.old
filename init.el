@@ -1259,11 +1259,22 @@ The arguments are bound as 'args', with individual arguments bound to a0..a9"
 (use-package w3m
   :ensure   t
   :commands
-  (w3m-find-file
+  (w3m
+   w3m-find-file
    w3m-browse-url)
   :init
   (progn
     (setq browse-url-browser-function 'w3m-browse-url)
+
+    (defun cb:w3m-toggle ()
+      (interactive)
+      (with-window-restore
+        (w3m)
+        (delete-other-windows)
+        (local-set-key (kbd "q")   (command (restore)))
+        (local-set-key (kbd "M-W") (command (restore)))))
+
+    (bind-key "M-W" 'cb:w3m-toggle)
 
     (defun cb:find-window-with-mode (mode)
       "Find the first window whose buffer is in major-mode MODE."
@@ -1438,7 +1449,7 @@ The arguments are bound as 'args', with individual arguments bound to a0..a9"
                   (if (= (user-uid) 0) " # " " % ")))))
 
 (use-package term
-  :bind ("M-t" . cb:term-cycle)
+  :bind ("M-T" . cb:term-cycle)
   :defer t
 
   :init
@@ -1489,7 +1500,7 @@ The arguments are bound as 'args', with individual arguments bound to a0..a9"
       (when (cb:truthy? 'evil-mode)
         (evil-local-set-key 'normal "p" 'cb:ansi-term-paste))
 
-      (define-key term-raw-map (kbd "M-t") 'cb:term-cycle)
+      (define-key term-raw-map (kbd "M-T") 'cb:term-cycle)
       ;; Yasnippet causes tab-completion to fail.
       (yas-minor-mode -1))
 
@@ -3028,7 +3039,7 @@ an irb error message."
   :defer  t
   :idle   (require 'magit)
   :bind
-  (("M-g"     . magit-status)
+  (("M-G"     . magit-status)
    ("C-x g t" . magit-stash)
    ("C-x g c" . magit-checkout)
    ("C-x g u" . magit-pull)
