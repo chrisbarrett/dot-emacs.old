@@ -336,34 +336,34 @@
       (concat
        (when host
          (concat
-          (face "/" 'mode-line-tramp-separator-face)
-          (face method 'mode-line-tramp-method-face)
-          (face ":" 'mode-line-tramp-separator-face)
-          (face user 'mode-line-tramp-user-face)
-          (face "@" 'mode-line-tramp-separator-face)
+          (face "/" 'mode-line-tramp-separator)
+          (face method 'mode-line-tramp-method)
+          (face ":" 'mode-line-tramp-separator)
+          (face user 'mode-line-tramp-user)
+          (face "@" 'mode-line-tramp-separator)
           host
-          (face ":" 'mode-line-tramp-separator-face)))
-       (face (cb:shorten-directory (or file filepath)) 'mode-line-directory-face)))))
+          (face ":" 'mode-line-tramp-separator)))
+       (face (cb:shorten-directory (or file filepath)) 'mode-line-directory)))))
 
-(defface mode-line-tramp-separator-face
+(defface mode-line-tramp-separator
   '((((type graphic) (background dark))
      (:foreground "gray45"))
     (((type graphic) (background light))
      (:foreground "gray80"))
     (t
-     (:inherit 'mode-line-face)))
+     (:inherit 'mode-line)))
   "Face for separator characters in modeline."
   :group 'modeline)
 
-(defface mode-line-tramp-method-face
-  '((t (:inherit 'mode-line-face)))
+(defface mode-line-tramp-method
+  '((t (:inherit 'mode-line)))
   "Face for tramp method in modeline."
   :group 'modeline)
 
-(defface mode-line-tramp-user-face
+(defface mode-line-tramp-user
   '((((type graphic))
      (:foreground "VioletRed3"))
-    (t (:inherit 'mode-line-face)))
+    (t (:inherit 'mode-line)))
   "Face for tramp user indicator in modeline."
   :group 'modeline)
 
@@ -375,47 +375,47 @@
     (((type graphic) (background light))
      (:foreground "blue"))
     (t
-     (:inherit 'mode-line-face)))
+     (:inherit 'mode-line)))
   "Face for unknown vc file status."
   :group 'modeline)
 
-(defface mode-line-read-only-face
+(defface mode-line-read-only
   '((((type graphic))
      (:foreground "#4271ae"
       :box '(:line-width 2 :color "#4271ae")))
-    (t (:inherit 'mode-line-face)))
+    (t (:inherit 'mode-line)))
   "Face for readonly indicator."
   :group 'modeline)
 
-(defface mode-line-modified-face
+(defface mode-line-modified
   '((((type graphic))
      (:foreground "#c82829"))
     (t
-     (:inherit 'mode-line-face)))
+     (:inherit 'mode-line)))
   "Face for modified indicator."
   :group 'modeline)
 
-(defface mode-line-directory-face
+(defface mode-line-directory
   '((((type graphic) (background dark))
      (:foreground "gray60"))
     (((type graphic) (background light))
      (:foreground "gray70"))
     (t
-     (:inherit 'mode-line-face)))
+     (:inherit 'mode-line)))
   "Face for the directory component of the current filename."
   :group 'modeline)
 
-(defface mode-line-filename-face
+(defface mode-line-filename
   '((((type graphic) (background dark))
      (:foreground "#eab700" :weight bold))
     (((type graphic) (background light))
      (:foreground "gray40" :weight bold))
     (t
-     (:inherit 'mode-line-face)))
+     (:inherit 'mode-line)))
   "Face for the name component of the current filename."
   :group 'modeline)
 
-(defface mode-line-position-face
+(defface mode-line-position
   `((((type graphic) (background dark))
      (:family ,(cb:monospace-font)
       :height 100
@@ -425,44 +425,44 @@
       :height 100
       :foreground "gray50"))
     (t
-     (:inherit 'mode-line-face)))
+     (:inherit 'mode-line)))
   "Face for the position indicators."
   :group 'modeline)
 
-(defface mode-line-mode-face
+(defface mode-line-mode
   '((((type graphic) (background dark))
      (:foreground "gray70"))
     (((type graphic) (background light))
      (:foreground "gray40"))
     (t
-     (:inherit 'mode-line-face)))
+     (:inherit 'mode-line)))
   "Face for the current major mode indicator."
   :group 'modeline)
 
-(defface mode-line-minor-mode-face
+(defface mode-line-minor-mode
   '((((type graphic) (background dark))
      (:foreground "gray40" :height 110))
     (((type graphic) (background light))
      (:foreground "gray70" :height 110))
-    (t (:inherit 'mode-line-mode-face)))
+    (t (:inherit 'mode-line-mode)))
   "Face for the current minor mode indicators."
   :group 'modeline)
 
-(defface mode-line-process-face
+(defface mode-line-process
   '((((type graphic))
      (:foreground "#718c00"))
     (t
-     (:inherit 'mode-line-face)))
+     (:inherit 'mode-line)))
   "Face for the current process."
   :group 'modeline)
 
-(defface mode-line-80col-face
+(defface mode-line-80col
   '((((type graphic) (background dark))
      (:foreground "#eab700"))
     (((type graphic) (background light))
      (:foreground "#b58900"))
     (t
-     (:inherit 'mode-line-position-face)))
+     (:inherit 'mode-line-position)))
   "Face for the warning when point is past column 80."
   :group 'modeline)
 
@@ -473,13 +473,13 @@
  `(
    ;; --------------------------------------------------------------------------
    ;; Line and column number.
-   (:propertize " %4l:" face mode-line-position-face)
+   (:propertize " %4l:" face mode-line-position)
    (:eval
     ;; Warn if over 80 columns.
     (propertize "%3c" 'face
                 (if (>= (current-column) 80)
-                    'mode-line-80col-face
-                  'mode-line-position-face)))
+                    'mode-line-80col
+                  'mode-line-position)))
    " "
    ;; --------------------------------------------------------------------------
    ;; File status.
@@ -493,7 +493,7 @@
 
        ;; Show read-only indicator.
        (buffer-read-only
-        (propertize " RO " 'face 'mode-line-read-only-face))
+        (propertize " RO " 'face 'mode-line-read-only))
 
        ;; Show modified and vc status.
        (t
@@ -502,13 +502,13 @@
                     (cb:vc-state->letter)
                   " ")
                 (if (buffer-modified-p)
-                    (propertize "*" 'face 'mode-line-modified-face)
+                    (propertize "*" 'face 'mode-line-modified)
                   " "))))))
    " "
    ;; --------------------------------------------------------------------------
    ;; Buffer name and path.
    (:eval (if (buffer-file-name) (cb:propertize-file-directory) ""))
-   (:propertize "%b" face mode-line-filename-face)
+   (:propertize "%b" face mode-line-filename)
 
    ;; --------------------------------------------------------------------------
    ;; Narrowing
@@ -520,7 +520,7 @@
    ;; Major mode.
    " %["
    (:propertize mode-name
-                face mode-line-mode-face)
+                face mode-line-mode)
    "%] "
 
    ;; ERT status.
@@ -533,9 +533,9 @@
 
    ;; Minor modes.
    (:eval (propertize (format-mode-line minor-mode-alist)
-                      'face 'mode-line-minor-mode-face))
+                      'face 'mode-line-minor-mode))
    (:propertize mode-line-process
-                face mode-line-process-face)
+                face mode-line-process)
    (global-mode-string global-mode-string))))
 
 ;;; ============================================================================
