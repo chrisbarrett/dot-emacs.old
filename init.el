@@ -3223,6 +3223,7 @@ an irb error message."
 
     (hook-fn 'org-mode-hook
       "Append to buffer for org-mode popups."
+      (auto-revert-mode +1)
       (unless (buffer-file-name)
         (cb:append-buffer)))
 
