@@ -101,10 +101,10 @@
 (hook-fn 'text-mode-hook
   "Use a sans-serif font for text-mode."
   (when (equal major-mode 'text-mode)
-    (buffer-face-set `(:family ,(cb:sans-serif-font) :height 120))))
+    (buffer-face-set `(:family ,(sans-serif-font) :height 120))))
 
 (hook-fn 'Info-mode-hook
-  (buffer-face-set `(:family ,(cb:serif-font) :height 140)))
+  (buffer-face-set `(:family ,(serif-font) :height 140)))
 
 ;; Use the version of emacs in /src for info and source.
 (setq source-directory (format "%s/emacs-%s.%s" cb:src-dir
@@ -266,25 +266,25 @@
 
 (with-elapsed-timer "Loading typefaces"
 
-(defun cb:font (&rest fonts)
+(defun first-font (&rest fonts)
   "Return the first available font in FONTS."
   (--first (find-font (font-spec :name it)) fonts))
 
-(defun cb:serif-font ()
-  (cb:font "Palatino" "Cambria" "Times New Roman"))
+(defun serif-font ()
+  (first-font "Palatino" "Cambria" "Times New Roman"))
 
-(defun cb:sans-serif-font ()
-  (cb:font "Lucida Grande" "Ubuntu Regular" "Segoe UI"
+(defun sans-serif-font ()
+  (first-font "Lucida Grande" "Ubuntu Regular" "Segoe UI"
            "Helvetica Neue" "Calibri" "Helvetica" "Verdana" "Arial"))
 
-(defun cb:monospace-font ()
-  (or (cb:font "Menlo" "Consolas" "Inconsolata" "DejaVu Sans Mono"
+(defun monospace-font ()
+  (or (first-font "Menlo" "Consolas" "Inconsolata" "DejaVu Sans Mono"
                "Ubuntu Mono Regular" "Courier")
       "Menlo"))
 
-(set-frame-font (format "%s 11" (cb:monospace-font)) t)
+(set-frame-font (format "%s 11" (monospace-font)) t)
 (hook-fn 'after-make-frame-functions
-  (set-frame-font (format "%s 11" (cb:monospace-font)) t
+  (set-frame-font (format "%s 11" (monospace-font)) t
                   (list (car (frame-list)))))
 
 )
@@ -417,11 +417,11 @@
 
 (defface mode-line-position
   `((((type graphic) (background dark))
-     (:family ,(cb:monospace-font)
+     (:family ,(monospace-font)
       :height 100
       :foreground "gray60"))
     (((type graphic) (background light))
-     (:family ,(cb:monospace-font)
+     (:family ,(monospace-font)
       :height 100
       :foreground "gray50"))
     (t
@@ -1318,7 +1318,7 @@
   :config
   (hook-fn 'w3m-mode-hook
     (buffer-face-set
-     `(:family ,(cb:serif-font) :height 130))))
+     `(:family ,(serif-font) :height 130))))
 
 (use-package erc
   :defer t
@@ -1364,7 +1364,7 @@
       (error (solarized-light)))
 
     (hook-fn 'cb:color-theme-changed-hook
-      (set-face-font 'default (format "%s 11" (cb:monospace-font)))
+      (set-face-font 'default (format "%s 11" (monospace-font)))
       (with-temp-buffer
         (insert (prin1-to-string (list arg1)))
         (write-file cb:last-theme))
@@ -2083,7 +2083,7 @@ Puts each XML node on a separate line, except for one-liners."
          ("\\.[mM]arkdown$" . markdown-mode))
   :config
   (hook-fn 'markdown-mode-hook
-    (buffer-face-set `(:family ,(cb:serif-font) :height 130))
+    (buffer-face-set `(:family ,(serif-font) :height 130))
     (setq imenu-generic-expression
           '(("title"  "^\\(.*\\)[\n]=+$" 1)
             ("h2-"    "^\\(.*\\)[\n]-+$" 1)
