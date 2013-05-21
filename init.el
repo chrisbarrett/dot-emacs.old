@@ -256,6 +256,10 @@
         (whitespace-tab-width tab-width))
     ad-do-it))
 
+;;; Other advice
+
+(declare-modal-view package-list-packages)
+
 )
 
 ;;;; Typefaces
@@ -3063,22 +3067,11 @@ an irb error message."
       "Update modelines to ensure vc status is up-to-date."
       (force-mode-line-update t))
 
-    (defmacro* declare-magit-wrapper (command)
-      "Advise a given magit command to restore window state when finished."
-      `(defadvice ,command (around
-                            ,(intern (format "%s-wrapper" command))
-                            activate)
-         "Auto-generated window restoration wrapper for magit."
-         (with-window-restore
-          ad-do-it
-          (delete-other-windows)
-          (local-set-key (kbd "q") (command (kill-buffer) (restore))))))
-
-    (declare-magit-wrapper magit-status)
-    (declare-magit-wrapper magit-log)
-    (declare-magit-wrapper magit-reflog)
-    (declare-magit-wrapper magit-diff-working-tree)
-    (declare-magit-wrapper magit-diff)
+    (declare-modal-view magit-status)
+    (declare-modal-view magit-log)
+    (declare-modal-view magit-reflog)
+    (declare-modal-view magit-diff-working-tree)
+    (declare-modal-view magit-diff)
 
     (defadvice magit-show (after delete-window-on-kill activate)
       "When the buffer is killed, delete its corresponding window."

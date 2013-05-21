@@ -109,6 +109,17 @@ The original state can be restored by calling (restore) in BODY."
                           `(jump-to-register ',register)
                           body))))
 
+(defmacro* declare-modal-view (command &optional (quit-key "q"))
+  "Advise a given command to restore window state when finished."
+  `(defadvice ,command (around
+                        ,(intern (format "%s-wrapper" command))
+                        activate)
+     "Auto-generated window restoration wrapper."
+     (with-window-restore
+       ad-do-it
+       (delete-other-windows)
+       (local-set-key (kbd ,quit-key) (command (kill-buffer) (restore))))))
+
 (provide 'cb-macros)
 
 ;;; cb-macros.el ends here
