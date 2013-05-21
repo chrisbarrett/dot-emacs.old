@@ -118,7 +118,6 @@
 
 (setq
  redisplay-dont-pause         t
- column-number-mode           t
  echo-keystrokes              0.02
  inhibit-startup-message      t
  transient-mark-mode          t
@@ -275,13 +274,14 @@
 
 (defun sans-serif-font ()
   (first-font "Lucida Grande" "Ubuntu Regular" "Segoe UI"
-           "Helvetica Neue" "Calibri" "Helvetica" "Verdana" "Arial"))
+              "Helvetica Neue" "Calibri" "Helvetica" "Verdana" "Arial"))
 
 (defun monospace-font ()
   (or (first-font "Menlo" "Consolas" "Inconsolata" "DejaVu Sans Mono"
-               "Ubuntu Mono Regular" "Courier")
+                  "Ubuntu Mono Regular" "Courier")
       "Menlo"))
 
+;;; Use monospace font by default.
 (set-frame-font (format "%s 11" (monospace-font)) t)
 (hook-fn 'after-make-frame-functions
   (set-frame-font (format "%s 11" (monospace-font)) t
