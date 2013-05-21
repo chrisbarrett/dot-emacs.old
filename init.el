@@ -83,16 +83,16 @@
 
 ;;;; Paths
 
-    (cb:define-path cb:lib-dir       "lib/" t)
-    (cb:define-path cb:lisp-dir      "lisp/" t)
-    (cb:define-path cb:src-dir       "src")
-    (cb:define-path cb:tmp-dir       "tmp/")
-    (cb:define-path cb:elpa-dir      "elpa/")
-    (cb:define-path cb:bin-dir       "bin/")
-    (cb:define-path cb:etc-dir       "etc/")
-    (cb:define-path cb:yasnippet-dir "snippets/")
-    (cb:define-path cb:backups-dir   "backups/")
-    (cb:define-path cb:autosaves-dir "tmp/autosaves/")))
+    (define-path cb:lib-dir       "lib/" t)
+    (define-path cb:lisp-dir      "lisp/" t)
+    (define-path cb:src-dir       "src")
+    (define-path cb:tmp-dir       "tmp/")
+    (define-path cb:elpa-dir      "elpa/")
+    (define-path cb:bin-dir       "bin/")
+    (define-path cb:etc-dir       "etc/")
+    (define-path cb:yasnippet-dir "snippets/")
+    (define-path cb:backups-dir   "backups/")
+    (define-path cb:autosaves-dir "tmp/autosaves/")))
 
 ;;;; Initial Configuration
 
@@ -2641,7 +2641,7 @@ Puts each XML node on a separate line, except for one-liners."
     (add-to-list 'ac-sources 'ac-source-rsense-constant))
   :config
   (progn
-    (cb:define-path cb:rsense-home "bin/rsense-0.3")
+    (define-path cb:rsense-home "bin/rsense-0.3")
     (setq rsense-home cb:rsense-home)))
 
 (use-package yari
@@ -2914,7 +2914,7 @@ an irb error message."
     (ac-clang-launch-completion-process))
   :config
   (progn
-    (cb:define-path cb:clang-complete-dir "lib/clang-complete-async/")
+    (define-path cb:clang-complete-dir "lib/clang-complete-async/")
     (setq ac-clang-complete-executable (concat cb:clang-complete-dir "clang-complete"))))
 
 (use-package c-eldoc

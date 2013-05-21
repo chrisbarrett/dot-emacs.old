@@ -84,7 +84,7 @@ If ADD-PATH is non-nil, add DIR and its children to the load-path."
         (add-to-list 'load-path it)))
     dir))
 
-(defmacro cb:define-path (sym path &optional add-path)
+(defmacro define-path (sym path &optional add-path)
   "Define a subfolder of the `user-emacs-directory'.
 This directory tree will be added to the load path if ADD-PATH is non-nil."
   `(defconst ,sym (cb:prepare-load-dir ,path ,add-path)))
