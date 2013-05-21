@@ -813,6 +813,18 @@
 
 ;;;; Ido
 
+(defmacro declare-ido-wrapper (command)
+  "Make COMMAND use ido for file and directory completions."
+  `(defadvice ,command (around read-with-ido activate)
+     (flet
+         ((read-directory-name
+           (&rest args) (apply 'ido-read-directory-name args))
+          (read-file-name
+           (&rest args) (apply 'ido-read-file-name args))
+          (read-buffer
+           (&rest args) (apply 'ido-read-buffer)))
+       ad-do-it)))
+
 (use-package ido
   :ensure t
   :idle   (require 'ido)
@@ -3052,6 +3064,16 @@ an irb error message."
    ("C-x g D" . magit-diff))
   :config
   (progn
+    (declare-ido-wrapper magit-read-top-dir)
+    (declare-modal-view magit-status)
+    (declare-modal-view magit-log)
+    (declare-modal-view magit-reflog)
+    (declare-modal-view magit-diff-working-tree)
+    (declare-modal-view magit-diff)
+
+    (defadvice magit-show (after delete-window-on-kill activate)
+      "When the buffer is killed, delete its corresponding window."
+      (add-hook 'kill-buffer-hook 'delete-window nil t))
 
     (define-combined-hook cb:magit-command-hook
       ;; Search through interned symbols for magit hooks.
@@ -3066,16 +3088,6 @@ an irb error message."
     (hook-fn 'cb:magit-command-hook
       "Update modelines to ensure vc status is up-to-date."
       (force-mode-line-update t))
-
-    (declare-modal-view magit-status)
-    (declare-modal-view magit-log)
-    (declare-modal-view magit-reflog)
-    (declare-modal-view magit-diff-working-tree)
-    (declare-modal-view magit-diff)
-
-    (defadvice magit-show (after delete-window-on-kill activate)
-      "When the buffer is killed, delete its corresponding window."
-      (add-hook 'kill-buffer-hook 'delete-window nil t))
 
     (add-hook 'magit-log-edit-mode-hook 'cb:append-buffer)
     (add-hook 'magit-mode-hook 'magit-load-config-extensions)))
