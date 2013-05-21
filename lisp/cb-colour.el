@@ -65,7 +65,7 @@
 (cb:define-theme solarized-dark
   (load-theme 'solarized-dark 'no-confirm)
   (set-face-underline 'hl-line nil)
-  (set-face-foreground 'mode-line-filename-face "#b58900")
+  (set-face-foreground 'mode-line-filename "#b58900")
 
   (after "helm"
     (set-face-background  'helm-selection "black")
