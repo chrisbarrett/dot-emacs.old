@@ -740,6 +740,8 @@
 
 (when (equal system-type 'darwin)
 
+  (setq mac-emulate-three-button-mouse t)
+
   ;; Set terminfo so ansi-term displays shells correctly.
 
   (let ((terminfo (expand-file-name "~/.terminfo")))
@@ -1365,7 +1367,7 @@
     (hook-fn 'cb:color-theme-changed-hook
       (set-face-font 'default (format "%s 11" (monospace-font)))
       (with-temp-buffer
-        (insert (prin1-to-string (list arg1)))
+        (insert (prin1-to-string (list (car args))))
         (write-file cb:last-theme))
       (message nil))))
 
@@ -1386,18 +1388,12 @@
       (when (fboundp 'evil-append-line)
         (evil-append-line 1)))
 
-    (defun cb:evil-undefine ()
-      "Temporarily undefine a key for Evil minor mode."
-      (interactive)
-      (let ((evil-mode-map-alist))
-        (call-interactively (key-binding (this-command-keys)))))
-
     (define-key evil-normal-state-map (kbd "M-z") 'evil-emacs-state)
     (define-key evil-emacs-state-map  (kbd "M-z") 'evil-normal-state)
-    (define-key evil-normal-state-map (kbd "C-z") 'cb:evil-undefine)
+    (define-key evil-normal-state-map (kbd "C-z") nil)
     (define-key evil-normal-state-map (kbd "SPC") 'evil-toggle-fold)
-    (define-key evil-insert-state-map (kbd "C-z") 'cb:evil-undefine)
-    (define-key evil-visual-state-map (kbd "C-z") 'cb:evil-undefine)
+    (define-key evil-insert-state-map (kbd "C-z") nil)
+    (define-key evil-visual-state-map (kbd "C-z") nil)
 
     (after "man"
       (evil-declare-key 'normal Man-mode-map (kbd "q") 'Man-kill))

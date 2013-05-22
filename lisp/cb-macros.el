@@ -136,7 +136,7 @@ KEY-BINDING will be used as the restore key. "
              (funcall #',cmd))
            (delete-other-windows)
            ;; Configure restore bindings.
-           (--each (or ,restore-bindings (list key-binding))
+           (--each (or ,restore-bindings (list ,key-binding))
              (local-set-key (kbd it) (command (bury-buffer) (restore))))))
 
        (global-set-key (kbd ,key-binding) ',fname))))
