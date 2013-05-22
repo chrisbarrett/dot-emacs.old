@@ -1446,11 +1446,16 @@
   :ensure t
   :defer  t
   :idle   (require 'surround)
+  :init   (after 'evil (require 'surround))
   :config
   (progn
     (global-surround-mode +1)
     (hook-fn 'prog-mode-hook
-      (push '(?< . ("<" . ">")) surround-pairs-alist))))
+      (push '(?\( . ("(" . ")")) surround-pairs-alist)
+      (push '(?\[ . ("[" . "]")) surround-pairs-alist)
+      (push '(?< . ("<" . ">")) surround-pairs-alist))
+    (hook-fn 'cb:lisp-modes-hook
+      (push '(?\{ . ("{" . "}")) surround-pairs-alist))))
 
 (use-package evil-numbers
   :ensure t
