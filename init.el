@@ -1446,7 +1446,11 @@
   :ensure t
   :defer  t
   :idle   (require 'surround)
-  :config (global-surround-mode +1))
+  :config
+  (progn
+    (global-surround-mode +1)
+    (hook-fn 'prog-mode-hook
+      (push '(?< . ("<" . ">")) surround-pairs-alist))))
 
 (use-package evil-numbers
   :ensure t
