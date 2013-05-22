@@ -23,44 +23,45 @@ Since Evil-mode frees up the Meta key, I use M-*key* for helm and dired commands
 
 Sane configurations are provided for several languages and environments:
 
-    * Ruby/Rails
-    * Python
-    * Elisp
-    * Clojure
-    * Scheme
-    * Haskell
-    * SuperCollider
+* Ruby/Rails
+* Python
+* Elisp
+* Clojure
+* Scheme
+* Haskell
+* SuperCollider
 
 ### Simple key-bindings
 
 Common commands, such as helm or w3m commands, have single-stroke key-bindings:
 
-    * `M-r` - rename symbol at point (in defun)
-    * `M-R` - rename symbol at point  (in whole buffer)
-    * `M-d` - shows current file in dired
-    * `C-j` - helm-projectile
-    * `M-j` - helm-mini
-    * `M-e` - go to URL
-    * `M-w` - w3m bookmarks
-    * `M-i` - helm-imenu
-    * `M-s` - Google search
-    * `M-a` - helm-apropos
-    * `M-b` - buffers list with helm
-    * `M-m` - man page with helm
+* `M-r` - rename symbol at point (in defun)
+* `M-R` - rename symbol at point  (in whole buffer)
+* `M-d` - shows current file in dired
+* `C-j` - helm-projectile
+* `M-j` - helm-mini
+* `M-e` - go to URL
+* `M-w` - w3m bookmarks
+* `M-i` - helm-imenu
+* `M-s` - Google search
+* `M-a` - helm-apropos
+* `M-b` - buffers list with helm
+* `M-m` - man page with helm
 
 ### Modal Windows
 
 Certain commands show buffers in a *modal* manner; they expand to fill the frame and restore the previous state when toggled or killed. This behaviour is provided for:
 
-  * most magit commands, including:
-     * `M-S` - magit-status
-     * `C-x g d` - magit-diff
-     * `C-x g l` - magit-log
-     * `C-x g b` - magit-blame-mode
-  * ansi-term - `M-T`
-  * w3m - `M-W`
-  * ido notes buffer - `M-O`
-  * init.el - `M-I`
+* most magit commands, including:
+  * `M-S` - magit-status
+  * `C-x g d` - magit-diff
+  * `C-x g l` - magit-log
+  * `C-x g s` - magit-show
+  * `C-x g r` - magit-reflog
+* ansi-term - `M-T`
+* w3m - `M-W`
+* ido notes buffer - `M-O`
+* init.el - `M-I`
 
 ### Misc
 
