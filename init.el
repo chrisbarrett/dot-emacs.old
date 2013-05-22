@@ -1406,16 +1406,23 @@
     (after "man"
       (evil-declare-key 'normal Man-mode-map (kbd "q") 'Man-kill))
 
-    ;; Ensure undo-tree commands are remapped. The referenced keymap in
-    ;; evil-integration is incorrect.
-    (define-key undo-tree-visualizer-mode-map [remap evil-backward-char]
-      'undo-tree-visualize-switch-branch-left)
-    (define-key undo-tree-visualizer-mode-map [remap evil-forward-char]
-      'undo-tree-visualize-switch-branch-right)
-    (define-key undo-tree-visualizer-mode-map [remap evil-next-line]
-      'undo-tree-visualize-redo)
-    (define-key undo-tree-visualizer-mode-map [remap evil-previous-line]
-      'undo-tree-visualize-undo)
+    (after "org"
+      (evil-define-key 'normal org-mode-map (kbd "z m")
+        (command (org-global-cycle 1)))
+      (evil-define-key 'normal org-mode-map (kbd "z r")
+        (command (org-global-cycle 0))))
+
+    (after "undo-tree"
+      ;; Ensure undo-tree commands are remapped. The referenced keymap in
+      ;; evil-integration is incorrect.
+      (define-key undo-tree-visualizer-mode-map [remap evil-backward-char]
+        'undo-tree-visualize-switch-branch-left)
+      (define-key undo-tree-visualizer-mode-map [remap evil-forward-char]
+        'undo-tree-visualize-switch-branch-right)
+      (define-key undo-tree-visualizer-mode-map [remap evil-next-line]
+        'undo-tree-visualize-redo)
+      (define-key undo-tree-visualizer-mode-map [remap evil-previous-line]
+        'undo-tree-visualize-undo))
 
     (evil-global-set-key 'insert (kbd "S-TAB") 'tab-to-tab-stop)
 
@@ -1511,7 +1518,7 @@
       (local-set-key (kbd "s-v") 'cb:ansi-term-paste)
 
       (when (cb:truthy? 'evil-mode)
-        (evil-local-set-key 'normal "p" 'cb:ansi-term-paste))
+        (evil-define-key 'normal term-mode-map "p" 'cb:ansi-term-paste))
 
       (define-key term-raw-map (kbd "M-T") 'cb:term-cycle)
       ;; Yasnippet causes tab-completion to fail.
@@ -3194,16 +3201,15 @@ an irb error message."
   :config
   (progn
 
-    (defun w3m-last-buf-title ()
-      (or (ignore-errors
-            (w3m-buffer-title (last-buffer-for-mode 'w3m-mode)))
-          ""))
+    (defmacro with-previous-buffer (&rest forms)
+      `(with-current-buffer (nth 1 (buffer-list))
+         ,@body))
 
-    (defun w3m-last-buf-url ()
-      (or (ignore-errors
-            (with-current-buffer (last-buffer-for-mode 'w3m-mode)
-              w3m-current-url))
-          "%i"))
+    (defmacro prev-str-val (sym)
+      `(or (ignore-errors
+             (with-previous-buffer
+              ,sym))
+           ""))
 
     (setq
      org-catch-invisible-edits 'smart
@@ -3219,7 +3225,7 @@ an irb error message."
 
        ("l" "Link" entry
         (file+headline org-default-notes-file "Links")
-        (concat  "* %(w3m-last-buf-title)%?\n%(w3m-last-buf-url)\n"))
+        "* %(prev-str-val w3m-buffer-title)%?\n %(prev-str-val w3m-current-url)\n%i\n")
 
        ("n" "Note" item
         (file+headline org-default-notes-file "Notes")
@@ -3232,7 +3238,6 @@ an irb error message."
       (add-to-list 'org-drawers it))
 
     (hook-fn 'org-mode-hook
-      "Append to buffer for org-mode popups."
       (auto-revert-mode +1)
       (unless (buffer-file-name)
         (cb:append-buffer)))
