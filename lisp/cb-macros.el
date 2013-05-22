@@ -134,8 +134,8 @@ KEY-BINDING is used to globally show and kill the view."
          (with-window-restore
            (find-file ,file)
            (delete-other-windows)
-           (add-hook 'kill-buffer-hook (lambda () (restore)) nil t)
-           (local-set-key (kbd ,key-binding) (command (kill-buffer)))))
+           (local-set-key (kbd ,key-binding) (command (bury-buffer)
+                                                      (restore)))))
 
        (bind-key ,key-binding ',command))))
 
