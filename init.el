@@ -1077,7 +1077,8 @@
     (add-hook 'find-file-hook 'hide-dos-eol)
     (bind-key "C-c k b" 'clean-buffers)
     (bind-key "C-<up>" 'move-line-up)
-    (bind-key "C-<down>" 'move-line-down))
+    (bind-key "C-<down>" 'move-line-down)
+    (define-key prog-mode-map (kbd "M-q") 'indent-dwim))
 
   :config
   (defadvice rotate-buffers (after select-largest-window activate)
@@ -2577,7 +2578,6 @@ Puts each XML node on a separate line, except for one-liners."
       (add-to-list 'ac-sources 'ac-source-yasnippet)
       (add-to-list 'ac-sources 'ac-source-ruby-class-keywords)
       (add-to-list 'ac-sources 'ac-source-ruby-class-attributes)
-      (local-set-key (kbd "M-q") 'indent-dwim)
       (subword-mode +1))))
 
 (use-package rubocop
