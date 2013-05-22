@@ -1013,7 +1013,6 @@
             ("\\*Slime Inspector.*" :regexp t :height 30)
             ("*Ido Completions*" :noselect t :height 30)
             ("*eshell*" :height 30)
-                                        ;("\\*ansi-term\\*.*" :regexp t :height 30)
             ("*shell*" :height 30)
             (".*overtone.log" :regexp t :height 30)
             ("*gists*" :height 30)
@@ -1720,12 +1719,11 @@
   (progn
     (defun cb:compile-autoclose (buffer string)
       "Automatically close the compile window."
-      (when (-contains? '(compile recompile) last-command)
-        (if (s-matches? "finished" string)
-            (run-with-timer (/ 1 50) nil
-                            '(lambda (w) (delete-window w) (message "Compilation succeeded"))
-                            (get-buffer-window buffer t))
-          (message "Compilation exited abnormally: %s" string))))
+      (if (s-matches? "finished" string)
+          (run-with-timer (/ 1 50) nil
+                          '(lambda (w) (delete-window w) (message "Compilation succeeded"))
+                          (get-buffer-window buffer t))
+        (message "Compilation exited abnormally: %s" string)))
 
     (hook-fn 'find-file-hook
       "Try to find a makefile for the current project."
@@ -1742,9 +1740,18 @@
   :bind
   (("C-c ."   . mode-compile-kill)
    ("C-c C-c" . mode-compile))
+  :init
+  (define-key prog-mode-map (kbd "C-c C-c") 'mode-compile)
   :config
-  (setq mode-compile-expert-p             t
-        mode-compile-always-save-buffer-p t))
+  (progn
+    (when (executable-find "clang")
+      (setq
+       cc-compilers-list (list "clang")
+       cc-default-compiler "clang"
+       cc-default-compiler-options "-fno-color-diagnostics -g"))
+
+    (setq mode-compile-expert-p             t
+          mode-compile-always-save-buffer-p t)))
 
 (use-package flyspell
   :diminish flyspell-mode
@@ -1946,8 +1953,6 @@
       (smart-insert-operator-hook)
       (local-unset-key (kbd "."))
       (local-unset-key (kbd ":"))
-      (local-unset-key (kbd "-"))
-      (local-unset-key (kbd "+"))
       (local-set-key (kbd "*") 'c-electric-star)))
 
   :config
@@ -2892,6 +2897,42 @@ an irb error message."
   (setq hs-lint-command (executable-find "hlint")))
 
 ;;;; C Languages
+
+(after 'cc-mode
+  (define-key c-mode-map (kbd "C-c C-c") 'mode-compile)
+  (define-key c-mode-map (kbd "M-q") 'indent-dwim)
+
+  (defun clang-parse-line (line)
+    (ignore-errors
+      (destructuring-bind (_ file line col level message)
+          (s-match
+           (rx (group-n 1 (+ nonl)) ":"  ; file
+               (group-n 2 (+ digit)) ":" ; line
+               (group-n 3 (+ digit)) ":" ; col
+               (* space)
+               (group-n 4 (+ nonl)) ":" ; level
+               (* space)
+               (group-n 5 (+ nonl))     ; message
+               ) line)
+        (flycheck-error-new
+         :line (string-to-int line)
+         :column (string-to-int col)
+         :level (if (equal "error" level) 'error 'warning)
+         :message message
+         :filename file))))
+
+  (defun clang-error-parser (str &rest _)
+    (->> (s-lines str) (-map 'clang-parse-line) (-remove 'null)))
+
+  (flycheck-declare-checker clang
+    "Compiles the current file with clang. Used if there is no makefile."
+    :command
+    '("clang" "-O0" "-Wall"
+      "-fsyntax-only" "-fno-color-diagnostics" "-fno-caret-diagnostics"
+      "-fno-diagnostics-show-option"
+      source-inplace)
+    :error-parser 'clang-error-parser
+    :modes '(c-mode cc-mode)))
 
 (use-package cedit
   :commands
