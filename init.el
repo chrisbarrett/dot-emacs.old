@@ -3253,8 +3253,30 @@ an irb error message."
   :init
   (hook-fn 'org-capture-mode-hook
     (when (fboundp 'evil-insert)
-      (evil-insert 0))))
+      (evil-insert 0)))
+  :config
+  (progn
 
+    (defun cb:sort-tasks-in-subtree ()
+      "Sort child elements of the tree at point."
+      (let ((beg (1+ (line-number-at-pos)))
+            (end (save-excursion
+                   (org-mark-subtree)
+                   (region-end))))
+        (push-mark beg)
+        (push-mark end)
+        (org-sort-entries t 112)))
+
+    (defun cb:sort-todos-by-priority ()
+      "Sort the Tasks list in the notes file."
+      (ignore-errors
+        (with-current-buffer (find-file-noselect org-default-notes-file)
+          (save-excursion
+            (goto-char (point-min))
+            (search-forward-regexp (rx bol "*" (+ space) "Tasks" (* space) eol) nil t)
+            (cb:sort-tasks-in-subtree)))))
+
+    (add-hook 'org-capture-after-finalize-hook 'cb:sort-todos-by-priority)))
 
 ;;;; Productivity
 
