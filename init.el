@@ -1083,8 +1083,10 @@
 ;;;; Backups & State
 
 (use-package saveplace
-  :config
+  :init
   (progn
+    (add-hook 'server-visit-hook 'save-place-find-file-hook)
+    (add-hook 'server-done-hook  'save-place-kill-emacs-hook)
     (setq save-place-file (concat cb:tmp-dir "saved-places"))
     (setq-default saveplace t)))
 
