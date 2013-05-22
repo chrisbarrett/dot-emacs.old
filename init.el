@@ -1276,15 +1276,7 @@
   (progn
     (setq browse-url-browser-function 'w3m-browse-url)
 
-    (defun cb:w3m-toggle ()
-      (interactive)
-      (with-window-restore
-        (w3m)
-        (delete-other-windows)
-        (local-set-key (kbd "q")   (command (restore)))
-        (local-set-key (kbd "M-W") (command (restore)))))
-
-    (bind-key "M-W" 'cb:w3m-toggle)
+    (define-modal-executor w3m "M-W")
 
     (defun cb:find-window-with-mode (mode)
       "Find the first window whose buffer is in major-mode MODE."

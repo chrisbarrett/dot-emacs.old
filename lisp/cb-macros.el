@@ -121,23 +121,27 @@ The original state can be restored by calling (restore) in BODY."
        (delete-other-windows)
        (local-set-key (kbd ,quit-key) (command (kill-buffer) (restore))))))
 
-(defmacro define-modal-file-viewer (file key-binding)
-  "Visit FILE modally.  Window state is reverted after killing the buffer.
-KEY-BINDING is used to globally show and kill the view."
-  (let* ((file (eval file))
-         (fname  (file-name-nondirectory (file-name-sans-extension file)))
-         (command (intern (format "__%s-%s-viewer" fname (cl-gensym)))))
+(defmacro define-modal-executor (cmd key-binding)
+  "Execute CMD with modal window behaviour.
+KEY-BINDING is used to globally invoke the command.
+If the command results in a buffer, the keybinding will also bury that buffer."
+  (let ((fname (intern (format "__%s-executor" (cl-gensym)))))
     `(progn
-       (defun ,command ()
-         ,(concat "Auto-generated modal file viewer for " file)
+       (defun ,fname ()
+         ,(format "Auto-generated modal executor for %s" cmd)
          (interactive)
          (with-window-restore
-           (find-file ,file)
+           (funcall ',cmd)
            (delete-other-windows)
-           (local-set-key (kbd ,key-binding) (command (bury-buffer)
-                                                      (restore)))))
+           (local-set-key (kbd ,key-binding) (command (bury-buffer) (restore)))))
 
-       (bind-key ,key-binding ',command))))
+       (bind-key ,key-binding ',fname))))
+
+(defmacro define-modal-file-viewer (file key-binding)
+  "Visit FILE with modal window behaviour.
+KEY-BINDING is used to globally show and kill the view."
+  (let ((cmd (intern (format "__%s-viewer" (cl-gensym)))))
+    `(define-modal-executor (lambda () (find-file ,file)) ,key-binding)))
 
 (provide 'cb-macros)
 
