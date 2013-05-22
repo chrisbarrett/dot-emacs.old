@@ -2,7 +2,7 @@
 
 This is my Emacs configuration. It is obviously very personalized - my key bindings are designed around [Evil-mode](http://gitorious.org/evil/pages/Home).
 
-# Installation
+## Installation
 
 Requires GNU Make, curl and Git.
 
@@ -15,9 +15,14 @@ make
 ```
 You can install additional features with `make all`, or using their individual make tasks (eg `make ruby`).
 
-# Features
+## Features
 
-* Configurations for several languages and environments:
+Since Evil-mode frees up the Meta key, I use M-*key* for helm and dired commands. Normal Emacs motion commands will not work!
+
+### Language Config
+
+Sane configurations are provided for several languages and environments:
+
     * Ruby/Rails
     * Python
     * Elisp
@@ -26,10 +31,13 @@ You can install additional features with `make all`, or using their individual m
     * Haskell
     * SuperCollider
 
-* Since Evil-mode frees up the Meta key, I use M-*key* for helm and dired commands. Normal Emacs motion commands will not work!
-    * `M-t` - toggle terminal between various window configurations
+### Simple key-bindings
+
+Common commands, such as helm or w3m commands, have single-stroke key-bindings:
+
+    * `M-r` - rename symbol at point (in defun)
+    * `M-R` - rename symbol at point  (in whole buffer)
     * `M-d` - shows current file in dired
-    * `M-g` - magit-status
     * `C-j` - helm-projectile
     * `M-j` - helm-mini
     * `M-e` - go to URL
@@ -39,7 +47,22 @@ You can install additional features with `make all`, or using their individual m
     * `M-a` - helm-apropos
     * `M-b` - buffers list with helm
     * `M-m` - man page with helm
-    * `M-r` - rename symbol at point
+
+### Modal Windows
+
+Certain commands show buffers in a *modal* manner; they expand to fill the frame and restore the previous state when toggled or killed. This behaviour is provided for:
+
+  * most magit commands, including:
+     * `M-S` - magit-status
+     * `C-x g d` - magit-diff
+     * `C-x g l` - magit-log
+     * `C-x g b` - magit-blame-mode
+  * ansi-term - `M-T`
+  * w3m - `M-W`
+  * ido notes buffer - `M-O`
+  * init.el - `M-I`
+
+### Misc
 
 * I try to keep the startup time under 2 seconds on my machine.
 
