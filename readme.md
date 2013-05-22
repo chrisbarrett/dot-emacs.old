@@ -35,11 +35,12 @@ Sane configurations are provided for several languages and environments:
 
 Common commands, such as helm or w3m commands, have single-stroke key-bindings:
 
+* `C-j` - helm-projectile
+* `M-j` - helm-mini
 * `M-r` - rename symbol at point (in defun)
 * `M-R` - rename symbol at point  (in whole buffer)
 * `M-d` - shows current file in dired
-* `C-j` - helm-projectile
-* `M-j` - helm-mini
+* `M-o` - org-capture
 * `M-e` - go to URL
 * `M-w` - w3m bookmarks
 * `M-i` - helm-imenu
