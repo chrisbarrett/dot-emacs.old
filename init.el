@@ -258,7 +258,7 @@
 ;;; Other advice
 
 (declare-modal-view package-list-packages)
-(define-modal-file-viewer (concat user-emacs-directory "init.el") "M-I")
+(declare-modal-file-viewer (concat user-emacs-directory "init.el") "M-I")
 
 )
 
@@ -1276,7 +1276,8 @@
   (progn
     (setq browse-url-browser-function 'w3m-browse-url)
 
-    (define-modal-executor w3m "M-W")
+    (declare-modal-executor w3m "M-W"
+      :restore-bindings '("M-W" "M-E"))
 
     (defun cb:find-window-with-mode (mode)
       "Find the first window whose buffer is in major-mode MODE."
@@ -3055,9 +3056,9 @@ an irb error message."
   :ensure t
   :defer  t
   :idle   (require 'magit)
+  :commands magit-status
   :bind
-  (("M-G"     . magit-status)
-   ("C-x g t" . magit-stash)
+  (("C-x g t" . magit-stash)
    ("C-x g c" . magit-checkout)
    ("C-x g u" . magit-pull)
    ("C-x g r" . magit-reflog)
@@ -3067,6 +3068,8 @@ an irb error message."
    ("C-x g X" . magit-reset-head-hard)
    ("C-x g d" . magit-diff-working-tree)
    ("C-x g D" . magit-diff))
+  :init
+  (declare-modal-executor magit-status "M-G")
   :config
   (progn
     (declare-ido-wrapper magit-read-top-dir)
@@ -3177,7 +3180,7 @@ an irb error message."
      org-directory (concat user-home-directory "org/")
      org-default-notes-file (concat org-directory "notes.org"))
 
-    (define-modal-file-viewer org-default-notes-file "M-O")
+    (declare-modal-file-viewer org-default-notes-file "M-O")
 
     (when (or (daemonp) (display-graphic-p))
       (setq initial-buffer-choice org-default-notes-file))
@@ -3436,6 +3439,7 @@ Repeated invocations toggle between the two most recently open buffers."
   (setq
    default-directory user-home-directory
    use-package-verbose nil)
+
   (load (concat user-emacs-directory "site-file.el") t t))
 
 ;; Local Variables:

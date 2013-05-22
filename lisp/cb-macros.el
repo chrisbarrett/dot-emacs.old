@@ -42,9 +42,7 @@ The arguments to the hook are bound to 'arg1', 'arg2'.. 'arg9'.
 The entire argument list is bound to 'args'."
   (declare (indent 1) (doc-string 2))
   `(add-hook ,hook (lambda (&rest args)
-                     (destructuring-bind (&optional arg1 arg2 arg3 arg4 arg5 arg6
-                                                    arg7 arg8 arg9) args
-                       ,@(cons docstring body)))))
+                     ,@(cons docstring body))))
 
 (defmacro after (feature &rest body)
   "Execute BODY forms after FEATURE is loaded."
@@ -121,27 +119,32 @@ The original state can be restored by calling (restore) in BODY."
        (delete-other-windows)
        (local-set-key (kbd ,quit-key) (command (kill-buffer) (restore))))))
 
-(defmacro define-modal-executor (cmd key-binding)
+(defmacro declare-modal-executor (cmd key-binding &optional &key restore-bindings)
   "Execute CMD with modal window behaviour.
 KEY-BINDING is used to globally invoke the command.
-If the command results in a buffer, the keybinding will also bury that buffer."
-  (let ((fname (intern (format "__%s-executor" (cl-gensym)))))
+RESTORE-BINDINGS will restore the buffer state.  If none are given,
+KEY-BINDING will be used as the restore key. "
+  (declare (indent 2))
+  (let ((fname (intern (s-replace " " "_" (format "__%s-executor" cmd)))))
     `(progn
        (defun ,fname ()
          ,(format "Auto-generated modal executor for %s" cmd)
          (interactive)
          (with-window-restore
-           (funcall ',cmd)
+           (if (interactive-form #',cmd)
+               (call-interactively #',cmd)
+             (funcall #',cmd))
            (delete-other-windows)
-           (local-set-key (kbd ,key-binding) (command (bury-buffer) (restore)))))
+           ;; Configure restore bindings.
+           (--each (or ,restore-bindings (list key-binding))
+             (local-set-key (kbd it) (command (bury-buffer) (restore))))))
 
-       (bind-key ,key-binding ',fname))))
+       (global-set-key (kbd ,key-binding) ',fname))))
 
-(defmacro define-modal-file-viewer (file key-binding)
+(defmacro declare-modal-file-viewer (file key-binding)
   "Visit FILE with modal window behaviour.
 KEY-BINDING is used to globally show and kill the view."
-  (let ((cmd (intern (format "__%s-viewer" (cl-gensym)))))
-    `(define-modal-executor (lambda () (find-file ,file)) ,key-binding)))
+  `(declare-modal-executor (lambda () (find-file ,file)) ,key-binding))
 
 (provide 'cb-macros)
 
