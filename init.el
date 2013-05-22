@@ -1388,12 +1388,17 @@
       (when (fboundp 'evil-append-line)
         (evil-append-line 1)))
 
+    (defun evil-undefine ()
+      (interactive)
+      (let (evil-mode-map-alist)
+        (call-interactively (key-binding (this-command-keys)))))
+
     (define-key evil-normal-state-map (kbd "M-z") 'evil-emacs-state)
     (define-key evil-emacs-state-map  (kbd "M-z") 'evil-normal-state)
-    (define-key evil-normal-state-map (kbd "C-z") nil)
+    (define-key evil-normal-state-map (kbd "C-z") 'evil-undefine)
     (define-key evil-normal-state-map (kbd "SPC") 'evil-toggle-fold)
-    (define-key evil-insert-state-map (kbd "C-z") nil)
-    (define-key evil-visual-state-map (kbd "C-z") nil)
+    (define-key evil-insert-state-map (kbd "C-z") 'evil-undefine)
+    (define-key evil-visual-state-map (kbd "C-z") 'evil-undefine)
 
     (after "man"
       (evil-declare-key 'normal Man-mode-map (kbd "q") 'Man-kill))
