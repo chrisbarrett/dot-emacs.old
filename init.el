@@ -258,6 +258,7 @@
 ;;; Other advice
 
 (declare-modal-view package-list-packages)
+(define-modal-file-viewer (concat user-emacs-directory "init.el") "M-I")
 
 )
 
@@ -3172,17 +3173,7 @@ an irb error message."
      org-directory (concat user-home-directory "org/")
      org-default-notes-file (concat org-directory "notes.org"))
 
-    (defun cb:show-org-notes ()
-      "Show the default org notes file."
-      (interactive)
-      (with-window-restore
-        (find-file org-default-notes-file)
-        (delete-other-windows)
-        (add-hook 'kill-buffer-hook (lambda () (restore)) nil t)
-        (local-set-key (kbd "M-O") (command (kill-buffer)))))
-
-    (bind-key "M-O" 'cb:show-org-notes)
-
+    (define-modal-file-viewer org-default-notes-file "M-O")
 
     (when (or (daemonp) (display-graphic-p))
       (setq initial-buffer-choice org-default-notes-file))
@@ -3200,6 +3191,18 @@ an irb error message."
       (add-hook 'text-mode-hook (maybe 'turn-on-orgtbl))))
   :config
   (progn
+
+    (defun w3m-last-buf-title ()
+      (or (ignore-errors
+            (w3m-buffer-title (last-buffer-for-mode 'w3m-mode)))
+          ""))
+
+    (defun w3m-last-buf-url ()
+      (or (ignore-errors
+            (with-current-buffer (last-buffer-for-mode 'w3m-mode)
+              w3m-current-url))
+          "%i"))
+
     (setq
      org-catch-invisible-edits 'smart
 
@@ -3214,7 +3217,7 @@ an irb error message."
 
        ("l" "Link" entry
         (file+headline org-default-notes-file "Links")
-        "* %?\n %i\n")
+        (concat  "* %(w3m-last-buf-title)%?\n%(w3m-last-buf-url)\n"))
 
        ("n" "Note" item
         (file+headline org-default-notes-file "Notes")

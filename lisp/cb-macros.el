@@ -86,6 +86,7 @@ If ADD-PATH is non-nil, add DIR and its children to the load-path."
 
 (defmacro define-path (sym path &optional add-path)
   "Define a subfolder of the `user-emacs-directory'.
+SYM is declared as a special variable set to PATH.
 This directory tree will be added to the load path if ADD-PATH is non-nil."
   `(defconst ,sym (cb:prepare-load-dir ,path ,add-path)))
 
@@ -119,6 +120,24 @@ The original state can be restored by calling (restore) in BODY."
        ad-do-it
        (delete-other-windows)
        (local-set-key (kbd ,quit-key) (command (kill-buffer) (restore))))))
+
+(defmacro define-modal-file-viewer (file key-binding)
+  "Visit FILE modally.  Window state is reverted after killing the buffer.
+KEY-BINDING is used to globally show and kill the view."
+  (let* ((file (eval file))
+         (fname  (file-name-nondirectory (file-name-sans-extension file)))
+         (command (intern (format "__%s-%s-viewer" fname (cl-gensym)))))
+    `(progn
+       (defun ,command ()
+         ,(concat "Auto-generated modal file viewer for " file)
+         (interactive)
+         (with-window-restore
+           (find-file ,file)
+           (delete-other-windows)
+           (add-hook 'kill-buffer-hook (lambda () (restore)) nil t)
+           (local-set-key (kbd ,key-binding) (command (kill-buffer)))))
+
+       (bind-key ,key-binding ',command))))
 
 (provide 'cb-macros)
 
