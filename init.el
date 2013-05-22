@@ -271,13 +271,16 @@
   (--first (find-font (font-spec :name it)) fonts))
 
 (defun serif-font ()
+  "Retun the serif type-face name to use for this Emacs session."
   (first-font "Palatino" "Cambria" "Times New Roman"))
 
 (defun sans-serif-font ()
+  "Retun the sans-serif type-face name to use for this Emacs session."
   (first-font "Lucida Grande" "Ubuntu Regular" "Segoe UI"
               "Helvetica Neue" "Calibri" "Helvetica" "Verdana" "Arial"))
 
 (defun monospace-font ()
+  "Retun the monospace type-face name to use for this Emacs session."
   (or (first-font "Menlo" "Consolas" "Inconsolata" "DejaVu Sans Mono"
                   "Ubuntu Mono Regular" "Courier")
       "Menlo"))
@@ -583,7 +586,7 @@
 (with-elapsed-timer "Configuring mode groups"
 
 (defmacro define-combined-hook (name hooks)
-  "Create a hook that is run after each hook in HOOKS."
+  "Create a hook bound as NAME that is run after each hook in HOOKS."
   (declare (indent 1))
   `(progn
      ;; Define combined hook.
