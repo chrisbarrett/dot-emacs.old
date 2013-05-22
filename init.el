@@ -740,8 +740,6 @@
 
 (when (equal system-type 'darwin)
 
-  (setq mac-emulate-three-button-mouse t)
-
   ;; Set terminfo so ansi-term displays shells correctly.
 
   (let ((terminfo (expand-file-name "~/.terminfo")))
@@ -1746,7 +1744,10 @@
         (flyspell-prog-mode)))
     (add-hook 'prog-mode-hook 'flyspell-prog-mode))
   :config
-  (bind-key* "C-'" 'flyspell-auto-correct-word))
+  (progn
+   (bind-key* "C-'" 'flyspell-auto-correct-word)
+   (define-key flyspell-mouse-map [down-mouse-3] 'flyspell-correct-word)
+   (define-key flyspell-mouse-map [mouse-3] 'undefined)))
 
 (use-package flyspell-lazy
   :ensure  t
