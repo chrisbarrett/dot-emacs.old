@@ -258,7 +258,10 @@
 ;;; Other advice
 
 (declare-modal-view package-list-packages)
-(declare-modal-file-viewer (concat user-emacs-directory "init.el") "M-I")
+
+(declare-modal-executor init-dot-el
+  :command (find-file (concat user-emacs-directory "init.el"))
+  :bind    "M-I")
 
 )
 
@@ -1277,7 +1280,9 @@
   (progn
     (setq browse-url-browser-function 'w3m-browse-url)
 
-    (declare-modal-executor w3m "M-W"
+    (declare-modal-executor w3m
+      :command w3m
+      :bind "M-W"
       :restore-bindings '("M-W" "M-E"))
 
     (defun cb:find-window-with-mode (mode)
@@ -3071,7 +3076,9 @@ an irb error message."
    ("C-x g d" . magit-diff-working-tree)
    ("C-x g D" . magit-diff))
   :init
-  (declare-modal-executor magit-status "M-G")
+  (declare-modal-executor magit-status
+    :command magit-status
+    :bind    "M-G")
   :config
   (progn
     (declare-ido-wrapper magit-read-top-dir)
@@ -3182,7 +3189,9 @@ an irb error message."
      org-directory (concat user-home-directory "org/")
      org-default-notes-file (concat org-directory "notes.org"))
 
-    (declare-modal-file-viewer org-default-notes-file "M-O")
+    (declare-modal-executor org-notes
+      :command (find-file org-default-notes-file)
+      :bind    "M-O")
 
     (when (or (daemonp) (display-graphic-p))
       (setq initial-buffer-choice org-default-notes-file))
