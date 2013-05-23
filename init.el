@@ -714,6 +714,41 @@
   "Test whether SYM is bound and non-nil."
   (and (boundp sym) (eval sym)))
 
+(defun get-manpage (candidate)
+  "Show the manpage for CANDIDATE."
+  (let ((wfiles (mapcar 'car (woman-file-name-all-completions candidate))))
+    (condition-case err
+        (if (> (length wfiles) 1)
+            (woman-find-file
+             (helm-comp-read
+              "ManFile: " wfiles :must-match t))
+          (woman candidate))
+      ;; If woman is unable to format correctly
+      ;; use man instead.
+      (error
+       (kill-buffer)
+       (Man-getpage-in-background candidate)))))
+
+(defun get-elisp-doc (sym)
+  "Find the appropriate documentation for SYM."
+  (cond
+   ((symbol-function sym) (describe-function sym))
+   ((facep sym)           (describe-face sym))
+   ((boundp sym)          (describe-variable sym))
+   (t                     (user-error "No documentation available"))))
+
+(defun* get-documentation (&optional (candidate (thing-at-point 'symbol)))
+  "Get documentation for CANDIDATE."
+  (interactive)
+  (condition-case _
+    (cond
+     ((apply 'derived-mode-p cb:elisp-modes)
+      (get-elisp-doc (intern candidate)))
+     (t
+      (get-manpage candidate)))
+    (error
+     (user-error "No documentation available"))))
+
 (use-package simple
   :diminish (visual-line-mode
              global-visual-line-mode
@@ -1409,6 +1444,7 @@
     (define-key evil-normal-state-map (kbd "SPC") 'evil-toggle-fold)
     (define-key evil-insert-state-map (kbd "C-z") 'evil-undefine)
     (define-key evil-visual-state-map (kbd "C-z") 'evil-undefine)
+    (define-key evil-normal-state-map (kbd "K")   'get-documentation)
 
     (after "man"
       (evil-declare-key 'normal Man-mode-map (kbd "q") 'Man-kill))
