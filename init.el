@@ -1513,9 +1513,13 @@
                                (window-list)))
         (delete-window win))
       (window-configuration-to-register :term-fullscreen)
-      (-if-let (buf (get-buffer "*ansi-term*"))
-        (switch-to-buffer-other-window buf)
-        (ansi-term (executable-find "zsh"))))))
+      (let* ((buf (get-buffer "*ansi-term*"))
+             (proc (get-buffer-process buf)))
+        (unless proc
+          (kill-buffer buf))
+        (if (and buf proc)
+            (switch-to-buffer-other-window buf)
+          (ansi-term (executable-find "zsh")))))))
 
   :config
   (progn
@@ -1542,7 +1546,8 @@
 
     (hook-fn 'window-configuration-change-hook
       "Change process window size."
-      (when (derived-mode-p 'comint-mode 'term-mode)
+      (when (and (derived-mode-p 'comint-mode 'term-mode)
+                 (get-buffer-process (current-buffer)))
         (set-process-window-size (get-buffer-process (current-buffer))
                                  (window-height)
                                  (window-width))))
