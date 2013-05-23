@@ -1731,23 +1731,35 @@
    ("C-c C-b" . recompile))
   :config
   (progn
-    (defun cb:compile-autoclose (buffer string)
+
+    (defun cb:compile-autoclose (buf string)
       "Automatically close the compile window."
-      (if (s-matches? "finished" string)
-          (run-with-timer 0.2 nil
-                          (lambda (w) (delete-window w) (message "Compilation succeeded"))
-                          (get-buffer-window buffer t))
-        (message "Compilation exited abnormally: %s" string)))
+      (cond
+       ((not (s-contains? "finished" string))
+        (message "Compilation exited abnormally: %s" string))
+
+       ((s-contains? "warning" (with-current-buffer buf
+                                 (buffer-string)) 'ignore-case)
+        (message "Compilation succeeded with warnings"))
+
+       (t
+        (ignore-errors
+          (delete-window (get-buffer-window buf)))
+        (message "Compilation succeeded"))))
 
     (hook-fn 'find-file-hook
       "Try to find a makefile for the current project."
       (when (projectile-project-p)
         (setq-local compilation-directory (projectile-project-root))))
 
+    (defun cb:ansi-colourise-compilation ()
+      (ansi-color-apply-on-region compilation-filter-start (point)))
+
     (setq
      compilation-window-height    12
-     compilation-scroll-output    'first-error
-     compilation-finish-functions 'cb:compile-autoclose)))
+     compilation-scroll-output    'first-error)
+    (add-to-list 'compilation-finish-functions 'cb:compile-autoclose)
+    (add-hook 'compilation-filter-hook 'cb:ansi-colourise-compilation)))
 
 (use-package mode-compile
   :ensure t
