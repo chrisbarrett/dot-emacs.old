@@ -2933,14 +2933,23 @@ an irb error message."
         (insert str)
       (smart-insert-operator str)))
 
+  (defun c-insert-smart-minus ()
+    "Insert a minus with padding, or a unary minus if looking at a "
+    (interactive)
+    (insert
+     (if (thing-at-point-looking-at
+          (rx (or "(" "[" "(" ";" "=") (* space)))
+         "-"
+       " - ")))
+
   (hook-fn 'c-mode-hook
     (macrolet ((c-smart-op (char) `(command (cb:c-insert-smart-op ,char))))
-      (local-set-key (kbd ",") (smart-op ","))
+      (local-set-key (kbd ",") (command (insert ", ")))
       (local-set-key (kbd "%") (smart-op "%"))
       (local-set-key (kbd "=") (c-smart-op "="))
-      (local-set-key (kbd "-") (c-smart-op "-"))
       (local-set-key (kbd "+") (c-smart-op "+"))
-      (local-set-key (kbd "|") (smart-op "|")))))
+      (local-set-key (kbd "|") (smart-op "|"))
+      (local-set-key (kbd "-") 'c-insert-smart-minus))))
 
 (after 'flycheck
 
