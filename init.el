@@ -1812,7 +1812,10 @@
       (when (flycheck-may-enable-mode)
         (flycheck-mode +1))))
   :config
-  (global-flycheck-mode))
+  (defadvice flycheck-buffer (around dont-throw-in-ido-for-fuck-sake activate)
+    (condition-case _
+        ad-do-it
+      (user-error))))
 
 ;;;; Tags
 
