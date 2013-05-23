@@ -3341,11 +3341,7 @@ an irb error message."
 (use-package key-chord
   :ensure t
   :defer  t
-  :idle   (require 'key-chord)
   :init
-  (progn
-    (hook-fn 'find-file-hook (require 'key-chord)))
-  :config
   (progn
 
     (defun cb:backward-slurp ()
