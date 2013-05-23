@@ -1407,6 +1407,8 @@
       (evil-declare-key 'normal Man-mode-map (kbd "q") 'Man-kill))
 
     (after "org"
+      (evil-define-key 'normal org-mode-map (kbd "SPC")
+        'org-global-cycle)
       (evil-define-key 'normal org-mode-map (kbd "z m")
         (command (org-global-cycle 1)))
       (evil-define-key 'normal org-mode-map (kbd "z r")
