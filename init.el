@@ -3274,6 +3274,7 @@ an irb error message."
 
     (setq
      org-catch-invisible-edits 'smart
+     org-pretty-entities       t
 
      org-capture-templates
      '(("t" "Todo" entry
