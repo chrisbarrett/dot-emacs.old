@@ -1180,7 +1180,9 @@
 (use-package ansi-color
   :defer t
   :init
-  (add-hook 'comint-mode-hook 'ansi-color-for-comint-mode-on)
+  (progn
+    (add-hook 'comint-mode-hook 'ansi-color-for-comint-mode-on)
+    (add-hook 'compilation-mode-hook 'ansi-color-for-comint-mode-on))
   :config
   (defadvice display-message-or-buffer (before ansi-color activate)
     "Process ANSI color codes in shell output."
@@ -1619,7 +1621,7 @@
   :config
   (progn
     (setq
-     yas-prompt-functions '(yas-dropdown-prompt)
+     yas-prompt-functions'(yas-ido-prompt)
      yas/trigger-key (kbd "RET"))
     (add-to-list 'yas-snippet-dirs cb:yasnippet-dir)
     (yas-global-mode t)
@@ -1732,8 +1734,8 @@
     (defun cb:compile-autoclose (buffer string)
       "Automatically close the compile window."
       (if (s-matches? "finished" string)
-          (run-with-timer (/ 1 50) nil
-                          '(lambda (w) (delete-window w) (message "Compilation succeeded"))
+          (run-with-timer 0.2 nil
+                          (lambda (w) (delete-window w) (message "Compilation succeeded"))
                           (get-buffer-window buffer t))
         (message "Compilation exited abnormally: %s" string)))
 
@@ -1789,23 +1791,16 @@
 
 (use-package flycheck
   :ensure t
-  :commands (flycheck-may-enable-mode flycheck-mode)
+  :commands
+  (flycheck-mode
+   flycheck-may-enable-mode)
   :init
-  (progn
-
-    (defun cb:maybe-enable-flycheck ()
+  (--each '(prog-mode-hook text-mode-hook)
+    (hook-fn it
       (when (flycheck-may-enable-mode)
-        (unless (or (s-contains? cb:elpa-dir (or (buffer-file-name) ""))
-                    (s-contains? cb:src-dir  (or (buffer-file-name) ""))
-                    (equal last-command 'scratch)))
-        (flycheck-mode +1)))
-
-    (add-hook 'text-mode-hook 'cb:maybe-enable-flycheck)
-    (add-hook 'prog-mode-hook 'cb:maybe-enable-flycheck))
+        (flycheck-mode +1))))
   :config
-  (defadvice projectile-project-root (around suppress-errors activate)
-    "Return nil instead of throwing errors."
-    (ignore-errors ad-do-it)))
+  (global-flycheck-mode))
 
 ;;;; Tags
 
@@ -1888,9 +1883,6 @@
   (progn
     (add-hook 'text-mode-hook 'turn-on-smartparens-mode)
     (hook-fn 'comint-mode-hook (smartparens-mode +1))
-
-    (hook-fn 'term-mode-hook
-      (run-with-timer 0.25 nil (lambda () (smartparens-mode +1))))
 
     (hook-fn 'prog-mode-hook
       "Ensure Paredit is used for Lisps."
@@ -2908,12 +2900,13 @@ an irb error message."
   :config
   (setq hs-lint-command (executable-find "hlint")))
 
-;;;; C Languages
+;;;; Clang
 
 (after 'cc-mode
   (define-key c-mode-map (kbd "C-c C-c") 'mode-compile)
-  (define-key c-mode-map (kbd "M-q") 'indent-dwim)
+  (define-key c-mode-map (kbd "M-q") 'indent-dwim))
 
+(after 'flycheck
   (defun clang-parse-line (line)
     (ignore-errors
       (destructuring-bind (_ file line col level message)
@@ -2944,7 +2937,13 @@ an irb error message."
       "-fno-diagnostics-show-option"
       source-inplace)
     :error-parser 'clang-error-parser
-    :modes '(c-mode cc-mode)))
+    :predicate '(derived-mode-p 'c-mode))
+
+  (hook-fn 'c-mode-common-hook
+    (flycheck-mode +1))
+
+  (hook-fn 'c-mode-hook
+    (flycheck-select-checker 'clang)))
 
 (use-package cedit
   :commands
