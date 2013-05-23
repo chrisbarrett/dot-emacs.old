@@ -1415,7 +1415,7 @@
 
     (after "org"
       (evil-define-key 'normal org-mode-map (kbd "SPC")
-        'org-global-cycle)
+        'org-cycle)
       (evil-define-key 'normal org-mode-map (kbd "z m")
         (command (org-global-cycle 1)))
       (evil-define-key 'normal org-mode-map (kbd "z r")
