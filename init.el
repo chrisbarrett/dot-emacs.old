@@ -2854,6 +2854,8 @@ an irb error message."
   :init
   (hook-fn 'haskell-mode-hook
     (require 'cb-haskell)
+    (flycheck-mode +1)
+    (flycheck-select-checker 'haskell-ghc)
     (local-set-key (kbd "C-c j") 'haskell-test<->code)))
 
 (use-package ghc
@@ -2862,6 +2864,10 @@ an irb error message."
   :init     (add-hook 'haskell-mode-hook 'ghc-init)
   :config
   (progn
+
+    ;; HACK: this command throws errors on haskell-mode startup.
+    (defadvice ghc-uniq-lol (around ignore-errs activate)
+      (ignore-errors ad-do-it))
 
     (defun ac-haskell-candidates ()
       "Auto-complete source using ghc-doc."
