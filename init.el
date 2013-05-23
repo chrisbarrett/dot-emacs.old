@@ -1914,7 +1914,11 @@
   (smart-insert-operator
    smart-insert-operator-hook)
   :init
-  (macrolet ((smart-op (op) `(command (smart-insert-operator ,op))))
+  (progn
+
+    (defmacro smart-op (op)
+      "Make a smart operator command that will insert OP."
+      `(command (smart-insert-operator ,op)))
 
     (defun cb:python-equals ()
       "Insert an '=' char padded by spaces, except in function arglists."
@@ -1958,30 +1962,7 @@
       (smart-insert-operator-hook)
       (local-unset-key (kbd "%"))
       (local-unset-key (kbd "-"))
-      (local-unset-key (kbd ".")))
-
-    (defun cb:looking-at-c-branching-header? ()
-      (thing-at-point-looking-at
-       (rx (* nonl) (32 ";") (* space)
-           (or "if" "when")
-           (* nonl)
-           "("
-           (* (not (any ")"))))))
-
-    (defun cb:c-insert-smart-op (str)
-      "Insert a smart operator with special formatting in certain expressions."
-      (if (cb:looking-at-c-branching-header?)
-          (insert str)
-        (smart-insert-operator str)))
-
-    (hook-fn 'c-mode-hook
-      (macrolet ((c-smart-op (char) `(command (cb:c-insert-smart-op ,char))))
-        (local-set-key (kbd ",") (smart-op ","))
-        (local-set-key (kbd "%") (smart-op "%"))
-        (local-set-key (kbd "=") (c-smart-op "="))
-        (local-set-key (kbd "-") (c-smart-op "-"))
-        (local-set-key (kbd "+") (c-smart-op "+"))
-        (local-set-key (kbd "|") (smart-op "|")))))
+      (local-unset-key (kbd "."))))
 
   :config
   (defadvice smart-insert-operator (around normal-insertion-for-string activate)
@@ -2928,9 +2909,38 @@ an irb error message."
 
 (after 'cc-mode
   (define-key c-mode-map (kbd "C-c C-c") 'mode-compile)
-  (define-key c-mode-map (kbd "M-q") 'indent-dwim))
+  (define-key c-mode-map (kbd "M-q") 'indent-dwim)
+  (require 'smart-operator)
+  (require 'flycheck)
+  (require 'smartparens))
+
+(defun looking-at-c-flow-control-header? ()
+  (thing-at-point-looking-at
+   (rx (* nonl) (32 ";") (* space)
+       (or "if" "when" "while" "for")
+       (* nonl)
+       "("
+       (* (not (any ")"))))))
+
+(after 'smart-operator
+
+  (defun cb:c-insert-smart-op (str)
+    "Insert a smart operator with special formatting in certain expressions."
+    (if (looking-at-c-flow-control-header?)
+        (insert str)
+      (smart-insert-operator str)))
+
+  (hook-fn 'c-mode-hook
+    (macrolet ((c-smart-op (char) `(command (cb:c-insert-smart-op ,char))))
+      (local-set-key (kbd ",") (smart-op ","))
+      (local-set-key (kbd "%") (smart-op "%"))
+      (local-set-key (kbd "=") (c-smart-op "="))
+      (local-set-key (kbd "-") (c-smart-op "-"))
+      (local-set-key (kbd "+") (c-smart-op "+"))
+      (local-set-key (kbd "|") (smart-op "|")))))
 
 (after 'flycheck
+
   (defun clang-parse-line (line)
     (ignore-errors
       (destructuring-bind (_ file line col level message)
@@ -2968,6 +2978,15 @@ an irb error message."
 
   (hook-fn 'c-mode-hook
     (flycheck-select-checker 'clang)))
+
+(after 'smartparens
+  (defadvice sp--self-insert-command
+    (before flow-control-keyword-insert-space activate)
+    "Insert a space after a flow control keyword in c modes."
+    (when  (and (derived-mode-p 'c-mode 'cc-mode 'c++-mode)
+                (thing-at-point-looking-at
+                 (rx (or "if" "when" "while" "for"))))
+      (just-one-space))))
 
 (use-package cedit
   :commands
