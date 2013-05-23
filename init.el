@@ -2934,13 +2934,30 @@ an irb error message."
       (smart-insert-operator str)))
 
   (defun c-insert-smart-minus ()
-    "Insert a minus with padding, or a unary minus if looking at a "
+    "Insert a minus with padding unless a unary minus is more appropriate."
     (interactive)
-    (insert
-     (if (thing-at-point-looking-at
-          (rx (or "(" "[" "(" ";" "=") (* space)))
-         "-"
-       " - ")))
+    (atomic-change-group
+      (if (thing-at-point-looking-at
+           (rx (or "(" "[" "(" ";" "=") (* space)))
+          (insert "-")
+        (unless (->> (buffer-substring (line-beginning-position) (point))
+                  (s-trim-left)
+                  (s-blank?))
+          (just-one-space))
+        (insert "-")
+        (just-one-space))))
+
+  (defun c-insert-smart-star ()
+    "Insert a * with padding in multiplication contexts."
+    (interactive)
+    (if (thing-at-point-looking-at (rx (not digit) (* space)))
+        (insert "*")
+      (unless (->> (buffer-substring (line-beginning-position) (point))
+                (s-trim-left)
+                (s-blank?))
+        (just-one-space))
+      (insert "*")
+      (just-one-space)))
 
   (hook-fn 'c-mode-hook
     (macrolet ((c-smart-op (char) `(command (cb:c-insert-smart-op ,char))))
@@ -2949,7 +2966,8 @@ an irb error message."
       (local-set-key (kbd "=") (c-smart-op "="))
       (local-set-key (kbd "+") (c-smart-op "+"))
       (local-set-key (kbd "|") (smart-op "|"))
-      (local-set-key (kbd "-") 'c-insert-smart-minus))))
+      (local-set-key (kbd "-") 'c-insert-smart-minus)
+      (local-set-key (kbd "*") 'c-insert-smart-star))))
 
 (after 'flycheck
 
