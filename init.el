@@ -235,9 +235,14 @@
 
 (hook-fn 'find-file-hook
   "Offer to create a file with sudo if necessary."
-  (unless (or (file-writable-p (buffer-file-name))
-              (file-exists-p (buffer-file-name)))
-    (sudo-edit)))
+  (let ((dir (file-name-directory (buffer-file-name))))
+    (when (or (and (not (file-writable-p (buffer-file-name)))
+                   (file-exists-p (buffer-file-name)))
+
+              (and dir
+                   (file-exists-p dir)
+                   (not (file-writable-p dir))))
+      (sudo-edit))))
 
 (defadvice save-buffers-kill-emacs (around no-query-kill-emacs activate)
   "Suppress \"Active processes exist\" query when exiting Emacs."
