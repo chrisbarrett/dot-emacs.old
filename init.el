@@ -1914,14 +1914,9 @@
   (smart-insert-operator
    smart-insert-operator-hook)
   :init
-  (macrolet
-      ((smart-op
-        (op)
-        `(lambda ()
-           ,(concat "Perform a smart-operator insertion for " op)
-           (interactive) (smart-insert-operator ,op))))
+  (macrolet ((smart-op (op) `(command (smart-insert-operator ,op))))
 
-    (defun cb:smart-equals-dwim ()
+    (defun cb:python-equals ()
       "Insert an '=' char padded by spaces, except in function arglists."
       (interactive)
       (if (string-match-p
@@ -1932,13 +1927,13 @@
 
     (hook-fn 'cb:python-modes-hook
       (smart-insert-operator-hook)
-      (local-set-key (kbd "=") 'cb:smart-equals-dwim)
+      (local-set-key (kbd "=") 'cb:python-equals)
       (local-unset-key (kbd "."))
       (local-unset-key (kbd ":")))
 
     (hook-fn 'cb:ruby-modes-hook
       (smart-insert-operator-hook)
-      (local-set-key (kbd "=") 'cb:smart-equals-dwim)
+      (local-set-key (kbd "=") 'cb:python-equals)
       (local-set-key (kbd "~") (smart-op "~"))
       (local-unset-key (kbd "%"))
       (local-unset-key (kbd "&"))
@@ -1965,11 +1960,28 @@
       (local-unset-key (kbd "-"))
       (local-unset-key (kbd ".")))
 
-    (hook-fn 'c-mode-common-hook
-      (smart-insert-operator-hook)
-      (local-unset-key (kbd "."))
-      (local-unset-key (kbd ":"))
-      (local-set-key (kbd "*") 'c-electric-star)))
+    (defun cb:looking-at-c-branching-header? ()
+      (thing-at-point-looking-at
+       (rx (* nonl) (32 ";") (* space)
+           (or "if" "when")
+           (* nonl)
+           "("
+           (* (not (any ")"))))))
+
+    (defun cb:c-insert-smart-op (str)
+      "Insert a smart operator with special formatting in certain expressions."
+      (if (cb:looking-at-c-branching-header?)
+          (insert str)
+        (smart-insert-operator str)))
+
+    (hook-fn 'c-mode-hook
+      (macrolet ((c-smart-op (char) `(command (cb:c-insert-smart-op ,char))))
+        (local-set-key (kbd ",") (smart-op ","))
+        (local-set-key (kbd "%") (smart-op "%"))
+        (local-set-key (kbd "=") (c-smart-op "="))
+        (local-set-key (kbd "-") (c-smart-op "-"))
+        (local-set-key (kbd "+") (c-smart-op "+"))
+        (local-set-key (kbd "|") (smart-op "|")))))
 
   :config
   (defadvice smart-insert-operator (around normal-insertion-for-string activate)
