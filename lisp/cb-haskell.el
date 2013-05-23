@@ -29,7 +29,6 @@
 
 (autoload 'haskell-cabal-find-file "haskell-cabal")
 (require 's)
-(require 'flycheck)
 
 (defun cb:hs-project-root ()
   (let ((cabal (haskell-cabal-find-file)))
@@ -54,51 +53,6 @@
        ((file-exists-p file) (find-file file))
        (src-p (error "No corresponding unit test file found"))
        (t     (error "No corresponding source file found"))))))
-
-;;; Checkers
-
-(defconst cb:haskell-checker-regexes
-     `((,(concat "^\\(?1:.*?\\):\\(?2:[0-9]+\\):\\(?3:[0-9]*\\):[ \t\n\r]*"
-                 "\\(?4:Warning: \\(.\\|[ \t\n\r]\\)+?\\)\\(^\n\\|\\'\\)") warning)
-
-       (,(concat "^\\(?1:.*?\\):\\(?2:[0-9]+\\):\\(?3:[0-9]*\\):[ \t\n\r]*"
-                 "\\(?4:\\(.\\|[ \t\n\r]\\)+?\\)\\(^\n\\|\\'\\)") error)))
-
-(flycheck-declare-checker haskell-ghc
-  "Haskell checker using ghc"
-  :command '("ghc" "-v0"
-             "-Wall"
-             "-i./../src"
-             "-fno-code"
-             source-inplace)
-  :error-patterns cb:haskell-checker-regexes
-  :modes 'haskell-mode)
-
-(push 'haskell-ghc flycheck-checkers)
-
-;; (flycheck-declare-checker haskell-hdevtools
-;;   "Haskell checker using hdevtools"
-;;   :command '("hdevtools"
-;;              "check"
-;;              "-g" "-Wall"
-;;              "-g" "-i/../src"
-;;              source-inplace)
-;;   :error-patterns cb:haskell-checker-regexes
-;;   :modes 'haskell-mode)
-
-;; (push 'haskell-hdevtools flycheck-checkers)
-
-(flycheck-declare-checker haskell-hlint
-  "Haskell checker using hlint"
-  :command '("hlint" source-inplace)
-  :error-patterns
-  `((,(concat "^\\(?1:.*?\\):\\(?2:[0-9]+\\):\\(?3:[0-9]+\\): Error: "
-              "\\(?4:\\(.\\|[ \t\n\r]\\)+?\\)\\(^\n\\|\\'\\)")
-     error)
-    (,(concat "^\\(?1:.*?\\):\\(?2:[0-9]+\\):\\(?3:[0-9]+\\): Warning: "
-              "\\(?4:\\(.\\|[ \t\n\r]\\)+?\\)\\(^\n\\|\\'\\)")
-     warning))
-  :modes 'haskell-mode)
 
 ;;; Use greek lambda symbol.
 (font-lock-add-keywords 'haskell-mode

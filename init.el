@@ -2808,6 +2808,53 @@ an irb error message."
 
 ;;;; Haskell
 
+(after 'flycheck
+
+  (defconst cb:haskell-checker-regexes
+    `((,(concat "^\\(?1:.*?\\):\\(?2:[0-9]+\\):\\(?3:[0-9]*\\):[ \t\n\r]*"
+                "\\(?4:Warning: \\(.\\|[ \t\n\r]\\)+?\\)\\(^\n\\|\\'\\)") warning)
+
+      (,(concat "^\\(?1:.*?\\):\\(?2:[0-9]+\\):\\(?3:[0-9]*\\):[ \t\n\r]*"
+                "\\(?4:\\(.\\|[ \t\n\r]\\)+?\\)\\(^\n\\|\\'\\)") error)))
+
+  ;; (flycheck-declare-checker haskell-hdevtools
+  ;;   "Haskell checker using hdevtools"
+  ;;   :command '("hdevtools"
+  ;;              "check"
+  ;;              "-g" "-Wall"
+  ;;              "-g" "-i/../src"
+  ;;              source-inplace)
+  ;;   :error-patterns cb:haskell-checker-regexes
+  ;;   :modes 'haskell-mode
+  ;;   :next-checkers '(haskell-hlint))
+
+  (flycheck-declare-checker haskell-ghc
+    "Haskell checker using ghc"
+    :command '("ghc" "-v0"
+               "-Wall"
+               "-i./../src"
+               "-fno-code"
+               source-inplace)
+    :error-patterns cb:haskell-checker-regexes
+    :modes 'haskell-mode
+    :next-checkers '(haskell-hlint))
+
+  (flycheck-declare-checker haskell-hlint
+    "Haskell checker using hlint"
+    :command '("hlint" source-inplace)
+    :error-patterns
+    `((,(concat "^\\(?1:.*?\\):\\(?2:[0-9]+\\):\\(?3:[0-9]+\\): Error: "
+                "\\(?4:\\(.\\|[ \t\n\r]\\)+?\\)\\(^\n\\|\\'\\)")
+       error)
+      (,(concat "^\\(?1:.*?\\):\\(?2:[0-9]+\\):\\(?3:[0-9]+\\): Warning: "
+                "\\(?4:\\(.\\|[ \t\n\r]\\)+?\\)\\(^\n\\|\\'\\)")
+       warning))
+    :modes 'haskell-mode)
+
+  (add-to-list 'flycheck-checkers 'haskell-ghc)
+  ;; (add-to-list 'flycheck-checkers 'haskell-hdevtools)
+  (add-to-list 'flycheck-checkers 'haskell-hlint))
+
 (use-package haskell-mode
   :ensure t
   :commands
@@ -2884,6 +2931,7 @@ an irb error message."
   :defer t
   :init
   (hook-fn 'cb:haskell-modes-hook
+    (require 'auto-complete)
     (add-to-list 'ac-modes major-mode)
     (add-to-list 'ac-sources 'ac-source-words-in-same-mode-buffers)
     (add-to-list 'ac-sources 'ac-source-haskell)))
