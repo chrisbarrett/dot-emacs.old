@@ -714,6 +714,8 @@
   "Test whether SYM is bound and non-nil."
   (and (boundp sym) (eval sym)))
 
+(autoload 'woman-file-name-all-completions "woman")
+
 (defun get-manpage (candidate)
   "Show the manpage for CANDIDATE."
   (let ((wfiles (mapcar 'car (woman-file-name-all-completions candidate))))
