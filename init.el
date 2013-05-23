@@ -3015,7 +3015,7 @@ an irb error message."
 
   (hook-fn 'c-mode-hook
     (macrolet ((c-smart-op (char) `(command (cb:c-insert-smart-op ,char))))
-      (local-set-key (kbd ",") (command (insert ", ")))
+      (local-set-key (kbd ",") (command (insert ",") (just-one-space)))
       (local-set-key (kbd "%") (smart-op "%"))
       (local-set-key (kbd "=") (c-smart-op "="))
       (local-set-key (kbd "+") (c-smart-op "+"))
