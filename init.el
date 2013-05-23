@@ -3009,11 +3009,7 @@ an irb error message."
     :error-parser 'clang-error-parser
     :predicate '(derived-mode-p 'c-mode))
 
-  (hook-fn 'c-mode-common-hook
-    (flycheck-mode +1))
-
-  (hook-fn 'c-mode-hook
-    (flycheck-select-checker 'clang)))
+  (add-to-list 'flycheck-checkers 'clang))
 
 (after 'smartparens
   (defadvice sp--self-insert-command
