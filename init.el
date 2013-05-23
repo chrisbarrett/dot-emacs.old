@@ -3301,7 +3301,11 @@ an irb error message."
     (hook-fn 'org-mode-hook
       (auto-revert-mode +1)
       (unless (buffer-file-name)
-        (cb:append-buffer)))
+        (cb:append-buffer))
+
+      ;; HACK: Something in org's setup interferes with input method. Wait
+      ;; til after buffer is fully initialized before setting.
+      (run-with-timer 0.02 nil 'set-input-method "TeX"))
 
     (define-key org-mode-map (kbd "M-p") 'org-metaup)
     (define-key org-mode-map (kbd "M-n") 'org-metadown)))
