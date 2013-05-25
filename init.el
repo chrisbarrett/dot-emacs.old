@@ -715,6 +715,7 @@
   (and (boundp sym) (eval sym)))
 
 (autoload 'woman-file-name-all-completions "woman")
+(autoload 'Man-getpage-in-background "man")
 
 (defun get-manpage (candidate)
   "Show the manpage for CANDIDATE."
@@ -3417,19 +3418,8 @@ an irb error message."
       :bind    "M-O")
 
     (when (or (daemonp) (display-graphic-p))
-      (setq initial-buffer-choice org-default-notes-file))
+      (setq initial-buffer-choice org-default-notes-file)))
 
-    (macrolet ((maybe (f) `(lambda ()
-                             (unless (derived-mode-p
-                                      'org-mode
-                                      'sgml-mode
-                                      'magit-log-edit-mode)
-                               (funcall ,f)))))
-      ;; Use org commands in other modes.
-      (add-hook 'message-mode-hook 'turn-on-orgstruct++)
-      (add-hook 'message-mode-hook 'turn-on-orgtbl)
-      (add-hook 'text-mode-hook (maybe 'turn-on-orgstruct++))
-      (add-hook 'text-mode-hook (maybe 'turn-on-orgtbl))))
   :config
   (progn
 
