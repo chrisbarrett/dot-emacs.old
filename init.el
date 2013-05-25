@@ -1773,6 +1773,9 @@
     (defun cb:compile-autoclose (buf string)
       "Automatically close the compile window."
       (cond
+       ;; Ignore if this isn't a normal compilation window.
+       ((not (equal (buffer-name buf) "*compilation*")))
+
        ((not (s-contains? "finished" string))
         (message "Compilation exited abnormally: %s" string))
 
@@ -1879,6 +1882,11 @@
   :commands (etags-select-find-tag-at-point etags-select-find-tag))
 
 ;;;; Language utils
+
+(use-package emr
+  :ensure t
+  :bind   ("M-RET" . emr-show-refactor-menu)
+  :config (emr-initialize))
 
 (use-package paredit
   :ensure t
@@ -2308,10 +2316,8 @@ Puts each XML node on a separate line, except for one-liners."
        ;; definition forms
        (,(rx "("
              (group-n 1
-                      (or (group (* (not space))
-                                 (or "cl-" "--" "/" ":") "def" "declare")
-                          "declare"
-                          "define")
+                      (* (not space))
+                      (or "declare" "define")
                       (+ (not space)))
              (+ space)
              (group-n 2 (+ (regex "\[^ )\n\]"))))
@@ -2375,11 +2381,6 @@ Puts each XML node on a separate line, except for one-liners."
   :commands litable-mode
   :defer    t
   :init     (define-key emacs-lisp-mode-map (kbd "C-c C-l") 'litable-mode))
-
-(use-package emr
-  :ensure t
-  :bind   ("M-RET" . emr-show-refactor-menu)
-  :config (require 'emr-elisp))
 
 ;;;; Clojure
 
