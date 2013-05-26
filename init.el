@@ -3123,51 +3123,31 @@ If the insertion creates an right arrow (->), remove surrounding whitespace."
     (->> (s-lines str) (-map 'clang-parse-line-for-err) (-remove 'null)))
 
   (defun pkg-config-installed-packages ()
+    "Get the names of all known packages from pkg-config."
     (->> (shell-command-to-string "pkg-config --list-all")
       (s-lines)
       (--remove (s-starts-with? "Variable" it))
       (--map (car (s-split (rx space) it)))))
 
-  (defun pkg-config-cflag (header-reference)
-    "Using package-config, try to find the library that
-corresponds to HEADER-REFERENCE."
-    (-when-let*
-        ((match
-          (--first (let ((src (s-alnum-only header-reference))
-                         (pkg (s-alnum-only it)))
-                     (or (s-starts-with? src pkg)
-                         (s-starts-with? pkg src)))
-                   (pkg-config-installed-packages)))
-         (libs
-          (shell-command-to-string (concat "pkg-config --cflags " match))))
-      (s-trim libs)))
-
-  (defun clang-extract-includes (str)
-    (->> (s-lines str)
-      (--map
-       (ignore-errors
-         (->> (s-match
-               (rx (* space) "#include" (+ space) "<" (group (* nonl)) ">")
-               it)
-           (nth 1)
-           (s-split (rx "/"))
-           (car))))
-      (-remove 'null)
-      (--map (s-chop-suffix ".h" it))))
-
-  (defun* clang-cflags-for-includes (&optional (str (buffer-string)))
-    "Obtain the cflags for the includes in the current buffer."
-    (->> (clang-extract-includes str)
-      (-map 'pkg-config-cflag)
-      (--remove (or (s-blank? it) (s-contains? "not found" it)))
-      (s-join " ")))
+  (defvar pkg-config-all-includes
+    (->> (pkg-config-installed-packages)
+      (s-join " ")
+      (concat "pkg-config --cflags ")
+      (shell-command-to-string)
+      ;; Ensure all includes end with a `/`.
+      (s-replace "-I:" "-I")
+      (s-split (rx (or bol (+ space)) "-I"))
+      (-filter 'file-exists-p)
+      (--map (format "-I%s/" it)))
+    "A string of cflags for including everything known to pkg-config.")
 
   (flycheck-declare-checker clang
     "Compiles the current file with clang."
     :command
     '("clang" "-O0" "-Wall"
-      (eval (clang-cflags-for-includes))
-      "-fsyntax-only" "-fno-color-diagnostics" "-fno-caret-diagnostics"
+      (eval pkg-config-all-includes)
+      "-fsyntax-only"
+      "-fno-color-diagnostics" "-fno-caret-diagnostics"
       "-fno-diagnostics-show-option"
       source-inplace)
     :error-parser 'clang-error-parser
