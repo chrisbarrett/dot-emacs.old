@@ -2030,7 +2030,9 @@
                       font-lock-comment-face)
                     (face-at-point))
         (insert (ad-get-arg 0))
-      ad-do-it)))
+      (prog1 ad-do-it
+        (when (equal (ad-get-arg 0) "=")
+          (indent-for-tab-command))))))
 
 (use-package lambda-mode
   :defer t
@@ -3039,7 +3041,7 @@ an irb error message."
     (interactive)
     (atomic-change-group
       (if (thing-at-point-looking-at
-           (rx (or "(" "[" "(" ";" "=") (* space)))
+           (rx (or "return" "(" "[" "(" ";" "=") (* space)))
           (insert "-")
         (unless (->> (buffer-substring (line-beginning-position) (point))
                   (s-trim-left)
@@ -3127,10 +3129,14 @@ If the insertion creates an right arrow (->), remove surrounding whitespace."
       (--map (car (s-split (rx space) it)))))
 
   (defun pkg-config-cflag (header-reference)
+    "Using package-config, try to find the library that
+corresponds to HEADER-REFERENCE."
     (-when-let*
         ((match
-          (--first (s-starts-with? (s-alnum-only header-reference)
-                                   (s-alnum-only it))
+          (--first (let ((src (s-alnum-only header-reference))
+                         (pkg (s-alnum-only it)))
+                     (or (s-starts-with? src pkg)
+                         (s-starts-with? pkg src)))
                    (pkg-config-installed-packages)))
          (libs
           (shell-command-to-string (concat "pkg-config --cflags " match))))
