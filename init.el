@@ -3088,7 +3088,6 @@ If the insertion creates an right arrow (->), remove surrounding whitespace."
   (hook-fn 'c-mode-hook
     (macrolet ((c-smart-op (char) `(command (cb:c-insert-smart-op ,char))))
       (local-set-key (kbd ",") (command (insert ",") (just-one-space)))
-      (local-set-key (kbd "%") (smart-op "%"))
       (local-set-key (kbd "=") (c-smart-op "="))
       (local-set-key (kbd "+") (c-smart-op "+"))
       (local-set-key (kbd "|") (smart-op "|"))
