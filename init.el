@@ -140,7 +140,9 @@
  tab-width                    4
  indent-tabs-mode             nil
  fill-column                  75)
+
 (icomplete-mode +1)
+(global-set-key (kbd "RET") 'newline-and-indent)
 
 ;; Encodings
 
