@@ -1693,6 +1693,10 @@
           try-complete-lisp-symbol-partially
           try-complete-lisp-symbol)))
 
+(use-package abbrev
+  :defer    t
+  :diminish abbrev-mode)
+
 (use-package fuzzy
   :ensure t)
 
