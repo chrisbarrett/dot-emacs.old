@@ -3022,7 +3022,6 @@ an irb error message."
 (after 'cc-mode
   (define-key c-mode-map (kbd "C-c C-c") 'mode-compile)
   (define-key c-mode-map (kbd "M-q") 'indent-dwim)
-  (add-to-list 'c-default-style '(c-mode . "linux"))
   (require 'smart-operator)
   (require 'flycheck)
   (require 'smartparens))
@@ -3188,6 +3187,12 @@ If the insertion creates an right arrow (->), remove surrounding whitespace."
    cedit-or-paredit-barf
    cedit-or-paredit-splice-killing-backward
    cedit-or-paredit-raise))
+
+(use-package google-c-style
+  :ensure   t
+  :defer    t
+  :commands google-set-c-style
+  :init    (add-hook 'c-mode-common-hook 'google-set-c-style))
 
 (use-package disaster
   :ensure   t
