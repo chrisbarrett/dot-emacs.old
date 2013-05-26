@@ -3070,16 +3070,16 @@ an irb error message."
       (local-set-key (kbd "-") 'c-insert-smart-minus)
       (local-set-key (kbd "*") 'c-insert-smart-star))))
 
-(defun s-alnum-only (s)
-  "Remove non-alphanumeric characters from S."
-  (with-temp-buffer
-    (insert s)
-    (goto-char (point-min))
-    (while (search-forward-regexp (rx (not alnum)) nil t)
-      (replace-match ""))
-    (buffer-string)))
-
 (after 'flycheck
+
+  (defun s-alnum-only (s)
+    "Remove non-alphanumeric characters from S."
+    (with-temp-buffer
+      (insert s)
+      (goto-char (point-min))
+      (while (search-forward-regexp (rx (not alnum)) nil t)
+        (replace-match ""))
+      (buffer-string)))
 
   (defun clang-parse-line-for-err (line)
     (ignore-errors
@@ -3110,11 +3110,14 @@ an irb error message."
       (--map (car (s-split (rx space) it)))))
 
   (defun pkg-config-cflag (header-reference)
-    (-when-let
-        (match (->> (pkg-config-installed-packages)
-                 (--first (s-starts-with? (s-alnum-only header-reference)
-                                          (s-alnum-only it)))))
-      (shell-command-to-string (concat "pkg-config --libs " match))))
+    (-when-let*
+        ((match
+          (--first (s-starts-with? (s-alnum-only header-reference)
+                                   (s-alnum-only it))
+                   (pkg-config-installed-packages)))
+         (libs
+          (shell-command-to-string (concat "pkg-config --cflags " match))))
+      (s-trim libs)))
 
   (defun clang-extract-includes (str)
     (->> (s-lines str)
@@ -3137,7 +3140,7 @@ an irb error message."
       (s-join " ")))
 
   (flycheck-declare-checker clang
-    "Compiles the current file with clang. Used if there is no makefile."
+    "Compiles the current file with clang."
     :command
     '("clang" "-O0" "-Wall"
       (eval (clang-cflags-for-includes))
