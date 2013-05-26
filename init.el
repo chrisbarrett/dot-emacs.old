@@ -305,6 +305,10 @@
 
 (with-elapsed-timer "Loading modeline"
 
+;; Lighten background for default theme.
+(unless (or (daemonp) (display-graphic-p))
+  (set-face-attribute 'mode-line nil :background "gray85"))
+
 (defun* cb:vc-state->letter (&optional (file (buffer-file-name)))
   "Return a single letter to represent the current version-control status."
   (case (ignore-errors (vc-state file))
@@ -358,9 +362,9 @@
        (face (cb:shorten-directory (or file filepath)) 'mode-line-directory)))))
 
 (defface mode-line-tramp-separator
-  '((((type graphic) (background dark))
+  '((((background dark))
      (:foreground "gray45"))
-    (((type graphic) (background light))
+    (((background light))
      (:foreground "gray80"))
     (t
      (:inherit 'mode-line)))
@@ -373,18 +377,16 @@
   :group 'modeline)
 
 (defface mode-line-tramp-user
-  '((((type graphic))
-     (:foreground "VioletRed3"))
-    (t (:inherit 'mode-line)))
+  '((t (
+        :foreground "VioletRed3"
+        :inherit 'mode-line)))
   "Face for tramp user indicator in modeline."
   :group 'modeline)
 
-;; Extra mode line faces
-
 (defface modeline-vc-unknown-face
-  '((((type graphic) (background dark))
+  '((((background dark))
      (:foreground "yellow"))
-    (((type graphic) (background light))
+    (((background light))
      (:foreground "blue"))
     (t
      (:inherit 'mode-line)))
@@ -392,25 +394,24 @@
   :group 'modeline)
 
 (defface mode-line-read-only
-  '((((type graphic))
-     (:foreground "#4271ae"
-      :box '(:line-width 2 :color "#4271ae")))
-    (t (:inherit 'mode-line)))
+  '((t (
+        :foreground "#4271ae"
+        :box '(:line-width 2 :color "#4271ae")
+        :inherit 'mode-line)))
   "Face for readonly indicator."
   :group 'modeline)
 
 (defface mode-line-modified
-  '((((type graphic))
-     (:foreground "#c82829"))
-    (t
-     (:inherit 'mode-line)))
+  '((t (
+        :foreground "#c82829"
+        :inherit 'mode-line)))
   "Face for modified indicator."
   :group 'modeline)
 
 (defface mode-line-directory
-  '((((type graphic) (background dark))
+  '((((background dark))
      (:foreground "gray60"))
-    (((type graphic) (background light))
+    (((background light))
      (:foreground "gray70"))
     (t
      (:inherit 'mode-line)))
@@ -418,9 +419,9 @@
   :group 'modeline)
 
 (defface mode-line-filename
-  '((((type graphic) (background dark))
+  '((((background dark))
      (:foreground "#eab700" :weight bold))
-    (((type graphic) (background light))
+    (((background light))
      (:foreground "gray40" :weight bold))
     (t
      (:inherit 'mode-line)))
@@ -428,11 +429,11 @@
   :group 'modeline)
 
 (defface mode-line-position
-  `((((type graphic) (background dark))
+  `((((background dark))
      (:family ,(monospace-font)
       :height 100
       :foreground "gray60"))
-    (((type graphic) (background light))
+    (((background light))
      (:family ,(monospace-font)
       :height 100
       :foreground "gray50"))
@@ -442,9 +443,9 @@
   :group 'modeline)
 
 (defface mode-line-mode
-  '((((type graphic) (background dark))
+  '((((background dark))
      (:foreground "gray70"))
-    (((type graphic) (background light))
+    (((background light))
      (:foreground "gray40"))
     (t
      (:inherit 'mode-line)))
@@ -452,26 +453,25 @@
   :group 'modeline)
 
 (defface mode-line-minor-mode
-  '((((type graphic) (background dark))
+  '((((background dark))
      (:foreground "gray40" :height 110))
-    (((type graphic) (background light))
+    (((background light))
      (:foreground "gray70" :height 110))
     (t (:inherit 'mode-line-mode)))
   "Face for the current minor mode indicators."
   :group 'modeline)
 
 (defface mode-line-process
-  '((((type graphic))
-     (:foreground "#718c00"))
-    (t
-     (:inherit 'mode-line)))
+  '((t (
+        :foreground "#718c00"
+        :inherit 'mode-line)))
   "Face for the current process."
   :group 'modeline)
 
 (defface mode-line-80col
-  '((((type graphic) (background dark))
+  '((((background dark))
      (:foreground "#eab700"))
-    (((type graphic) (background light))
+    (((background light))
      (:foreground "#b58900"))
     (t
      (:inherit 'mode-line-position)))
@@ -1397,7 +1397,7 @@
   :defer t)
 
 (use-package cb-colour
-  :if (or (daemonp) (window-system))
+  :if (or (daemonp) (display-graphic-p))
   :commands
   (cb:load-theme
    solarized-light
@@ -1410,6 +1410,7 @@
 
     (condition-case _
         (load cb:last-theme nil t t)
+      (solarized-light)
       (error (solarized-light)))
 
     (hook-fn 'cb:color-theme-changed-hook
