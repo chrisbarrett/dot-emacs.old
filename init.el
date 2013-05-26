@@ -1187,7 +1187,13 @@
      savehist-additional-variables '(search ring regexp-search-ring)
      savehist-autosave-interval    60
      savehist-file                 (concat cb:tmp-dir "savehist"))
-    (savehist-mode +1)))
+    ;; Load savehist. Delete the savehist file if there is a problem. This
+    ;; can happen with tramp, for example.
+    (condition-case _
+        (savehist-mode +1)
+      (void-variable
+       (delete-file savehist-file)
+       (savehist-mode +1)))))
 
 (use-package undo-tree
   :ensure   t
