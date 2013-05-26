@@ -3076,7 +3076,7 @@ an irb error message."
     (ignore-errors
       (destructuring-bind (_ file line col level message)
           (s-match
-           (rx (group-n 1 (+ nonl)) ":"  ; file
+           (rx (group-n 1 (+ nonl)) ":" ; file
                (group-n 2 (+ digit)) ":" ; line
                (group-n 3 (+ digit)) ":" ; col
                (* space)
@@ -3087,7 +3087,7 @@ an irb error message."
         (flycheck-error-new
          :line (string-to-int line)
          :column (string-to-int col)
-         :level (if (equal "error" level) 'error 'warning)
+         :level (if (s-contains? "error" level) 'error 'warning)
          :message message
          :filename file))))
 
