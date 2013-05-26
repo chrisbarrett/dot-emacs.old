@@ -3070,13 +3070,22 @@ an irb error message."
       (local-set-key (kbd "-") 'c-insert-smart-minus)
       (local-set-key (kbd "*") 'c-insert-smart-star))))
 
+(defun s-alnum-only (s)
+  "Remove non-alphanumeric characters from S."
+  (with-temp-buffer
+    (insert s)
+    (goto-char (point-min))
+    (while (search-forward-regexp (rx (not alnum)) nil t)
+      (replace-match ""))
+    (buffer-string)))
+
 (after 'flycheck
 
-  (defun clang-parse-line (line)
+  (defun clang-parse-line-for-err (line)
     (ignore-errors
       (destructuring-bind (_ file line col level message)
           (s-match
-           (rx (group-n 1 (+ nonl)) ":" ; file
+           (rx (group-n 1 (+ nonl)) ":"  ; file
                (group-n 2 (+ digit)) ":" ; line
                (group-n 3 (+ digit)) ":" ; col
                (* space)
@@ -3092,12 +3101,46 @@ an irb error message."
          :filename file))))
 
   (defun clang-error-parser (str &rest _)
-    (->> (s-lines str) (-map 'clang-parse-line) (-remove 'null)))
+    (->> (s-lines str) (-map 'clang-parse-line-for-err) (-remove 'null)))
+
+  (defun pkg-config-installed-packages ()
+    (->> (shell-command-to-string "pkg-config --list-all")
+      (s-lines)
+      (--remove (s-starts-with? "Variable" it))
+      (--map (car (s-split (rx space) it)))))
+
+  (defun pkg-config-cflag (header-reference)
+    (-when-let
+        (match (->> (pkg-config-installed-packages)
+                 (--first (s-starts-with? (s-alnum-only header-reference)
+                                          (s-alnum-only it)))))
+      (shell-command-to-string (concat "pkg-config --libs " match))))
+
+  (defun clang-extract-includes (str)
+    (->> (s-lines str)
+      (--map
+       (ignore-errors
+         (->> (s-match
+               (rx (* space) "#include" (+ space) "<" (group (* nonl)) ">")
+               it)
+           (nth 1)
+           (s-split (rx "/"))
+           (car))))
+      (-remove 'null)
+      (--map (s-chop-suffix ".h" it))))
+
+  (defun* clang-cflags-for-includes (&optional (str (buffer-string)))
+    "Obtain the cflags for the includes in the current buffer."
+    (->> (clang-extract-includes str)
+      (-map 'pkg-config-cflag)
+      (--remove (or (s-blank? it) (s-contains? "not found" it)))
+      (s-join " ")))
 
   (flycheck-declare-checker clang
     "Compiles the current file with clang. Used if there is no makefile."
     :command
     '("clang" "-O0" "-Wall"
+      (eval (clang-cflags-for-includes))
       "-fsyntax-only" "-fno-color-diagnostics" "-fno-caret-diagnostics"
       "-fno-diagnostics-show-option"
       source-inplace)
