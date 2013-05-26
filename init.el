@@ -3060,6 +3060,22 @@ an irb error message."
       (insert "*")
       (just-one-space)))
 
+  (defun c-insert-smart-gt ()
+    "Insert a > symbol with formatting.
+If the insertion creates an right arrow (->), remove surrounding whitespace."
+    (interactive)
+    (cb:c-insert-smart-op ">")
+    ;; Check whether we just inserted the tip of an arrow. If we did,
+    ;; remove the spacing surrounding the arrow.
+    (when (thing-at-point-looking-at (rx "-" (* space) ">" (* space)))
+      (save-excursion
+        (let ((arrow-start (save-excursion
+                             (search-backward-regexp
+                              (rx (not (any space "-" ">"))))
+                             (point))))
+          (while (search-backward-regexp (rx space) arrow-start t)
+            (delete-horizontal-space))))))
+
   (hook-fn 'c-mode-hook
     (macrolet ((c-smart-op (char) `(command (cb:c-insert-smart-op ,char))))
       (local-set-key (kbd ",") (command (insert ",") (just-one-space)))
@@ -3067,6 +3083,7 @@ an irb error message."
       (local-set-key (kbd "=") (c-smart-op "="))
       (local-set-key (kbd "+") (c-smart-op "+"))
       (local-set-key (kbd "|") (smart-op "|"))
+      (local-set-key (kbd ">") 'c-insert-smart-gt)
       (local-set-key (kbd "-") 'c-insert-smart-minus)
       (local-set-key (kbd "*") 'c-insert-smart-star))))
 
