@@ -765,7 +765,11 @@
   :if     (or (daemonp)
               (and (equal system-type 'darwin) (window-system)))
   :init   (hook-fn 'after-init-hook (require 'exec-path-from-shell))
-  :config (exec-path-from-shell-initialize))
+  :config
+  (progn
+    (exec-path-from-shell-initialize)
+    (exec-path-from-shell-copy-env "PKG_CONFIG_PATH")
+    (exec-path-from-shell-copy-env "CFLAGS")))
 
 ;;;; OS X
 
@@ -1838,7 +1842,9 @@
     (hook-fn 'cb:xml-modes-hook
       (unless (derived-mode-p 'markdown-mode)
         (flyspell-prog-mode)))
-    (add-hook 'prog-mode-hook 'flyspell-prog-mode))
+    ;; TOO ANNOYING!
+    ;; (add-hook 'prog-mode-hook 'flyspell-prog-mode)
+    )
   :config
   (progn
    (bind-key* "C-'" 'flyspell-auto-correct-word)
@@ -3016,6 +3022,7 @@ an irb error message."
 (after 'cc-mode
   (define-key c-mode-map (kbd "C-c C-c") 'mode-compile)
   (define-key c-mode-map (kbd "M-q") 'indent-dwim)
+  (add-to-list 'c-default-style '(c-mode . "linux"))
   (require 'smart-operator)
   (require 'flycheck)
   (require 'smartparens))
@@ -3182,12 +3189,6 @@ If the insertion creates an right arrow (->), remove surrounding whitespace."
    cedit-or-paredit-barf
    cedit-or-paredit-splice-killing-backward
    cedit-or-paredit-raise))
-
-(use-package google-c-style
-  :ensure   t
-  :defer    t
-  :commands google-set-c-style
-  :init    (add-hook 'c-mode-common-hook 'google-set-c-style))
 
 (use-package disaster
   :ensure   t
