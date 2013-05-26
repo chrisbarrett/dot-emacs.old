@@ -1049,6 +1049,7 @@
             ("*Completions*" :noselect t)
             ("*Shell Command Output*")
             ("*compilation*" :noselect t)
+            ("*Compile-Log*" :height 20 :noselect t)
             ("*Messages*" :height 30)
             ("*Directory*")
             ("*Org Note*")
@@ -3165,12 +3166,44 @@ If the insertion creates an right arrow (->), remove surrounding whitespace."
   (add-to-list 'flycheck-checkers 'clang))
 
 (after 'smartparens
+
+  (defun c-insert-smart-lbrace ()
+    "Insert a left brace, possibly with formatting."
+    (interactive)
+    (unwind-protect
+        (atomic-change-group
+          (if (thing-at-point-looking-at (rx ")" (* space) eol))
+              ;; Insert and put braces on new lines.
+              (progn
+                (newline)
+                (insert "{")
+                (newline)
+                (save-excursion (insert "\n}"))
+                (c-indent-defun)
+                (c-indent-line))
+            ;; Do a smartparenish insertion.
+            (progn
+              (insert "{")
+              (sp--self-insert-command 1)
+              (save-excursion (search-backward "{")
+                              (delete-char -1)))))))
+
+  (define-key smartparens-mode-map (kbd "{")
+    (command (if (derived-mode-p 'c-mode)
+                 (c-insert-smart-lbrace)
+               ;; HACK: simulate propert sp-insertion. I have no idea how
+               ;; to do this cleanly.
+               (insert "{")
+               (sp--self-insert-command 1)
+               (save-excursion (search-backward "{")
+                               (delete-char -1)))))
+
   (defadvice sp--self-insert-command
     (before flow-control-keyword-insert-space activate)
     "Insert a space after a flow control keyword in c modes."
     (when  (and (derived-mode-p 'c-mode 'cc-mode 'c++-mode)
                 (thing-at-point-looking-at
-                 (rx (or "if" "when" "while" "for"))))
+                 (rx symbol-start (or "if" "when" "while" "for"))))
       (just-one-space))))
 
 (use-package cedit
