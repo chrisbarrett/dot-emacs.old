@@ -1,4 +1,4 @@
-;;; cb-tags --- ctags-related commands
+;;; cb-ctags.el --- ctags-related commands
 
 ;; Copyright (C) 2013 Chris Barrett
 
@@ -26,19 +26,22 @@
 
 ;;; Code:
 
+(require 'use-package)
 (require 's)
+(autoload 'projectile-project-root "projectile")
 
-(defvar cb:ctags-exclude-patterns
+(defvar ctags-exclude-patterns
   '("db" "test" ".git" "public" "flycheck-"))
 
-(defun cb:load-ctags ()
+;;;###autoload
+(defun load-ctags ()
   "Create a tags file at the root of the current project, then load it."
   (interactive)
-  (and (cb:build-ctags) (cb:visit-project-tags)))
+  (and (build-ctags) (visit-ctags)))
 
 (defun cb:format-tags-excludes ()
   (let ((sep " --exclude="))
-    (concat sep (s-join sep cb:ctags-exclude-patterns))))
+    (concat sep (s-join sep ctags-exclude-patterns))))
 
 (defun cb:build-tags-at (tags)
   (interactive "DDirectory: ")
@@ -59,7 +62,8 @@
     (and (not (equal home dir))
          (s-matches? home dir))))
 
-(defun cb:build-ctags ()
+;;;###autoload
+(defun build-ctags ()
   "Create a tags file at the root of the current project."
   (interactive)
   (message "Building project tags...")
@@ -72,21 +76,39 @@
         (message "Tags written to \"%s\"" tags)
       (error "Failed to create tags"))))
 
-(defun cb:visit-project-tags ()
+;;;###autoload
+(defun visit-ctags ()
   "Visit the tags file at the root of the current project."
   (interactive)
   (let ((tags-revert-without-query t))
     (visit-tags-table (cb:tags-project-root))
     (message (concat "Loaded " tags-file-name))))
 
-(defun cb:find-tag ()
+;;;###autoload
+(defun find-ctag ()
   "Find the tags at point, creating a tags file if none exists."
   (interactive)
   (if (file-exists-p (concat (cb:tags-project-root) "TAGS"))
-      (cb:visit-project-tags)
-    (cb:build-ctags))
+      (visit-ctags)
+    (build-ctags))
   (etags-select-find-tag-at-point))
 
-(provide 'cb-tags)
+(use-package ctags-update
+  :ensure   t
+  :defer    t
+  :diminish ctags-auto-update-mode
+  :init   (add-hook 'prog-mode-hook 'turn-on-ctags-auto-update-mode))
 
-;;; cb-tags.el ends here
+(use-package etags-select
+  :ensure   t
+  :commands (etags-select-find-tag-at-point etags-select-find-tag))
+
+(provide 'cb-ctags)
+
+(provide 'cb-ctags)
+
+;; Local Variables:
+;; lexical-binding: t
+;; End:
+
+;;; cb-ctags.el ends here

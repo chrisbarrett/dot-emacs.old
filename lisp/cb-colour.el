@@ -25,7 +25,13 @@
 
 ;;; Code:
 
-(autoload 'after "cb-macros")
+(use-package solarized-theme
+  :ensure t
+  :defer t)
+
+(use-package ir-black-theme
+  :ensure t
+  :defer t)
 
 (when (and (<= emacs-major-version 24)
            (< emacs-minor-version 3))

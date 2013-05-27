@@ -23,7 +23,7 @@ all : $(modules) compile tags ruby supercollider python clang scheme $(emacs_src
 
 .PHONY: tags
 tags :
-	$(emacs_exec) 'cb:build-ctags'
+	$(emacs_exec) 'build-ctags'
 
 # Directories
 
@@ -40,7 +40,7 @@ $(modules) :
 # Byte-compile files in ./lisp
 .PHONY: conf
 conf :
-	$(emacs_exec) 'cb:byte-compile-conf'
+	$(emacs_exec) byte-compile-conf
 
 # Byte-compile all elisp files.
 .PHONY: compile

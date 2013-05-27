@@ -1,4 +1,4 @@
-;;; cb-macros --- Common macros used in my emacs config.
+;;; cb-lib --- Common macros used in my emacs config.
 
 ;; Copyright (C) 2013 Chris Barrett
 
@@ -45,7 +45,7 @@ The entire argument list is bound to 'args'."
                      ,@(cons docstring body))))
 
 (defmacro after (feature &rest body)
-  "Execute BODY forms after FEATURE is loaded."
+  "Like `eval-after-load' - once FEATURE is loaded execute the BODY."
   (declare (indent 1))
   `(eval-after-load ,feature '(progn ,@body)))
 
@@ -90,12 +90,12 @@ This directory tree will be added to the load path if ADD-PATH is non-nil."
 
 ;;; ----------------------------------------------------------------------------
 
-(defun cb:tree-replace (target rep tree)
+(defun tree-replace (target rep tree)
   "Replace TARGET with REP in TREE."
   (cond ((equal target tree) rep)
         ((atom tree)         tree)
         (t
-         (--map (cb:tree-replace target rep it) tree))))
+         (--map (tree-replace target rep it) tree))))
 
 (defmacro with-window-restore (&rest body)
   "Declare an action that will eventually restore window state.
@@ -104,7 +104,7 @@ The original state can be restored by calling (restore) in BODY."
   (let ((register (cl-gensym)))
     `(progn
        (window-configuration-to-register ',register)
-       ,@(cb:tree-replace '(restore)
+       ,@(tree-replace '(restore)
                           `(jump-to-register ',register)
                           body))))
 
@@ -150,6 +150,21 @@ restore key."
 
        (global-set-key (kbd ,bind) ',fname))))
 
-(provide 'cb-macros)
+(defun cb:truthy? (sym)
+  "Test whether SYM is bound and non-nil."
+  (and (boundp sym) (eval sym)))
 
-;;; cb-macros.el ends here
+(defun byte-compile-conf ()
+  "Recompile all configuration files."
+  (interactive)
+  (byte-recompile-file (concat user-emacs-directory "init.el") t 0)
+  (byte-recompile-directory cb:lib-dir 0 t)
+  (byte-recompile-directory cb:lisp-dir 0 t))
+
+(provide 'cb-lib)
+
+;; Local Variables:
+;; lexical-binding: t
+;; End:
+
+;;; cb-lib.el ends here

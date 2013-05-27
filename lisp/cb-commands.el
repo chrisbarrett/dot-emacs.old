@@ -247,6 +247,13 @@ If this buffer is a member of `cb:kill-buffer-ignored-list, bury it rather than 
        (rx symbol-start ,(thing-at-point 'symbol) symbol-end))
       (beginning-of-thing 'symbol))))
 
+;;;###autoload
+(defun swap-with-previous-buffer ()
+  "Switch to previously open buffer.
+Repeated invocations toggle between the two most recently open buffers."
+  (interactive)
+  (switch-to-buffer (other-buffer (current-buffer) 1)))
+
 (provide 'cb-commands)
 
 ;;; cb-commands.el ends here

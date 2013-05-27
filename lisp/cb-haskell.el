@@ -27,6 +27,7 @@
 
 ;;; Testing
 
+(require 'use-package)
 (autoload 'haskell-cabal-find-file "haskell-cabal")
 (require 's)
 
@@ -54,12 +55,160 @@
        (src-p (error "No corresponding unit test file found"))
        (t     (error "No corresponding source file found"))))))
 
+(hook-fn 'haskell-mode-hook
+  (local-set-key (kbd "C-c j") 'haskell-test<->code))
+
 ;;; Use greek lambda symbol.
 (font-lock-add-keywords 'haskell-mode
  `((,(concat "\\s (?\\(\\\\\\)\\s *\\(\\w\\|_\\|(.*)\\).*?\\s *->")
     (0 (progn (compose-region (match-beginning 1) (match-end 1)
                               ,(make-char 'greek-iso8859-7 107))
               nil)))))
+
+(after 'flycheck
+
+  (defconst cb:haskell-checker-regexes
+    `((,(concat "^\\(?1:.*?\\):\\(?2:[0-9]+\\):\\(?3:[0-9]*\\):[ \t\n\r]*"
+                "\\(?4:Warning: \\(.\\|[ \t\n\r]\\)+?\\)\\(^\n\\|\\'\\)") warning)
+
+      (,(concat "^\\(?1:.*?\\):\\(?2:[0-9]+\\):\\(?3:[0-9]*\\):[ \t\n\r]*"
+                "\\(?4:\\(.\\|[ \t\n\r]\\)+?\\)\\(^\n\\|\\'\\)") error)))
+
+  ;; (flycheck-declare-checker haskell-hdevtools
+  ;;   "Haskell checker using hdevtools"
+  ;;   :command '("hdevtools"
+  ;;              "check"
+  ;;              "-g" "-Wall"
+  ;;              "-g" "-i/../src"
+  ;;              source-inplace)
+  ;;   :error-patterns cb:haskell-checker-regexes
+  ;;   :modes 'haskell-mode
+  ;;   :next-checkers '(haskell-hlint))
+
+  (flycheck-declare-checker haskell-ghc
+    "Haskell checker using ghc"
+    :command '("ghc" "-v0"
+               "-Wall"
+               "-i./../src"
+               "-fno-code"
+               source-inplace)
+    :error-patterns cb:haskell-checker-regexes
+    :modes 'haskell-mode
+    :next-checkers '(haskell-hlint))
+
+  (flycheck-declare-checker haskell-hlint
+    "Haskell checker using hlint"
+    :command '("hlint" source-inplace)
+    :error-patterns
+    `((,(concat "^\\(?1:.*?\\):\\(?2:[0-9]+\\):\\(?3:[0-9]+\\): Error: "
+                "\\(?4:\\(.\\|[ \t\n\r]\\)+?\\)\\(^\n\\|\\'\\)")
+       error)
+      (,(concat "^\\(?1:.*?\\):\\(?2:[0-9]+\\):\\(?3:[0-9]+\\): Warning: "
+                "\\(?4:\\(.\\|[ \t\n\r]\\)+?\\)\\(^\n\\|\\'\\)")
+       warning))
+    :modes 'haskell-mode)
+
+  (add-to-list 'flycheck-checkers 'haskell-ghc)
+  ;; (add-to-list 'flycheck-checkers 'haskell-hdevtools)
+  (add-to-list 'flycheck-checkers 'haskell-hlint))
+
+(use-package haskell-mode
+  :ensure t
+  :commands
+  (haskell-mode
+   haskell-c-mode
+   haskell-cabal-mode
+   hoogle)
+  :mode
+  (("\\.hs$"    . haskell-mode)
+   ("\\.hsc$"   . haskell-c-mode)
+   ("\\.cabal$" . haskell-cabal-mode))
+  :config
+  (progn
+
+    (defadvice switch-to-haskell (after insert-at-end-of-line activate)
+      "Enter insertion mode at the end of the line when switching to inferior haskell."
+      (cb:append-buffer))
+
+    (add-to-list 'completion-ignored-extensions ".hi")
+
+    (hook-fn 'cb:haskell-modes-hook
+      (subword-mode +1)
+      (local-set-key (kbd "C-c h") 'hoogle))
+
+    (defun cb:switch-to-haskell ()
+      "Switch to the last active Haskell buffer."
+      (interactive)
+      (-when-let (buf (last-buffer-for-mode 'haskell-mode))
+        (pop-to-buffer buf)))
+
+    (hook-fn 'inferior-haskell-mode-hook
+      (local-set-key (kbd "C-c C-z") 'cb:switch-to-haskell))
+
+    (hook-fn 'haskell-mode-hook
+      (setq
+       evil-shift-width     4
+       tab-width            4
+       haskell-tags-on-save t
+       haskell-stylish-on-save t)
+      (local-set-key (kbd "C-c C-c") 'haskell-process-cabal-build))))
+
+(use-package ghc
+  :ensure   t
+  :commands ghc-init
+  :init     (add-hook 'haskell-mode-hook 'ghc-init)
+  :config
+  (progn
+
+    ;; HACK: this command throws errors on haskell-mode startup.
+    (defadvice ghc-uniq-lol (around ignore-errs activate)
+      (ignore-errors ad-do-it))
+
+    (defun ac-haskell-candidates ()
+      "Auto-complete source using ghc-doc."
+      (let ((pat (buffer-substring (ghc-completion-start-point) (point))))
+        (all-completions pat (ghc-select-completion-symbol))))
+
+    (ac-define-source ghc
+      '((candidates . ac-haskell-candidates)))
+
+    (hook-fn 'haskell-mode-hook
+      (add-to-list 'ac-sources 'ac-source-ghc))))
+
+(use-package haskell-ac
+  :defer t
+  :init
+  (hook-fn 'cb:haskell-modes-hook
+    (require 'auto-complete)
+    (add-to-list 'ac-modes major-mode)
+    (add-to-list 'ac-sources 'ac-source-words-in-same-mode-buffers)
+    (add-to-list 'ac-sources 'ac-source-haskell)))
+
+(use-package haskell-edit
+  :commands (haskell-find-type-signature
+             haskell-reformat-type-signature))
+
+(use-package haskell-indentation
+  :diminish haskell-indentation-mode
+  :defer    t
+  :init     (add-hook 'haskell-mode-hook 'haskell-indentation-mode))
+
+(use-package haskell-doc
+  :diminish haskell-doc-mode
+  :commands haskell-doc-mode
+  :init     (add-hook 'cb:haskell-modes-hook 'haskell-doc-mode))
+
+(use-package haskell-decl-scan
+  :commands turn-on-haskell-decl-scan
+  :init     (add-hook 'haskell-mode-hook 'turn-on-haskell-decl-scan))
+
+(use-package hs-lint
+  :commands hs-lint
+  :init
+  (hook-fn 'haskell-mode-hook
+    (local-set-key (kbd "C-c l") 'hs-lint))
+  :config
+  (setq hs-lint-command (executable-find "hlint")))
 
 (provide 'cb-haskell)
 
