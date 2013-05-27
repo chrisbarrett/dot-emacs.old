@@ -203,15 +203,18 @@ If this buffer is a member of `cb:kill-buffer-ignored-list, bury it rather than 
   (gethash (car-safe (last (split-string name "[.]" t)))
            cb:extension->cmd))
 
+(autoload 'emr-reporting-buffer-changes "emr")
+
 ;;;###autoload
 (defun insert-shebang (cmd)
   "Insert a shebang line at the top of the current buffer."
   (interactive (list (or (cb:bufname->cmd buffer-file-name)
                          (read-string "Command name: " nil t))))
-  (save-excursion
-    (goto-char (point-min))
-    (insert (concat "#!/usr/bin/env " cmd))
-    (newline 2)))
+  (emr-reporting-buffer-changes "Inserted shebang"
+    (save-excursion
+      (goto-char (point-min))
+      (open-line 2)
+      (insert (concat "#!/usr/bin/env " cmd)))))
 
 ;;;###autoload
 (defun move-line-up ()

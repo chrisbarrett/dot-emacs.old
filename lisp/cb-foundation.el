@@ -38,6 +38,7 @@
 (define-path cb:autosaves-dir "tmp/autosaves/")
 
 (defalias 'yes-or-no-p 'y-or-n-p)
+(autoload 'ido-yes-or-no-p "ido-yes-or-no")
 
 (use-package simple
   :diminish
@@ -102,8 +103,6 @@
 (bind-key* "C-x C-c" (command (message "Type <C-c k e> to exit Emacs")))
 (bind-key* "C-c k k" 'cb:exit-emacs-dwim)
 (bind-key* "C-c k e" 'cb:exit-emacs)
-
-(autoload 'ido-yes-or-no-p "ido-yes-or-no")
 
 (defun cb:exit-emacs ()
   (interactive)
