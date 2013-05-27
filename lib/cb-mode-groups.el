@@ -26,6 +26,8 @@
 
 ;;; Code:
 
+(require 'dash)
+
 (defmacro define-combined-hook (name hooks)
   "Create a hook bound as NAME that is run after each hook in HOOKS."
   (declare (indent 1))
@@ -106,6 +108,11 @@
   '(orgtbl-mode
     orgstruct-mode
     orgstruct++-mode))
+
+(define-mode-group cb:conf-modes
+  '(conf-unix-mode
+    conf-windows-mode
+    conf-javaprop-mode))
 
 (define-mode-group cb:prompt-modes
   '(comint-mode

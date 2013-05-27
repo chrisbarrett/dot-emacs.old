@@ -254,7 +254,10 @@
   :mode
   ((".gitignore$"  . conf-mode)
    (".gitmodules$" . conf-mode)
-   ("Doxyfile$"    . conf-mode)))
+   ("Doxyfile$"    . conf-mode))
+  :init
+  (hook-fn 'cb:conf-modes-hook
+    (smartparens-mode +1)))
 (use-package sml-mode
   :ensure t
   :mode (("\\.cm"  . sml-cm-mode)
