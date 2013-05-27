@@ -48,9 +48,10 @@
     (cond
      ;; If terminal is maximized, restore previous window config.
      ((and (derived-mode-p 'term-mode)
-           (equal 1 (length (window-list))))
-      (bury-buffer)
-      (jump-to-register :term-fullscreen))
+           (equal 1 (length (window-list)))
+           (equal (buffer-name) "*ansi-term*"))
+      (or (ignore-errors (jump-to-register :term-fullscreen) t)
+          (bury-buffer)))
 
      ;; If we're looking at the terminal, maximize it.
      ((derived-mode-p 'term-mode)
@@ -58,20 +59,22 @@
 
      ;; Otherwise show the terminal.
      (t
-      ;; First we hide the term window if it's visible. Then we save this
-      ;; configuration to a register so that it can be restored at for
-      ;; later positions in the cycle.
+      ;; Hide the term window if it's visible.
       (-when-let (win (--first (equal (buffer-name (window-buffer it))
                                       "*ansi-term*")
                                (window-list)))
         (delete-window win))
+      ;; Save this configuration to a register so that it can be restored
+      ;; for later positions in the cycle.
       (window-configuration-to-register :term-fullscreen)
-      (let* ((buf (get-buffer "*ansi-term*"))
-             (proc (get-buffer-process buf)))
-        (unless proc
-          (kill-buffer buf))
-        (if (and buf proc)
+      ;; Show terminal.
+      (let ((buf (get-buffer "*ansi-term*")))
+        (if (get-buffer-process buf)
+            ;; Switch to existing term.
             (switch-to-buffer-other-window buf)
+          ;; Start a new shell, cleaning up after shell sessions that have
+          ;; finished.
+          (when buf (kill-buffer buf))
           (ansi-term (executable-find "zsh")))))))
 
   :config
