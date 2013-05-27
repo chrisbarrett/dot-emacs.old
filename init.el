@@ -252,8 +252,9 @@
     (add-hook 'fsharp-mode-hook 'electric-layout-mode)))
 (use-package conf-mode
   :mode
-  ((".gitignore$" . conf-mode)
-   (".gitmodules$" . conf-mode)))
+  ((".gitignore$"  . conf-mode)
+   (".gitmodules$" . conf-mode)
+   ("Doxyfile$"    . conf-mode)))
 (use-package sml-mode
   :ensure t
   :mode (("\\.cm"  . sml-cm-mode)
