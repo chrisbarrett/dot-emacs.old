@@ -66,7 +66,6 @@
     (error
      (user-error "No documentation available"))))
 
-
 (use-package evil
   :ensure t
   :commands evil-mode
@@ -155,10 +154,10 @@
   :commands
   (evil-numbers/dec-at-pt
    evil-numbers/inc-at-pt)
-  :config
-  (progn
-    (define-key evil-normal-state-map (kbd "-") 'evil-numbers/dec-at-pt)
-    (define-key evil-normal-state-map (kbd "+") 'evil-numbers/inc-at-pt)))
+  :init
+  (after 'evil
+    (define-key evil-normal-state-map (kbd "C--") 'evil-numbers/dec-at-pt)
+    (define-key evil-normal-state-map (kbd "C-=") 'evil-numbers/inc-at-pt)))
 
 (provide 'cb-vim)
 
