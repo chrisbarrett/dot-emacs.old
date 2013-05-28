@@ -28,10 +28,20 @@
 
 (require 'use-package)
 
+(after 'auto-complete
+  (add-to-list 'ac-modes 'python-mode)
+  (add-to-list 'ac-modes 'inferior-python-mode))
+
 (use-package python
   :ensure   t
   :commands python-mode
   :mode     ("\\.py$" . python-mode)
+  :init
+  (hook-fn 'python-mode-hook
+    ;; Python-mode is not derived from prog mode, but we still want all the
+    ;; programming goodies.
+    (run-hooks 'prog-mode-hook))
+
   :config
   (progn
     (defun cb:comma-then-space ()
@@ -48,9 +58,7 @@
 
     (define-key python-mode-map (kbd ",") 'cb:comma-then-space)
     (define-key inferior-python-mode-map (kbd ",") 'cb:comma-then-space)
-    (define-key inferior-python-mode-map (kbd "C-c C-z") 'cb:switch-to-python)
-    (add-to-list 'ac-modes 'python-mode)
-    (add-to-list 'ac-modes 'inferior-python-mode)))
+    (define-key inferior-python-mode-map (kbd "C-c C-z") 'cb:switch-to-python)))
 
 (use-package jedi
   :ensure   t
