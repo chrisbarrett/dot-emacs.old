@@ -114,18 +114,18 @@ If the insertion creates an right arrow (->), remove surrounding whitespace."
             (delete-horizontal-space))))))
 
   (hook-fn 'c-mode-hook
-    (macrolet ((c-smart-op (char) `(command (cb:c-insert-smart-op ,char))))
-      (local-set-key (kbd ",") (command (insert ",") (just-one-space)))
-      (local-set-key (kbd "=") (c-smart-op "="))
-      (local-set-key (kbd "+") (c-smart-op "+"))
-      (local-set-key (kbd "|") (smart-op "|"))
-      (local-set-key (kbd ">") 'c-insert-smart-gt)
-      (local-set-key (kbd "-") 'c-insert-smart-minus)
-      (local-set-key (kbd "*") 'c-insert-smart-star))))
+    (local-set-key (kbd ",") (command (insert ",") (just-one-space)))
+    (local-set-key (kbd "=") 'c-insert-smart-equals)
+    (local-set-key (kbd "+") (command (c-insert-smart-op "+")))
+    (local-set-key (kbd "|") (smart-op "|"))
+    (local-set-key (kbd ">") 'c-insert-smart-gt)
+    (local-set-key (kbd "-") 'c-insert-smart-minus)
+    (local-set-key (kbd "*") 'c-insert-smart-star)))
 
 (after 'flycheck
 
   (defvar clang-custom-include-paths '("/usr/include/python2.7"))
+  (defvar-local clang-c-version "gnu11")
 
   (defun s-alnum-only (s)
     "Remove non-alphanumeric characters from S."
@@ -182,6 +182,7 @@ If the insertion creates an right arrow (->), remove surrounding whitespace."
     "Compiles the current file with clang."
     :command
     '("clang" "-O0" "-Wall"
+      (eval (concat "--std=" clang-c-version))
       (eval pkg-config-all-includes)
       "-fsyntax-only"
       "-fno-color-diagnostics" "-fno-caret-diagnostics"
