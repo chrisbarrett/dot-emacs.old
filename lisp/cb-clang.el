@@ -108,6 +108,8 @@ If the insertion creates an right arrow (->), remove surrounding whitespace."
 
 (after 'flycheck
 
+  (defvar clang-custom-include-paths '("/usr/include/python2.7"))
+
   (defun s-alnum-only (s)
     "Remove non-alphanumeric characters from S."
     (with-temp-buffer
@@ -155,6 +157,7 @@ If the insertion creates an right arrow (->), remove surrounding whitespace."
       (s-replace "-I:" "-I")
       (s-split (rx (or bol (+ space)) "-I"))
       (-filter 'file-exists-p)
+      (-concat clang-custom-include-paths)
       (--map (format "-I%s/" it)))
     "A string of cflags for including everything known to pkg-config.")
 
