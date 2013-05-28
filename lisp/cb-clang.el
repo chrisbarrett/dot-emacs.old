@@ -46,13 +46,30 @@
        "("
        (* (not (any ")"))))))
 
+(defun looking-at-c-struct-initializer? ()
+  (save-excursion
+    (backward-up-list)
+    (thing-at-point-looking-at
+     (rx "=" (* space)
+         ;; Optional casts
+         (? (group "(" (* nonl) ")"))
+         (* space)))))
+
 (after 'smart-operator
 
-  (defun cb:c-insert-smart-op (str)
+  (defun c-insert-smart-op (str)
     "Insert a smart operator with special formatting in certain expressions."
     (if (looking-at-c-flow-control-header?)
         (insert str)
       (smart-insert-operator str)))
+
+  (defun c-insert-smart-equals ()
+    "Insert an '=' with context-sensitive formatting."
+    (interactive)
+    (if (or (looking-at-c-flow-control-header?)
+            (looking-at-c-struct-initializer?))
+        (insert "=")
+      (smart-insert-operator "=")))
 
   (defun c-insert-smart-minus ()
     "Insert a minus with padding unless a unary minus is more appropriate."
@@ -84,7 +101,7 @@
     "Insert a > symbol with formatting.
 If the insertion creates an right arrow (->), remove surrounding whitespace."
     (interactive)
-    (cb:c-insert-smart-op ">")
+    (c-insert-smart-op ">")
     ;; Check whether we just inserted the tip of an arrow. If we did,
     ;; remove the spacing surrounding the arrow.
     (when (thing-at-point-looking-at (rx "-" (* space) ">" (* space)))
