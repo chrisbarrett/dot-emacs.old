@@ -117,10 +117,9 @@
     (defun cb:python-equals ()
       "Insert an '=' char padded by spaces, except in function arglists."
       (interactive)
-      (if (string-match-p
-           (rx (* space) "def ")
-           (thing-at-point 'line))
-          (insert-string "=")
+      (if (string-match-p (rx (* space) "def ")
+                          (thing-at-point 'line))
+          (insert "=")
         (smart-insert-operator "=")))
 
     (hook-fn 'cb:python-modes-hook
@@ -169,7 +168,8 @@
         (insert (ad-get-arg 0))
       (prog1 ad-do-it
         (when (equal (ad-get-arg 0) "=")
-          (indent-for-tab-command))))))
+          (save-excursion
+           (indent-according-to-mode)))))))
 
 (use-package lambda-mode
   :defer t
