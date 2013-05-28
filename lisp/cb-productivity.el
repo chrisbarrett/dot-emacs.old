@@ -168,6 +168,11 @@
   :commands hs-minor-mode
   :defer    t)
 
+(use-package abbrev
+  :defer t
+  :config
+  (setq abbrev-file-name (concat cb:tmp-dir "abbrev_defs")))
+
 (provide 'cb-productivity)
 
 ;; Local Variables:
