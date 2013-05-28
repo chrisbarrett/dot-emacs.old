@@ -26,6 +26,7 @@
 
 ;;; Code:
 
+(require 'dash)
 (require 'use-package)
 
 (use-package compile
@@ -112,13 +113,11 @@
 (use-package flycheck
   :ensure t
   :commands
-  (flycheck-mode
-   flycheck-may-enable-mode)
+  (flycheck-mode flycheck-mode-on-safe)
   :init
   (--each '(prog-mode-hook text-mode-hook)
-    (hook-fn it
-      (when (flycheck-may-enable-mode)
-        (flycheck-mode +1))))
+    (hook-fn it (flycheck-mode-on-safe)))
+
   :config
   (defadvice flycheck-buffer (around dont-throw-in-ido-for-fuck-sake activate)
     (condition-case _
