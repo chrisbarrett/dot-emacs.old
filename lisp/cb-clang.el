@@ -48,7 +48,7 @@
 
 (defun looking-at-c-struct-initializer? ()
   (save-excursion
-    (backward-up-list)
+    (ignore-errors (backward-up-list))
     (thing-at-point-looking-at
      (rx "=" (* space)
          ;; Optional casts
@@ -71,20 +71,6 @@
         (insert "=")
       (smart-insert-operator "=")))
 
-  (defun c-insert-smart-minus ()
-    "Insert a minus with padding unless a unary minus is more appropriate."
-    (interactive)
-    (atomic-change-group
-      (if (thing-at-point-looking-at
-           (rx (or "return" "(" "[" "(" ";" "=") (* space)))
-          (insert "-")
-        (unless (->> (buffer-substring (line-beginning-position) (point))
-                  (s-trim-left)
-                  (s-blank?))
-          (just-one-space))
-        (insert "-")
-        (just-one-space))))
-
   (defun c-insert-smart-star ()
     "Insert a * with padding in multiplication contexts."
     (interactive)
@@ -97,27 +83,53 @@
       (insert "*")
       (just-one-space)))
 
+  (defun c-maybe-remove-spaces-after-inserting (pred-regex op-start-regex)
+    (when (thing-at-point-looking-at pred-regex)
+      (save-excursion
+        (let ((back-limit (save-excursion
+                            (search-backward-regexp op-start-regex)
+                            (point))))
+          (while (search-backward-regexp (rx space) back-limit t)
+            (delete-horizontal-space)))
+        (indent-according-to-mode))))
+
+  (defun c-insert-smart-minus ()
+    "Insert a minus with padding unless a unary minus is more appropriate."
+    (interactive)
+    (atomic-change-group
+      ;; Handle formatting for unary minus.
+      (if (thing-at-point-looking-at
+           (rx (or "return" "(" "[" "(" ";" "=") (* space)))
+          (insert "-")
+        (c-insert-smart-op "-"))
+      ;; Collapse whitespace for decrement operator.
+      (c-maybe-remove-spaces-after-inserting
+       (rx "-" (* space) "-" (* space))
+       (rx (not (any "-" space))))))
+
   (defun c-insert-smart-gt ()
     "Insert a > symbol with formatting.
 If the insertion creates an right arrow (->), remove surrounding whitespace."
     (interactive)
     (c-insert-smart-op ">")
-    ;; Check whether we just inserted the tip of an arrow. If we did,
-    ;; remove the spacing surrounding the arrow.
-    (when (thing-at-point-looking-at (rx "-" (* space) ">" (* space)))
-      (save-excursion
-        (let ((arrow-start (save-excursion
-                             (search-backward-regexp
-                              (rx (not (any space "-" ">"))))
-                             (point))))
-          (while (search-backward-regexp (rx space) arrow-start t)
-            (delete-horizontal-space))))))
+    (c-maybe-remove-spaces-after-inserting
+     (rx "-" (* space) ">" (* space))
+     (rx (not (any space "-" ">")))))
+
+  (defun c-insert-smart-plus ()
+    "Insert a + symbol with formatting.
+Remove horizontal whitespace if the insertion results in a ++."
+    (interactive)
+    (c-insert-smart-op "+")
+    (c-maybe-remove-spaces-after-inserting
+     (rx "+" (* space) "+" (* space))
+     (rx (not (any space "+")))))
 
   (hook-fn 'c-mode-hook
     (local-set-key (kbd ",") (command (insert ",") (just-one-space)))
     (local-set-key (kbd "=") 'c-insert-smart-equals)
-    (local-set-key (kbd "+") (command (c-insert-smart-op "+")))
     (local-set-key (kbd "|") (smart-op "|"))
+    (local-set-key (kbd "+") 'c-insert-smart-plus)
     (local-set-key (kbd ">") 'c-insert-smart-gt)
     (local-set-key (kbd "-") 'c-insert-smart-minus)
     (local-set-key (kbd "*") 'c-insert-smart-star)))
