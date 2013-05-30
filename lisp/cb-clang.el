@@ -81,11 +81,10 @@
            (search-backward-regexp cast)
            (not (looking-at-c-flow-control-keyword?))))))
 
-(defun looking-at-c-struct-initializer? ()
+(defun looking-at-c-struct-keyword? ()
   (save-excursion
-    (ignore-errors (backward-up-list))
-    (or (looking-at-c-assignment-right-side?)
-        (looking-at-c-cast?))))
+    (beginning-of-sexp)
+    (thing-at-point-looking-at (rx "."))))
 
 (after 'smart-operator
 
@@ -99,7 +98,7 @@
     "Insert an '=' with context-sensitive formatting."
     (interactive)
     (if (or (looking-at-c-flow-control-header?)
-            (looking-at-c-struct-initializer?))
+            (looking-at-c-struct-keyword?))
         (insert "=")
       (smart-insert-operator "=")))
 
