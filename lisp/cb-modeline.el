@@ -43,7 +43,9 @@
 
 (defun* cb:vc-file-uptodate? (&optional (file (buffer-file-name)))
   "Non-nil if FILE is up-to-date."
-  (ignore-errors (equal 'up-to-date (vc-state file))))
+  (ignore-errors
+    (vc-state-refresh file 'git)
+    (equal 'up-to-date (vc-state file))))
 
 (defun* cb:shorten-directory (dir &optional (max-length 30))
   "Show up to MAX-LENGTH characters of a directory name DIR."
