@@ -42,6 +42,12 @@
     "Ignore errors thrown by internals."
     (ignore-errors ad-do-it)))
 
+(after 'auto-complete
+  (hook-fn 'c-mode-hook
+    (setq ac-sources '(ac-source-clang-async
+                       ac-source-yasnippet
+                       ac-source-words-in-buffer))))
+
 (defun looking-at-c-flow-control-header? ()
   (thing-at-point-looking-at
    (rx (* nonl) (32 ";") (* space)
@@ -50,14 +56,37 @@
        "("
        (* (not (any ")"))))))
 
-(defun looking-at-c-struct-initializer? ()
+(defun looking-at-c-flow-control-keyword? ()
+  (thing-at-point-looking-at
+   (rx (or "if" "when" "while" "for" "do") (or (+ space) "("))))
+
+(defun looking-at-c-assignment-right-side? ()
   (save-excursion
-    (ignore-errors (backward-up-list))
     (thing-at-point-looking-at
      (rx "=" (* space)
          ;; Optional casts
          (? (group "(" (* nonl) ")"))
          (* space)))))
+
+(defun looking-at-c-cast? ()
+  (let ((cast (rx
+               (any
+                ;; Operator
+                "+" "-" "*" "/" "|" "&" ">" "<"
+                ;; Expression delimiter
+                ";" "[" "{" "(" ")" "=") (* space)
+                ;; Cast and type
+               "(" (* nonl) ")" (* space))))
+    (and (thing-at-point-looking-at cast)
+         (save-excursion
+           (search-backward-regexp cast)
+           (not (looking-at-c-flow-control-keyword?))))))
+
+(defun looking-at-c-struct-initializer? ()
+  (save-excursion
+    (ignore-errors (backward-up-list))
+    (or (looking-at-c-assignment-right-side?)
+        (looking-at-c-cast?))))
 
 (after 'smart-operator
 
@@ -216,7 +245,8 @@ Remove horizontal whitespace if the insertion results in a ++."
     (interactive)
     (unwind-protect
         (atomic-change-group
-          (if (thing-at-point-looking-at (rx ")" (* space) eol))
+          (if (and (thing-at-point-looking-at (rx ")" (* space) eol))
+                   (not (looking-at-c-cast?)))
               ;; Insert and put braces on new lines.
               (progn
                 (newline)
