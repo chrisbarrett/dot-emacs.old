@@ -107,14 +107,10 @@
   (defun c-insert-smart-star ()
     "Insert a * with padding in multiplication contexts."
     (interactive)
-    (if (thing-at-point-looking-at (rx (not digit) (* space)))
-        (insert "*")
-      (unless (->> (buffer-substring (line-beginning-position) (point))
-                (s-trim-left)
-                (s-blank?))
-        (just-one-space))
-      (insert "*")
-      (just-one-space)))
+    (if (thing-at-point-looking-at (rx digit (* space)))
+        (smart-insert-operator "*")
+      (just-one-space)
+      (insert "*")))
 
   (defun c-maybe-remove-spaces-after-inserting (pred-regex op-start-regex)
     (when (thing-at-point-looking-at pred-regex)
