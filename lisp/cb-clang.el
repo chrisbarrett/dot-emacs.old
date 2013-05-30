@@ -36,7 +36,11 @@
   (define-key c-mode-map (kbd "M-q") 'indent-dwim)
   (require 'smart-operator)
   (require 'flycheck)
-  (require 'smartparens))
+  (require 'smartparens)
+
+  (defadvice c-inside-bracelist-p (around ignore-errors activate)
+    "Ignore errors thrown by internals."
+    (ignore-errors ad-do-it)))
 
 (defun looking-at-c-flow-control-header? ()
   (thing-at-point-looking-at
@@ -99,7 +103,7 @@
     (atomic-change-group
       ;; Handle formatting for unary minus.
       (if (thing-at-point-looking-at
-           (rx (or "return" "(" "[" "(" ";" "=") (* space)))
+           (rx (or "return" "," "(" "[" "(" ";" "=") (* space)))
           (insert "-")
         (c-insert-smart-op "-"))
       ;; Collapse whitespace for decrement operator.
