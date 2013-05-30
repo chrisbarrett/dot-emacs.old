@@ -45,8 +45,7 @@
 (after 'auto-complete
   (hook-fn 'c-mode-hook
     (setq ac-sources '(ac-source-clang-async
-                       ac-source-yasnippet
-                       ac-source-words-in-buffer))))
+                       ac-source-yasnippet))))
 
 (defun looking-at-c-flow-control-header? ()
   (thing-at-point-looking-at
@@ -107,10 +106,16 @@
   (defun c-insert-smart-star ()
     "Insert a * with padding in multiplication contexts."
     (interactive)
-    (if (thing-at-point-looking-at (rx digit (* space)))
-        (smart-insert-operator "*")
+    (cond
+     ((s-matches? (rx bol (* space) eol)
+                  (buffer-substring (line-beginning-position) (point)))
+      (indent-according-to-mode)
+      (insert "*"))
+     ((thing-at-point-looking-at (rx (any digit "*") (* space)))
+      (smart-insert-operator "*"))
+     (t
       (just-one-space)
-      (insert "*")))
+      (insert "*"))))
 
   (defun c-maybe-remove-spaces-after-inserting (pred-regex op-start-regex)
     (when (thing-at-point-looking-at pred-regex)
@@ -219,10 +224,16 @@ Remove horizontal whitespace if the insertion results in a ++."
       (--map (format "-I%s/" it)))
     "A string of cflags for including everything known to pkg-config.")
 
+  (defvar clang-checker-warning-flags
+    '("-Wall"
+      ;; For optional param-style macros.
+      "-Wno-initializer-overrides"))
+
   (flycheck-declare-checker clang
     "Compiles the current file with clang."
     :command
-    '("clang" "-O0" "-Wall"
+    '("clang" "-O0"
+      (eval clang-checker-warning-flags)
       (eval (concat "--std=" clang-c-version))
       (eval pkg-config-all-includes)
       "-fsyntax-only"
