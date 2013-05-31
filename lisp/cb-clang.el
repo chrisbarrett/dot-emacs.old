@@ -69,13 +69,22 @@
 
 (defun looking-at-c-cast? ()
   (let ((cast (rx
-               (any
-                ;; Operator
-                "+" "-" "*" "/" "|" "&" ">" "<"
-                ;; Expression delimiter
-                ";" "[" "{" "(" ")" "=") (* space)
-                ;; Cast and type
-               "(" (* nonl) ")" (* space))))
+
+               (or
+                "return"
+                (any
+                 ;; Operator
+                 "+" "-" "*" "/" "|" "&" ">" "<"
+                 ;; Expression delimiter
+                 ";" "[" "{" "(" ")" "="))
+
+               (* space)
+
+               ;; Cast and type
+               "(" (* nonl) ")"
+
+               (* space)))
+        )
     (and (thing-at-point-looking-at cast)
          (save-excursion
            (search-backward-regexp cast)
@@ -84,7 +93,7 @@
 (defun looking-at-c-struct-keyword? ()
   (save-excursion
     (beginning-of-sexp)
-    (thing-at-point-looking-at (rx "."))))
+    (thing-at-point-looking-at (rx (or "{" " " "(" ",") "."))))
 
 (after 'smart-operator
 
@@ -109,6 +118,8 @@
      ((s-matches? (rx bol (* space) eol)
                   (buffer-substring (line-beginning-position) (point)))
       (indent-according-to-mode)
+      (insert "*"))
+     ((thing-at-point-looking-at (rx (any "(" "{" "[") (* space)))
       (insert "*"))
      ((thing-at-point-looking-at (rx (any digit "*") (* space)))
       (smart-insert-operator "*"))
