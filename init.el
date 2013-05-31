@@ -35,6 +35,9 @@
 (blink-cursor-mode -1)
 (menu-bar-mode (if (display-graphic-p) +1 -1))
 
+(defvar cb:use-vim-keybindings? t
+  "Set to nil to disable Evil-mode and associated key bindings.")
+
 ;;;; Basic paths.
 
 (setq user-emacs-directory (expand-file-name user-emacs-directory))
@@ -150,7 +153,8 @@
         (write-file cb:last-theme))
       (message nil))))
 (use-package cb-web)
-(use-package cb-vim)
+(use-package cb-vim
+  :if cb:use-vim-keybindings?)
 (use-package cb-shell)
 (use-package cb-completion)
 (use-package cb-dired)
