@@ -67,23 +67,35 @@
 
 (after 'flycheck
 
-  (defconst cb:haskell-checker-regexes
-    `((,(concat "^\\(?1:.*?\\):\\(?2:[0-9]+\\):\\(?3:[0-9]*\\):[ \t\n\r]*"
-                "\\(?4:Warning: \\(.\\|[ \t\n\r]\\)+?\\)\\(^\n\\|\\'\\)") warning)
+  (defun haskell-parse-phrase-for-err (phrase)
+    (ignore-errors
+      (destructuring-bind (_ file line col warn message)
+          (s-match
+           (rx (group-n 1 (+? nonl)) ":"  ; file
+               (group-n 2 (+? digit)) ":" ; line
+               (group-n 3 (+? digit)) ":" ; col
+               (* (or "\n" space))
+               (group-n 4 (? "Warning:") (* space))
+               (group-n 5 (+ (or nonl "\n"))) ; message
+               )
+           phrase)
+        (flycheck-error-new
+         :line (string-to-number line)
+         :column (string-to-number col)
+         :level (if (s-blank? warn) 'error 'warning)
+         :filename file
+         :message (->> message
+                    (s-split (rx "\n"))
+                    (-map 's-trim)
+                    (s-join "\n"))))))
 
-      (,(concat "^\\(?1:.*?\\):\\(?2:[0-9]+\\):\\(?3:[0-9]*\\):[ \t\n\r]*"
-                "\\(?4:\\(.\\|[ \t\n\r]\\)+?\\)\\(^\n\\|\\'\\)") error)))
-
-  ;; (flycheck-declare-checker haskell-hdevtools
-  ;;   "Haskell checker using hdevtools"
-  ;;   :command '("hdevtools"
-  ;;              "check"
-  ;;              "-g" "-Wall"
-  ;;              "-g" "-i/../src"
-  ;;              source-inplace)
-  ;;   :error-patterns cb:haskell-checker-regexes
-  ;;   :modes 'haskell-mode
-  ;;   :next-checkers '(haskell-hlint))
+  (defun haskell-ghc-parser (str &rest _)
+    (->> str
+      ;; Split on entirely blank lines.
+      (s-split (rx bol eol))
+      (-map 's-trim)
+      (-map 'haskell-parse-phrase-for-err)
+      (-remove 'null)))
 
   (flycheck-declare-checker haskell-ghc
     "Haskell checker using ghc"
@@ -92,7 +104,7 @@
                "-i./../src"
                "-fno-code"
                source-inplace)
-    :error-patterns cb:haskell-checker-regexes
+    :error-parser 'haskell-ghc-parser
     :modes 'haskell-mode
     :next-checkers '(haskell-hlint))
 
@@ -109,8 +121,10 @@
     :modes 'haskell-mode)
 
   (add-to-list 'flycheck-checkers 'haskell-ghc)
-  ;; (add-to-list 'flycheck-checkers 'haskell-hdevtools)
-  (add-to-list 'flycheck-checkers 'haskell-hlint))
+  (add-to-list 'flycheck-checkers 'haskell-hlint)
+
+  (hook-fn 'haskell-mode-hook
+    (flycheck-select-checker 'haskell-ghc)))
 
 (use-package haskell-mode
   :ensure t
