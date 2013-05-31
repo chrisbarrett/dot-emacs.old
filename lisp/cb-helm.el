@@ -46,18 +46,19 @@
   :idle   (require 'helm)
   :init
   (progn
-     (after 'helm
+    (after 'helm
       (define-key helm-map (kbd "C-[") 'helm-keyboard-quit))
 
-    (bind-key* "M-a" 'helm-apropos)
-    (bind-key* "M-b" 'helm-buffers-list)
-    (bind-key* "C-x C-b" 'helm-buffers-list)
-    (bind-key* "M-j" 'helm-mini)
-    (bind-key* "M-i" 'helm-imenu)
-    (bind-key* "M-f" 'helm-etags-select)
-    (bind-key* "M-m" 'helm-man-woman)
-    (bind-key* "M-w" 'helm-w3m-bookmarks)
-    (bind-key* "M-k" 'helm-show-kill-ring)))
+    (after 'evil
+      (bind-key* "M-a" 'helm-apropos)
+      (bind-key* "M-b" 'helm-buffers-list)
+      (bind-key* "C-x C-b" 'helm-buffers-list)
+      (bind-key* "M-j" 'helm-mini)
+      (bind-key* "M-i" 'helm-imenu)
+      (bind-key* "M-f" 'helm-etags-select)
+      (bind-key* "M-m" 'helm-man-woman)
+      (bind-key* "M-w" 'helm-w3m-bookmarks)
+      (bind-key* "M-k" 'helm-show-kill-ring))))
 
 (use-package helm-projectile
   :ensure t
@@ -65,14 +66,15 @@
   :idle (require 'helm-projectile)
   :init
   (progn
-      (defun cb:helm-dwim ()
+    (defun cb:helm-dwim ()
       "Show helm-projectile, failling back to helm-mini if not in a project."
       (interactive)
       (if (projectile-project-p)
           (helm-projectile)
         (helm-mini)))
 
-    (bind-key* "C-j" 'cb:helm-dwim)))
+    (after 'evil
+      (bind-key* "C-j" 'cb:helm-dwim))))
 
 (provide 'cb-helm)
 

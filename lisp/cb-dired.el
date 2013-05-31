@@ -93,9 +93,11 @@
     ;; Don't bind C-x C-j to dired-jump - this interferes with bindings in
     ;; ansi-term.
     (setq dired-bind-jump nil)
-    (after 'dired (require 'dired-x))
-    (bind-key* "M-d" 'dired-jump)
-    (bind-key* "M-D" 'dired-jump-other-window)))
+    (after 'dired
+      (require 'dired-x))
+    (after 'evil
+      (bind-key* "M-d" 'dired-jump)
+      (bind-key* "M-D" 'dired-jump-other-window))))
 
 (use-package dired-details
   :ensure   t

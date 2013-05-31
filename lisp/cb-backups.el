@@ -92,7 +92,6 @@
        (delete-file savehist-file)
        (savehist-mode +1)))))
 
-
 (provide 'cb-backups)
 
 ;; Local Variables:

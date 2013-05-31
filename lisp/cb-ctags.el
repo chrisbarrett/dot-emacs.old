@@ -105,8 +105,6 @@
 
 (provide 'cb-ctags)
 
-(provide 'cb-ctags)
-
 ;; Local Variables:
 ;; lexical-binding: t
 ;; End:
