@@ -97,6 +97,7 @@
         (smartparens-mode +1))))
   :config
   (progn
+    (define-key smartparens-mode-map (kbd "M-<up>") 'sp-splice-sexp-killing-backward)
     (sp-pair "'" nil :unless '(sp-point-after-word-p))
     (sp-local-tag '(sgml-mode html-mode) "<" "<_>" "</_>"
                   :transform 'sp-match-sgml-tags)))
