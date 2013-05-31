@@ -1,6 +1,9 @@
 # dot-emacs
 
-This is my Emacs configuration. It is obviously very personalized - my key bindings are designed around [Evil-mode](http://gitorious.org/evil/pages/Home).
+This is my Emacs configuration. It is obviously very personalized - my key
+bindings are designed around
+[Evil-mode](http://gitorious.org/evil/pages/Home), though they can be
+easily disabled.
 
 ## Installation
 
@@ -17,18 +20,22 @@ You can install additional features with `make all`, or using their individual m
 
 ## Features
 
-Since Evil-mode frees up the Meta key, I use M-*key* for helm and dired commands. Normal Emacs motion commands will not work!
+I use Evil-mode for Vim emulation. Since Evil-mode frees up the Meta key, I
+use M-<key>key</key> for helm and dired commands.
+
+You can restore Emacs' normal key bindings by setting
+`cb:use-vim-keybindings?` to nil in `init.el`.
 
 ### Language Config
 
 Sane configurations are provided for several languages and environments:
 
 * Ruby/Rails
+* Haskell
 * Python
 * Elisp
 * Clojure
 * Scheme
-* Haskell
 * SuperCollider
 
 ### Simple key-bindings
