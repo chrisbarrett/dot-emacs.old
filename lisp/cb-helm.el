@@ -30,12 +30,13 @@
 
 (use-package projectile
   :ensure   t
+  :defer    t
   :diminish projectile-mode
+  :init (add-hook 'after-init-hook 'projectile-global-mode)
   :config
   (progn
     (setq projectile-known-projects-file
           (concat cb:tmp-dir "projectile-bookmarks.eld"))
-    (projectile-global-mode)
     (defadvice find-tag (before set-tags-directory activate)
       "Ensure the TAGS path is set before searching for tags."
       (setq tags-file-name (concat (projectile-project-root) "TAGS")))))
