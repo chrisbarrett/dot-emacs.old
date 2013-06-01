@@ -43,6 +43,8 @@
   :ensure t
   :defer  t
   :init
+  (hook-fn 'after-init-hook (key-chord-mode +1))
+  :config
   (progn
 
     (defun cb:backward-slurp ()
@@ -99,8 +101,7 @@
     (key-chord-define-global "qk" 'cb:forward-slurp)
     (key-chord-define-global "ql" 'cb:splice-killing-backward)
     (key-chord-define-global "qn" 'cb:backward-barf)
-    (key-chord-define-global "qm" 'cb:forward-barf)
-    (key-chord-mode +1)))
+    (key-chord-define-global "qm" 'cb:forward-barf)))
 
 (use-package scratch
   :ensure   t
