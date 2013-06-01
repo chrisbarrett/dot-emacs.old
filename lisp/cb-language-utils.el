@@ -99,6 +99,7 @@
   (progn
     ;; Customise to behave more like paredit.
     (define-key smartparens-mode-map (kbd "M-<up>") 'sp-splice-sexp-killing-backward)
+    (define-key smartparens-mode-map (kbd "M-<down>") 'sp-splice-sexp-killing-forward)
     (define-key smartparens-mode-map (kbd "DEL")    'sp-backward-delete-char)
     (define-key smartparens-mode-map (kbd "M-DEL")  'sp-backward-kill-symbol)
     (define-key smartparens-mode-map (kbd "C-k")    'sp-kill-sexp)
