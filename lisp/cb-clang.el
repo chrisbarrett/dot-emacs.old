@@ -340,6 +340,8 @@ Remove horizontal whitespace if the insertion results in a ++."
     (ac-clang-launch-completion-process))
   :config
   (progn
+    (copy-face 'ac-candidate-face 'ac-clang-candidate-face)
+    (copy-face 'ac-selection-face 'ac-clang-selection-face)
     (define-path cb:clang-complete-dir "lib/clang-complete-async/")
     (setq ac-clang-complete-executable (concat cb:clang-complete-dir "clang-complete"))))
 
