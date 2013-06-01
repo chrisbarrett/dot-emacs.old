@@ -34,7 +34,7 @@
 (defun get-manpage (candidate)
   "Show the manpage for CANDIDATE."
   (let ((wfiles (mapcar 'car (woman-file-name-all-completions candidate))))
-    (condition-case err
+    (condition-case _
         (if (> (length wfiles) 1)
             (woman-find-file
              (helm-comp-read
@@ -67,9 +67,10 @@
      (user-error "No documentation available"))))
 
 (use-package evil
-  :ensure t
+  :ensure   t
   :commands evil-mode
-  :init (evil-mode +1)
+  :init
+  (add-hook 'after-init-hook 'evil-mode)
   :config
   (progn
     (use-package cb-evil)
@@ -132,7 +133,9 @@
     (setq evil-want-visual-char-semi-exclusive t
           evil-toggle-key (kbd "M-z")
           evil-default-cursor t)
-    (setq-default evil-shift-width 2)))
+    (setq-default evil-shift-width 2)
+
+    (evil-mode +1)))
 
 (use-package surround
   :ensure t
@@ -145,9 +148,10 @@
     (hook-fn 'prog-mode-hook
       (push '(?\( . ("(" . ")")) surround-pairs-alist)
       (push '(?\[ . ("[" . "]")) surround-pairs-alist)
-      (push '(?< . ("<" . ">")) surround-pairs-alist))
+      (push '(?<  . ("<" . ">")) surround-pairs-alist))
     (hook-fn 'cb:lisp-modes-hook
-      (push '(?\{ . ("{" . "}")) surround-pairs-alist))))
+      (push '(?\{ . ("{" . "}")) surround-pairs-alist)
+      (push '(?\` . ("`" . "'")) surround-pairs-alist))))
 
 (use-package evil-numbers
   :ensure t
