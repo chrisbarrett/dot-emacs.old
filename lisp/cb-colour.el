@@ -66,12 +66,12 @@
 
   (after "parenface-plus"
     (set-face-foreground  'paren-face "grey80")))
+(defalias 'light 'solarized-light)
 
 ;;;###autoload
 (cb:define-theme solarized-dark
   (load-theme 'solarized-dark 'no-confirm)
   (set-face-underline 'hl-line nil)
-  (set-face-foreground 'mode-line-filename "#b58900")
 
   (after "helm"
     (set-face-background  'helm-selection "black")
@@ -85,6 +85,7 @@
 
   (after "parenface-plus"
     (set-face-foreground  'paren-face "grey30")))
+(defalias 'dark 'solarized-dark)
 
 ;;;###autoload
 (cb:define-theme ir-black
@@ -882,6 +883,7 @@
                       :box '(:line-width 1 :color "gray30" :style nil))
   (set-face-attribute 'mode-line-inactive nil
                       :box '(:line-width 1 :color "gray10" :style nil)))
+(defalias 'black 'ir-black)
 
 (provide 'cb-colour)
 

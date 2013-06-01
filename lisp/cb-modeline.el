@@ -142,9 +142,12 @@
   :group 'modeline)
 
 (defface mode-line-filename
-  '((t
-     (:foreground "#eab700" :weight bold
-      :inherit 'mode-line)))
+  '((((background light))
+     (:foreground "darkgoldenrod4" :weight bold))
+    (((background dark))
+     (:foreground "#eab700" :weight bold))
+    (t
+     (:inherit 'mode-line)))
   "Face for the name component of the current filename."
   :group 'modeline)
 
