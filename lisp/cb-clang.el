@@ -173,6 +173,8 @@ Remove horizontal whitespace if the insertion results in a ++."
     (local-set-key (kbd ",") (command (insert ",") (just-one-space)))
     (local-set-key (kbd "=") 'c-insert-smart-equals)
     (local-set-key (kbd "|") (smart-op "|"))
+    (local-set-key (kbd "?") (smart-op "?"))
+    (local-set-key (kbd ":") (smart-op ":"))
     (local-set-key (kbd "+") 'c-insert-smart-plus)
     (local-set-key (kbd ">") 'c-insert-smart-gt)
     (local-set-key (kbd "-") 'c-insert-smart-minus)
