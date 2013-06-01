@@ -48,12 +48,16 @@
     (defun cb:backward-slurp ()
       (interactive)
       (cond ((cb:truthy? 'paredit-mode)
-             (paredit-backward-slurp-sexp))))
+             (paredit-backward-slurp-sexp))
+            ((cb:truthy? 'smartparens-mode)
+             (sp-backward-slurp-sexp))))
 
     (defun cb:forward-slurp ()
       (interactive)
       (cond ((cb:truthy? 'tagedit-mode)
              (tagedit-forward-slurp-tag))
+            ((cb:truthy? 'smartparens-mode)
+             (sp-forward-slurp-sexp))
             ((cb:truthy? 'paredit-mode)
              (paredit-forward-slurp-sexp))
             (t
@@ -63,6 +67,8 @@
       (interactive)
       (cond ((cb:truthy? 'tagedit-mode)
              (tagedit-splice-tag))
+            ((cb:truthy? 'smartparens-mode)
+             (sp-splice-sexp-killing-backward))
             ((cb:truthy? 'paredit-mode)
              (paredit-splice-sexp-killing-backward))
             (t
@@ -72,6 +78,8 @@
       (interactive)
       (cond ((cb:truthy? 'paredit-mode)
              (paredit-backward-barf-sexp))
+            ((cb:truthy? 'smartparens-mode)
+             (sp-backward-barf-sexp))
             ((cb:truthy? 'tagedit-mode)
              (tagedit-backward-barf-tag))))
 
@@ -79,6 +87,8 @@
       (interactive)
       (cond ((cb:truthy? 'tagedit-mode)
              (tagedit-forward-barf-tag))
+            ((cb:truthy? 'smartparens-mode)
+             (sp-forward-barf-sexp))
             ((cb:truthy? 'paredit-mode)
              (paredit-forward-barf-sexp))
             (t

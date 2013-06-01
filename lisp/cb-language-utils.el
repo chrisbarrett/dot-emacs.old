@@ -97,7 +97,15 @@
         (smartparens-mode +1))))
   :config
   (progn
+    ;; Customise to behave more like paredit.
     (define-key smartparens-mode-map (kbd "M-<up>") 'sp-splice-sexp-killing-backward)
+    (define-key smartparens-mode-map (kbd "DEL")    'sp-backward-delete-char)
+    (define-key smartparens-mode-map (kbd "M-DEL")  'sp-backward-kill-symbol)
+    (define-key smartparens-mode-map (kbd "C-k")    'sp-kill-sexp)
+    (define-key smartparens-mode-map (kbd ")") 'sp-up-sexp)
+    (define-key smartparens-mode-map (kbd "]") 'sp-up-sexp)
+    (define-key smartparens-mode-map (kbd "}") 'sp-up-sexp)
+
     (sp-pair "'" nil :unless '(sp-point-after-word-p))
     (sp-local-tag '(sgml-mode html-mode) "<" "<_>" "</_>"
                   :transform 'sp-match-sgml-tags)))
