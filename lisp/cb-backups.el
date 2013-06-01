@@ -29,23 +29,35 @@
 (require 'use-package)
 
 (use-package saveplace
+  :defer t
+  :commands
+  (save-place-find-file-hook
+   save-place-kill-emacs-hook
+   save-place-to-alist)
   :init
   (progn
+    (unless noninteractive
+      (add-hook 'kill-emacs-hook 'save-place-kill-emacs-hook))
+    (add-hook 'kill-buffer-hook  'save-place-to-alist)
+    (add-hook 'find-file-hook    'save-place-find-file-hook t)
     (add-hook 'server-visit-hook 'save-place-find-file-hook)
     (add-hook 'server-done-hook  'save-place-kill-emacs-hook)
+
     (setq save-place-file (concat cb:tmp-dir "saved-places"))
     (setq-default saveplace t)))
 
 (use-package recentf
   :defer t
   :idle  (require 'recentf)
-  :config
-  (defadvice recentf-cleanup (around hide-messages activate)
-    (flet ((message (&rest args)))
-      ad-do-it))
   :init
+  (hook-fn 'find-file-hook (require 'recentf))
+  :config
   (progn
-    (hook-fn 'find-file-hook (require 'recentf))
+
+    (defadvice recentf-cleanup (around hide-messages activate)
+      (flet ((message (&rest args)))
+        ad-do-it))
+
     (setq
      recentf-save-file       (concat cb:tmp-dir "recentf")
      recentf-auto-cleanup    5
@@ -79,6 +91,8 @@
 
 (use-package savehist
   :init
+  (hook-fn 'after-init-hook (require 'savehist))
+  :config
   (progn
     (setq
      savehist-additional-variables '(search ring regexp-search-ring)
