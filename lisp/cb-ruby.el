@@ -34,8 +34,46 @@
     (flycheck-mode -1)))
 
 (add-to-list 'auto-mode-alist `("\\.html\\.erb" . erb-mode))
+
 (after 'auto-complete
-  (add-to-list 'ac-modes 'erb-mode))
+  (add-to-list 'ac-modes 'ruby-mode)
+  (add-to-list 'ac-modes 'inf-ruby-mode)
+  (add-to-list 'ac-modes 'erb-mode)
+
+  (defun cb:inside-ruby-class-def? ()
+    (save-excursion
+      (let ((end (save-excursion (search-backward-regexp (rx bol "end") nil t))))
+        (search-backward-regexp (rx bol "class") end t))))
+
+  (defun cb:rockets->hash-syntax ()
+    "Convert old-style rockets to new hash literal syntax in the current buffer."
+    (interactive)
+    (save-excursion
+      (goto-char (point-min))
+      (while (search-forward-regexp (rx ":" (group-n 1 (+ (not space)))
+                                        (* space)
+                                        "=>"
+                                        (* space))
+                                    nil t)
+        (replace-match "\\1: " t nil))))
+
+  (ac-define-source ruby-class-keywords
+    '((available  . cb:inside-ruby-class-def?)
+      (candidates . '("public" "private" "protected"))
+      (symbol     . "s")))
+
+  (ac-define-source ruby-class-attributes
+    '((available  . cb:inside-ruby-class-def?)
+      (candidates . '("attr_accessor" "attr_reader" "attr_writer"))
+      (action     . (lambda () (insert " :")))
+      (symbol     . "m")))
+
+  (hook-fn 'cb:ruby-modes-hook
+    (add-to-list 'ac-sources 'ac-source-yasnippet)
+    (add-to-list 'ac-sources 'ac-source-ruby-class-keywords)
+    (add-to-list 'ac-sources 'ac-source-ruby-class-attributes)
+    (subword-mode +1))
+  )
 
 (use-package ruby-mode
   :ensure t
@@ -52,45 +90,7 @@
    ("Vagrantfile\\'" . ruby-mode)
    ("\\.jbuilder\\'" . ruby-mode))
   :init
-  (add-to-list 'completion-ignored-extensions ".rbc")
-  :config
-  (progn
-    (defun cb:rockets->hash-syntax ()
-      "Convert old-style rockets to new hash literal syntax in the current buffer."
-      (interactive)
-      (save-excursion
-        (goto-char (point-min))
-        (while (search-forward-regexp (rx ":" (group-n 1 (+ (not space)))
-                                          (* space)
-                                          "=>"
-                                          (* space))
-                                      nil t)
-          (replace-match "\\1: " t nil))))
-
-    (defun cb:inside-ruby-class-def? ()
-      (save-excursion
-        (let ((end (save-excursion (search-backward-regexp (rx bol "end") nil t))))
-          (search-backward-regexp (rx bol "class") end t))))
-
-    (ac-define-source ruby-class-keywords
-      '((available  . cb:inside-ruby-class-def?)
-        (candidates . '("public" "private" "protected"))
-        (symbol     . "s")))
-
-    (ac-define-source ruby-class-attributes
-      '((available  . cb:inside-ruby-class-def?)
-        (candidates . '("attr_accessor" "attr_reader" "attr_writer"))
-        (action     . (lambda () (insert " :")))
-        (symbol     . "m")))
-
-    (add-to-list 'ac-modes 'ruby-mode)
-    (add-to-list 'ac-modes 'inf-ruby-mode)
-
-    (hook-fn 'cb:ruby-modes-hook
-      (add-to-list 'ac-sources 'ac-source-yasnippet)
-      (add-to-list 'ac-sources 'ac-source-ruby-class-keywords)
-      (add-to-list 'ac-sources 'ac-source-ruby-class-attributes)
-      (subword-mode +1))))
+  (add-to-list 'completion-ignored-extensions ".rbc"))
 
 (use-package rubocop
   :ensure t
