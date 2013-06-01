@@ -28,42 +28,44 @@
 ;;; Testing
 
 (require 'use-package)
-(autoload 'haskell-cabal-find-file "haskell-cabal")
 (require 's)
+(autoload 'haskell-cabal-find-file "haskell-cabal")
 
-(defun cb:hs-project-root ()
-  (let ((cabal (haskell-cabal-find-file)))
-    (when cabal (file-name-directory cabal))))
+(after 'haskell-mode
 
-(defun cb:hs-srcfile->testfile (fname)
-  (s-replace "/src/" "/test/"
-             (replace-regexp-in-string "\\(.\\)l?hs$" "Tests." fname t nil 1)))
+  (defun cb:hs-project-root ()
+    (let ((cabal (haskell-cabal-find-file)))
+      (when cabal (file-name-directory cabal))))
 
-(defun cb:hs-testfile->srcfile (fname)
-  (s-replace "/test/" "/src/"
-             (replace-regexp-in-string "\\(Tests\\).l?hs$" "" fname t nil 1)))
+  (defun cb:hs-srcfile->testfile (fname)
+    (s-replace "/src/" "/test/"
+               (replace-regexp-in-string "\\(.\\)l?hs$" "Tests." fname t nil 1)))
 
-(defun cb:hs-test<->code ()
-  (interactive)
-  (let* ((src-p (s-contains? "/src/" (buffer-file-name)))
-         (file (if src-p
-                   (cb:hs-srcfile->testfile (buffer-file-name))
-                 (cb:hs-testfile->srcfile (buffer-file-name)))))
-    (when (cb:hs-project-root)
-      (cond
-       ((file-exists-p file) (find-file file))
-       (src-p (error "No corresponding unit test file found"))
-       (t     (error "No corresponding source file found"))))))
+  (defun cb:hs-testfile->srcfile (fname)
+    (s-replace "/test/" "/src/"
+               (replace-regexp-in-string "\\(Tests\\).l?hs$" "" fname t nil 1)))
 
-(hook-fn 'haskell-mode-hook
-  (local-set-key (kbd "C-c j") 'haskell-test<->code))
+  (defun cb:hs-test<->code ()
+    (interactive)
+    (let* ((src-p (s-contains? "/src/" (buffer-file-name)))
+           (file (if src-p
+                     (cb:hs-srcfile->testfile (buffer-file-name))
+                   (cb:hs-testfile->srcfile (buffer-file-name)))))
+      (when (cb:hs-project-root)
+        (cond
+         ((file-exists-p file) (find-file file))
+         (src-p (error "No corresponding unit test file found"))
+         (t     (error "No corresponding source file found"))))))
 
-;;; Use greek lambda symbol.
-(font-lock-add-keywords 'haskell-mode
- `((,(concat "\\s (?\\(\\\\\\)\\s *\\(\\w\\|_\\|(.*)\\).*?\\s *->")
-    (0 (progn (compose-region (match-beginning 1) (match-end 1)
-                              ,(make-char 'greek-iso8859-7 107))
-              nil)))))
+  (define-key haskell-mode-map (kbd "C-c j") 'haskell-test<->code)
+
+  ;; Use greek lambda symbol.
+  (font-lock-add-keywords
+   'haskell-mode
+   `((,(concat "\\s (?\\(\\\\\\)\\s *\\(\\w\\|_\\|(.*)\\).*?\\s *->")
+      (0 (progn (compose-region (match-beginning 1) (match-end 1)
+                                ,(make-char 'greek-iso8859-7 107))
+                nil))))))
 
 (after 'flycheck
 
