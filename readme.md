@@ -32,6 +32,7 @@ Sane configurations are provided for several languages and environments:
 
 * Ruby/Rails
 * Haskell
+* C
 * Python
 * Elisp
 * Clojure
