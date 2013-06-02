@@ -80,7 +80,11 @@
   :init
   (progn
     (add-hook 'prog-mode-hook 'yas-minor-mode)
-    (add-hook 'sgml-mode-hook 'yas-minor-mode))
+    (add-hook 'sgml-mode-hook 'yas-minor-mode)
+    (hook-fn 'find-file-hook
+      "Use yasnippet mode for files in the snippet directory."
+      (when (s-contains? cb:yasnippet-dir (buffer-file-name))
+        (snippet-mode +1))))
   :config
   (progn
     (setq
