@@ -98,6 +98,7 @@
   :config
   (progn
     ;; Customise to behave more like paredit.
+    (setq sp-navigate-close-if-unbalanced t)
     (define-key smartparens-mode-map (kbd "M-<up>") 'sp-splice-sexp-killing-backward)
     (define-key smartparens-mode-map (kbd "M-<down>") 'sp-splice-sexp-killing-forward)
     (define-key smartparens-mode-map (kbd "DEL")    'sp-backward-delete-char)

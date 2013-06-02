@@ -28,49 +28,50 @@
 
 (require 'use-package)
 
-(font-lock-add-keywords
- 'emacs-lisp-mode
- `(
-   ;; General keywords
-   (,(rx "(" (group (or "use-package"
-                        "hook-fn"
-                        "after"
-                        "ac-define-source"
-                        "flycheck-declare-checker"
-                        "cl-destructuring-bind"
-                        "cl-defstruct"))
-         word-end)
-    (1 font-lock-keyword-face))
+(after 'lisp-mode
+ (font-lock-add-keywords
+  'emacs-lisp-mode
+  `(
+    ;; General keywords
+    (,(rx "(" (group (or "use-package"
+                         "hook-fn"
+                         "after"
+                         "ac-define-source"
+                         "flycheck-declare-checker"
+                         "cl-destructuring-bind"
+                         "cl-defstruct"))
+          word-end)
+     (1 font-lock-keyword-face))
 
-   ;; Identifiers after keywords
-   (,(rx "(" (group (or "use-package"
-                        "ac-define-source"
-                        "flycheck-declare-checker"))
-         (+ space)
-         (group (+ (regex "\[^ )\n\]"))))
-    (2 font-lock-constant-face))
+    ;; Identifiers after keywords
+    (,(rx "(" (group (or "use-package"
+                         "ac-define-source"
+                         "flycheck-declare-checker"))
+          (+ space)
+          (group (+ (regex "\[^ )\n\]"))))
+     (2 font-lock-constant-face))
 
-   ;; definition forms
-   (,(rx "("
-         (group-n 1
-                  (* (not space))
-                  (or "declare" "define")
-                  (+ (not space)))
-         (+ space)
-         (group-n 2 (+ (regex "\[^ )\n\]"))))
-    (1 font-lock-keyword-face)
-    (2 font-lock-function-name-face))
+    ;; definition forms
+    (,(rx "("
+          (group-n 1
+                   (* (not space))
+                   (or "declare" "define")
+                   (+ (not space)))
+          (+ space)
+          (group-n 2 (+ (regex "\[^ )\n\]"))))
+     (1 font-lock-keyword-face)
+     (2 font-lock-function-name-face))
 
-   ;; cb:extracting-list
-   (,(rx "(" (group "cb:extracting-list") (or space eol))
-    (1 font-lock-keyword-face))
+    ;; cb:extracting-list
+    (,(rx "(" (group "cb:extracting-list") (or space eol))
+     (1 font-lock-keyword-face))
 
-   ;; cl-struct.
-   (,(rx "(cl-defstruct"
-         (+ space)
-         (group (+ (regex "\[^ )\n\]"))))
+    ;; cl-struct.
+    (,(rx "(cl-defstruct"
+          (+ space)
+          (group (+ (regex "\[^ )\n\]"))))
 
-    (1 font-lock-type-face))))
+     (1 font-lock-type-face)))))
 
 (use-package lisp-mode
   :defer t

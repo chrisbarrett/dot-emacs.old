@@ -30,7 +30,6 @@
 
 (use-package undo-tree
   :ensure   t
-  :defer    t
   :idle     (require 'undo-tree)
   :bind     ("C-x u" . undo-tree-visualize)
   :diminish undo-tree-mode
@@ -117,7 +116,7 @@
    iedit-replace-occurrences
    iedit-done)
   :init
-  (progn
+  (hook-fn 'after-init-hook
 
     (defun cb:rename-symbol-in-defun (replacement)
       (interactive "sReplace in function: ")
@@ -136,7 +135,7 @@
 
 (use-package info-lookmore
   :commands info-lookmore-elisp-cl
-  :init     (eval-after-load "info-look" '(info-lookmore-elisp-cl)))
+  :init     (after 'info-look (info-lookmore-elisp-cl)))
 
 (use-package proced
   :defer t
