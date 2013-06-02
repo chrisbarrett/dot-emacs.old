@@ -183,7 +183,7 @@ Remove horizontal whitespace if the insertion results in a ++."
 (after 'flycheck
 
   (defvar clang-custom-include-paths '("/usr/include/python2.7"))
-  (defvar-local clang-c-version "gnu11")
+  (defvar-local clang-c-version "c11")
 
   (defun s-alnum-only (s)
     "Remove non-alphanumeric characters from S."
@@ -237,20 +237,23 @@ Remove horizontal whitespace if the insertion results in a ++."
     "A string of cflags for including everything known to pkg-config.")
 
   (defvar clang-checker-warning-flags
-    '("-Wall"
-      ;; For optional param-style macros.
+    '( ;; For optional param-style macros.
       "-Wno-initializer-overrides"))
+
+  (defvar clang-checker-language-flags '())
 
   (flycheck-declare-checker clang
     "Compiles the current file with clang."
     :command
     '("clang" "-O0"
+      "-Wall"
       (eval clang-checker-warning-flags)
       (eval (concat "--std=" clang-c-version))
       (eval pkg-config-all-includes)
       "-fsyntax-only"
       "-fno-color-diagnostics" "-fno-caret-diagnostics"
       "-fno-diagnostics-show-option"
+      (eval clang-checker-language-flags)
       source-inplace)
     :error-parser 'clang-error-parser
     :predicate '(derived-mode-p 'c-mode))
