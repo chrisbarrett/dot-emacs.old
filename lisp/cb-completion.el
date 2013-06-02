@@ -76,7 +76,8 @@
   :diminish yas-minor-mode
   :commands
   (yas-global-mode
-   yas-minor-mode)
+   yas-minor-mode
+   snippet-mode)
   :init
   (progn
     (add-hook 'prog-mode-hook 'yas-minor-mode)
@@ -84,7 +85,7 @@
     (hook-fn 'find-file-hook
       "Use yasnippet mode for files in the snippet directory."
       (when (s-contains? cb:yasnippet-dir (buffer-file-name))
-        (snippet-mode +1))))
+        (snippet-mode))))
   :config
   (progn
     (setq
