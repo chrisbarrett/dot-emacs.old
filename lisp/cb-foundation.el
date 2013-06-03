@@ -205,7 +205,7 @@
   (interactive)
   (cond
    ((cb:truthy? 'edebug-active)
-    (edebug-next-mode))
+    (edebug-step-mode))
    (t
     (next-error))))
 
