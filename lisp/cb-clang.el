@@ -31,8 +31,21 @@
 (autoload 'smartparens-mode-map "smartparens")
 (autoload 'c-mode-map "cc-mode")
 
+(after 'mode-compile
+  (define-key c-mode-map (kbd "C-c C-c") 'mode-compile))
+
 (after 'cc-mode
-  (define-key c-mode-map (kbd "C-c C-c") 'mode-compile)
+
+  (defun clang-switch-between-header-and-impl ()
+    "Switch between a header file and its implementation."
+    (interactive)
+    (let ((sans (file-name-sans-extension (buffer-file-name)))
+          (ext  (file-name-extension (buffer-file-name))))
+      (if (equal "h" ext)
+          (find-file (concat sans ".c"))
+        (find-file (concat sans ".h")))))
+
+  (define-key c-mode-map (kbd "C-c C-j") 'clang-switch-between-header-and-impl)
   (define-key c-mode-map (kbd "M-q") 'indent-dwim)
   (require 'smart-operator)
   (require 'flycheck)
