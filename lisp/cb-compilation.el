@@ -29,6 +29,9 @@
 (require 'dash)
 (require 'use-package)
 
+(autoload 'projectile-project-p "projectile")
+(autoload 'projectile-project-root "projectile")
+
 (use-package compile
   :bind
   (("C-c b" . compile)

@@ -59,7 +59,7 @@
 (unless (package-installed-p 'use-package)
   (package-install 'use-package))
 (require 'use-package)
-(setq use-package-verbose t)
+(setq use-package-verbose nil)
 
 (defadvice use-package-ensure-elpa (around ignore-errs activate)
   "Ignore errors caused by package generation."

@@ -73,7 +73,6 @@
   (add-hook 'after-init-hook 'evil-mode)
   :config
   (progn
-    (use-package cb-evil)
 
     (defun cb:append-buffer ()
       "Enter insertion mode at the end of the current buffer."

@@ -88,15 +88,17 @@
   :commands
   (dired-jump
    dired-jump-other-window)
+  :config
+  (setq dired-omit-files (concat dired-omit-files "\\|\\.DS_Store$"))
   :init
   (progn
     ;; Don't bind C-x C-j to dired-jump - this interferes with bindings in
     ;; ansi-term.
-    (setq dired-bind-jump nil
-          dired-omit-files (concat dired-omit-files "\\|\\.DS_Store$"))
+    (setq dired-bind-jump nil)
 
     (after 'dired
       (require 'dired-x))
+
     (after 'evil
       (bind-key* "M-d" 'dired-jump)
       (bind-key* "M-D" 'dired-jump-other-window))))
