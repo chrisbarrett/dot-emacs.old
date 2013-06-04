@@ -92,7 +92,9 @@
   (progn
     ;; Don't bind C-x C-j to dired-jump - this interferes with bindings in
     ;; ansi-term.
-    (setq dired-bind-jump nil)
+    (setq dired-bind-jump nil
+          dired-omit-files (concat dired-omit-files "\\|\\.DS_Store$"))
+
     (after 'dired
       (require 'dired-x))
     (after 'evil
@@ -104,7 +106,6 @@
   :commands dired-details-install
   :init     (after 'dired (dired-details-install))
   :config   (setq-default dired-details-hidden-string "… "))
-
 
 (provide 'cb-dired)
 
