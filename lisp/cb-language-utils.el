@@ -99,14 +99,20 @@
   (progn
     ;; Customise to behave more like paredit.
     (setq sp-navigate-close-if-unbalanced t)
-    (define-key smartparens-mode-map (kbd "M-<up>") 'sp-splice-sexp-killing-backward)
-    (define-key smartparens-mode-map (kbd "M-<down>") 'sp-splice-sexp-killing-forward)
     (define-key smartparens-mode-map (kbd "DEL")    'sp-backward-delete-char)
     (define-key smartparens-mode-map (kbd "M-DEL")  'sp-backward-kill-symbol)
     (define-key smartparens-mode-map (kbd "C-k")    'sp-kill-sexp)
     (define-key smartparens-mode-map (kbd ")") 'sp-up-sexp)
     (define-key smartparens-mode-map (kbd "]") 'sp-up-sexp)
     (define-key smartparens-mode-map (kbd "}") 'sp-up-sexp)
+    (define-key smartparens-mode-map (kbd "M-<up>")
+      (command (if (derived-mode-p 'org-mode)
+                   (org-metaup)
+                 (sp-splice-sexp-killing-backward))))
+    (define-key smartparens-mode-map (kbd "M-<down>")
+      (command (if (derived-mode-p 'org-mode)
+                   (org-metadown)
+                 (sp-splice-sexp-killing-forward))))
 
     (sp-pair "'" nil :unless '(sp-point-after-word-p))
     (sp-local-tag '(sgml-mode html-mode) "<" "<_>" "</_>"
