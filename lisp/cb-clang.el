@@ -31,9 +31,6 @@
 (autoload 'smartparens-mode-map "smartparens")
 (autoload 'c-mode-map "cc-mode")
 
-(after 'mode-compile
-  (define-key c-mode-map (kbd "C-c C-c") 'mode-compile))
-
 (after 'cc-mode
 
   (defun clang-switch-between-header-and-impl ()
@@ -47,6 +44,9 @@
 
   (define-key c-mode-map (kbd "C-c C-j") 'clang-switch-between-header-and-impl)
   (define-key c-mode-map (kbd "M-q") 'indent-dwim)
+  (after 'mode-compile
+    (define-key c-mode-map (kbd "C-c C-c") 'mode-compile))
+
   (require 'smart-operator)
   (require 'flycheck)
   (require 'smartparens)
