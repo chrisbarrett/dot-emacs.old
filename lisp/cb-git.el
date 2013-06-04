@@ -49,11 +49,11 @@
    ("C-x g D" . magit-diff))
   :init
   (progn
-   (declare-modal-executor magit-status
-     :command magit-status
-     :bind    "M-G")
-   (after 'dired
-     (define-key dired-mode-map (kbd "M-G") 'magit-status)))
+    (declare-modal-executor magit-status
+      :command magit-status
+      :bind    "M-G")
+    (after 'dired
+      (define-key dired-mode-map (kbd "M-G") 'magit-status)))
   :config
   (progn
     (declare-ido-wrapper magit-read-top-dir)

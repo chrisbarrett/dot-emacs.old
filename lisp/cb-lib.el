@@ -148,7 +148,7 @@ restore key."
            (--each (or ,restore-bindings (list ,bind))
              (local-set-key (kbd it) (command (bury-buffer) (restore))))))
 
-       (global-set-key (kbd ,bind) ',fname))))
+       (bind-key* ,bind ',fname))))
 
 (defun cb:truthy? (sym)
   "Test whether SYM is bound and non-nil."
