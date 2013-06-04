@@ -86,18 +86,21 @@
 
 (use-package dired-x
   :commands
-  (dired-jump
+  (dired-omit-mode
+   dired-jump
    dired-jump-other-window)
+  :diminish dired-omit-mode
   :config
-  (setq dired-omit-files (concat dired-omit-files "\\|\\.DS_Store$"))
+  (setq dired-omit-files
+        (eval `(rx (regex ,dired-omit-files)
+                   (or ".DS_Store" "$RECYCLE.BIN"))))
   :init
   (progn
     ;; Don't bind C-x C-j to dired-jump - this interferes with bindings in
     ;; ansi-term.
     (setq dired-bind-jump nil)
 
-    (after 'dired
-      (require 'dired-x))
+    (add-hook 'dired-mode-hook 'dired-omit-mode)
 
     (after 'evil
       (bind-key* "M-d" 'dired-jump)
