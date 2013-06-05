@@ -94,7 +94,9 @@
   :defer    t
   :init
   (progn
-    (setq ispell-dictionary "english")
+
+    (setq ispell-dictionary "en_GB")
+
     (add-hook 'text-mode-hook 'flyspell-mode)
     (hook-fn 'cb:xml-modes-hook
       (unless (derived-mode-p 'markdown-mode)
