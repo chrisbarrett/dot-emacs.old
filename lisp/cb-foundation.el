@@ -235,9 +235,9 @@
     (turn-on-auto-fill)))
 
 (hook-fn 'after-init-hook
-  (setq
-   default-directory user-home-directory
-   use-package-verbose nil)
+  "Ensure the user-home-directory is used as the default path,
+rather than the app bundle."
+  (setq default-directory user-home-directory)
 
   (load (concat user-emacs-directory "site-file.el") t t))
 
