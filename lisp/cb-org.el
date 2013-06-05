@@ -35,6 +35,10 @@
   :init
   (progn
 
+    (after 'evil
+      (evil-define-key 'normal org-mode-map (kbd "M-P") 'outline-previous-visible-heading)
+      (evil-define-key 'normal org-mode-map (kbd "M-N") 'outline-next-visible-heading))
+
     (hook-fn 'cb:org-minor-modes-hook
       "Diminish org minor modes."
       (--each cb:org-minor-modes
