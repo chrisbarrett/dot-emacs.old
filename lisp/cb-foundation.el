@@ -40,6 +40,11 @@
 (defalias 'yes-or-no-p 'y-or-n-p)
 (autoload 'ido-yes-or-no-p "ido-yes-or-no")
 
+(autoload 'server-running-p "server")
+(hook-fn 'after-init-hook
+  (unless (server-running-p)
+    (server-start)))
+
 (use-package simple
   :diminish
   (visual-line-mode
