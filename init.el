@@ -258,6 +258,7 @@
   :mode
   ((".gitignore$"  . conf-mode)
    (".gitmodules$" . conf-mode)
+   ("ackrc$"       . conf-mode)
    ("Doxyfile$"    . conf-mode))
   :init
   (hook-fn 'cb:conf-modes-hook
