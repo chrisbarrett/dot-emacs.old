@@ -1,0 +1,8 @@
+--ignore-dir=auto-save-list
+--ignore-dir=backups
+--ignore-dir=bin
+--ignore-dir=elpa
+--ignore-dir=etc
+--ignore-dir=lib
+--ignore-dir=src
+--ignore-dir=tmp
