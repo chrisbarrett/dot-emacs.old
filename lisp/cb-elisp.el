@@ -28,50 +28,71 @@
 
 (require 'use-package)
 
+(after 'projectile
+
+  (defun src<->code ()
+    "Switch between a source file and its corresponding test."
+    (interactive)
+    (find-file
+     (let ((fname (file-name-nondirectory (buffer-file-name))))
+       ;; If it contains `test`, find a source file at the project root.
+       (if (s-contains? "tests" fname)
+           (concat (projectile-project-root) (s-replace "-tests" "" fname))
+
+         ;; Otherwise it's a source file, find a corresponding test.
+         (concat (projectile-project-root) "test/"
+                 (destructuring-bind (_ name ext)
+                     (s-match (rx bol (group (* nonl)) (group "." (* alnum) eol))
+                              fname)
+                   (concat name "-tests" ext)))))))
+
+  (define-key emacs-lisp-mode-map (kbd "C-c C-j") 'src<->code))
+
+
 (after 'lisp-mode
- (font-lock-add-keywords
-  'emacs-lisp-mode
-  `(
-    ;; General keywords
-    (,(rx "(" (group (or "use-package"
-                         "hook-fn"
-                         "after"
-                         "ac-define-source"
-                         "flycheck-declare-checker"
-                         "cl-destructuring-bind"
-                         "cl-defstruct"))
-          word-end)
-     (1 font-lock-keyword-face))
+  (font-lock-add-keywords
+   'emacs-lisp-mode
+   `(
+     ;; General keywords
+     (,(rx "(" (group (or "use-package"
+                          "hook-fn"
+                          "after"
+                          "ac-define-source"
+                          "flycheck-declare-checker"
+                          "cl-destructuring-bind"
+                          "cl-defstruct"))
+           word-end)
+      (1 font-lock-keyword-face))
 
-    ;; Identifiers after keywords
-    (,(rx "(" (group (or "use-package"
-                         "ac-define-source"
-                         "flycheck-declare-checker"))
-          (+ space)
-          (group (+ (regex "\[^ )\n\]"))))
-     (2 font-lock-constant-face))
+     ;; Identifiers after keywords
+     (,(rx "(" (group (or "use-package"
+                          "ac-define-source"
+                          "flycheck-declare-checker"))
+           (+ space)
+           (group (+ (regex "\[^ )\n\]"))))
+      (2 font-lock-constant-face))
 
-    ;; definition forms
-    (,(rx "("
-          (group-n 1
-                   (* (not space))
-                   (or "declare" "define")
-                   (+ (not space)))
-          (+ space)
-          (group-n 2 (+ (regex "\[^ )\n\]"))))
-     (1 font-lock-keyword-face)
-     (2 font-lock-function-name-face))
+     ;; definition forms
+     (,(rx "("
+           (group-n 1
+                    (* (not space))
+                    (or "declare" "define")
+                    (+ (not space)))
+           (+ space)
+           (group-n 2 (+ (regex "\[^ )\n\]"))))
+      (1 font-lock-keyword-face)
+      (2 font-lock-function-name-face))
 
-    ;; cb:extracting-list
-    (,(rx "(" (group "cb:extracting-list") (or space eol))
-     (1 font-lock-keyword-face))
+     ;; cb:extracting-list
+     (,(rx "(" (group "cb:extracting-list") (or space eol))
+      (1 font-lock-keyword-face))
 
-    ;; cl-struct.
-    (,(rx "(cl-defstruct"
-          (+ space)
-          (group (+ (regex "\[^ )\n\]"))))
+     ;; cl-struct.
+     (,(rx "(cl-defstruct"
+           (+ space)
+           (group (+ (regex "\[^ )\n\]"))))
 
-     (1 font-lock-type-face)))))
+      (1 font-lock-type-face)))))
 
 (use-package lisp-mode
   :defer t
