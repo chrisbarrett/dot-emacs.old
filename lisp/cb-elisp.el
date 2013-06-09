@@ -48,7 +48,6 @@
 
   (define-key emacs-lisp-mode-map (kbd "C-c C-j") 'src<->code))
 
-
 (after 'lisp-mode
   (font-lock-add-keywords
    'emacs-lisp-mode
@@ -60,7 +59,8 @@
                           "ac-define-source"
                           "flycheck-declare-checker"
                           "cl-destructuring-bind"
-                          "cl-defstruct"))
+                          "cl-defstruct")
+                      symbol-end)
            word-end)
       (1 font-lock-keyword-face))
 
@@ -69,28 +69,29 @@
                           "ac-define-source"
                           "flycheck-declare-checker"))
            (+ space)
-           (group (+ (regex "\[^ )\n\]"))))
+           (group (+ (regex "\[^ )\n\]"))
+                  symbol-end))
       (2 font-lock-constant-face))
 
      ;; definition forms
      (,(rx "("
            (group-n 1
+                    symbol-start
+                    (*? (not (any "(")))
+                    (or "declare" "define" "extend" "gentest")
                     (* (not space))
-                    (or "declare" "define")
-                    (+ (not space)))
+                    symbol-end)
            (+ space)
-           (group-n 2 (+ (regex "\[^ )\n\]"))))
+           (group-n 2 (+ (regex "\[^ )\n\]"))
+                    symbol-end))
       (1 font-lock-keyword-face)
       (2 font-lock-function-name-face))
-
-     ;; cb:extracting-list
-     (,(rx "(" (group "cb:extracting-list") (or space eol))
-      (1 font-lock-keyword-face))
 
      ;; cl-struct.
      (,(rx "(cl-defstruct"
            (+ space)
-           (group (+ (regex "\[^ )\n\]"))))
+           (group (+ (regex "\[^ )\n\]"))
+                  symbol-end))
 
       (1 font-lock-type-face)))))
 
