@@ -101,14 +101,12 @@
     (hook-fn 'cb:xml-modes-hook
       (unless (derived-mode-p 'markdown-mode)
         (flyspell-prog-mode)))
-    ;; TOO ANNOYING!
-    ;; (add-hook 'prog-mode-hook 'flyspell-prog-mode)
-    )
+    (add-hook 'prog-mode-hook 'flyspell-prog-mode))
   :config
   (progn
-   (bind-key* "C-'" 'flyspell-auto-correct-word)
-   (define-key flyspell-mouse-map [down-mouse-3] 'flyspell-correct-word)
-   (define-key flyspell-mouse-map [mouse-3] 'undefined)))
+    (bind-key* "C-'" 'flyspell-auto-correct-word)
+    (define-key flyspell-mouse-map [down-mouse-3] 'flyspell-correct-word)
+    (define-key flyspell-mouse-map [mouse-3] 'undefined)))
 
 (use-package flyspell-lazy
   :ensure  t
