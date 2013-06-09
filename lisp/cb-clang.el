@@ -269,7 +269,7 @@ Remove horizontal whitespace if the insertion results in a ++."
       (eval clang-checker-language-flags)
       source-inplace)
     :error-parser 'clang-error-parser
-    :predicate '(derived-mode-p 'c-mode))
+    :predicate (lambda () (derived-mode-p 'c-mode)))
 
   (add-to-list 'flycheck-checkers 'clang))
 
