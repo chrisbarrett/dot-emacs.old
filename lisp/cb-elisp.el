@@ -74,12 +74,12 @@
       (2 font-lock-constant-face))
 
      ;; definition forms
-     (,(rx "("
+     (,(rx bol (* space) "("
            (group-n 1
                     symbol-start
-                    (*? (not (any "(")))
-                    (or "declare" "define" "extend" "gentest")
                     (* (not space))
+                    (or "declare" "define" "extend" "gentest")
+                    (+ (not space))
                     symbol-end)
            (+ space)
            (group-n 2 (+ (regex "\[^ )\n\]"))
