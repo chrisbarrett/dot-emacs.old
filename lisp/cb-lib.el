@@ -41,23 +41,21 @@ The arguments passed to the hook function are bound to the symbol 'args'.
 The arguments to the hook are bound to 'arg1', 'arg2'.. 'arg9'.
 The entire argument list is bound to 'args'."
   (declare (indent 1) (doc-string 2))
-  `(add-hook ,hook (lambda (&rest args)
+  `(add-hook ,hook (lambda (&rest _args)
                      ,@(cons docstring body))))
 
 (defmacro after (feature &rest body)
   "Like `eval-after-load' - once FEATURE is loaded execute the BODY."
   (declare (indent 1))
-  `(eval-after-load ,feature '(progn ,@body)))
+  `(eval-after-load ,feature
+     '(progn ,@body)))
 
 (defmacro command (&rest body)
   "Declare an `interactive' command with BODY forms.
 The arguments are bound as 'args', with individual arguments bound to a0..a9"
-  `(lambda (&rest args)
+  `(lambda (&rest _args)
      (interactive)
-     (destructuring-bind
-         (&optional a0 a1 a2 a3 a4 a5 a6 a7 a8 a9)
-         args
-       ,@body)))
+     ,@body))
 
 ;;; ----------------------------------------------------------------------------
 
