@@ -146,14 +146,11 @@
       (local-unset-key (kbd ":")))
 
     (hook-fn 'cb:ruby-modes-hook
-      (smart-insert-operator-hook)
-      (local-set-key (kbd "=") 'cb:python-equals)
       (local-set-key (kbd "~") (smart-op "~"))
-      (local-unset-key (kbd "%"))
-      (local-unset-key (kbd "&"))
-      (local-unset-key (kbd "/"))
-      (local-unset-key (kbd "."))
-      (local-unset-key (kbd ":")))
+      (local-set-key (kbd "-") (smart-op "-"))
+      (local-set-key (kbd "+") (smart-op "+"))
+      (local-set-key (kbd "*") (smart-op "*"))
+      (local-set-key (kbd "/") (smart-op "/")))
 
     (hook-fn 'cb:markup-modes-hook
       (local-set-key (kbd ",") (smart-op ",")))
