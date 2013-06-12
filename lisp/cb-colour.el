@@ -319,20 +319,46 @@
 
      ;; flymake
      `(flymake-errline
-       ((,class (:foreground ,red-hc :background ,red-lc :weight bold :underline t))))
-     `(flymake-infoline ((,class (:foreground ,green-hc :background ,green-lc))))
+       ((,(append '((supports :underline (:style wave))) class)
+         (:underline (:style wave :color ,red) :inherit unspecified
+                     :foreground unspecified :background unspecified))
+        (,class (:foreground ,red-hc :background ,red-lc :weight bold :underline t))))
+     `(flymake-infoline
+       ((,(append '((supports :underline (:style wave))) class)
+         (:underline (:style wave :color ,green) :inherit unspecified
+                     :foreground unspecified :background unspecified))
+        (,class (:foreground ,green-hc :background ,green-lc))))
      `(flymake-warnline
-       ((,class (:foreground ,yellow-hc :background ,yellow-lc :weight bold :underline t))))
+       ((,(append '((supports :underline (:style wave))) class)
+         (:underline (:style wave :color ,yellow) :inherit unspecified
+                     :foreground unspecified :background unspecified))
+        (,class (:foreground ,yellow-hc :background ,yellow-lc :weight bold :underline t))))
+
 
      ;; flycheck
-     `(flycheck-error-face
-       ((,class (:foreground ,red-hc :background ,red-lc :weight bold :underline t))))
-     `(flycheck-warning-face
-       ((,class (:foreground ,yellow-hc :background ,yellow-lc :weight bold :underline t))))
+     `(flycheck-error
+       ((,(append '((supports :underline (:style wave))) class)
+         (:underline (:style wave :color ,red) :inherit unspecified))
+        (,class (:foreground ,red-hc :background ,red-lc :weight bold :underline t))))
+     `(flycheck-warning
+       ((,(append '((supports :underline (:style wave))) class)
+         (:underline (:style wave :color ,yellow) :inherit unspecified))
+        (,class (:foreground ,yellow-hc :background ,yellow-lc :weight bold :underline t))))
+     `(flycheck-fringe-error
+       ((,class (:foreground ,red-hc :background ,red-lc :weight bold))))
+     `(flycheck-fringe-warning
+       ((,class (:foreground ,yellow-hc :background ,yellow-lc :weight bold))))
 
      ;; flyspell
-     `(flyspell-duplicate ((,class (:foreground ,yellow :weight bold :underline t))))
-     `(flyspell-incorrect ((,class (:foreground ,red :weight bold :underline t))))
+     `(flyspell-duplicate
+       ((,(append '((supports :underline (:style wave))) class)
+         (:underline (:style wave :color ,yellow) :inherit unspecified))
+        (,class (:foreground ,yellow :weight bold :underline t))))
+     `(flyspell-incorrect
+       ((,(append '((supports :underline (:style wave))) class)
+         (:underline (:style wave :color ,red) :inherit unspecified))
+        (,class (:foreground ,red :weight bold :underline t))))
+
 
      ;; erc
      `(erc-action-face ((,class (:inherit erc-default-face))))
