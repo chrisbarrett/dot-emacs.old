@@ -147,9 +147,11 @@
 
     (hook-fn 'cb:ruby-modes-hook
       (local-set-key (kbd "~") (smart-op "~"))
+      (local-set-key (kbd "<") (smart-op "<"))
+      (local-set-key (kbd ">") (smart-op ">"))
+      (local-set-key (kbd "=") (smart-op "="))
       (local-set-key (kbd "-") (smart-op "-"))
       (local-set-key (kbd "+") (smart-op "+"))
-      (local-set-key (kbd "*") (smart-op "*"))
       (local-set-key (kbd "/") (smart-op "/")))
 
     (hook-fn 'cb:markup-modes-hook
