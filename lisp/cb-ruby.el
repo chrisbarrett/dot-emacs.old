@@ -175,6 +175,13 @@
   :commands
   (inf-ruby-mode
    ruby-send-region)
+  :config
+  (defadvice ruby-switch-to-inf (around start-inf-ruby activate)
+    "Start an inferior ruby if one is not running."
+    (condition-case _
+        ad-do-it
+      (wrong-type-argument
+       (run-ruby))))
   :init
   (after 'ruby-mode
     (defun cb:switch-to-ruby ()
