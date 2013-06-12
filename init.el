@@ -149,7 +149,7 @@
     (hook-fn 'cb:color-theme-changed-hook
       (set-face-font 'default (format "%s 11" (monospace-font)))
       (with-temp-buffer
-        (insert (prin1-to-string (list (car args))))
+        (insert (prin1-to-string (list (car _args))))
         (write-file cb:last-theme))
       (message nil))))
 (use-package cb-web)

@@ -39,8 +39,9 @@
 
 (defalias 'yes-or-no-p 'y-or-n-p)
 (autoload 'ido-yes-or-no-p "ido-yes-or-no")
-
+(autoload 'edebug-step-mode "edebug")
 (autoload 'server-running-p "server")
+
 (hook-fn 'after-init-hook
   (unless (server-running-p)
     (server-start)))
@@ -100,6 +101,9 @@
 (auto-compression-mode +1)
 (add-hook 'before-save-hook 'whitespace-cleanup)
 (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
+
+(put 'activate-input-method 'safe-local-eval-function t)
+(put 'set-input-method 'safe-local-eval-function t)
 
 ;;; Exiting Emacs
 ;;;
