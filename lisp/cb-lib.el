@@ -37,9 +37,7 @@ The arguments passed to the hook function are bound to the symbol 'args'.
 * DOCSTRING optionally documents the forms.  Otherwise, it is
   evaluated as part of BODY.
 
-* BODY is a list of forms to evaluate when the hook is run.
-The arguments to the hook are bound to 'arg1', 'arg2'.. 'arg9'.
-The entire argument list is bound to 'args'."
+* BODY is a list of forms to evaluate when the hook is run."
   (declare (indent 1) (doc-string 2))
   `(add-hook ,hook (lambda (&rest _args)
                      ,@(cons docstring body))))
@@ -51,8 +49,7 @@ The entire argument list is bound to 'args'."
      '(progn ,@body)))
 
 (defmacro command (&rest body)
-  "Declare an `interactive' command with BODY forms.
-The arguments are bound as 'args', with individual arguments bound to a0..a9"
+  "Declare an `interactive' command with BODY forms."
   `(lambda (&rest _args)
      (interactive)
      ,@body))
