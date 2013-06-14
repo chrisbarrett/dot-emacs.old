@@ -54,7 +54,7 @@
       (bind-key* "M-a" 'helm-apropos)
       (bind-key* "M-b" 'helm-buffers-list)
       (bind-key* "C-x C-b" 'helm-buffers-list)
-      (bind-key* "M-j" 'helm-mini)
+      (bind-key* "M-h" 'helm-mini)
       (bind-key* "M-i" 'helm-imenu)
       (bind-key* "M-f" 'helm-etags-select)
       (bind-key* "M-m" 'helm-man-woman)
