@@ -90,7 +90,11 @@
    ("Vagrantfile\\'" . ruby-mode)
    ("\\.jbuilder\\'" . ruby-mode))
   :init
-  (add-to-list 'completion-ignored-extensions ".rbc"))
+  (add-to-list 'completion-ignored-extensions ".rbc")
+  :config
+  (hook-fn 'ruby-mode-hook
+    (evil-local-set-key 'normal (kbd "z m") (command (set-selective-display 1)))
+    (evil-local-set-key 'normal (kbd "z r") (command (set-selective-display nil)))))
 
 (use-package rubocop
   :ensure t
@@ -104,8 +108,12 @@
   :defer t
   :commands robe-mode
   :init
-  (hook-fn 'cb:ruby-modes-hook
+  (hook-fn 'ruby-mode-hook
     (robe-mode +1)
+    (unless (cb:truthy? 'inf-ruby-buffer)
+      (save-window-excursion
+        (inf-ruby)
+        (robe-start)))
     (after 'auto-complete
       (add-to-list 'ac-sources 'ac-source-robe))))
 
