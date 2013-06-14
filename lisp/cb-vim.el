@@ -57,14 +57,22 @@
 (defun* get-documentation (&optional (candidate (thing-at-point 'symbol)))
   "Get documentation for CANDIDATE."
   (interactive)
-  (condition-case _
-    (cond
-     ((apply 'derived-mode-p cb:elisp-modes)
-      (get-elisp-doc (intern candidate)))
-     (t
-      (get-manpage candidate)))
-    (error
-     (user-error "No documentation available"))))
+  ;;
+  (cl-flet ((derived? (list-symbol)
+                      (when (boundp list-symbol)
+                        (apply 'derived-mode-p (eval list-symbol)))))
+    (condition-case _
+        (cond
+         ((derived? 'cb:elisp-modes)
+          (get-elisp-doc (intern candidate)))
+         ((derived? 'cb:ruby-modes)
+          (call-interactively 'robe-doc))
+         ((derived? 'cb:python-modes)
+          (call-interactively 'jedi-show-doc))
+         (t
+          (get-manpage candidate)))
+      (error
+       (user-error "No documentation available")))))
 
 (use-package evil
   :ensure   t
