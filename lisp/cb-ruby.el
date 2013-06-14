@@ -103,7 +103,11 @@
   :diminish robe-mode
   :defer t
   :commands robe-mode
-  :init (add-hook 'cb:rails-modes-hook 'robe-mode))
+  :init
+  (hook-fn 'cb:ruby-modes-hook
+    (robe-mode +1)
+    (after 'auto-complete
+      (add-to-list 'ac-sources 'ac-source-robe))))
 
 (use-package rinari
   :ensure t
