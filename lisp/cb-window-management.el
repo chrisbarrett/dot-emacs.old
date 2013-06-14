@@ -88,7 +88,8 @@
             ("*shell*" :height 30)
             (".*overtone.log" :regexp t :height 30)
             ("*gists*" :height 30)
-            ("*sldb.*":regexp t :height 30)))))
+            ("*sldb.*" :regexp t :height 30)
+            ("*robe-doc*" :height 30)))))
 
 (use-package transpose-frame
   :bind
