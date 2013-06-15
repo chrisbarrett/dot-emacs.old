@@ -92,11 +92,17 @@
   :init
   (progn
     (defun cb:configure-ruby-outline ()
-      (setq outline-regexp (rx (* space) (or "def" "class" "module") (+ space)))
+      (setq outline-regexp
+            (rx (or
+                 (group (* space) (or "def" "class" "module") (+ space))
+                 (group (* nonl) (any "{" "[") (* space) eol))))
+
       (evil-local-set-key 'normal (kbd "SPC")
                           (command
                            (save-excursion
-                             (beginning-of-thing 'defun)
+                             (or (ignore-errors
+                                   (beginning-of-thing 'defun))
+                                 (beginning-of-line))
                              (outline-toggle-children))))
       (evil-local-set-key 'normal (kbd "z m") 'hide-body)
       (evil-local-set-key 'normal (kbd "z r") 'show-all)
