@@ -90,11 +90,20 @@
    ("Vagrantfile\\'" . ruby-mode)
    ("\\.jbuilder\\'" . ruby-mode))
   :init
-  (add-to-list 'completion-ignored-extensions ".rbc")
-  :config
-  (hook-fn 'ruby-mode-hook
-    (evil-local-set-key 'normal (kbd "z m") (command (set-selective-display 1)))
-    (evil-local-set-key 'normal (kbd "z r") (command (set-selective-display nil)))))
+  (progn
+    (defun cb:configure-ruby-outline ()
+      (setq outline-regexp (rx (* space) (or "def" "class" "module") (+ space)))
+      (evil-local-set-key 'normal (kbd "SPC")
+                          (command
+                           (save-excursion
+                             (beginning-of-thing 'defun)
+                             (outline-toggle-children))))
+      (evil-local-set-key 'normal (kbd "z m") 'hide-body)
+      (evil-local-set-key 'normal (kbd "z r") 'show-all)
+      (outline-minor-mode +1))
+
+    (add-hook 'ruby-mode-hook 'cb:configure-ruby-outline)
+    (add-to-list 'completion-ignored-extensions ".rbc")))
 
 (use-package rubocop
   :ensure t
