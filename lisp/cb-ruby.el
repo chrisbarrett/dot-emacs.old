@@ -40,12 +40,12 @@
   (add-to-list 'ac-modes 'inf-ruby-mode)
   (add-to-list 'ac-modes 'erb-mode)
 
-  (defun cb:inside-ruby-class-def? ()
+  (defun cb-rb:inside-class? ()
     (save-excursion
       (let ((end (save-excursion (search-backward-regexp (rx bol "end") nil t))))
         (search-backward-regexp (rx bol "class") end t))))
 
-  (defun cb:rockets->hash-syntax ()
+  (defun cb-rb:rockets->colons ()
     "Convert old-style rockets to new hash literal syntax in the current buffer."
     (interactive)
     (save-excursion
@@ -58,12 +58,12 @@
         (replace-match "\\1: " t nil))))
 
   (ac-define-source ruby-class-keywords
-    '((available  . cb:inside-ruby-class-def?)
+    '((available  . cb-rb:inside-class?)
       (candidates . '("public" "private" "protected"))
       (symbol     . "s")))
 
   (ac-define-source ruby-class-attributes
-    '((available  . cb:inside-ruby-class-def?)
+    '((available  . cb-rb:inside-class?)
       (candidates . '("attr_accessor" "attr_reader" "attr_writer"))
       (action     . (lambda () (insert " :")))
       (symbol     . "m")))
@@ -91,24 +91,28 @@
    ("\\.jbuilder\\'" . ruby-mode))
   :init
   (progn
-    (defun cb:configure-ruby-outline ()
+
+    (defun cb-rb:toggle-fold ()
+      "Toggle code folding at point."
+      (interactive)
+      (save-excursion
+        (or (ignore-errors
+              (beginning-of-thing 'defun))
+            (beginning-of-line))
+        (outline-toggle-children)))
+
+    (defun cb-rb:configure-outlinek ()
       (setq outline-regexp
             (rx (or
                  (group (* space) (or "def" "class" "module") (+ space))
                  (group (* nonl) (any "{" "[") (* space) eol))))
 
-      (evil-local-set-key 'normal (kbd "SPC")
-                          (command
-                           (save-excursion
-                             (or (ignore-errors
-                                   (beginning-of-thing 'defun))
-                                 (beginning-of-line))
-                             (outline-toggle-children))))
+      (evil-local-set-key 'normal (kbd "SPC") 'cb-rb:toggle-fold)
       (evil-local-set-key 'normal (kbd "z m") 'hide-body)
       (evil-local-set-key 'normal (kbd "z r") 'show-all)
       (outline-minor-mode +1))
 
-    (add-hook 'ruby-mode-hook 'cb:configure-ruby-outline)
+    (add-hook 'ruby-mode-hook 'cb-rb:configure-outlinek)
     (add-to-list 'completion-ignored-extensions ".rbc")))
 
 (use-package rubocop
@@ -211,7 +215,7 @@
        (run-ruby))))
   :init
   (after 'ruby-mode
-    (defun cb:switch-to-ruby ()
+    (defun cb-rb:switch-to-ruby ()
       "Toggle between irb and the last ruby buffer.
 Start an inferior ruby if necessary."
       (interactive)
@@ -220,13 +224,13 @@ Start an inferior ruby if necessary."
            (last-buffer-for-mode 'ruby-mode))
         (run-ruby)))
 
-    (defun cb:ruby-eval-dwim ()
+    (defun cb-rb:eval-dwim ()
       "Perform a context-sensitive evaluation."
       (interactive)
       ;; Start ruby if neccessary.
       (unless (get-buffer "*ruby*")
         (run-ruby)
-        (cb:switch-to-ruby)
+        (cb-rb:switch-to-ruby)
         ;; Revert window layout.
         (when (= 2 (length (window-list)))
           (delete-other-windows)))
@@ -244,7 +248,7 @@ Start an inferior ruby if necessary."
         (ruby-send-region (line-beginning-position)
                           (line-end-position)))))
 
-    (defun cb:format-irb-error (lines)
+    (defun cb-rb:format-irb-error (lines)
       "Return a propertized error string for the given LINES of
 an irb error message."
       (-when-let* ((err (--first (s-matches? "Error:" it) lines))
@@ -252,7 +256,7 @@ an irb error message."
         (concat (propertize (substring err 0 colon) 'face 'error)
                 (substring err colon))))
 
-    (defun cb:apply-ruby-font-lock (str)
+    (defun cb-rb:apply-font-lock (str)
       "Apply ruby font-locking to string STR."
       (with-temp-buffer
         (insert str)
@@ -266,7 +270,7 @@ an irb error message."
         (font-lock-fontify-buffer)
         (buffer-string)))
 
-    (defun cb:filter-irb-output (str &rest _)
+    (defun cb-rb:filter-irb-output (str &rest _)
       "Print IRB output to messages."
       (ignore-errors
         (when (and (fboundp 'inf-ruby-proc) (inf-ruby-proc))
@@ -276,17 +280,17 @@ an irb error message."
                                  (s-blank? it)
                                  (s-matches? inf-ruby-prompt-pattern it)))
                    (-map 's-trim))))
-            (message (or (cb:format-irb-error lines)
-                         (cb:apply-ruby-font-lock (car (reverse lines))))))))
+            (message (or (cb-rb:format-irb-error lines)
+                         (cb-rb:apply-font-lock (car (reverse lines))))))))
       str)
 
     (hook-fn 'ruby-mode-hook
-      (local-set-key (kbd "C-c C-c") 'cb:ruby-eval-dwim)
-      (local-set-key (kbd "C-c C-z") 'cb:switch-to-ruby))
+      (local-set-key (kbd "C-c C-c") 'cb-rb:eval-dwim)
+      (local-set-key (kbd "C-c C-z") 'cb-rb:switch-to-ruby))
 
     (hook-fn 'inf-ruby-mode-hook
-      (local-set-key (kbd "C-c C-z") 'cb:switch-to-ruby)
-      (add-hook 'comint-preoutput-filter-functions 'cb:filter-irb-output)
+      (local-set-key (kbd "C-c C-z") 'cb-rb:switch-to-ruby)
+      (add-hook 'comint-preoutput-filter-functions 'cb-rb:filter-irb-output)
       ;; Stop IRB from echoing input.
       (setq comint-process-echoes t)
       (inf-ruby-setup-keybindings))))
