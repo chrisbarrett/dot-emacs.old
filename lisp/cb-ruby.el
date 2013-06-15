@@ -91,23 +91,13 @@
    ("\\.jbuilder\\'" . ruby-mode))
   :init
   (progn
-
-    (defun cb-rb:toggle-fold ()
-      "Toggle code folding at point."
-      (interactive)
-      (save-excursion
-        (or (ignore-errors
-              (beginning-of-thing 'defun))
-            (beginning-of-line))
-        (outline-toggle-children)))
-
     (defun cb-rb:configure-outlinek ()
       (setq outline-regexp
             (rx (or
                  (group (* space) (or "def" "class" "module") (+ space))
                  (group (* nonl) (any "{" "[") (* space) eol))))
 
-      (evil-local-set-key 'normal (kbd "SPC") 'cb-rb:toggle-fold)
+      (evil-local-set-key 'normal (kbd "SPC") 'outline-toggle-children)
       (evil-local-set-key 'normal (kbd "z m") 'hide-body)
       (evil-local-set-key 'normal (kbd "z r") 'show-all)
       (outline-minor-mode +1))
@@ -132,7 +122,7 @@
     (unless (cb:truthy? 'inf-ruby-buffer)
       (save-window-excursion
         (inf-ruby)
-        (robe-start)))
+        (run-with-idle-timer 0.5 nil 'robe-start)))
     (after 'auto-complete
       (add-to-list 'ac-sources 'ac-source-robe))))
 
