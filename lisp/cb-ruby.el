@@ -35,6 +35,28 @@
 
 (add-to-list 'auto-mode-alist `("\\.html\\.erb" . erb-mode))
 
+(after 'hideshow
+  (add-to-list 'hs-special-modes-alist
+               `(ruby-mode
+                 ;; Block start
+                 ,(rx (or
+                       ;; Definition forms
+                       (group bol (* space) (or "def" "class" "module") (+ space))
+                       ;; Flow control
+                       (group bol (* space)
+                              (or "if" "unless" "case" "do" "while")
+                              (+ space))
+                       ;; Collection literals
+                       (group (* nonl) (any "{" "[") (* space) eol)))
+                 ;; Block end
+                 ,(rx (or
+                       (any "}" "]")
+                       (group bol (* space) "end" (* space) eol)))
+                 ;; Comment start
+                 ,(rx (or "#" "=begin"))
+                 ;; Forward-sexp function
+                 ruby-forward-sexp nil)))
+
 (after 'auto-complete
   (add-to-list 'ac-modes 'ruby-mode)
   (add-to-list 'ac-modes 'inf-ruby-mode)
@@ -90,20 +112,7 @@
    ("Vagrantfile\\'" . ruby-mode)
    ("\\.jbuilder\\'" . ruby-mode))
   :init
-  (progn
-    (defun cb-rb:configure-outlinek ()
-      (setq outline-regexp
-            (rx (or
-                 (group (* space) (or "def" "class" "module") (+ space))
-                 (group (* nonl) (any "{" "[") (* space) eol))))
-
-      (evil-local-set-key 'normal (kbd "SPC") 'outline-toggle-children)
-      (evil-local-set-key 'normal (kbd "z m") 'hide-body)
-      (evil-local-set-key 'normal (kbd "z r") 'show-all)
-      (outline-minor-mode +1))
-
-    (add-hook 'ruby-mode-hook 'cb-rb:configure-outlinek)
-    (add-to-list 'completion-ignored-extensions ".rbc")))
+  (add-to-list 'completion-ignored-extensions ".rbc"))
 
 (use-package rubocop
   :ensure t
