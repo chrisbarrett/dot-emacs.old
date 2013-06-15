@@ -33,6 +33,8 @@
 
 (after 'haskell-mode
 
+;;;; Buffer switching
+
   (defun cb:hs-project-root ()
     (let ((cabal (haskell-cabal-find-file)))
       (when cabal (file-name-directory cabal))))
@@ -59,13 +61,40 @@
 
   (define-key haskell-mode-map (kbd "C-c j") 'haskell-test<->code)
 
-  ;; Use greek lambda symbol.
-  (font-lock-add-keywords
-   'haskell-mode
-   `((,(concat "\\s (?\\(\\\\\\)\\s *\\(\\w\\|_\\|(.*)\\).*?\\s *->")
-      (0 (progn (compose-region (match-beginning 1) (match-end 1)
-                                ,(make-char 'greek-iso8859-7 107))
-                nil))))))
+;;;; Unicode display
+
+  (defun cb-hs:apply-font-lock (pat rep)
+    "Call SUBSTITUTE-PATTERN-WITH-UNICODE repeatedly."
+    (font-lock-add-keywords
+     nil `((,pat
+            (0 (progn (compose-region (match-beginning 1) (match-end 1)
+                                      ,(string-to-char rep) 'decompose-region)
+                      nil))))))
+
+  (defun cb-hs:font-lock (patterns)
+    (--each patterns
+      (destructuring-bind (pat rep) it
+        (cb-hs:apply-font-lock
+         (eval `(rx (group word-start ,pat word-end)))
+         rep))))
+
+  (defun cb-hs:apply-unicode ()
+    (cb-hs:apply-font-lock
+     "\\s (?\\(\\\\\\)\\s *\\(\\w\\|_\\|(.*)\\).*?\\s *->" "λ")
+    (cb-hs:font-lock '(("<-"     "←")
+                       ("->"     "→")
+                       ("."      "•")
+                       ("forall" "∀")
+                       (">="     "≥")
+                       ("<="     "≤")
+                       ("alpha"  "ɑ")
+                       ("beta"   "β")
+                       ("gamma"  "ɣ")
+                       ("delta"  "δ")
+                       ("!!"     "‼")
+                       ("::"     "∷"))))
+
+  (add-hook 'cb:haskell-modes-hook 'cb-hs:apply-unicode))
 
 (after 'flycheck
 
@@ -128,6 +157,10 @@
   (hook-fn 'haskell-mode-hook
     (flycheck-select-checker 'haskell-ghc)))
 
+(after 'auto-complete
+  (--map (add-to-list 'ac-modes 'haskell-mode)
+         cb:haskell-modes))
+
 (use-package haskell-mode
   :ensure t
   :commands
@@ -166,7 +199,8 @@
        evil-shift-width     4
        tab-width            4
        haskell-tags-on-save t
-       haskell-stylish-on-save t)
+                                        ; haskell-stylish-on-save t
+       )
       (local-set-key (kbd "C-c C-c") 'haskell-process-cabal-build))))
 
 (use-package ghc
@@ -189,16 +223,18 @@
       '((candidates . ac-haskell-candidates)))
 
     (hook-fn 'haskell-mode-hook
-      (add-to-list 'ac-sources 'ac-source-ghc))))
+      (after 'auto-complete
+        (add-to-list 'ac-sources 'ac-source-ghc)))))
 
 (use-package haskell-ac
   :defer t
   :init
   (hook-fn 'cb:haskell-modes-hook
-    (require 'auto-complete)
-    (add-to-list 'ac-modes major-mode)
-    (add-to-list 'ac-sources 'ac-source-words-in-same-mode-buffers)
-    (add-to-list 'ac-sources 'ac-source-haskell)))
+    (require 'haskell-ac)
+    (after 'auto-complete
+      (add-to-list 'ac-modes major-mode)
+      (add-to-list 'ac-sources 'ac-source-words-in-same-mode-buffers)
+      (add-to-list 'ac-sources 'ac-source-haskell))))
 
 (use-package haskell-edit
   :commands (haskell-find-type-signature
@@ -206,7 +242,7 @@
 
 (use-package haskell-indentation
   :diminish haskell-indentation-mode
-  :defer    t
+  :commands haskell-indentation-mode
   :init     (add-hook 'haskell-mode-hook 'haskell-indentation-mode))
 
 (use-package haskell-doc
