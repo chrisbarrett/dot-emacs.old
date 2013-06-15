@@ -36,8 +36,9 @@
 ;;;; Buffer switching
 
   (defun cb:hs-project-root ()
-    (let ((cabal (haskell-cabal-find-file)))
-      (when cabal (file-name-directory cabal))))
+    (or (ignore-errors
+          (file-name-directory (haskell-cabal-find-file)))
+        (projectile-project-p)))
 
   (defun cb:hs-srcfile->testfile (fname)
     (s-replace "/src/" "/test/"
