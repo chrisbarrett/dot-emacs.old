@@ -33,7 +33,7 @@
 
 (after 'cc-mode
 
-  (defun clang-switch-between-header-and-impl ()
+  (defun cb-c:switch-between-header-and-impl ()
     "Switch between a header file and its implementation."
     (interactive)
     (let ((sans (file-name-sans-extension (buffer-file-name)))
@@ -42,7 +42,7 @@
           (find-file (concat sans ".c"))
         (find-file (concat sans ".h")))))
 
-  (define-key c-mode-map (kbd "C-c C-j") 'clang-switch-between-header-and-impl)
+  (define-key c-mode-map (kbd "C-c C-j") 'cb-c:switch-between-header-and-impl)
   (define-key c-mode-map (kbd "M-q") 'indent-dwim)
   (after 'mode-compile
     (define-key c-mode-map (kbd "C-c C-c") 'mode-compile))
@@ -60,7 +60,7 @@
     (setq ac-sources '(ac-source-clang-async
                        ac-source-yasnippet))))
 
-(defun looking-at-c-flow-control-header? ()
+(defun cb-c:looking-at-flow-control-header? ()
   (thing-at-point-looking-at
    (rx (* nonl) (32 ";") (* space)
        (or "if" "when" "while" "for")
@@ -68,11 +68,12 @@
        "("
        (* (not (any ")"))))))
 
-(defun looking-at-c-flow-control-keyword? ()
+(defun cb-c:looking-at-flow-control-keyword? ()
   (thing-at-point-looking-at
-   (rx (or "if" "when" "while" "for" "do") (or (+ space) "("))))
+   (rx (or (group (or "if" "when" "while" "for") (or (+ space) "("))
+           (group (or "do" "else") (* space))))))
 
-(defun looking-at-c-assignment-right-side? ()
+(defun cb-c:looking-at-assignment-right-side? ()
   (save-excursion
     (thing-at-point-looking-at
      (rx "=" (* space)
@@ -80,7 +81,7 @@
          (? (group "(" (* nonl) ")"))
          (* space)))))
 
-(defun looking-at-c-cast? ()
+(defun cb-c:looking-at-cast? ()
   (let ((cast (rx
 
                (or
@@ -101,9 +102,9 @@
     (and (thing-at-point-looking-at cast)
          (save-excursion
            (search-backward-regexp cast)
-           (not (looking-at-c-flow-control-keyword?))))))
+           (not (cb-c:looking-at-flow-control-keyword?))))))
 
-(defun looking-at-c-struct-keyword? ()
+(defun cb-c:looking-at-struct-keyword? ()
   (save-excursion
     (beginning-of-sexp)
     (thing-at-point-looking-at (rx (or "{" " " "(" ",") "."))))
@@ -112,15 +113,15 @@
 
   (defun c-insert-smart-op (str)
     "Insert a smart operator with special formatting in certain expressions."
-    (if (looking-at-c-flow-control-header?)
+    (if (cb-c:looking-at-flow-control-header?)
         (insert str)
       (smart-insert-operator str)))
 
   (defun c-insert-smart-equals ()
     "Insert an '=' with context-sensitive formatting."
     (interactive)
-    (if (or (looking-at-c-flow-control-header?)
-            (looking-at-c-struct-keyword?))
+    (if (or (cb-c:looking-at-flow-control-header?)
+            (cb-c:looking-at-struct-keyword?))
         (insert "=")
       (smart-insert-operator "=")))
 
@@ -140,7 +141,7 @@
       (just-one-space)
       (insert "*"))))
 
-  (defun c-maybe-remove-spaces-after-inserting (pred-regex op-start-regex)
+  (defun cb-c:maybe-remove-spaces-after-insertion (pred-regex op-start-regex)
     (when (thing-at-point-looking-at pred-regex)
       (save-excursion
         (let ((back-limit (save-excursion
@@ -160,7 +161,7 @@
           (insert "-")
         (c-insert-smart-op "-"))
       ;; Collapse whitespace for decrement operator.
-      (c-maybe-remove-spaces-after-inserting
+      (cb-c:maybe-remove-spaces-after-insertion
        (rx "-" (* space) "-" (* space))
        (rx (not (any "-" space))))))
 
@@ -169,7 +170,7 @@
 If the insertion creates an right arrow (->), remove surrounding whitespace."
     (interactive)
     (c-insert-smart-op ">")
-    (c-maybe-remove-spaces-after-inserting
+    (cb-c:maybe-remove-spaces-after-insertion
      (rx "-" (* space) ">" (* space))
      (rx (not (any space "-" ">")))))
 
@@ -178,9 +179,14 @@ If the insertion creates an right arrow (->), remove surrounding whitespace."
 Remove horizontal whitespace if the insertion results in a ++."
     (interactive)
     (c-insert-smart-op "+")
-    (c-maybe-remove-spaces-after-inserting
+    (cb-c:maybe-remove-spaces-after-insertion
      (rx "+" (* space) "+" (* space))
-     (rx (not (any space "+")))))
+     (rx (not (any space "+"))))
+    (save-excursion
+      (while (equal ?+ (char-before))
+        (forward-char -1))
+      (when  (equal ?\; (char-before))
+        (just-one-space))))
 
   (hook-fn 'c-mode-hook
     (local-set-key (kbd ",") (command (insert ",") (just-one-space)))
@@ -278,24 +284,29 @@ Remove horizontal whitespace if the insertion results in a ++."
   (defun c-insert-smart-lbrace ()
     "Insert a left brace, possibly with formatting."
     (interactive)
-    (unwind-protect
-        (atomic-change-group
-          (if (and (thing-at-point-looking-at (rx ")" (* space) eol))
-                   (not (looking-at-c-cast?)))
-              ;; Insert and put braces on new lines.
-              (progn
-                (newline)
-                (insert "{")
-                (newline)
-                (save-excursion (insert "\n}"))
-                (c-indent-defun)
-                (c-indent-line))
-            ;; Do a smartparenish insertion.
-            (progn
+    (cl-flet ((open-braces-on-new-line
+               ()
+               "Insert and put braces on new lines."
+               (newline)
+               (insert "{")
+               (newline)
+               (save-excursion (insert "\n}"))
+               (c-indent-defun)
+               (c-indent-line)))
+      (unwind-protect
+          (atomic-change-group
+            (cond
+             ((cb-c:looking-at-flow-control-keyword?)
+              (open-braces-on-new-line))
+             ((and (thing-at-point-looking-at (rx ")" (* space) eol))
+                   (not (cb-c:looking-at-cast?)))
+              (open-braces-on-new-line))
+             (t
+              ;; Do a smartparenish insertion.
               (insert "{")
               (sp--self-insert-command 1)
               (save-excursion (search-backward "{")
-                              (delete-char -1)))))))
+                              (delete-char -1))))))))
 
   (define-key smartparens-mode-map (kbd "{")
     (command (if (derived-mode-p 'c-mode)
