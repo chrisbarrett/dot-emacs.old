@@ -151,6 +151,11 @@
             (delete-horizontal-space)))
         (indent-according-to-mode))))
 
+  (defun cb-c:just-one-space-after-semicolon ()
+    (save-excursion
+      (when (search-backward-regexp (rx ";" (* space)) (line-beginning-position) t)
+        (replace-match "; " nil))))
+
   (defun c-insert-smart-minus ()
     "Insert a minus with padding unless a unary minus is more appropriate."
     (interactive)
@@ -163,7 +168,8 @@
       ;; Collapse whitespace for decrement operator.
       (cb-c:maybe-remove-spaces-after-insertion
        (rx "-" (* space) "-" (* space))
-       (rx (not (any "-" space))))))
+       (rx (not (any "-" space))))
+      (cb-c:just-one-space-after-semicolon)))
 
   (defun c-insert-smart-gt ()
     "Insert a > symbol with formatting.
@@ -182,11 +188,7 @@ Remove horizontal whitespace if the insertion results in a ++."
     (cb-c:maybe-remove-spaces-after-insertion
      (rx "+" (* space) "+" (* space))
      (rx (not (any space "+"))))
-    (save-excursion
-      (while (equal ?+ (char-before))
-        (forward-char -1))
-      (when  (equal ?\; (char-before))
-        (just-one-space))))
+    (cb-c:just-one-space-after-semicolon))
 
   (hook-fn 'c-mode-hook
     (local-set-key (kbd ",") (command (insert ",") (just-one-space)))
