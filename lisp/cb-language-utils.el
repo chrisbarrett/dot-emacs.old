@@ -31,7 +31,7 @@
 (use-package emr
   :ensure t
   :bind   ("M-RET" . emr-show-refactor-menu)
-  :config (emr-initialize))
+  :init (add-hook 'prog-mode-hook 'emr-initialize))
 
 (use-package paredit
   :ensure t
