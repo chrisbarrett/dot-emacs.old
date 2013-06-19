@@ -138,7 +138,7 @@
                source-inplace)
     :error-parser 'haskell-ghc-parser
     :modes 'haskell-mode
-    :next-checkers '(haskell-hlint))
+    :next-checkers '((no-errors . haskell-hlint)))
 
   (flycheck-declare-checker haskell-hlint
     "Haskell checker using hlint"
@@ -164,15 +164,8 @@
 
 (use-package haskell-mode
   :ensure t
-  :commands
-  (haskell-mode
-   haskell-c-mode
-   haskell-cabal-mode
-   hoogle)
-  :mode
-  (("\\.hs$"    . haskell-mode)
-   ("\\.hsc$"   . haskell-c-mode)
-   ("\\.cabal$" . haskell-cabal-mode))
+  :defer t
+  :modes (("\\.hs$" . haskell-mode))
   :config
   (progn
 
@@ -200,9 +193,14 @@
        evil-shift-width     4
        tab-width            4
        haskell-tags-on-save t
-                                        ; haskell-stylish-on-save t
-       )
+       haskell-stylish-on-save t)
       (local-set-key (kbd "C-c C-c") 'haskell-process-cabal-build))))
+
+(use-package haskell-c
+  :mode ("\\.hsc$" . haskell-c-mode))
+
+(use-package haskell-cabal
+  :mode  ("\\.cabal$" . haskell-cabal-mode))
 
 (use-package ghc
   :ensure   t
