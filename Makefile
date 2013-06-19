@@ -19,7 +19,9 @@ emacs_version = $(shell $(emacs) -Q --batch --exec \
 default : $(modules) conf tags $(emacs_src)
 
 .PHONY: all
-all : $(modules) compile tags ruby supercollider python clang scheme $(emacs_src)
+all : $(modules) compile tags \
+	  ruby supercollider python clang scheme haskell \
+	  $(emacs_src)
 
 .PHONY: tags
 tags :
@@ -185,3 +187,16 @@ $(r6rs_html) :| $(r6rs_gz) $(etc)
 
 $(r6rs_gz) :| $(tmp)
 	curl $(r6rs_url) -o $(r6rs_gz)
+
+# ----------------------------------------------------------------------------
+
+scion_url    = https://github.com/nominolo/scion.git
+scion_dest   = $(tmp)/scion
+scion_server = ~/.cabal/bin/scion-server
+
+.PHONY: haskell
+haskell : $(scion_server)
+
+$(scion_server) :
+	git clone $(scion_url) $(scion_dest)
+	cd $(scion_dest) && cabal install
