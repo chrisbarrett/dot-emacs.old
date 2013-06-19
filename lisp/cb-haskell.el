@@ -261,6 +261,12 @@
   :config
   (setq hs-lint-command (executable-find "hlint")))
 
+(use-package scion
+  :ensure t
+  :commands (scion-mode)
+  :init (add-hook 'cb:haskell-modes-hook 'scion-mode)
+  :config (setq scion-completing-read-function 'ido-completing-read))
+
 (provide 'cb-haskell)
 
 ;;; cb-haskell.el ends here
