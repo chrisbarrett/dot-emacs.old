@@ -97,10 +97,13 @@
         (smartparens-mode +1))))
   :config
   (progn
-    ;; Customise to behave more like paredit.
+    ;; Still use Paredit wrap commands.
+    (define-key smartparens-mode-map (kbd "M-{") 'paredit-wrap-curly)
+    (define-key smartparens-mode-map (kbd "M-[") 'paredit-wrap-square)
+    (define-key smartparens-mode-map (kbd "M-(") 'paredit-wrap-round)
+    ;; Customise to behave more like Paredit.
     (setq sp-navigate-close-if-unbalanced t)
     (define-key smartparens-mode-map (kbd "DEL")    'sp-backward-delete-char)
-    (define-key smartparens-mode-map (kbd "M-DEL")  'sp-backward-kill-symbol)
     (define-key smartparens-mode-map (kbd "C-k")    'sp-kill-sexp)
     (define-key smartparens-mode-map (kbd ")") 'sp-up-sexp)
     (define-key smartparens-mode-map (kbd "]") 'sp-up-sexp)
