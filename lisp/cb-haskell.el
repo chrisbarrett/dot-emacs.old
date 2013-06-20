@@ -76,7 +76,7 @@
     (--each patterns
       (destructuring-bind (pat rep) it
         (cb-hs:apply-font-lock
-         (eval `(rx (group word-start ,pat word-end)))
+         (eval `(rx (group (? "`") symbol-start ,pat symbol-end (? "`"))))
          rep))))
 
   (defun cb-hs:apply-unicode ()
@@ -92,6 +92,7 @@
                        ("beta"   "β")
                        ("gamma"  "ɣ")
                        ("delta"  "δ")
+                       ("elem"   "∈")
                        ("!!"     "‼")
                        ("::"     "∷"))))
 
