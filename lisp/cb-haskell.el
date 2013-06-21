@@ -76,7 +76,10 @@
     (--each patterns
       (destructuring-bind (pat rep) it
         (cb-hs:apply-font-lock
-         (eval `(rx (group (? "`") symbol-start ,pat symbol-end (? "`"))))
+         (eval `(rx  (not (any "\""))
+                     (group (? "`") symbol-start ,pat symbol-end
+                            (? "`"))
+                     (not (any "\""))))
          rep))))
 
   (defun cb-hs:apply-unicode ()
@@ -84,6 +87,7 @@
      "\\s (?\\(\\\\\\)\\s *\\(\\w\\|_\\|(.*)\\).*?\\s *->" "λ")
     (cb-hs:font-lock '(("<-"     "←")
                        ("->"     "→")
+                       ("=>"     "⇒")
                        ("."      "•")
                        ("forall" "∀")
                        (">="     "≥")
@@ -162,6 +166,12 @@
 (after 'auto-complete
   (--map (add-to-list 'ac-modes 'haskell-mode)
          cb:haskell-modes))
+
+(after 'smart-operator
+  (hook-fn 'cb:haskell-modes-hook
+    (smart-insert-operator-hook)
+    (local-set-key (kbd "$") (command (smart-insert-operator "$")))
+    (local-unset-key (kbd ":"))))
 
 (use-package haskell-mode
   :ensure t
