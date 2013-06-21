@@ -276,9 +276,10 @@
   :ensure t
   :commands (scion-mode)
   :init (add-hook 'cb:haskell-modes-hook 'scion-mode)
-  :config (setq
-           scion-program "~/.cabal/bin/scion-server"
-           scion-completing-read-function 'ido-completing-read))
+  :config
+  (setq pp-escape-newlines t
+        scion-program "~/.cabal/bin/scion-server"
+        scion-completing-read-function 'ido-completing-read))
 
 (provide 'cb-haskell)
 
