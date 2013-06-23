@@ -30,6 +30,7 @@
 (require 'use-package)
 (require 's)
 (autoload 'haskell-cabal-find-file "haskell-cabal")
+(autoload 'emr-blank-line\? "emr")
 
 (after 'haskell-mode
 
@@ -172,6 +173,29 @@
     (smart-insert-operator-hook)
     (local-set-key (kbd "$") (command (smart-insert-operator "$")))
     (local-unset-key (kbd ":"))))
+
+(after 'hideshow
+
+  (defun cb-hs:forward-fold (&rest _)
+    (haskell-ds-forward-decl)
+    (unless (eobp)
+      (ignore-errors (forward-line -1))))
+
+  (add-to-list 'hs-special-modes-alist
+               `(haskell-mode
+                 ;; Beginning function
+                 ,(rx (or
+                       ;; Function
+                       (group  (* nonl) (+ space) "::" (+ space ) (* nonl))
+                       ;; Groupings
+                       (group (or "class" "instance" "newtype" "data")
+                              (+ space) (* nonl))))
+                 ;; End function
+                 nil
+                 ;; Comment start
+                 ,(rx "{-")
+                 ;; Forward-sexp function
+                 cb-hs:forward-fold)))
 
 (use-package haskell-mode
   :ensure t
