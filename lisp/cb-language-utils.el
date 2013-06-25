@@ -134,30 +134,11 @@
       "Make a smart operator command that will insert OP."
       `(command (smart-insert-operator ,op)))
 
-    (defun cb:python-equals ()
-      "Insert an '=' char padded by spaces, except in function arglists."
-      (interactive)
-      (if (string-match-p (rx (* space) "def ")
-                          (thing-at-point 'line))
-          (insert "=")
-        (smart-insert-operator "=")))
+    (add-hook 'cb:ruby-modes-hook 'smart-insert-operator-hook)
+    (add-hook 'cb:haskell-modes-hook 'smart-insert-operator-hook)
+    (add-hook 'cb:python-modes-hook 'smart-insert-operator-hook)
 
-    (hook-fn 'cb:python-modes-hook
-      (smart-insert-operator-hook)
-      (local-set-key (kbd "=") 'cb:python-equals)
-      (local-unset-key (kbd "."))
-      (local-unset-key (kbd ":")))
-
-    (hook-fn 'cb:ruby-modes-hook
-      (local-set-key (kbd "~") (smart-op "~"))
-      (local-set-key (kbd "<") (smart-op "<"))
-      (local-set-key (kbd ">") (smart-op ">"))
-      (local-set-key (kbd "=") (smart-op "="))
-      (local-set-key (kbd "-") (smart-op "-"))
-      (local-set-key (kbd "+") (smart-op "+"))
-      (local-set-key (kbd "/") (smart-op "/")))
-
-    (hook-fn 'cb:markup-modes-hook
+     (hook-fn 'cb:markup-modes-hook
       (local-set-key (kbd ",") (smart-op ",")))
 
     (hook-fn 'sclang-mode-hook

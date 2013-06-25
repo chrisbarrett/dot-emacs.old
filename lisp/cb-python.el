@@ -32,6 +32,20 @@
   (add-to-list 'ac-modes 'python-mode)
   (add-to-list 'ac-modes 'inferior-python-mode))
 
+(after 'smart-operator
+  (defun cb:python-equals ()
+    "Insert an '=' char padded by spaces, except in function arglists."
+    (interactive)
+    (if (string-match-p (rx (* space) "def ")
+                        (thing-at-point 'line))
+        (insert "=")
+      (smart-insert-operator "=")))
+
+  (hook-fn 'cb:python-modes-hook
+    (local-set-key (kbd "=") 'cb:python-equals)
+    (local-unset-key (kbd "."))
+    (local-unset-key (kbd ":"))))
+
 (use-package python
   :ensure   t
   :commands python-mode

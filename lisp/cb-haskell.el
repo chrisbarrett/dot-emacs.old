@@ -168,9 +168,23 @@
   (--map (add-to-list 'ac-modes 'haskell-mode)
          cb:haskell-modes))
 
+(hook-fn 'haskell-mode
+  (smart-insert-operator-hook)
+  (local-set-key (kbd "|") 'cb-hs:smart-pipe)
+  (local-set-key (kbd "$") (command (smart-insert-operator "$")))
+  (local-unset-key (kbd ":")))
+
 (after 'smart-operator
-  (hook-fn 'cb:haskell-modes-hook
-    (smart-insert-operator-hook)
+  (defun cb-hs:smart-pipe ()
+    "Insert a pipe operator. Add padding, unless we're inside a list."
+    (interactive)
+    (if (s-matches? (buffer-substring (line-beginning-position) (point))
+                    (rx "[" (* alnum) eol))
+        (insert "|")
+      (smart-insert-operator "|")))
+
+  (hook-fn 'haskell-mode
+    (local-set-key (kbd "|") 'cb-hs:smart-pipe)
     (local-set-key (kbd "$") (command (smart-insert-operator "$")))
     (local-unset-key (kbd ":"))))
 

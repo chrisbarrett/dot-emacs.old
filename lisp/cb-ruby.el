@@ -35,6 +35,16 @@
 
 (add-to-list 'auto-mode-alist `("\\.html\\.erb" . erb-mode))
 
+(after 'smart-operator
+  (hook-fn 'cb:ruby-modes-hook
+    (local-set-key (kbd "~") (smart-op "~"))
+    (local-set-key (kbd "<") (smart-op "<"))
+    (local-set-key (kbd ">") (smart-op ">"))
+    (local-set-key (kbd "=") (smart-op "="))
+    (local-set-key (kbd "-") (smart-op "-"))
+    (local-set-key (kbd "+") (smart-op "+"))
+    (local-set-key (kbd "/") (smart-op "/"))))
+
 (after 'hideshow
   (add-to-list 'hs-special-modes-alist
                `(ruby-mode
