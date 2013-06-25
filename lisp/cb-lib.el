@@ -39,8 +39,17 @@ The arguments passed to the hook function are bound to the symbol 'args'.
 
 * BODY is a list of forms to evaluate when the hook is run."
   (declare (indent 1) (doc-string 2))
-  `(add-hook ,hook (lambda (&rest _args)
-                     ,@(cons docstring body))))
+  ;; Sort the docstring form from the body.
+  (destructuring-bind (docstring body)
+      (if (and (stringp docstring) body)
+          (list docstring body)
+        (list nil (cons docstring body)))
+    `(add-hook ,hook (lambda (&rest _args)
+                       ,docstring
+                       ;; Do not allow errors to propogate from the hook.
+                       (condition-case err
+                           (progn ,@body)
+                         (error (message (error-message-string err))))))))
 
 (defmacro after (feature &rest body)
   "Like `eval-after-load' - once FEATURE is loaded execute the BODY."
