@@ -28,6 +28,9 @@
 (require 'dash)
 (require 'cl-lib)
 
+(defvar cb-lib:debug-hooks? nil
+  "Set to non-nil to prevent `hook-fn' from catching errors.")
+
 (defmacro hook-fn (hook &optional docstring &rest body)
   "Execute forms when a given hook is called.
 The arguments passed to the hook function are bound to the symbol 'args'.
@@ -46,10 +49,14 @@ The arguments passed to the hook function are bound to the symbol 'args'.
         (list nil (cons docstring body)))
     `(add-hook ,hook (lambda (&rest _args)
                        ,docstring
-                       ;; Do not allow errors to propogate from the hook.
-                       (condition-case err
-                           (progn ,@body)
-                         (error (message (error-message-string err))))))))
+                       (if cb-lib:debug-hooks?
+                           ;; Do not allow errors to propogate from the hook.
+                           (condition-case err
+                               (progn ,@body)
+                             (error (message
+                                     "[%s] %s" ',hook
+                                     (error-message-string err))))
+                         (progn ,@body))))))
 
 (defmacro after (feature &rest body)
   "Like `eval-after-load' - once FEATURE is loaded execute the BODY."
