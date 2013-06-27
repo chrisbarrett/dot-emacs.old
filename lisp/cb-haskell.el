@@ -175,6 +175,7 @@
   (local-unset-key (kbd ":")))
 
 (after 'smart-operator
+
   (defun cb-hs:smart-pipe ()
     "Insert a pipe operator. Add padding, unless we're inside a list."
     (interactive)
@@ -183,11 +184,30 @@
         (insert "|")
       (smart-insert-operator "|")))
 
+  (defun cb-hs:smart-dot ()
+    "Insert a period. Add padding, unless this line is an import statement."
+    (interactive)
+    (if (s-matches? (rx bol (* space ) "import")
+                    (buffer-substring (line-beginning-position) (point)))
+        (insert ".")
+      (smart-insert-operator ".")))
+
+  (defun cb-hs:smart-colon ()
+    (interactive)
+    (if (equal (char-before) ?\:)
+        (atomic-change-group
+          (delete-char -1)
+          (just-one-space)
+          (insert "::")
+          (just-one-space))
+      (insert ":")))
+
   (hook-fn 'cb:haskell-modes-hook
     (smart-insert-operator-hook)
+    (local-set-key (kbd ".") 'cb-hs:smart-dot)
+    (local-set-key (kbd ":") 'cb-hs:smart-colon)
     (local-set-key (kbd "|") 'cb-hs:smart-pipe)
-    (local-set-key (kbd "$") (command (smart-insert-operator "$")))
-    (local-unset-key (kbd ":"))))
+    (local-set-key (kbd "$") (command (smart-insert-operator "$")))))
 
 (after 'hideshow
 
@@ -251,29 +271,6 @@
 
 (use-package haskell-cabal
   :mode  ("\\.cabal$" . haskell-cabal-mode))
-
-(use-package ghc
-  :ensure   t
-  :commands ghc-init
-  :init     (add-hook 'haskell-mode-hook 'ghc-init)
-  :config
-  (progn
-
-    ;; HACK: this command throws errors on haskell-mode startup.
-    (defadvice ghc-uniq-lol (around ignore-errs activate)
-      (ignore-errors ad-do-it))
-
-    (defun ac-haskell-candidates ()
-      "Auto-complete source using ghc-doc."
-      (let ((pat (buffer-substring (ghc-completion-start-point) (point))))
-        (all-completions pat (ghc-select-completion-symbol))))
-
-    (ac-define-source ghc
-      '((candidates . ac-haskell-candidates)))
-
-    (hook-fn 'haskell-mode-hook
-      (after 'auto-complete
-        (add-to-list 'ac-sources 'ac-source-ghc)))))
 
 (use-package haskell-ac
   :defer t
