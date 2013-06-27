@@ -167,7 +167,7 @@
     (flycheck-select-checker 'haskell-ghc)))
 
 (after 'auto-complete
-  (--map (add-to-list 'ac-modes 'haskell-mode)
+  (--map (add-to-list 'ac-modes it)
          cb:haskell-modes))
 
 (defun cb-hs:smart-pipe ()
