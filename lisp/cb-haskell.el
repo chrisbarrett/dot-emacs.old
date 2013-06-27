@@ -196,9 +196,22 @@
         (just-one-space))
     (insert ":")))
 
+(defun cb-hs:smart-gt ()
+  "Append an arrow to the end of the line if we're in a typesig."
+  (interactive)
+  (let ((lin (buffer-substring (line-beginning-position) (point))))
+    (if (and (s-matches? "::" lin)
+             (not (s-matches? (rx "-" (* space) eol) lin)))
+        (atomic-change-group
+          (end-of-line)
+          (just-one-space)
+          (insert "-> "))
+      (smart-insert-operator ">"))))
+
 (hook-fn 'haskell-mode-hook
   (smart-insert-operator-hook)
   (local-set-key (kbd ".") 'cb-hs:smart-dot)
+  (local-set-key (kbd ">") 'cb-hs:smart-gt)
   (local-set-key (kbd ":") 'cb-hs:smart-colon)
   (local-set-key (kbd "|") 'cb-hs:smart-pipe)
   (local-set-key (kbd "$") (command (smart-insert-operator "$"))))
