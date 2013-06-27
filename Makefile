@@ -1,11 +1,11 @@
-src        = $(CURDIR)/src
-backups    = $(CURDIR)/backups
-lib        = $(CURDIR)/lib
-etc        = $(CURDIR)/etc
-lisp       = $(CURDIR)/lisp
-bin        = $(CURDIR)/bin
-tmp        = $(CURDIR)/tmp
-modules    = $(CURDIR)/.git/modules
+src        = src
+backups    = backups
+lib        = lib
+etc        = etc
+lisp       = lisp
+bin        = bin
+tmp        = tmp
+modules    = .git/modules
 emacs      = emacs
 emacs_src  = $(src)/emacs-$(emacs_version)
 
