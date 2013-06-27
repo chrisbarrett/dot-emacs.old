@@ -169,7 +169,6 @@ restore key."
   "Recompile all configuration files."
   (interactive)
   (byte-recompile-file (concat user-emacs-directory "init.el") t 0)
-  (byte-recompile-directory cb:lib-dir 0 t)
   (byte-recompile-directory cb:lisp-dir 0 t))
 
 (provide 'cb-lib)
