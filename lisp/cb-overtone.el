@@ -26,16 +26,15 @@
 
 ;;; Code:
 
-(require 'nrepl)
+(autoload 'nrepl-mode-map "nrepl")
+(autoload 'nrepl-eval "nrepl")
 
-;;;###autoload
 (defvar overtone-mode-map
   (let ((km (make-sparse-keymap)))
     (define-key km (kbd "C-c C-g") 'cb:stop-overtone)
     (define-key km (kbd "s-.") 'cb:stop-overtone)
     km))
 
-;;;###autoload
 (define-minor-mode overtone-mode
   "Provide additional overtone-related functionality for clojure."
   nil " overtone" overtone-mode-map
@@ -44,7 +43,6 @@
   (unless (and (boundp 'nrepl-connection-list) nrepl-connection-list)
     (nrepl-jack-in)))
 
-;;;###autoload
 (defun maybe-enable-overtone-mode ()
   "Enable `overtone-mode' only if the current Clojure buffer references overtone."
   (when (and (not overtone-mode)
@@ -52,7 +50,6 @@
              (string-match-p "overtone.live" (buffer-string)))
     (overtone-mode t)))
 
-;;;###autoload
 (defun cb:stop-overtone ()
   "Stop synthesis."
   (interactive)
