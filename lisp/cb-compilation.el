@@ -127,6 +127,16 @@
         ad-do-it
       (user-error))))
 
+(use-package make-mode
+  :defer t
+  :config
+  (progn
+    (define-key makefile-mode-map (kbd "C-c C-c") nil)
+    (add-to-list 'ac-modes 'makefile-mode)
+    (hook-fn 'makefile-mode-hook
+      (auto-complete-mode t)
+      (setq indent-tabs-mode t))))
+
 (provide 'cb-compilation)
 
 ;; Local Variables:

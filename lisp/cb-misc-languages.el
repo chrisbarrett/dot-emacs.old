@@ -28,15 +28,6 @@
 
 (require 'use-package)
 
-(use-package make-mode
-  :defer t
-  :config
-  (progn
-    (add-to-list 'ac-modes 'makefile-mode)
-    (hook-fn 'makefile-mode-hook
-      (auto-complete-mode t)
-      (setq indent-tabs-mode t))))
-
 (use-package json-mode
   :ensure    t
   :commands
