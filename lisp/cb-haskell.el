@@ -29,8 +29,10 @@
 
 (require 'use-package)
 (require 's)
-(autoload 'haskell-cabal-find-file "haskell-cabal")
 (autoload 'emr-blank-line\? "emr")
+(autoload 'smart-insert-operator "smart-operator")
+(autoload 'smart-insert-operator-hook "smart-operator")
+(autoload 'haskell-cabal-find-file "haskell-cabal")
 
 (after 'haskell-mode
 
@@ -168,46 +170,38 @@
   (--map (add-to-list 'ac-modes 'haskell-mode)
          cb:haskell-modes))
 
-(hook-fn 'haskell-mode
+(defun cb-hs:smart-pipe ()
+  "Insert a pipe operator. Add padding, unless we're inside a list."
+  (interactive)
+  (if (s-matches? (rx "[" (* alnum) eol)
+                  (buffer-substring (line-beginning-position) (point)))
+      (insert "|")
+    (smart-insert-operator "|")))
+
+(defun cb-hs:smart-dot ()
+  "Insert a period. Add padding, unless this line is an import statement."
+  (interactive)
+  (if (s-matches? (rx bol (* space ) "import")
+                  (buffer-substring (line-beginning-position) (point)))
+      (insert ".")
+    (smart-insert-operator ".")))
+
+(defun cb-hs:smart-colon ()
+  (interactive)
+  (if (equal (char-before) ?\:)
+      (atomic-change-group
+        (delete-char -1)
+        (just-one-space)
+        (insert "::")
+        (just-one-space))
+    (insert ":")))
+
+(hook-fn 'haskell-mode-hook
   (smart-insert-operator-hook)
+  (local-set-key (kbd ".") 'cb-hs:smart-dot)
+  (local-set-key (kbd ":") 'cb-hs:smart-colon)
   (local-set-key (kbd "|") 'cb-hs:smart-pipe)
-  (local-set-key (kbd "$") (command (smart-insert-operator "$")))
-  (local-unset-key (kbd ":")))
-
-(after 'smart-operator
-
-  (defun cb-hs:smart-pipe ()
-    "Insert a pipe operator. Add padding, unless we're inside a list."
-    (interactive)
-    (if (s-matches? (rx "[" (* alnum) eol)
-                    (buffer-substring (line-beginning-position) (point)))
-        (insert "|")
-      (smart-insert-operator "|")))
-
-  (defun cb-hs:smart-dot ()
-    "Insert a period. Add padding, unless this line is an import statement."
-    (interactive)
-    (if (s-matches? (rx bol (* space ) "import")
-                    (buffer-substring (line-beginning-position) (point)))
-        (insert ".")
-      (smart-insert-operator ".")))
-
-  (defun cb-hs:smart-colon ()
-    (interactive)
-    (if (equal (char-before) ?\:)
-        (atomic-change-group
-          (delete-char -1)
-          (just-one-space)
-          (insert "::")
-          (just-one-space))
-      (insert ":")))
-
-  (hook-fn 'cb:haskell-modes-hook
-    (smart-insert-operator-hook)
-    (local-set-key (kbd ".") 'cb-hs:smart-dot)
-    (local-set-key (kbd ":") 'cb-hs:smart-colon)
-    (local-set-key (kbd "|") 'cb-hs:smart-pipe)
-    (local-set-key (kbd "$") (command (smart-insert-operator "$")))))
+  (local-set-key (kbd "$") (command (smart-insert-operator "$"))))
 
 (after 'hideshow
 
