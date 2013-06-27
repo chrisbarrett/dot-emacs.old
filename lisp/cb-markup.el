@@ -28,6 +28,10 @@
 
 (require 'use-package)
 
+(after 'smart-operator
+  (hook-fn 'cb:markup-modes-hook
+    (local-set-key (kbd ",") (smart-op ","))))
+
 (defun cb:xml-one-liner? (str)
   (save-match-data
     (-when-let (match (->> str (s-match

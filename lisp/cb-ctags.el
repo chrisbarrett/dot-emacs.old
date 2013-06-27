@@ -62,7 +62,6 @@
     (and (not (equal home dir))
          (s-matches? home dir))))
 
-;;;###autoload
 (defun build-ctags ()
   "Create a tags file at the root of the current project."
   (interactive)
@@ -76,7 +75,6 @@
         (message "Tags written to \"%s\"" tags)
       (error "Failed to create tags"))))
 
-;;;###autoload
 (defun visit-ctags ()
   "Visit the tags file at the root of the current project."
   (interactive)
@@ -84,7 +82,6 @@
     (visit-tags-table (cb:tags-project-root))
     (message (concat "Loaded " tags-file-name))))
 
-;;;###autoload
 (defun find-ctag ()
   "Find the tags at point, creating a tags file if none exists."
   (interactive)
@@ -92,6 +89,12 @@
       (visit-ctags)
     (build-ctags))
   (etags-select-find-tag-at-point))
+
+;; Ensure tags searching is case-sensitive.
+(setq tags-case-fold-search nil)
+(global-set-key (kbd "M-.") 'find-ctag)
+(bind-key "C-]" 'find-ctag)
+(bind-key "C-c C-r" 'load-ctags)
 
 (use-package ctags-update
   :ensure   t

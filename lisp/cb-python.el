@@ -42,6 +42,7 @@
       (smart-insert-operator "=")))
 
   (hook-fn 'cb:python-modes-hook
+    (smart-insert-operator-hook)
     (local-set-key (kbd "=") 'cb:python-equals)
     (local-unset-key (kbd "."))
     (local-unset-key (kbd ":"))))

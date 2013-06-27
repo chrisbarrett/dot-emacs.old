@@ -59,6 +59,8 @@
   (nrepl-eval "(stop)")
   (message "Synthesis stopped."))
 
+(add-hook 'clojure-mode-hook 'maybe-enable-overtone-mode)
+
 (provide 'cb-overtone)
 
 ;; Local Variables:

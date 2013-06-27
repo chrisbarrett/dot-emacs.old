@@ -25,6 +25,9 @@
 
 ;;; Code:
 
+(require 'use-package)
+(require 'cb-lib)
+
 (use-package solarized-theme
   :ensure t
   :defer t)
@@ -910,6 +913,24 @@
   (set-face-attribute 'mode-line-inactive nil
                       :box '(:line-width 1 :color "gray10" :style nil)))
 (defalias 'black 'ir-black)
+
+(setq color-theme-is-global nil)
+(defconst cb:last-theme (concat cb:tmp-dir "last-theme"))
+
+(defun cb-colour:load-last-theme ()
+  (condition-case _
+      (load cb:last-theme nil t t)
+    (solarized-light)
+    (error (solarized-light))))
+
+(hook-fn 'cb:color-theme-changed-hook
+  (set-face-font 'default (format "%s 11" (monospace-font)))
+  (with-temp-buffer
+    (insert (prin1-to-string (list (car _args))))
+    (write-file cb:last-theme))
+  (message nil))
+
+(cb-colour:load-last-theme)
 
 (provide 'cb-colour)
 

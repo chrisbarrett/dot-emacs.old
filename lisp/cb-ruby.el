@@ -37,6 +37,7 @@
 
 (after 'smart-operator
   (hook-fn 'cb:ruby-modes-hook
+    (smart-insert-operator-hook)
     (local-set-key (kbd "~") (smart-op "~"))
     (local-set-key (kbd "<") (smart-op "<"))
     (local-set-key (kbd ">") (smart-op ">"))

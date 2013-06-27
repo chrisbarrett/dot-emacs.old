@@ -27,6 +27,7 @@
 
 (require 'dash)
 (require 's)
+(require 'bind-key)
 
 ;;; Buffers
 
@@ -72,7 +73,9 @@ the selected buffer."
           (set-window-start w2 s1)
           (setq i (1+ i))))))))
 
-(defvar cb:kill-buffer-ignored-list nil)
+(defvar cb:kill-buffer-ignored-list
+  '("*scratch*" "*Messages*" "*GROUP*"
+    "*shell*" "*eshell*" "*ansi-term*"))
 
 ;;;###autoload
 (defun kill-current-buffer ()
@@ -93,11 +96,12 @@ If this buffer is a member of `cb:kill-buffer-ignored-list, bury it rather than 
                 (get-buffer-process it))
       (kill-buffer it))))
 
-;;;###autoload
 (defun hide-dos-eol ()
   (setq buffer-display-table (make-display-table))
   (aset buffer-display-table ?\^M [])
   (aset buffer-display-table ?\^L []))
+
+(add-hook 'find-file-hook 'hide-dos-eol)
 
 ;;;###autoload
 (defun* last-buffer-for-mode (mode &optional (buffers (buffer-list)))
@@ -256,6 +260,20 @@ If this buffer is a member of `cb:kill-buffer-ignored-list, bury it rather than 
 Repeated invocations toggle between the two most recently open buffers."
   (interactive)
   (switch-to-buffer (other-buffer (current-buffer) 1)))
+
+(defadvice rotate-buffers (after select-largest-window activate)
+  "Switch to the largest window if using a 2-up window configuration."
+  (when (= 2 (length (window-list)))
+    (select-largest-window)))
+
+(bind-key "C-c k b" 'clean-buffers)
+(bind-key "C-<up>" 'move-line-up)
+(bind-key "C-<down>" 'move-line-down)
+(bind-key* "C-;" 'swap-with-previous-buffer)
+(bind-key "s-f" 'rotate-buffers)
+(bind-key "C-x C-o" 'other-window)
+
+(define-key prog-mode-map (kbd "M-q") 'indent-dwim)
 
 (provide 'cb-commands)
 

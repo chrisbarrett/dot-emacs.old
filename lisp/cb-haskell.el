@@ -183,7 +183,8 @@
         (insert "|")
       (smart-insert-operator "|")))
 
-  (hook-fn 'haskell-mode
+  (hook-fn 'cb:haskell-modes-hook
+    (smart-insert-operator-hook)
     (local-set-key (kbd "|") 'cb-hs:smart-pipe)
     (local-set-key (kbd "$") (command (smart-insert-operator "$")))
     (local-unset-key (kbd ":"))))

@@ -28,6 +28,12 @@
 
 (require 'use-package)
 
+(after 'smart-operator
+  (hook-fn 'sclang-mode-hook
+    (smart-insert-operator-hook)
+    (local-unset-key (kbd "|"))
+    (local-unset-key (kbd "."))))
+
 (use-package sclang
   :commands
   (sclang-mode

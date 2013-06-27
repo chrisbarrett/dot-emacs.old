@@ -123,48 +123,30 @@
 
 (use-package smart-operator
   :ensure t
-  :idle   (require 'smart-operator)
-  :commands
-  (smart-insert-operator
-   smart-insert-operator-hook)
+
   :init
-  (progn
-
-    (defmacro smart-op (op)
-      "Make a smart operator command that will insert OP."
-      `(command (smart-insert-operator ,op)))
-
-    (add-hook 'cb:ruby-modes-hook 'smart-insert-operator-hook)
-    (add-hook 'cb:haskell-modes-hook 'smart-insert-operator-hook)
-    (add-hook 'cb:python-modes-hook 'smart-insert-operator-hook)
-
-     (hook-fn 'cb:markup-modes-hook
-      (local-set-key (kbd ",") (smart-op ",")))
-
-    (hook-fn 'sclang-mode-hook
-      (smart-insert-operator-hook)
-      (local-unset-key (kbd "|"))
-      (local-unset-key (kbd ".")))
-
-    (hook-fn 'asm-mode-hook
-      (smart-insert-operator-hook)
-      (local-unset-key (kbd "%"))
-      (local-unset-key (kbd "-"))
-      (local-unset-key (kbd "."))))
+  (defmacro smart-op (op)
+    "Make a smart operator command that will insert OP."
+    `(command (smart-insert-operator ,op)))
 
   :config
-  (defadvice smart-insert-operator (around normal-insertion-for-string activate)
-    "Do not perform smart insertion if looking at a string."
-    (if (-contains? '(font-lock-string-face
-                      font-lock-doc-face
-                      font-lock-doc-string-face
-                      font-lock-comment-face)
-                    (face-at-point))
-        (insert (ad-get-arg 0))
-      (prog1 ad-do-it
-        (when (equal (ad-get-arg 0) "=")
-          (save-excursion
-           (indent-according-to-mode)))))))
+  (progn
+
+    (defadvice smart-insert-operator (after indent-after-insert-equals activate)
+      "Reindent the current line after inserting an equals."
+      (when (equal (ad-get-arg 0) "=")
+        (save-excursion
+          (indent-according-to-mode))))
+
+    (defadvice smart-insert-operator (around normal-insertion-for-string activate)
+      "Use self-insert rather than smart operator when looking at string or comment."
+      (if (-contains? '(font-lock-string-face
+                        font-lock-doc-face
+                        font-lock-doc-string-face
+                        font-lock-comment-face)
+                      (face-at-point))
+          (insert (ad-get-arg 0))
+        ad-do-it))))
 
 (use-package lambda-mode
   :defer t
