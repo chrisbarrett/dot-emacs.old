@@ -144,7 +144,8 @@
   "Perform a context-sensitive narrowing command."
   (interactive)
   (cond ((buffer-narrowed-p)
-         (widen))
+         (widen)
+         (recenter))
 
         ((region-active-p)
          (narrow-to-region (region-beginning)
@@ -152,7 +153,8 @@
         (t
          (narrow-to-defun))))
 
-(bind-key "M-n" 'cb:narrow-dwim)
+(after 'evil
+ (bind-key "M-n" 'cb:narrow-dwim))
 (put 'narrow-to-defun  'disabled nil)
 (put 'narrow-to-page   'disabled nil)
 (put 'narrow-to-region 'disabled nil)
