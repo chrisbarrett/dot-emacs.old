@@ -173,7 +173,7 @@
 (defun cb-hs:smart-pipe ()
   "Insert a pipe operator. Add padding, unless we're inside a list."
   (interactive)
-  (if (s-matches? (rx "[" (* alnum) eol)
+  (if (s-matches? (rx "[" (* (any "|" alnum)) eol)
                   (buffer-substring (line-beginning-position) (point)))
       (insert "|")
     (smart-insert-operator "|")))
