@@ -201,7 +201,7 @@
   (interactive)
   (let ((lin (buffer-substring (line-beginning-position) (point))))
     (if (and (s-matches? "::" lin)
-             (not (s-matches? (rx "-" (* space) eol) lin)))
+             (not (s-matches? (rx (any "=" "-") (* space) eol) lin)))
         (atomic-change-group
           (end-of-line)
           (just-one-space)
