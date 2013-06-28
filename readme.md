@@ -62,7 +62,7 @@ Common commands, such as helm or w3m commands, have single-stroke key-bindings:
 Certain commands show buffers in a *modal* manner; they expand to fill the frame and restore the previous state when toggled or killed. This behaviour is provided for:
 
 * most magit commands, including:
-  * `M-S` - magit-status
+  * `M-G` - magit-status
   * `C-x g d` - magit-diff
   * `C-x g l` - magit-log
   * `C-x g s` - magit-show
