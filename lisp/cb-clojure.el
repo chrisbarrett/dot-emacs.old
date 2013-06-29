@@ -84,7 +84,7 @@
 
     (hook-fn 'clojure-mode-hook
       (local-set-key (kbd "C-c C-z") 'cb:switch-to-nrepl)
-      (local-set-key (kbd "C-h f")   'nrepl-doc)
+      (local-set-key (kbd "C-c C-h") 'nrepl-doc)
       (local-set-key (kbd "C-c C-f") 'nrepl-eval-buffer))
 
     (--each '(nrepl-mode-hook nrepl-interaction-mode-hook)
