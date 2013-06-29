@@ -39,6 +39,7 @@
   nil " overtone" overtone-mode-map
   (require 'nrepl)
   (define-key nrepl-mode-map (kbd "C-c C-g") 'cb:stop-overtone)
+  (define-key nrepl-mode-map (kbd "S-.") 'cb:stop-overtone)
   ;; Jack in if there's no active connection.
   (unless (and (boundp 'nrepl-connection-list) nrepl-connection-list)
     (nrepl-jack-in)))
@@ -46,7 +47,7 @@
 (defun maybe-enable-overtone-mode ()
   "Enable `overtone-mode' only if the current Clojure buffer references overtone."
   (when (and (not overtone-mode)
-             (equal major-mode 'clojure-mode)
+             (derived-mode-p 'clojure-mode)
              (string-match-p "overtone.live" (buffer-string)))
     (overtone-mode t)))
 
@@ -57,6 +58,7 @@
   (message "Synthesis stopped."))
 
 (add-hook 'clojure-mode-hook 'maybe-enable-overtone-mode)
+(add-hook 'after-save-hook 'maybe-enable-overtone-mode)
 
 (provide 'cb-overtone)
 
