@@ -140,11 +140,15 @@
 
     (defadvice smart-insert-operator (around normal-insertion-for-string activate)
       "Use self-insert rather than smart operator when looking at string or comment."
-      (if (-contains? '(font-lock-string-face
-                        font-lock-doc-face
-                        font-lock-doc-string-face
-                        font-lock-comment-face)
-                      (face-at-point))
+      (if (or
+           ;; Looking at a string?
+           (-contains? '(font-lock-string-face
+                         font-lock-doc-face
+                         font-lock-doc-string-face
+                         font-lock-comment-face)
+                       (face-at-point))
+           ;; Looking at quotation mark?
+           (-contains? '(?\" ?\') (char-after)))
           (insert (ad-get-arg 0))
         ad-do-it))))
 
