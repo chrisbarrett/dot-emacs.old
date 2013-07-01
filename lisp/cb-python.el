@@ -79,6 +79,13 @@
         (insert-char ?\,)
         (just-one-space)))
 
+    (defun cb-py:restart-python ()
+      (save-window-excursion
+        (let (kill-buffer-query-functions
+              (buf (get-buffer "*Python*")))
+          (when buf (kill-buffer buf)))
+        (call-interactively 'run-python)))
+
     (defun cb:switch-to-python ()
       "Switch to the last active Python buffer."
       (interactive)
@@ -86,8 +93,7 @@
       (unless (->> (last-buffer-for-mode 'inferior-python-mode)
                 (get-buffer-process)
                 (processp))
-        (save-window-excursion
-          (call-interactively 'run-python)))
+        (cb-py:restart-python))
 
       (if (derived-mode-p 'inferior-python-mode)
           ;; Switch from inferior python to source file.
@@ -112,9 +118,12 @@
 
     (defun cb-py:eval-dwim (&optional arg)
       (interactive "P")
-      (if (region-active-p)
-          (python-shell-send-region (region-beginning) (region-end))
-        (python-shell-send-defun Argo)))
+      (cond
+       ((region-active-p)
+        (python-shell-send-region (region-beginning) (region-end))
+        (deactivate-mark))
+       (t
+        (python-shell-send-defun arg))))
 
     (define-key python-mode-map (kbd ",") 'cb:comma-then-space)
     (define-key python-mode-map (kbd "C-c C-z") 'cb:switch-to-python)
