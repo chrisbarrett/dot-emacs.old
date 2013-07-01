@@ -82,13 +82,41 @@
     (defun cb:switch-to-python ()
       "Switch to the last active Python buffer."
       (interactive)
+      ;; Start inferior python if necessary.
+      (unless (->> (last-buffer-for-mode 'inferior-python-mode)
+                (get-buffer-process)
+                (processp))
+        (save-window-excursion
+          (call-interactively 'run-python)))
+
       (if (derived-mode-p 'inferior-python-mode)
-          (switch-to-buffer
+          ;; Switch from inferior python to source file.
+          (switch-to-buffer-other-window
            (last-buffer-for-mode 'python-mode))
-        (call-interactively 'run-python)))
+        ;; Switch from source file to REPL.
+        ;; HACK: `switch-to-buffer-other-window' does not change window
+        ;; when switching to REPL buffer. Work around this.
+        (-when-let* ((buf (--first (with-current-buffer it
+                                     (derived-mode-p 'inferior-python-mode))
+                                   (buffer-list)))
+                     (win (or (get-window-with-predicate
+                               (lambda (w)
+                                 (equal (get-buffer "*Python*")
+                                        (window-buffer w))))
+                              (split-window-sensibly)
+                              (next-window))))
+          (set-window-buffer win buf)
+          (select-window win))))
+
+    (defun cb-py:eval-dwim (&optional arg)
+      (interactive "P")
+      (if (region-active-p)
+          (python-shell-send-region (region-beginning) (region-end))
+        (python-shell-send-defun Argo)))
 
     (define-key python-mode-map (kbd ",") 'cb:comma-then-space)
     (define-key python-mode-map (kbd "C-c C-z") 'cb:switch-to-python)
+    (define-key python-mode-map (kbd "C-c C-c") 'cb-py:eval-dwim)
     (define-key inferior-python-mode-map (kbd ",") 'cb:comma-then-space)
     (define-key inferior-python-mode-map (kbd "C-c C-z") 'cb:switch-to-python)))
 
