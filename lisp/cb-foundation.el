@@ -255,6 +255,10 @@ rather than the app bundle."
   :command (find-file (concat user-emacs-directory "init.el"))
   :bind    "M-I")
 
+;;; Make comint read-only. This will stop the prompts from being editable
+;;; in inferior language modes.
+(setq comint-prompt-read-only t)
+
 (provide 'cb-foundation)
 
 ;; Local Variables:
