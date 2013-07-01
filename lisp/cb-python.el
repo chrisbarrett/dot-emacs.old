@@ -83,14 +83,9 @@
       "Switch to the last active Python buffer."
       (interactive)
       (if (derived-mode-p 'inferior-python-mode)
-          (switch-to-buffer-other-window
+          (switch-to-buffer
            (last-buffer-for-mode 'python-mode))
-        ;; Run python and switch to it.
-        (unless (get-buffer "*Python*")
-          (save-window-excursion
-            (call-interactively 'run-python)))
-        (switch-to-buffer-other-window
-         (last-buffer-for-mode 'inferior-python-mode))))
+        (call-interactively 'run-python)))
 
     (define-key python-mode-map (kbd ",") 'cb:comma-then-space)
     (define-key python-mode-map (kbd "C-c C-z") 'cb:switch-to-python)
