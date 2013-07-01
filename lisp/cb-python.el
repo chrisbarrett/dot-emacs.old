@@ -106,7 +106,9 @@
                               (split-window-sensibly)
                               (next-window))))
           (set-window-buffer win buf)
-          (select-window win))))
+          (select-window win)
+          (when (fboundp 'evil-append-line)
+            (evil-append-line 1)))))
 
     (defun cb-py:eval-dwim (&optional arg)
       (interactive "P")
