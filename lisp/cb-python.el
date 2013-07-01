@@ -59,6 +59,20 @@
 
   :config
   (progn
+    ;; Use ipython if installed.
+    (-when-let (ipython (executable-find "ipython"))
+      (setq
+       python-shell-interpreter ipython
+       python-shell-interpreter-args ""
+       python-shell-prompt-regexp "In \\[[0-9]+\\]: "
+       python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
+       python-shell-completion-setup-code
+       "from IPython.core.completerlib import module_completion"
+       python-shell-completion-module-string-code
+       "';'.join(module_completion('''%s'''))\n"
+       python-shell-completion-string-code
+       "';'.join(get_ipython().Completer.all_completions('''%s'''))\n"))
+
     (defun cb:comma-then-space ()
       (interactive)
       (atomic-change-group
@@ -68,10 +82,18 @@
     (defun cb:switch-to-python ()
       "Switch to the last active Python buffer."
       (interactive)
-      (-when-let (buf (last-buffer-for-mode 'python-mode))
-        (pop-to-buffer buf)))
+      (if (derived-mode-p 'inferior-python-mode)
+          (switch-to-buffer-other-window
+           (last-buffer-for-mode 'python-mode))
+        ;; Run python and switch to it.
+        (unless (get-buffer "*Python*")
+          (save-window-excursion
+            (call-interactively 'run-python)))
+        (switch-to-buffer-other-window
+         (last-buffer-for-mode 'inferior-python-mode))))
 
     (define-key python-mode-map (kbd ",") 'cb:comma-then-space)
+    (define-key python-mode-map (kbd "C-c C-z") 'cb:switch-to-python)
     (define-key inferior-python-mode-map (kbd ",") 'cb:comma-then-space)
     (define-key inferior-python-mode-map (kbd "C-c C-z") 'cb:switch-to-python)))
 
