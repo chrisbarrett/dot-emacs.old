@@ -259,6 +259,12 @@ rather than the app bundle."
 ;;; in inferior language modes.
 (setq comint-prompt-read-only t)
 
+;;; Disable backups for files edited with tramp.
+(after 'tramp
+  (add-to-list 'bkup-backup-directory-info
+               (list tramp-file-name-regexp ""))
+  (setq tramp-bkup-backup-directory-info  nil))
+
 (provide 'cb-foundation)
 
 ;; Local Variables:
