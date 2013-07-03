@@ -113,6 +113,12 @@
       (evil-define-key 'normal org-mode-map (kbd "z r")
         (command (org-global-cycle 0))))
 
+    (after "tar-mode"
+      (evil-add-hjkl-bindings tar-mode-map))
+
+    (after "arc-mode"
+      (evil-add-hjkl-bindings archive-mode-map))
+
     (after "undo-tree"
       ;; Ensure undo-tree commands are remapped. The referenced keymap in
       ;; evil-integration is incorrect.
