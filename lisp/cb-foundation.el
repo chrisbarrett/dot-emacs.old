@@ -260,10 +260,10 @@ rather than the app bundle."
 (setq comint-prompt-read-only t)
 
 ;;; Disable backups for files edited with tramp.
-(after 'tramp
+(after 'backup-dir
   (add-to-list 'bkup-backup-directory-info
                (list tramp-file-name-regexp ""))
-  (setq tramp-bkup-backup-directory-info  nil))
+  (setq tramp-bkup-backup-directory-info nil))
 
 (provide 'cb-foundation)
 
