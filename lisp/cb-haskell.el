@@ -79,10 +79,10 @@
     (--each patterns
       (destructuring-bind (pat rep) it
         (cb-hs:apply-font-lock
-         (eval `(rx  (not (any "\""))
-                     (group (? "`") symbol-start ,pat symbol-end
-                            (? "`"))
-                     (not (any "\""))))
+         (rx-to-string `(and (not (any "\""))
+                             (group (? "`") symbol-start ,pat symbol-end
+                                    (? "`"))
+                             (not (any "\""))))
          rep))))
 
   (defun cb-hs:apply-unicode ()
@@ -100,6 +100,7 @@
                        ("gamma"  "ɣ")
                        ("delta"  "δ")
                        ("elem"   "∈")
+                       ("notElem" "∉")
                        ("!!"     "‼")
                        ("::"     "∷"))))
 
