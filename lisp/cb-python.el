@@ -141,7 +141,10 @@
   :ensure t
   :commands (virtualenv-workon
              virtualenv-deactivate
-             virtualenv-minor-mode))
+             virtualenv-minor-mode)
+  :init
+  (after 'python
+    (add-hook 'find-file-hook 'virtualenv-minor-mode)))
 
 (provide 'cb-python)
 
