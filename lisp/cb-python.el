@@ -137,6 +137,12 @@
   :init     (add-hook 'cb:python-modes-hook 'jedi:setup)
   :config   (setq jedi:setup-keys t))
 
+(use-package virtualenv
+  :ensure t
+  :commands (virtualenv-workon
+             virtualenv-deactivate
+             virtualenv-minor-mode))
+
 (provide 'cb-python)
 
 ;; Local Variables:
