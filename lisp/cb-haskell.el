@@ -247,7 +247,8 @@
 (use-package haskell-mode
   :ensure t
   :defer t
-  :modes (("\\.hs$" . haskell-mode))
+  :init
+  (add-to-list 'auto-mode-alist '("\\.hs$" . haskell-mode))
   :config
   (progn
 

@@ -115,9 +115,10 @@
 (use-package gitconfig-mode
   :ensure t
   :defer  t
-  :modes
-  (("/\\.gitconfig\\'"  . gitconfig-mode)
-   ("/\\.git/config\\'" . gitconfig-mode)))
+  :init
+  (--each '(("/\\.gitconfig\\'"  . gitconfig-mode)
+            ("/\\.git/config\\'" . gitconfig-mode))
+    (add-to-list 'auto-mode-alist it)))
 
 (use-package ediff
   :commands

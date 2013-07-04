@@ -81,9 +81,10 @@ Puts each XML node on a separate line, except for one-liners."
 
 (use-package nxml-mode
   :commands nxml-mode
-  :modes ("\\.xml" . nxml-mode)
   :init
   (progn
+    (add-to-list 'auto-mode-alist '("\\.xml" . nxml-mode))
+
     (hook-fn 'nxml-mode-hook
       (local-set-key (kbd "M-q") 'cb:reformat-xml))
 
