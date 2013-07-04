@@ -251,8 +251,8 @@ rather than the app bundle."
 
 (declare-modal-view package-list-packages)
 
-(declare-modal-executor init-dot-el
-  :command (find-file (concat user-emacs-directory "init.el"))
+(declare-modal-executor emacs-conf-files
+  :command (dired (concat user-emacs-directory "lisp"))
   :bind    "M-I")
 
 ;;; Make comint read-only. This will stop the prompts from being editable
