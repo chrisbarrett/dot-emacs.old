@@ -93,6 +93,7 @@
                        ("=>"     "⇒")
                        ("."      "•")
                        ("forall" "∀")
+                       ("undefined" "⊥")
                        (">="     "≥")
                        ("<="     "≤")
                        ("alpha"  "ɑ")
@@ -221,6 +222,9 @@
 
   (defun cb-hs:forward-fold (&rest _)
     (haskell-ds-forward-decl)
+    ;; Skip infix and import groups.
+    (while (emr-line-matches? (rx bol (or "import" "infix") (+ space)))
+      (haskell-ds-forward-decl))
     (unless (eobp)
       (ignore-errors (forward-line -1))))
 
@@ -231,7 +235,7 @@
                        ;; Function
                        (group  (* nonl) (+ space) "::" (+ space ) (* nonl))
                        ;; Groupings
-                       (group (or "class" "instance" "newtype" "data")
+                       (group (or "class" "instance" "newtype" "data" "import")
                               (+ space) (* nonl))))
                  ;; End function
                  nil
