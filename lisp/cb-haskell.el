@@ -234,8 +234,10 @@
                  ,(rx (or
                        ;; Function
                        (group  (* nonl) (+ space) "::" (+ space ) (* nonl))
+                       ;; FFI declarations.
+                       (group (? "foreign") (+ space) "import")
                        ;; Groupings
-                       (group (or "class" "instance" "newtype" "data" "import")
+                       (group (or "class" "instance" "newtype" "data")
                               (+ space) (* nonl))))
                  ;; End function
                  nil
