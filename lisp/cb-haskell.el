@@ -29,10 +29,11 @@
 
 (require 'use-package)
 (require 's)
-(autoload 'emr-blank-line\? "emr")
+(autoload 'emr-blank-line? "emr")
+(autoload 'emr-line-matches? "emr")
+(autoload 'haskell-cabal-find-file "haskell-cabal")
 (autoload 'smart-insert-operator "smart-operator")
 (autoload 'smart-insert-operator-hook "smart-operator")
-(autoload 'haskell-cabal-find-file "haskell-cabal")
 
 (after 'haskell-mode
 
@@ -183,8 +184,7 @@
 (defun cb-hs:smart-dot ()
   "Insert a period. Add padding, unless this line is an import statement."
   (interactive)
-  (if (s-matches? (rx bol (* space ) "import")
-                  (buffer-substring (line-beginning-position) (point)))
+  (if (emr-line-matches? (rx bol (or "import" "module")))
       (insert ".")
     (smart-insert-operator ".")))
 
