@@ -109,63 +109,6 @@
   (add-hook 'cb:haskell-modes-hook 'cb-hs:apply-unicode))
 
 (after 'flycheck
-
-  (defun haskell-parse-phrase-for-err (phrase)
-    (ignore-errors
-      (destructuring-bind (_ file line col warn message)
-          (s-match
-           (rx (group-n 1 (+? nonl)) ":"  ; file
-               (group-n 2 (+? digit)) ":" ; line
-               (group-n 3 (+? digit)) ":" ; col
-               (* (or "\n" space))
-               (group-n 4 (? "Warning:") (* space))
-               (group-n 5 (+ (or nonl "\n"))) ; message
-               )
-           phrase)
-        (flycheck-error-new
-         :line (string-to-number line)
-         :column (string-to-number col)
-         :level (if (s-blank? warn) 'error 'warning)
-         :filename file
-         :message (->> message
-                    (s-split (rx "\n"))
-                    (-map 's-trim)
-                    (s-join "\n"))))))
-
-  (defun haskell-ghc-parser (str &rest _)
-    (->> str
-      ;; Split on entirely blank lines.
-      (s-split (rx bol eol))
-      (-map 's-trim)
-      (-map 'haskell-parse-phrase-for-err)
-      (-remove 'null)))
-
-  (flycheck-declare-checker haskell-ghc
-    "Haskell checker using ghc"
-    :command '("ghc" "-v0"
-               "-Wall"
-               "-i./../src"
-               "-fno-code"
-               source-inplace)
-    :error-parser 'haskell-ghc-parser
-    :modes 'haskell-mode
-    :next-checkers '((no-errors . haskell-hlint)))
-
-  (flycheck-declare-checker haskell-hlint
-    "Haskell checker using hlint"
-    :command '("hlint" source-inplace)
-    :error-patterns
-    `((,(concat "^\\(?1:.*?\\):\\(?2:[0-9]+\\):\\(?3:[0-9]+\\): Error: "
-                "\\(?4:\\(.\\|[ \t\n\r]\\)+?\\)\\(^\n\\|\\'\\)")
-       error)
-      (,(concat "^\\(?1:.*?\\):\\(?2:[0-9]+\\):\\(?3:[0-9]+\\): Warning: "
-                "\\(?4:\\(.\\|[ \t\n\r]\\)+?\\)\\(^\n\\|\\'\\)")
-       warning))
-    :modes 'haskell-mode)
-
-  (add-to-list 'flycheck-checkers 'haskell-ghc)
-  (add-to-list 'flycheck-checkers 'haskell-hlint)
-
   (hook-fn 'haskell-mode-hook
     (flycheck-select-checker 'haskell-ghc)))
 
