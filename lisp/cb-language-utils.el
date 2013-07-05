@@ -40,7 +40,11 @@
   :commands
   (paredit-mode
    enable-paredit-mode
-   disable-paredit-mode)
+   disable-paredit-mode
+   paredit-wrap-square
+   paredit-wrap-curly
+   paredit-wrap-round)
+
   :init
   (progn
 
