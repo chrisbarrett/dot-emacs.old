@@ -27,6 +27,8 @@
 ;;; Code:
 
 (require 'use-package)
+(require 'dash)
+(require 'cb-lib)
 
 (define-derived-mode erb-mode html-mode
   "ERB" nil
@@ -37,7 +39,7 @@
 
 (after 'smart-operator
   (hook-fn 'cb:ruby-modes-hook
-    (smart-insert-operator-hook)
+    (local-set-key (kbd ",") (smart-op ","))
     (local-set-key (kbd "~") (smart-op "~"))
     (local-set-key (kbd "<") (smart-op "<"))
     (local-set-key (kbd ">") (smart-op ">"))
@@ -151,45 +153,50 @@
   :diminish rinari-minor-mode
   :commands rinari-minor-mode
   :init
+  (add-hook 'cb:rails-modes-hook 'rinari-minor-mode)
+  :config
   (progn
-    (add-hook 'cb:rails-modes-hook 'rinari-minor-mode)
+    ;; Rebind rinari keys.
+    (loop
+     initially
+     (progn
+       (define-prefix-command 'cb:rinari-map)
+       (define-key rinari-minor-mode-map (kbd "C-c f") 'cb:rinari-map))
+     for (k . f) in
+     '((";" 'rinari-find-by-context)
+       ("C" 'rinari-find-cells)
+       ("F" 'rinari-find-features)
+       ("M" 'rinari-find-mailer)
+       ("S" 'rinari-find-steps)
+       ("Y" 'rinari-find-sass)
+       ("a" 'rinari-find-application)
+       ("c" 'rinari-find-controller)
+       ("e" 'rinari-find-environment)
+       ("f" 'rinari-find-file-in-project)
+       ("h" 'rinari-find-helper)
+       ("i" 'rinari-find-migration)
+       ("j" 'rinari-find-javascript)
+       ("l" 'rinari-find-lib)
+       ("m" 'rinari-find-model)
+       ("n" 'rinari-find-configuration)
+       ("o" 'rinari-find-log)
+       ("p" 'rinari-find-public)
+       ("r" 'rinari-find-rspec)
+       ("s" 'rinari-find-script)
+       ("t" 'rinari-find-test)
+       ("u" 'rinari-find-plugin)
+       ("v" 'rinari-find-view)
+       ("w" 'rinari-find-worker)
+       ("x" 'rinari-find-fixture)
+       ("y" 'rinari-find-stylesheet)
+       ("z" 'rinari-find-rspec-fixture))
+     do (define-key cb:rinari-map k f))
 
     (hook-fn 'rinari-minor-mode-hook
-      ;; Rebind rinari keys.
-      (define-prefix-command 'cb:rinari-map)
-      (local-set-key (kbd "C-c f") 'cb:rinari-map)
-      (define-key cb:rinari-map ";" 'rinari-find-by-context)
-      (define-key cb:rinari-map "C" 'rinari-find-cells)
-      (define-key cb:rinari-map "F" 'rinari-find-features)
-      (define-key cb:rinari-map "M" 'rinari-find-mailer)
-      (define-key cb:rinari-map "S" 'rinari-find-steps)
-      (define-key cb:rinari-map "Y" 'rinari-find-sass)
-      (define-key cb:rinari-map "a" 'rinari-find-application)
-      (define-key cb:rinari-map "c" 'rinari-find-controller)
-      (define-key cb:rinari-map "e" 'rinari-find-environment)
-      (define-key cb:rinari-map "f" 'rinari-find-file-in-project)
-      (define-key cb:rinari-map "h" 'rinari-find-helper)
-      (define-key cb:rinari-map "i" 'rinari-find-migration)
-      (define-key cb:rinari-map "j" 'rinari-find-javascript)
-      (define-key cb:rinari-map "l" 'rinari-find-lib)
-      (define-key cb:rinari-map "m" 'rinari-find-model)
-      (define-key cb:rinari-map "n" 'rinari-find-configuration)
-      (define-key cb:rinari-map "o" 'rinari-find-log)
-      (define-key cb:rinari-map "p" 'rinari-find-public)
-      (define-key cb:rinari-map "r" 'rinari-find-rspec)
-      (define-key cb:rinari-map "s" 'rinari-find-script)
-      (define-key cb:rinari-map "t" 'rinari-find-test)
-      (define-key cb:rinari-map "u" 'rinari-find-plugin)
-      (define-key cb:rinari-map "v" 'rinari-find-view)
-      (define-key cb:rinari-map "w" 'rinari-find-worker)
-      (define-key cb:rinari-map "x" 'rinari-find-fixture)
-      (define-key cb:rinari-map "y" 'rinari-find-stylesheet)
-      (define-key cb:rinari-map "z" 'rinari-find-rspec-fixture)
-      ;; Configure mode.
       (setq
-       rinari-tags-file-name    "TAGS"
+       rinari-tags-file-name "TAGS"
        rng-nxml-auto-validate-flag nil
-       nxml-degraded            t))))
+       nxml-degraded t))))
 
 (use-package rsense
   :ensure t
@@ -229,10 +236,14 @@
       "Toggle between irb and the last ruby buffer.
 Start an inferior ruby if necessary."
       (interactive)
-      (if (derived-mode-p 'inf-ruby-mode)
-          (switch-to-buffer-other-window
-           (last-buffer-for-mode 'ruby-mode))
-        (run-ruby)))
+      (cond
+       ((derived-mode-p 'inf-ruby-mode)
+        (switch-to-buffer-other-window
+         (last-buffer-for-mode 'ruby-mode)))
+       ((get-buffer inf-ruby-buffer)
+        (ruby-switch-to-inf t))
+       (t
+        (run-ruby))))
 
     (defun cb-rb:eval-dwim ()
       "Perform a context-sensitive evaluation."
@@ -294,16 +305,16 @@ an irb error message."
                          (cb-rb:apply-font-lock (car (reverse lines))))))))
       str)
 
-    (hook-fn 'ruby-mode-hook
-      (local-set-key (kbd "C-c C-c") 'cb-rb:eval-dwim)
-      (local-set-key (kbd "C-c C-z") 'cb-rb:switch-to-ruby))
+    (inf-ruby-setup-keybindings)
+    (define-key ruby-mode-map (kbd "C-c C-c") 'cb-rb:eval-dwim)
+    (define-key ruby-mode-map (kbd "C-c C-z") 'cb-rb:switch-to-ruby)
+    (define-key inf-ruby-mode-map (kbd "C-c C-z") 'cb-rb:switch-to-ruby)
+    (define-key inf-ruby-minor-mode-map (kbd "C-c C-z") 'cb-rb:switch-to-ruby)
 
     (hook-fn 'inf-ruby-mode-hook
-      (local-set-key (kbd "C-c C-z") 'cb-rb:switch-to-ruby)
       (add-hook 'comint-preoutput-filter-functions 'cb-rb:filter-irb-output)
       ;; Stop IRB from echoing input.
-      (setq comint-process-echoes t)
-      (inf-ruby-setup-keybindings))))
+      (setq comint-process-echoes t))))
 
 (use-package ruby-tools
   :ensure   t
