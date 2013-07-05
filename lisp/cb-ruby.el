@@ -38,8 +38,19 @@
 (add-to-list 'auto-mode-alist `("\\.html\\.erb" . erb-mode))
 
 (after 'smart-operator
+  (defun cb-rb:smart-colon ()
+    "Insert a colon, with or without padding.
+If this is the leading colon for a symbol, do not insert padding.
+If this is the trailing colon for a hash key, insert padding."
+    (interactive)
+    (insert ":")
+    (when (s-matches? (rx (+ alnum) ":" eol)
+                      (buffer-substring (line-beginning-position) (point)))
+      (just-one-space)))
+
   (hook-fn 'cb:ruby-modes-hook
-    (local-set-key (kbd ",") (smart-op ","))
+    (local-set-key (kbd ",") (command (insert ",") (just-one-space)))
+    (local-set-key (kbd ":") 'cb-rb:smart-colon)
     (local-set-key (kbd "~") (smart-op "~"))
     (local-set-key (kbd "<") (smart-op "<"))
     (local-set-key (kbd ">") (smart-op ">"))
