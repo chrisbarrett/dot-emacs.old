@@ -243,6 +243,13 @@ If this is the trailing colon for a hash key, insert padding."
        (run-ruby))))
   :init
   (after 'ruby-mode
+
+    (defun restart-ruby ()
+      (interactive)
+      (ignore-errors (set-process-query-on-exit-flag (inf-ruby-proc) nil))
+      (ignore-errors (kill-buffer inf-ruby-buffer))
+      (run-ruby))
+
     (defun cb-rb:switch-to-ruby ()
       "Toggle between irb and the last ruby buffer.
 Start an inferior ruby if necessary."
