@@ -48,9 +48,24 @@ If this is the trailing colon for a hash key, insert padding."
                       (buffer-substring (line-beginning-position) (point)))
       (just-one-space)))
 
+  (defun cb-rb:smart-pipe ()
+    (interactive)
+    (let ((lin (buffer-substring (line-beginning-position) (point))))
+      (cond
+       ((s-matches? (rx (or (group space "do" eol) "{") (* space)) lin)
+        (atomic-change-group
+          (just-one-space)
+          (insert "|")
+          (save-excursion
+            (insert "|")
+            (just-one-space))))
+       (t
+        (smart-insert-operator "|")))))
+
   (hook-fn 'cb:ruby-modes-hook
     (local-set-key (kbd ",") (command (insert ",") (just-one-space)))
     (local-set-key (kbd ":") 'cb-rb:smart-colon)
+    (local-set-key (kbd "|") 'cb-rb:smart-pipe)
     (local-set-key (kbd "~") (smart-op "~"))
     (local-set-key (kbd "<") (smart-op "<"))
     (local-set-key (kbd ">") (smart-op ">"))
@@ -65,7 +80,7 @@ If this is the trailing colon for a hash key, insert padding."
                  ,(rx (or "def" "class" "module" "{" "[")) ; Block start
                  ,(rx (or "}" "]" "end"))                  ; Block end
                  ,(rx (or "#" "=begin"))                   ; Comment start
-                 ruby-forward-sexp nil)))                  ; Forward-sexp
+                 ruby-forward-sexp nil)))
 
 (after 'auto-complete
   (add-to-list 'ac-modes 'ruby-mode)
