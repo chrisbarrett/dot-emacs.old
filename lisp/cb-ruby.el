@@ -62,24 +62,10 @@ If this is the trailing colon for a hash key, insert padding."
 (after 'hideshow
   (add-to-list 'hs-special-modes-alist
                `(ruby-mode
-                 ;; Block start
-                 ,(rx (or
-                       ;; Definition forms
-                       (group bol (* space) (or "def" "class" "module") (+ space))
-                       ;; Flow control
-                       (group bol (* space)
-                              (or "if" "unless" "case" "do" "while")
-                              (+ space))
-                       ;; Collection literals
-                       (group (* nonl) (any "{" "[") (* space) eol)))
-                 ;; Block end
-                 ,(rx (or
-                       (any "}" "]")
-                       (group bol (* space) "end" (* space) eol)))
-                 ;; Comment start
-                 ,(rx (or "#" "=begin"))
-                 ;; Forward-sexp function
-                 ruby-forward-sexp nil)))
+                 ,(rx (or "def" "class" "module" "{" "[")) ; Block start
+                 ,(rx (or "}" "]" "end"))                  ; Block end
+                 ,(rx (or "#" "=begin"))                   ; Comment start
+                 ruby-forward-sexp nil)))                  ; Forward-sexp
 
 (after 'auto-complete
   (add-to-list 'ac-modes 'ruby-mode)
@@ -344,7 +330,8 @@ an irb error message."
   :ensure   t
   :diminish ruby-end-mode
   :commands ruby-end-mode
-  :init     (add-hook 'ruby-mode-hook 'ruby-end-mode))
+  :init     (add-hook 'ruby-mode-hook 'ruby-end-mode)
+  :config   (setq ruby-end-insert-newline nil))
 
 (use-package yaml-mode
   :ensure   t
