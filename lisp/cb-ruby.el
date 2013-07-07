@@ -48,24 +48,10 @@ If this is the trailing colon for a hash key, insert padding."
                       (buffer-substring (line-beginning-position) (point)))
       (just-one-space)))
 
-  (defun cb-rb:smart-pipe ()
-    (interactive)
-    (let ((lin (buffer-substring (line-beginning-position) (point))))
-      (cond
-       ((s-matches? (rx (or (group space "do" eol) "{") (* space)) lin)
-        (atomic-change-group
-          (just-one-space)
-          (insert "|")
-          (save-excursion
-            (insert "|")
-            (just-one-space))))
-       (t
-        (smart-insert-operator "|")))))
-
   (hook-fn 'cb:ruby-modes-hook
     (local-set-key (kbd ",") (command (insert ",") (just-one-space)))
     (local-set-key (kbd ":") 'cb-rb:smart-colon)
-    (local-set-key (kbd "|") 'cb-rb:smart-pipe)
+    (local-set-key (kbd "|") (smart-op "|"))
     (local-set-key (kbd "~") (smart-op "~"))
     (local-set-key (kbd "<") (smart-op "<"))
     (local-set-key (kbd ">") (smart-op ">"))
@@ -121,6 +107,49 @@ If this is the trailing colon for a hash key, insert padding."
     (add-to-list 'ac-sources 'ac-source-ruby-class-attributes)
     (subword-mode +1))
   )
+
+(after 'smartparens
+  (require 'smartparens-ruby)
+
+  ;; Change word boundaries so slurping works.
+  (modify-syntax-entry ?@ "w" ruby-mode-syntax-table)
+  (modify-syntax-entry ?_ "w" ruby-mode-syntax-table)
+  (modify-syntax-entry ?! "w" ruby-mode-syntax-table)
+  (modify-syntax-entry ?? "w" ruby-mode-syntax-table)
+
+  (defun sp-ruby-should-insert-pipe-close (id _action _ctx)
+    "Test whether to insert the closing pipe for a lambda-binding pipe pair."
+    (thing-at-point-looking-at
+     (rx-to-string `(and (or "do" "{") (* space) ,id))))
+
+  (defun sp-ruby-sp-hook-space-before (id action _ctx)
+    "Move to point before ID and insert a space."
+    (when (equal 'insert action)
+      (save-excursion
+        (search-backward id)
+        (just-one-space))))
+
+  (defun sp-ruby-sp-hook-space-after (id action _ctx)
+    "Move to point after ID and insert a space."
+    (when (equal 'insert action)
+      (save-excursion
+        (search-forward id)
+        (just-one-space))))
+
+  (sp-with-modes '(ruby-mode inf-ruby-mode)
+
+    (sp-local-pair "|" "|"
+                   :when '(sp-ruby-should-insert-pipe-close)
+                   :unless '(sp-in-string-p)
+                   :pre-handlers '(sp-ruby-sp-hook-space-before)
+                   :post-handlers '(sp-ruby-sp-hook-space-after))
+
+    (sp-local-pair "case" "end"
+                   :when '(("SPC" "RET" "<evil-ret>"))
+                   :unless '(sp-ruby-in-string-or-word-p)
+                   :actions '(insert)
+                   :pre-handlers '(sp-ruby-pre-handler)
+                   :post-handlers '(sp-ruby-block-post-handler))))
 
 (use-package ruby-mode
   :ensure t
@@ -351,13 +380,6 @@ an irb error message."
   :diminish ruby-tools-mode
   :commands ruby-tools-mode
   :init     (add-hook 'ruby-mode-hook 'ruby-tools-mode))
-
-(use-package ruby-end
-  :ensure   t
-  :diminish ruby-end-mode
-  :commands ruby-end-mode
-  :init     (add-hook 'ruby-mode-hook 'ruby-end-mode)
-  :config   (setq ruby-end-insert-newline nil))
 
 (use-package yaml-mode
   :ensure   t
