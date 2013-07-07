@@ -27,6 +27,7 @@
 ;;; Code:
 
 (require 'use-package)
+(require 'cb-lib)
 
 (define-prefix-command 'git-map)
 (bind-key "C-x g" 'git-map)
