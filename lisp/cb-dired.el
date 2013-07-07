@@ -27,6 +27,8 @@
 ;;; Code:
 
 (require 'use-package)
+(require 'cb-lib)
+(autoload 'evil-local-set-key "evil-core")
 
 (use-package dired
   :defer t
@@ -37,8 +39,8 @@
     (evil-local-set-key 'normal (kbd "S-SPC") 'dired-hide-all)
     (local-set-key (kbd "M-N") 'dired-next-subdir)
     (local-set-key (kbd "M-P") 'dired-prev-subdir)
-    (set (make-local-variable 'auto-revert-interval) 0.1)
-    (set (make-local-variable 'auto-revert-verbose) nil)
+    (setq-local auto-revert-interval 0.1)
+    (setq-local auto-revert-verbose nil)
     (auto-revert-mode +1))
   :config
   (progn
@@ -91,15 +93,15 @@
    dired-jump-other-window)
   :diminish dired-omit-mode
   :config
-  (setq dired-omit-files
-        (eval `(rx (regex ,dired-omit-files)
-                   (or ".DS_Store" "$RECYCLE.BIN"))))
+  (setq
+   ;; Don't bind C-x C-j to dired-jump - this interferes with bindings in
+   ;; ansi-term.
+   dired-bind-jump nil
+   dired-omit-files
+   (eval `(rx (regex ,dired-omit-files)
+              (or ".DS_Store" "$RECYCLE.BIN"))))
   :init
   (progn
-    ;; Don't bind C-x C-j to dired-jump - this interferes with bindings in
-    ;; ansi-term.
-    (setq dired-bind-jump nil)
-
     (add-hook 'dired-mode-hook 'dired-omit-mode)
 
     (after 'evil
