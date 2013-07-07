@@ -245,11 +245,22 @@ If this is the trailing colon for a hash key, insert padding."
   :init
   (after 'ruby-mode
 
+    (defun cb-rb:inf-ruby-window ()
+      (-when-let (buf (get-buffer inf-ruby-buffer))
+        (get-window-with-predicate
+         (lambda (w) (equal (window-buffer w) buf)))))
+
     (defun restart-ruby ()
       (interactive)
-      (ignore-errors (set-process-query-on-exit-flag (inf-ruby-proc) nil))
-      (ignore-errors (kill-buffer inf-ruby-buffer))
-      (run-ruby))
+      ;; Suppress exit query.
+      (-when-let (proc (ignore-errors (inf-ruby-proc)))
+        (set-process-query-on-exit-flag proc nil))
+      ;; Kill and relaunch IRB, reusing existing window.
+      (let ((win (cb-rb:inf-ruby-window)))
+        (ignore-errors (kill-buffer inf-ruby-buffer))
+        (save-window-excursion (run-ruby))
+        (when win
+          (set-window-buffer win inf-ruby-buffer))))
 
     (defun cb-rb:switch-to-ruby ()
       "Toggle between irb and the last ruby buffer.
