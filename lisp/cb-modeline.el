@@ -26,6 +26,10 @@
 
 ;;; Code:
 
+(require 'cb-typefaces)
+(autoload 'vc-git-root "vc-git")
+(autoload 'tramp-dissect-file-name "tramp")
+
 ;; Lighten background for default theme.
 (unless (or (daemonp) (display-graphic-p))
   (set-face-attribute 'mode-line nil :background "gray85"))
@@ -65,11 +69,11 @@
 (defun* cb:propertize-file-directory
     (&optional (filepath (file-name-directory (buffer-file-name))))
   "Separate tramp info from the given filepath."
-  (flet ((face
-          (str face)
-          (propertize str 'face face)))
+  (cl-flet ((face
+             (str face)
+             (propertize str 'face face)))
 
-    (destructuring-bind (&optional method user host file &rest _)
+    (destructuring-bind (&optional method user host file &rest rs)
         (mapcar 'identity (ignore-errors
                             (tramp-dissect-file-name filepath)))
       (concat
@@ -200,8 +204,6 @@
      (:inherit 'mode-line-position)))
   "Face for the warning when point is past column 80."
   :group 'modeline)
-
-(autoload 'vc-git-root "vc-git")
 
 (setq-default
  mode-line-format

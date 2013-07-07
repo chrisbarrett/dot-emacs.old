@@ -58,7 +58,7 @@
          do (add-to-list 'package-archives source)
          finally (package-initialize))
 
-(cl-loop for pkg in '(bind-key use-package diminish s dash cl-lib)
+(cl-loop for pkg in '(bind-key use-package diminish s dash cl-lib noflet)
          initially (unless package-archive-contents (package-refresh-contents))
          unless (package-installed-p pkg)
          do (package-install pkg))

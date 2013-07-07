@@ -27,6 +27,7 @@
 ;;; Code:
 
 (require 'use-package)
+(require 'noflet)
 
 (after 'projectile
 
@@ -56,6 +57,7 @@
      (,(rx "(" (group (or "use-package"
                           "hook-fn"
                           "after"
+                          "noflet"
                           "ac-define-source"
                           "flycheck-declare-checker"
                           "cl-destructuring-bind"
@@ -105,7 +107,7 @@
       "Start up or switch to an Inferior Emacs Lisp buffer."
       (interactive)
       ;; HACK: rebind switch-to-buffer so ielm opens in another window.
-      (flet ((switch-to-buffer (buf) (switch-to-buffer-other-window buf)))
+      (noflet ((switch-to-buffer (buf) (switch-to-buffer-other-window buf)))
         (ielm)
         (cb:append-buffer)))
 

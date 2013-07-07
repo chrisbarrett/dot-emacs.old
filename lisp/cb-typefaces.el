@@ -26,6 +26,9 @@
 
 ;;; Code:
 
+(require 'dash)
+(require 'cb-lib)
+
 (defun first-font (&rest fonts)
   "Return the first available font in FONTS."
   (--first (find-font (font-spec :name it)) fonts))
