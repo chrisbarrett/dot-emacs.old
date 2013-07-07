@@ -28,6 +28,7 @@
 
 (require 'use-package)
 (require 'cb-lib)
+(require 'noflet)
 
 (define-path cb:lib-dir       "lib/" t)
 (define-path cb:lisp-dir      "lisp/" t)
