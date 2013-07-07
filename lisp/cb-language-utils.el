@@ -33,8 +33,6 @@
   :bind ("M-RET" . emr-show-refactor-menu)
   :init (add-hook 'prog-mode-hook 'emr-initialize))
 
-(autoload 'smartparens-mode-map "smartparens")
-
 (use-package smartparens
   :ensure t
   :config
@@ -47,10 +45,16 @@
     ;; Customise to behave more like Paredit.
     (setq sp-navigate-close-if-unbalanced t)
     (define-key smartparens-mode-map (kbd "DEL") 'sp-backward-delete-char)
-    (define-key smartparens-mode-map (kbd "C-k") 'sp-kill-sexp)
+
+    (define-key smartparens-mode-map (kbd "C-k")
+      (command (if (emr-blank-line?)
+                   (kill-whole-line)
+                 (sp-kill-sexp))))
+
     (define-key smartparens-mode-map (kbd ")") 'sp-up-sexp)
     (define-key smartparens-mode-map (kbd "]") 'sp-up-sexp)
     (define-key smartparens-mode-map (kbd "}") 'sp-up-sexp)
+
     (define-key smartparens-mode-map (kbd "M-<up>")
       (command (if (derived-mode-p 'org-mode)
                    (org-metaup)
