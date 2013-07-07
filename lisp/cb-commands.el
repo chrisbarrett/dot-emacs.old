@@ -28,50 +28,38 @@
 (require 'dash)
 (require 's)
 (require 'bind-key)
+(require 'cb-lib)
+(autoload 'emr-reporting-buffer-changes "emr")
+(autoload 'org-move-item-down "org-list")
+(autoload 'org-move-item-up "org-list")
 
 ;;; Buffers
 
-(defun cb:larger-window (win1 win2)
-  (let ((x1 (window-width win1))
-        (x2 (window-width win2))
-        (y1 (window-height win1))
-        (y2 (window-height win2)))
-    ;; Select tallest if same width.
-    (if (= x1 x2)
-        (if (> y1 y2) win1 win2)
-      ;; Select widest.
-      (if (> x1 x2) win1 win2))))
-
 ;;;###autoload
-(defun select-largest-window ()
+(defun cb:rotate-buffers ()
+  "Rotate active buffers, retaining the window layout.
+Changes the selected buffer."
   (interactive)
-  (select-window (-reduce 'cb:larger-window (window-list))))
-
-;;;###autoload
-(defun rotate-buffers ()
-  "Rotate active buffers, retaining the window layout. Changes
-the selected buffer."
-  (interactive)
-  (cond
-   ((not (> (count-windows) 1))
-    (message "You can't rotate a single window!"))
-   (t
-    (let ((i 1)
-          (numWindows (count-windows)))
-      (while  (< i numWindows)
-        (let* (
-               (w1 (elt (window-list) i))
-               (w2 (elt (window-list) (+ (% i numWindows) 1)))
-               (b1 (window-buffer w1))
-               (b2 (window-buffer w2))
-               (s1 (window-start w1))
-               (s2 (window-start w2))
-               )
-          (set-window-buffer w1  b2)
-          (set-window-buffer w2 b1)
-          (set-window-start w1 s2)
-          (set-window-start w2 s1)
-          (setq i (1+ i))))))))
+  ;; Bail if there are not enough windows to rotate.
+  (unless (> (count-windows) 1)
+    (user-error "Cannot rotate single window"))
+  ;; Perform rotation.
+  (let ((i 1)
+        (n-windows (count-windows)))
+    (while  (< i n-windows)
+      (let* (
+             (w1 (elt (window-list) i))
+             (w2 (elt (window-list) (+ (% i n-windows) 1)))
+             (b1 (window-buffer w1))
+             (b2 (window-buffer w2))
+             (s1 (window-start w1))
+             (s2 (window-start w2))
+             )
+        (set-window-buffer w1  b2)
+        (set-window-buffer w2 b1)
+        (set-window-start w1 s2)
+        (set-window-start w2 s1)
+        (setq i (1+ i))))))
 
 (defvar cb:kill-buffer-ignored-list
   '("*scratch*" "*Messages*" "*GROUP*"
@@ -96,15 +84,15 @@ If this buffer is a member of `cb:kill-buffer-ignored-list, bury it rather than 
                 (get-buffer-process it))
       (kill-buffer it))))
 
-(defun hide-dos-eol ()
+(hook-fn 'find-file-hook
+  "Hide DOS EOL chars."
   (setq buffer-display-table (make-display-table))
   (aset buffer-display-table ?\^M [])
   (aset buffer-display-table ?\^L []))
 
-(add-hook 'find-file-hook 'hide-dos-eol)
-
 ;;;###autoload
-(defun* last-buffer-for-mode (mode &optional (buffers (buffer-list)))
+(defun* last-buffer-for-mode
+    (mode &optional (buffers (buffer-list)))
   "Return the previous buffer with major mode MODE."
   (--first (with-current-buffer it
              (equal mode major-mode))
@@ -164,7 +152,7 @@ If this buffer is a member of `cb:kill-buffer-ignored-list, bury it rather than 
 
 ;;;###autoload
 (defun delete-buffer-and-file ()
-  "Removes file connected to current buffer and kills buffer."
+  "Delete a file and its associated buffer."
   (interactive)
   (let ((filename (buffer-file-name))
         (buffer (current-buffer))
@@ -197,23 +185,22 @@ If this buffer is a member of `cb:kill-buffer-ignored-list, bury it rather than 
 
 ;;; Shebang insertion
 
-(defconst cb:extension->cmd (make-hash-table :test 'equal))
-(puthash "py" "python" cb:extension->cmd)
-(puthash "sh" "bash"   cb:extension->cmd)
-(puthash "rb" "ruby"   cb:extension->cmd)
-(puthash "el" "emacs"  cb:extension->cmd)
-
-(defun cb:bufname->cmd (name)
-  (gethash (car-safe (last (split-string name "[.]" t)))
-           cb:extension->cmd))
-
-(autoload 'emr-reporting-buffer-changes "emr")
+(defun cb:filename->interpreter (filename)
+  (cdr
+   (assoc (file-name-extension filename)
+          '(("el" . "emacs")
+            ("hs" . "runhaskell")
+            ("py" . "python")
+            ("rb" . "ruby")
+            ("sh" . "bash")))))
 
 ;;;###autoload
 (defun insert-shebang (cmd)
-  "Insert a shebang line at the top of the current buffer."
-  (interactive (list (or (cb:bufname->cmd buffer-file-name)
-                         (read-string "Command name: " nil t))))
+  "Insert a shebang line at the top of the current buffer.
+Prompt for a command CMD if one cannot be guessed."
+  (interactive
+   (list (or (cb:filename->interpreter buffer-file-name)
+          (read-string "Command name: " nil t))))
   (emr-reporting-buffer-changes "Inserted shebang"
     (save-excursion
       (goto-char (point-min))
@@ -261,16 +248,11 @@ Repeated invocations toggle between the two most recently open buffers."
   (interactive)
   (switch-to-buffer (other-buffer (current-buffer) 1)))
 
-(defadvice rotate-buffers (after select-largest-window activate)
-  "Switch to the largest window if using a 2-up window configuration."
-  (when (= 2 (length (window-list)))
-    (select-largest-window)))
-
 (bind-key "C-c k b" 'clean-buffers)
 (bind-key "C-<up>" 'move-line-up)
 (bind-key "C-<down>" 'move-line-down)
 (bind-key* "C-;" 'swap-with-previous-buffer)
-(bind-key "s-f" 'rotate-buffers)
+(bind-key "s-f" 'cb:rotate-buffers)
 (bind-key "C-x C-o" 'other-window)
 
 (define-key prog-mode-map (kbd "M-q") 'indent-dwim)
