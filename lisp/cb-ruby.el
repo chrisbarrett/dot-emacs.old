@@ -215,13 +215,13 @@ If this is the trailing colon for a hash key, insert padding."
   :defer  t
   :init
   (hook-fn 'cb:ruby-modes-hook
-    (require 'rsense)
-    (add-to-list 'ac-sources 'ac-source-rsense-method)
-    (add-to-list 'ac-sources 'ac-source-rsense-constant))
+    (require 'rsense))
   :config
   (progn
     (define-path cb:rsense-home "bin/rsense-0.3")
-    (setq rsense-home cb:rsense-home)))
+    (setq rsense-home cb:rsense-home)
+    (after 'auto-complete
+      (add-to-list 'ac-sources 'ac-source-rsense))))
 
 (use-package yari
   :ensure t
@@ -278,7 +278,7 @@ Start an inferior ruby if necessary."
     (defun cb-rb:eval-dwim ()
       "Perform a context-sensitive evaluation."
       (interactive)
-      ;; Start ruby if neccessary.
+      ;; Start ruby if necessary.
       (unless (get-buffer "*ruby*")
         (run-ruby)
         (cb-rb:switch-to-ruby)
