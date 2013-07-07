@@ -26,6 +26,9 @@
 
 ;;; Code:
 
+(require 'use-package)
+(require 'cb-lib)
+
 (define-path cb:lib-dir       "lib/" t)
 (define-path cb:lisp-dir      "lisp/" t)
 (define-path cb:src-dir       "src")
@@ -195,7 +198,7 @@
 
 (defadvice save-buffers-kill-emacs (around no-query-kill-emacs activate)
   "Suppress \"Active processes exist\" query when exiting Emacs."
-  (noflet ((process-list ()))
+  (noflet ((process-list () nil))
     ad-do-it))
 
 (hook-fn 'kill-emacs-hook
