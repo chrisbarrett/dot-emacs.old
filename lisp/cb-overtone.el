@@ -27,6 +27,7 @@
 ;;; Code:
 
 (autoload 'nrepl-eval "nrepl")
+(autoload 'nrepl-mode-map "nrepl")
 
 (defvar overtone-mode-map
   (let ((km (make-sparse-keymap)))
@@ -38,8 +39,9 @@
   "Provide additional overtone-related functionality for clojure."
   nil " overtone" overtone-mode-map
   (require 'nrepl)
-  (define-key nrepl-mode-map (kbd "C-c C-g") 'cb:stop-overtone)
-  (define-key nrepl-mode-map (kbd "S-.") 'cb:stop-overtone)
+  (when (boundp 'nrepl-mode-map)
+    (define-key nrepl-mode-map (kbd "C-c C-g") 'cb:stop-overtone)
+    (define-key nrepl-mode-map (kbd "S-.") 'cb:stop-overtone))
   ;; Jack in if there's no active connection.
   (unless (and (boundp 'nrepl-connection-list) nrepl-connection-list)
     (nrepl-jack-in)))
