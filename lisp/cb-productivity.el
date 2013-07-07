@@ -33,10 +33,8 @@
   :idle     (require 'undo-tree)
   :bind     ("C-x u" . undo-tree-visualize)
   :diminish undo-tree-mode
-  :init
-  (hook-fn 'find-file-hook (require 'undo-tree))
-  :config
-  (global-undo-tree-mode +1))
+  :init     (hook-fn 'find-file-hook (require 'undo-tree))
+  :config   (global-undo-tree-mode +1))
 
 (use-package key-chord
   :ensure t
@@ -45,67 +43,18 @@
   (hook-fn 'after-init-hook (key-chord-mode +1))
   :config
   (progn
-
-    (defun cb:backward-slurp ()
-      (interactive)
-      (cond ((cb:truthy? 'paredit-mode)
-             (paredit-backward-slurp-sexp))
-            ((cb:truthy? 'smartparens-mode)
-             (sp-backward-slurp-sexp))))
-
-    (defun cb:forward-slurp ()
-      (interactive)
-      (cond ((cb:truthy? 'tagedit-mode)
-             (tagedit-forward-slurp-tag))
-            ((cb:truthy? 'smartparens-mode)
-             (sp-forward-slurp-sexp))
-            ((cb:truthy? 'paredit-mode)
-             (paredit-forward-slurp-sexp))
-            (t
-             (cedit-or-paredit-slurp))))
-
-    (defun cb:splice-killing-backward ()
-      (interactive)
-      (cond ((cb:truthy? 'tagedit-mode)
-             (tagedit-splice-tag))
-            ((cb:truthy? 'smartparens-mode)
-             (sp-splice-sexp-killing-backward))
-            ((cb:truthy? 'paredit-mode)
-             (paredit-splice-sexp-killing-backward))
-            (t
-             (cedit-or-paredit-splice-killing-backward))))
-
-    (defun cb:backward-barf ()
-      (interactive)
-      (cond ((cb:truthy? 'paredit-mode)
-             (paredit-backward-barf-sexp))
-            ((cb:truthy? 'smartparens-mode)
-             (sp-backward-barf-sexp))
-            ((cb:truthy? 'tagedit-mode)
-             (tagedit-backward-barf-tag))))
-
-    (defun cb:forward-barf ()
-      (interactive)
-      (cond ((cb:truthy? 'tagedit-mode)
-             (tagedit-forward-barf-tag))
-            ((cb:truthy? 'smartparens-mode)
-             (sp-forward-barf-sexp))
-            ((cb:truthy? 'paredit-mode)
-             (paredit-forward-barf-sexp))
-            (t
-             (cedit-or-paredit-barf))))
-
     (key-chord-define-global "x;" 'kill-current-buffer)
-    (key-chord-define-global "qj" 'cb:backward-slurp)
-    (key-chord-define-global "qk" 'cb:forward-slurp)
-    (key-chord-define-global "ql" 'cb:splice-killing-backward)
-    (key-chord-define-global "qn" 'cb:backward-barf)
-    (key-chord-define-global "qm" 'cb:forward-barf)))
+    (after 'smartparens
+      (key-chord-define-global "qj" 'sp-backward-slurp-sexp)
+      (key-chord-define-global "qk" 'sp-forward-slurp-sexp)
+      (key-chord-define-global "ql" 'sp-splice-sexp-killing-backward)
+      (key-chord-define-global "qn" 'sp-backward-barf-sexp)
+      (key-chord-define-global "qm" 'sp-forward-barf-sexp))))
 
 (use-package scratch
   :ensure   t
   :commands scratch
-  :bind     ("C-c e s" . scratch) )
+  :bind     ("C-c e s" . scratch))
 
 (use-package iedit
   :ensure   t

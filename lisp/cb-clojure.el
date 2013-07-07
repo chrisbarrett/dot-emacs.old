@@ -91,7 +91,6 @@
       (hook-fn it
         (nrepl-turn-on-eldoc-mode)
         (subword-mode +1)
-        (paredit-mode +1)
         (local-set-key (kbd "C-l") 'nrepl-clear-buffer)
         (local-set-key (kbd "C-c C-z") 'cb:switch-to-clojure)
         (local-set-key (kbd "C-c C-f") 'cb:eval-last-clj-buffer)))))

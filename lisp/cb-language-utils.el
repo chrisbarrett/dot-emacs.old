@@ -30,85 +30,24 @@
 
 (use-package emr
   :ensure t
-  :bind   ("M-RET" . emr-show-refactor-menu)
+  :bind ("M-RET" . emr-show-refactor-menu)
   :init (add-hook 'prog-mode-hook 'emr-initialize))
 
-(use-package paredit
-  :ensure t
-  :idle   (require 'paredit)
-  :diminish paredit-mode
-  :commands
-  (paredit-mode
-   enable-paredit-mode
-   disable-paredit-mode
-   paredit-wrap-square
-   paredit-wrap-curly
-   paredit-wrap-round)
-
-  :init
-  (progn
-
-    (hook-fn 'minibuffer-setup-hook
-      "Use paredit in the minibuffer."
-      (when (eq this-command 'eval-expression)
-        (paredit-mode t)))
-
-    (hook-fn 'paredit-mode-hook
-      "Turn off smart parens."
-      (when (featurep 'smartparens)
-        (turn-off-smartparens-mode))))
-
-  :config
-  (progn
-    (use-package cb-paredit)
-
-    (defun cb:paredit-wrap-round-from-behind ()
-      (interactive)
-      (forward-sexp -1)
-      (paredit-wrap-round)
-      (insert " ")
-      (forward-char -1))
-
-    (define-key paredit-mode-map (kbd "M-)")
-      'cb:paredit-wrap-round-from-behind)
-
-    (define-key paredit-mode-map (kbd "M-[")
-      'paredit-wrap-square)
-
-    (define-key paredit-mode-map (kbd "M-{")
-      'paredit-wrap-curly)
-
-    (define-key paredit-mode-map (kbd "M-r") nil)
-
-    (add-hook 'cb:lisp-modes-hook 'enable-paredit-mode)))
+(autoload 'smartparens-mode-map "smartparens")
 
 (use-package smartparens
   :ensure t
-  :idle   (require 'smartparens)
-  :diminish smartparens-mode
-  :commands
-  (smartparens-mode
-   smartparens-global-mode)
-  :init
-  (progn
-    (add-hook 'text-mode-hook 'turn-on-smartparens-mode)
-    (hook-fn 'comint-mode-hook (smartparens-mode +1))
-
-    (hook-fn 'prog-mode-hook
-      "Ensure Paredit is used for Lisps."
-      (if (-contains? cb:lisp-modes major-mode)
-          (paredit-mode +1)
-        (smartparens-mode +1))))
   :config
   (progn
+    (smartparens-global-mode +1)
     ;; Still use Paredit wrap commands.
     (define-key smartparens-mode-map (kbd "M-{") 'paredit-wrap-curly)
     (define-key smartparens-mode-map (kbd "M-[") 'paredit-wrap-square)
     (define-key smartparens-mode-map (kbd "M-(") 'paredit-wrap-round)
     ;; Customise to behave more like Paredit.
     (setq sp-navigate-close-if-unbalanced t)
-    (define-key smartparens-mode-map (kbd "DEL")    'sp-backward-delete-char)
-    (define-key smartparens-mode-map (kbd "C-k")    'sp-kill-sexp)
+    (define-key smartparens-mode-map (kbd "DEL") 'sp-backward-delete-char)
+    (define-key smartparens-mode-map (kbd "C-k") 'sp-kill-sexp)
     (define-key smartparens-mode-map (kbd ")") 'sp-up-sexp)
     (define-key smartparens-mode-map (kbd "]") 'sp-up-sexp)
     (define-key smartparens-mode-map (kbd "}") 'sp-up-sexp)
@@ -127,12 +66,10 @@
 
 (use-package smart-operator
   :ensure t
-
   :init
   (defmacro smart-op (op)
     "Make a smart operator command that will insert OP."
     `(command (smart-insert-operator ,op)))
-
   :config
   (progn
 

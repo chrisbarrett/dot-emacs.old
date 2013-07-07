@@ -328,25 +328,6 @@ Remove horizontal whitespace if the insertion results in a ++."
                  (rx symbol-start (or "if" "when" "while" "for"))))
       (just-one-space))))
 
-(use-package cedit
-  :commands
-  (cedit-forward-char
-   cedit-backward-char
-   cedit-end-of-statement
-   cedit-beginning-of-statement
-   cedit-down-block
-   cedit-up-block-backward
-   cedit-up-block-forward
-   cedit-slurp
-   cedit-wrap-brace
-   cedit-barf
-   cedit-splice-killing-backward
-   cedit-raise
-   cedit-or-paredit-slurp
-   cedit-or-paredit-barf
-   cedit-or-paredit-splice-killing-backward
-   cedit-or-paredit-raise))
-
 (use-package google-c-style
   :ensure   t
   :defer    t
