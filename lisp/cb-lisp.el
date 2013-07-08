@@ -29,10 +29,17 @@
 (require 'use-package)
 (require 'cb-foundation)
 
+(hook-fn 'cb:lisp-modes-hook
+  (local-set-key (kbd "M-q") 'indent-dwim))
+
 (after 'smartparens
- (sp-with-modes cb:lisp-modes
-   (sp-local-pair "`" "`" :when '(sp-in-string-p))
-   (sp-local-pair "'" "'" :when '(sp-in-string-p))))
+
+  (--each cb:lisp-modes
+    (add-to-list 'sp-navigate-reindent-after-up it))
+
+  (sp-with-modes cb:lisp-modes
+    (sp-local-pair "`" "`" :when '(sp-in-string-p))
+    (sp-local-pair "'" "'" :when '(sp-in-string-p))))
 
 (use-package parenface-plus
   :ensure t

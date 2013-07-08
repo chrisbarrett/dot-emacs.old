@@ -81,6 +81,7 @@
 (use-package cb-backups)
 (use-package cb-cosmetic)
 (use-package cb-colour :if (or (daemonp) (display-graphic-p)))
+(use-package cb-smartparens)
 (use-package cb-web)
 (use-package cb-shell)
 (use-package cb-completion)

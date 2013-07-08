@@ -33,45 +33,6 @@
   :bind ("M-RET" . emr-show-refactor-menu)
   :init (add-hook 'prog-mode-hook 'emr-initialize))
 
-(use-package smartparens
-  :ensure t
-  :config
-  (progn
-    (smartparens-global-mode +1)
-    ;; Still use Paredit wrap commands.
-    (define-key smartparens-mode-map (kbd "M-{") 'paredit-wrap-curly)
-    (define-key smartparens-mode-map (kbd "M-[") 'paredit-wrap-square)
-    (define-key smartparens-mode-map (kbd "M-(") 'paredit-wrap-round)
-
-    ;; DEL will delete unbalanced parens.
-    (define-key smartparens-mode-map (kbd "DEL")
-      (command (sp-backward-delete-char (or _arg 1))))
-
-    ;; C-k kills blank lines or balanced sexps.
-    (define-key smartparens-mode-map (kbd "C-k")
-      (command (if (emr-blank-line?)
-                   (kill-whole-line)
-                 (sp-kill-sexp))))
-
-    ;; Close paren keys move up sexp.
-    (setq sp-navigate-close-if-unbalanced t)
-    (define-key smartparens-mode-map (kbd ")") 'sp-up-sexp)
-    (define-key smartparens-mode-map (kbd "]") 'sp-up-sexp)
-    (define-key smartparens-mode-map (kbd "}") 'sp-up-sexp)
-
-    ;; Do splices with meta up/down, except in Org mode.
-    (define-key smartparens-mode-map (kbd "M-<up>")
-      (command (if (derived-mode-p 'org-mode)
-                   (org-metaup)
-                 (sp-splice-sexp-killing-backward 1))))
-    (define-key smartparens-mode-map (kbd "M-<down>")
-      (command (if (derived-mode-p 'org-mode)
-                   (org-metadown)
-                 (sp-splice-sexp-killing-forward))))
-
-    (sp-local-tag '(sgml-mode html-mode) "<" "<_>" "</_>"
-                  :transform 'sp-match-sgml-tags)))
-
 (use-package smart-operator
   :ensure t
   :init
@@ -115,12 +76,6 @@
     (add-hook 'cb:elisp-modes-hook     'lambda-mode)
     (add-hook 'cb:python-modes-hook    'lambda-mode)
     (add-hook 'cb:slime-modes-hook     'lambda-mode)))
-
-(use-package paren
-  :defer  t
-  :idle   (require 'paren)
-  :init   (hook-fn 'prog-mode-hook (require 'paren))
-  :config (show-paren-mode +1))
 
 (use-package highlight-parentheses
   :ensure t

@@ -32,6 +32,10 @@
   (hook-fn 'cb:markup-modes-hook
     (local-set-key (kbd ",") (smart-op ","))))
 
+(after 'smartparens
+  (sp-local-tag '(sgml-mode html-mode) "<" "<_>" "</_>"
+                :transform 'sp-match-sgml-tags))
+
 (defun cb:xml-one-liner? (str)
   (save-match-data
     (-when-let (match (->> str (s-match
