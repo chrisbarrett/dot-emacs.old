@@ -118,21 +118,27 @@ If this buffer is a member of `cb:kill-buffer-ignored-list, bury it rather than 
 (defun indent-dwim ()
   "Perform a context-sensitive indentation action."
   (interactive)
-  (cond ((region-active-p)
-         (indent-region (region-beginning) (region-end)))
+  (cond
+   ((region-active-p)
+    (indent-region (region-beginning) (region-end))
+    (message "Indented region."))
 
-        ((-contains? '(font-lock-comment-face
-                       font-lock-string-face
-                       font-lock-doc-string-face)
-                     (face-at-point))
-         (fill-paragraph))
+   ((-contains? '(font-lock-comment-face
+                  font-lock-string-face
+                  font-lock-doc-string-face)
+                (face-at-point))
+    (fill-paragraph)
+    (message "Filled paragraph."))
 
-        ((thing-at-point 'defun)
-         (save-excursion
-           (mark-defun)
-           (indent-region (region-beginning) (region-end))))
-        (t
-         (indent-buffer))))
+   ((thing-at-point 'defun)
+    (indent-region
+     (save-excursion (beginning-of-defun) (point))
+     (save-excursion (end-of-defun) (point)))
+    (message "Indented defun."))
+
+   (t
+    (indent-buffer)
+    (message "Indented buffer."))))
 
 ;;;###autoload
 (defun rename-buffer-and-file ()
