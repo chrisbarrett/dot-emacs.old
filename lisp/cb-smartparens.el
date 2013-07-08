@@ -50,14 +50,20 @@
                    (kill-whole-line)
                  (sp-kill-sexp))))
 
+    (define-key sp-keymap (kbd "C-<backspace>") 'sp-backward-up-sexp)
+
+    (defun sp-insert-or-up (delim &optional arg)
+      "Insert a delimiter DELIM if inside a string, else move up."
+      (interactive "sDelimiter:\nP")
+      (if (or (emr-looking-at-string?)
+              (emr-looking-at-comment?))
+          (insert delim)
+        (sp-up-sexp arg)))
+
     ;; Close paren keys move up sexp.
-    (loop
-     initially (setq sp-navigate-close-if-unbalanced t)
-     for hook in '(prog-mode-hook text-mode-hook-identify)
-     do (hook-fn hook
-          (local-set-key (kbd ")") 'sp-up-sexp)
-          (local-set-key (kbd "]") 'sp-up-sexp)
-          (local-set-key (kbd "}") 'sp-up-sexp)))
+    (setq sp-navigate-close-if-unbalanced t)
+    (--each '(")" "]" "}")
+      (global-set-key (kbd it) (command (sp-insert-or-up it _arg))))
 
     ;; Do splices with meta up/down, except in Org mode.
     (define-key sp-keymap (kbd "M-<up>")
