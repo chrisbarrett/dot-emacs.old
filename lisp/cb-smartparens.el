@@ -28,8 +28,7 @@
 
 (require 'use-package)
 (require 'dash)
-(autoload 'org-metadown "org")
-(autoload 'org-metaup "org")
+(require 'cb-lib)
 
 (use-package smartparens
   :ensure t
@@ -41,23 +40,6 @@
     ;; Alias the matches faces for colour theming.
     (put 'paren-face-match 'face-alias 'sp-show-pair-match-face)
     (put 'paren-face-mismatch 'face-alias 'sp-show-pair-mismatch-face)
-
-    ;; Still use Paredit wrap commands.
-    (define-key sp-keymap (kbd "M-{") 'paredit-wrap-curly)
-    (define-key sp-keymap (kbd "M-[") 'paredit-wrap-square)
-    (define-key sp-keymap (kbd "M-(") 'paredit-wrap-round)
-
-    ;; DEL will delete unbalanced parens.
-    (define-key sp-keymap (kbd "DEL")
-      (command (sp-backward-delete-char (or _arg 1))))
-
-    ;; C-k kills blank lines or balanced sexps.
-    (define-key sp-keymap (kbd "C-k")
-      (command (if (emr-blank-line?)
-                   (kill-whole-line)
-                 (sp-kill-sexp))))
-
-    (define-key sp-keymap (kbd "C-<backspace>") 'sp-backward-up-sexp)
 
     (defun sp-insert-or-up (delim &optional arg)
       "Insert a delimiter DELIM if inside a string, else move up."
@@ -72,15 +54,47 @@
     (--each '(")" "]" "}")
       (global-set-key (kbd it) (command (sp-insert-or-up it _arg))))
 
-    ;; Do splices with meta up/down, except in Org mode.
-    (define-key sp-keymap (kbd "M-<up>")
-      (command (if (derived-mode-p 'org-mode)
-                   (org-metaup)
-                 (sp-splice-sexp-killing-backward 1))))
-    (define-key sp-keymap (kbd "M-<down>")
-      (command (if (derived-mode-p 'org-mode)
-                   (org-metadown)
-                 (sp-splice-sexp-killing-forward))))))
+    (loop for (k f) in
+          `(
+            ("C-<backspace>" sp-backward-up-sexp)
+
+            ("DEL"
+             ;; delete unbalanced parens.
+             ,(command (sp-backward-delete-char (or _arg 1))))
+
+            ("C-k"
+             ;; kill blank lines or balanced sexps.
+             ,(command (if (emr-blank-line?)
+                           (kill-whole-line)
+                         (sp-kill-sexp))))
+
+            ;; Still use Paredit wrap commands.
+            ("M-{"  paredit-wrap-curly)
+            ("M-["  paredit-wrap-square)
+            ("M-("  paredit-wrap-round)
+
+            ;; General prefix commands.
+
+            ("C-x p a"      sp-absorb-sexp)
+            ("C-x p b b"    sp-backward-barf-sexp)
+            ("C-x p b f"    sp-forward-barf-sexp)
+            ("C-x p c"      sp-convolute-sexp)
+            ("C-x p e"      sp-emit-sexp)
+            ("C-x p j"      sp-join-sexp)
+            ("C-x p r"      sp-raise-sexp)
+            ("C-x p s b"    sp-backward-slurp-sexp)
+            ("C-x p s f"    sp-forward-slurp-sexp)
+            ("C-x p s k a"  sp-splice-sexp-killing-around)
+            ("C-x p s k b"  sp-splice-sexp-killing-backward)
+            ("C-x p s k f"  sp-splice-sexp-killing-forward)
+            ("C-x p s s"    sp-splice-sexp)
+            ("C-x p t"      sp-transpose-sexp)
+            ("C-x p u b"    sp-backward-unwrap-sexp)
+            ("C-x p u f"    sp-unwrap-sexp)
+            ("C-x p x"      sp-split-sexp)
+            ("C-x p y"      sp-copy-sexp)
+            )
+          do (define-key sp-keymap (kbd k) f))))
 
 (provide 'cb-smartparens)
 
