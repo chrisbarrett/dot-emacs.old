@@ -34,12 +34,36 @@
 
 (after 'smartparens
 
+  ;; Paredit-style paren adjustment when moving up.
   (--each cb:lisp-modes
     (add-to-list 'sp-navigate-reindent-after-up it))
 
+  (defun sp-just-one-space-handler (id action ctx)
+    "Pad LISP delimiters with spaces."
+    (when (and (equal 'insert action)
+               (sp-in-code-p id action ctx))
+      ;; Insert space before separator.
+      (save-excursion
+        (search-backward id)
+        (unless (s-matches? (rx bol (* space) eol)
+                            (buffer-substring (line-beginning-position) (point)))
+          (just-one-space)))
+      ;; Insert space after separator.
+      (save-excursion
+        (search-forward (sp-get-pair id :close))
+        (unless (s-matches? (rx (any ")" "]" "}"))
+                            (buffer-substring (point) (1+ (point))))
+          (just-one-space))))))
+
   (sp-with-modes cb:lisp-modes
     (sp-local-pair "`" "`" :when '(sp-in-string-p))
-    (sp-local-pair "'" "'" :when '(sp-in-string-p))))
+    (sp-local-pair "'" "'" :when '(sp-in-string-p))
+    ;; Pad delimiters with spaces.
+    (sp-local-pair "\"" "\"" :post-handlers '(:add sp-just-one-space-handler))
+    (sp-local-pair "{" "}" :post-handlers '(:add sp-just-one-space-handler))
+    (sp-local-pair "[" "]" :post-handlers '(:add sp-just-one-space-handler))
+    (sp-local-pair "(" ")" :post-handlers '(:add sp-just-one-space-handler))
+    (sp-local-pair "'" nil :post-handlers '(:add sp-just-one-space-handler)))
 
 (use-package parenface-plus
   :ensure t
