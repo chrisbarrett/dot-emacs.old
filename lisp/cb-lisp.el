@@ -39,17 +39,23 @@
   (--each cb:lisp-modes
     (add-to-list 'sp-navigate-reindent-after-up it))
 
-  (defun sp-just-one-space-handler (id action ctx)
+  (defun sp-lisp-just-one-space (id action ctx)
     "Pad LISP delimiters with spaces."
     (when (and (equal 'insert action)
                (sp-in-code-p id action ctx))
-      ;; Insert space before separator.
+      ;; Insert a leading space, unless
+      ;; 1. this is a quoted form
+      ;; 2. this is the first position of another list
+      ;; 3. this form begins a new line.
       (save-excursion
         (search-backward id)
-        (unless (s-matches? (rx bol (* space) eol)
-                            (buffer-substring (line-beginning-position) (point)))
+        (unless (s-matches?
+                 (rx (or (group bol (* space))
+                         (any "," "'" "@" "#" "~" "(" "[" "{")) eol)
+                 (buffer-substring (line-beginning-position) (point)))
           (just-one-space)))
-      ;; Insert space after separator.
+      ;; Insert space after separator, unless this form is at the end of
+      ;; another list.
       (save-excursion
         (search-forward (sp-get-pair id :close))
         (unless (s-matches? (rx (any ")" "]" "}"))
@@ -58,13 +64,12 @@
 
   (sp-with-modes cb:lisp-modes
     (sp-local-pair "`" "`" :when '(sp-in-string-p))
-    (sp-local-pair "'" "'" :when '(sp-in-string-p))
     ;; Pad delimiters with spaces.
-    (sp-local-pair "\"" "\"" :post-handlers '(:add sp-just-one-space-handler))
-    (sp-local-pair "{" "}" :post-handlers '(:add sp-just-one-space-handler))
-    (sp-local-pair "[" "]" :post-handlers '(:add sp-just-one-space-handler))
-    (sp-local-pair "(" ")" :post-handlers '(:add sp-just-one-space-handler))
-    (sp-local-pair "'" nil :post-handlers '(:add sp-just-one-space-handler))))
+    (sp-local-pair "\"" "\"" :post-handlers '(:add sp-lisp-just-one-space))
+    (sp-local-pair "{" "}" :post-handlers '(:add sp-lisp-just-one-space))
+    (sp-local-pair "[" "]" :post-handlers '(:add sp-lisp-just-one-space))
+    (sp-local-pair "(" ")" :post-handlers '(:add sp-lisp-just-one-space))
+    (sp-local-pair "'" nil :actions nil)))
 
 (use-package parenface-plus
   :ensure t
