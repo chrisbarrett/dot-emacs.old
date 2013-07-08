@@ -54,7 +54,7 @@
         (search-forward (sp-get-pair id :close))
         (unless (s-matches? (rx (any ")" "]" "}"))
                             (buffer-substring (point) (1+ (point))))
-          (just-one-space))))))
+          (just-one-space)))))
 
   (sp-with-modes cb:lisp-modes
     (sp-local-pair "`" "`" :when '(sp-in-string-p))
@@ -64,7 +64,7 @@
     (sp-local-pair "{" "}" :post-handlers '(:add sp-just-one-space-handler))
     (sp-local-pair "[" "]" :post-handlers '(:add sp-just-one-space-handler))
     (sp-local-pair "(" ")" :post-handlers '(:add sp-just-one-space-handler))
-    (sp-local-pair "'" nil :post-handlers '(:add sp-just-one-space-handler)))
+    (sp-local-pair "'" nil :post-handlers '(:add sp-just-one-space-handler))))
 
 (use-package parenface-plus
   :ensure t
