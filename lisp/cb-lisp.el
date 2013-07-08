@@ -28,6 +28,7 @@
 
 (require 'use-package)
 (require 'cb-foundation)
+(require 'cb-mode-groups)
 
 (hook-fn 'cb:lisp-modes-hook
   (local-set-key (kbd "M-q") 'indent-dwim))
@@ -69,8 +70,7 @@
   :ensure t
   :defer  t
   :idle   (require 'parenface-plus)
-  :init
-  (hook-fn 'prog-mode-hook (require 'parenface-plus)))
+  :init   (hook-fn 'prog-mode-hook (require 'parenface-plus)))
 
 (use-package eval-sexp-fu
   :commands eval-sexp-fu-flash-mode

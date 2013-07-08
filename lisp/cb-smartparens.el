@@ -27,6 +27,9 @@
 ;;; Code:
 
 (require 'use-package)
+(require 'dash)
+(autoload 'org-metadown "org")
+(autoload 'org-metaup "org")
 
 (use-package smartparens
   :ensure t
