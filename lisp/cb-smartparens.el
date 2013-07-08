@@ -38,6 +38,10 @@
     (smartparens-global-mode +1)
     (show-smartparens-global-mode +1)
 
+    ;; Alias the matches faces for colour theming.
+    (put 'paren-face-match 'face-alias 'sp-show-pair-match-face)
+    (put 'paren-face-mismatch 'face-alias 'sp-show-pair-mismatch-face)
+
     ;; Still use Paredit wrap commands.
     (define-key sp-keymap (kbd "M-{") 'paredit-wrap-curly)
     (define-key sp-keymap (kbd "M-[") 'paredit-wrap-square)
