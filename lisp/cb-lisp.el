@@ -51,7 +51,7 @@
         (search-backward id)
         (unless (s-matches?
                  (rx (or (group bol (* space))
-                         (any "," "'" "@" "#" "~" "(" "[" "{")) eol)
+                         (any "," "`" "'" "@" "#" "~" "(" "[" "{")) eol)
                  (buffer-substring (line-beginning-position) (point)))
           (just-one-space)))
       ;; Insert space after separator, unless this form is at the end of
@@ -63,13 +63,16 @@
           (just-one-space)))))
 
   (sp-with-modes cb:lisp-modes
-    (sp-local-pair "`" "`" :when '(sp-in-string-p))
     ;; Pad delimiters with spaces.
     (sp-local-pair "\"" "\"" :post-handlers '(:add sp-lisp-just-one-space))
     (sp-local-pair "{" "}" :post-handlers '(:add sp-lisp-just-one-space))
     (sp-local-pair "[" "]" :post-handlers '(:add sp-lisp-just-one-space))
     (sp-local-pair "(" ")" :post-handlers '(:add sp-lisp-just-one-space))
-    (sp-local-pair "'" nil :actions nil)))
+    (sp-local-pair "'" nil :actions nil))
+
+  ;; Reserve backtick pair handling in Elisp for hyperlinks.
+  (sp-local-pair (-difference cb:lisp-modes cb:elisp-modes)
+                 "`" "`" :when '(sp-in-string-p)))
 
 (use-package parenface-plus
   :ensure t
