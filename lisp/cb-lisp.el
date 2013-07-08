@@ -27,6 +27,12 @@
 ;;; Code:
 
 (require 'use-package)
+(require 'cb-foundation)
+
+(after 'smartparens
+ (sp-with-modes cb:lisp-modes
+   (sp-local-pair "`" "`" :when '(sp-in-string-p))
+   (sp-local-pair "'" "'" :when '(sp-in-string-p))))
 
 (use-package parenface-plus
   :ensure t
@@ -47,23 +53,17 @@
   (add-hook 'cb:lisp-modes-hook 'turn-on-eldoc-mode))
 
 (use-package slime
-  :defer t
-  :commands
-  (slime-mode
-   slime)
+  :defer    t
+  :commands (slime-setup slime)
   :init
-  (progn
-    (setq slime-lisp-implementations `((lisp ("sbcl" "--noinform"))))
-
-    (defun run-slime ()
-      "Run slime, prompting for a lisp implementation."
-      (interactive)
-      (let ((current-prefix-arg '-))
-        (slime))))
-
+  (defun run-slime ()
+    "Run slime, prompting for a lisp implementation."
+    (interactive)
+    (let ((current-prefix-arg '-))
+      (slime)))
   :config
   (progn
-    (require 'slime)
+    (setq slime-lisp-implementations `((lisp ("sbcl" "--noinform"))))
     (slime-setup '(slime-fancy))))
 
 (use-package ac-slime
@@ -72,7 +72,6 @@
   :commands (set-up-slime-ac)
   :init     (add-hook 'slime-modes-hook 'set-up-slime-ac)
   :config   (add-to-list 'ac-modes 'slime-repl-mode))
-
 
 (provide 'cb-lisp)
 

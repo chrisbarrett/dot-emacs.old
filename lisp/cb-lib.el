@@ -66,7 +66,7 @@ The arguments passed to the hook function are bound to the symbol 'args'.
 
 (defmacro command (&rest body)
   "Declare an `interactive' command with BODY forms."
-  `(lambda (&rest _args)
+  `(lambda (&optional _arg &rest _args)
      (interactive)
      ,@body))
 

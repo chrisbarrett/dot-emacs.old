@@ -97,6 +97,10 @@
 
       (1 font-lock-type-face)))))
 
+(after 'smartparens
+  (sp-with-modes cb:elisp-modes
+    (sp-local-pair "`" "'" :when '(sp-in-string-p))))
+
 (use-package lisp-mode
   :defer t
   :mode  (("Carton" . emacs-lisp-mode))

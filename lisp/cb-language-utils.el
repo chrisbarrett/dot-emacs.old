@@ -42,29 +42,33 @@
     (define-key smartparens-mode-map (kbd "M-{") 'paredit-wrap-curly)
     (define-key smartparens-mode-map (kbd "M-[") 'paredit-wrap-square)
     (define-key smartparens-mode-map (kbd "M-(") 'paredit-wrap-round)
-    ;; Customise to behave more like Paredit.
-    (setq sp-navigate-close-if-unbalanced t)
-    (define-key smartparens-mode-map (kbd "DEL") 'sp-backward-delete-char)
 
+    ;; DEL will delete unbalanced parens.
+    (define-key smartparens-mode-map (kbd "DEL")
+      (command (sp-backward-delete-char (or _arg 1))))
+
+    ;; C-k kills blank lines or balanced sexps.
     (define-key smartparens-mode-map (kbd "C-k")
       (command (if (emr-blank-line?)
                    (kill-whole-line)
                  (sp-kill-sexp))))
 
+    ;; Close paren keys move up sexp.
+    (setq sp-navigate-close-if-unbalanced t)
     (define-key smartparens-mode-map (kbd ")") 'sp-up-sexp)
     (define-key smartparens-mode-map (kbd "]") 'sp-up-sexp)
     (define-key smartparens-mode-map (kbd "}") 'sp-up-sexp)
 
+    ;; Do splices with meta up/down, except in Org mode.
     (define-key smartparens-mode-map (kbd "M-<up>")
       (command (if (derived-mode-p 'org-mode)
                    (org-metaup)
-                 (sp-splice-sexp-killing-backward))))
+                 (sp-splice-sexp-killing-backward 1))))
     (define-key smartparens-mode-map (kbd "M-<down>")
       (command (if (derived-mode-p 'org-mode)
                    (org-metadown)
                  (sp-splice-sexp-killing-forward))))
 
-    (sp-pair "'" nil :unless '(sp-point-after-word-p))
     (sp-local-tag '(sgml-mode html-mode) "<" "<_>" "</_>"
                   :transform 'sp-match-sgml-tags)))
 
