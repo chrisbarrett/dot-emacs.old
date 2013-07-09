@@ -59,7 +59,10 @@
       (if (or (emr-looking-at-string?)
               (emr-looking-at-comment?))
           (insert delim)
-        (sp-up-sexp arg)))
+        ;; HACK: use internal calling convention for `sp-up-sexp'. This is
+        ;; needed for some functionality, e.g. re-indentation, to behave
+        ;; correctly.
+        (sp-up-sexp arg 'interactive)))
 
     (setq sp-autoinsert-if-followed-by-word t)
 
