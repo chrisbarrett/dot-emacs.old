@@ -61,6 +61,8 @@
           (insert delim)
         (sp-up-sexp arg)))
 
+    (setq sp-autoinsert-if-followed-by-word t)
+
     ;; Close paren keys move up sexp.
     (setq sp-navigate-close-if-unbalanced t)
     (--each '(")" "]" "}")
