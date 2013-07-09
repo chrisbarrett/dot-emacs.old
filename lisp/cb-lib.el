@@ -172,6 +172,38 @@ restore key."
   (when (boundp 'cb:lisp-dir)
    (byte-recompile-directory cb:lisp-dir 0 t)))
 
+;;; ----------------------------------------------------------------------------
+
+(defun* -filter-buffers (pred &optional (bufs (buffer-list)))
+  "Filter over all the buffers in BUFS.
+PRED should take a buffer as an argument.
+Binds the given buffer using `with-current-buffer'."
+  (--filter-buffers (funcall pred it) bufs))
+
+(defmacro* --filter-buffers (pred-form &optional (bufs '(buffer-list)))
+  "Anaphoric form of `-filter-buffers'"
+  `(--filter (with-current-buffer it ,pred-form) ,bufs))
+
+(defun* -map-buffers (fn &optional (bufs (buffer-list)))
+  "Map FN over each buffer in BUFS.
+FN should take a buffer as an argument.
+Binds the given buffer using `with-current-buffer'."
+  (--map-buffers (funcall fn it)) bufs)
+
+(defmacro* --map-buffers (form &optional (bufs '(buffer-list)))
+  "Anaphoric form of `-map-buffers'"
+  `(--map (with-current-buffer it ,form) ,bufs))
+
+(defun* -first-buffer (pred &optional (bufs '(buffer-list)))
+  "Find the first match for PRED in BUFS.
+PRED should take a buffer as an argument.
+Binds the given buffer using `with-current-buffer'."
+  (--first-buffer (funcall pred it) bufs))
+
+(defmacro* --first-buffer (pred-form &optional (bufs '(buffer-list)))
+  "Anaphoric form of `-first-buffer'"
+  `(--first (with-current-buffer it ,pred-form) ,bufs))
+
 (provide 'cb-lib)
 
 ;; Local Variables:
