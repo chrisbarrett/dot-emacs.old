@@ -37,10 +37,6 @@
     (smartparens-global-mode +1)
     (show-smartparens-global-mode +1)
 
-    ;; Alias the matches faces for colour theming.
-    (put 'paren-face-match 'face-alias 'sp-show-pair-match-face)
-    (put 'paren-face-mismatch 'face-alias 'sp-show-pair-mismatch-face)
-
     (defun sp-insert-or-up (delim &optional arg)
       "Insert a delimiter DELIM if inside a string, else move up."
       (interactive "sDelimiter:\nP")
