@@ -29,6 +29,7 @@
 (require 'use-package)
 (require 'dash)
 (require 'cb-lib)
+(require 's)
 
 (use-package smartparens
   :ensure t
@@ -65,15 +66,22 @@
     (--each '(")" "]" "}")
       (global-set-key (kbd it) (command (sp-insert-or-up it _arg))))
 
-    (bind-key "C-M-," 'sp-backward-down-sexp sp-keymap)
-    (bind-key "C-M-." 'sp-next-sexp sp-keymap)
+
+    ;; Bind Paredit-style wrapping commands.
+    (sp-pair "(" ")" :bind "M-(")
+    (sp-pair "{" "}" :bind "M-{")
+    (sp-pair "[" "]" :bind "M-[")
+    (sp-pair "'" "'" :bind "M-'")
+    (sp-pair "<" ">" :bind "M-<")
+    (sp-pair "\"" "\"" :bind "M-\"")
+    (sp-pair "`" "`" :bind "M-~")
 
     (loop for (k f) in
           `(
             ("C-<backspace>" sp-backward-up-sexp)
 
             ("DEL"
-             ;; delete unbalanced parens.
+             ;; move over pair close when deleting.
              ,(command (sp-backward-delete-char (or _arg 1))))
 
             ("C-k"
@@ -81,12 +89,6 @@
              ,(command (if (emr-blank-line?)
                            (kill-whole-line)
                          (sp-kill-sexp))))
-
-            ;; Still use Paredit wrap commands.
-            ("M-{"  paredit-wrap-curly)
-            ("M-["  paredit-wrap-square)
-            ("M-("  paredit-wrap-round)
-
 
             ;; General prefix commands.
 
@@ -111,7 +113,11 @@
             ("C-x p x"      sp-split-sexp)
             ("C-x p y"      sp-copy-sexp)
             )
-          do (define-key sp-keymap (kbd k) f))))
+          do (define-key sp-keymap (kbd k) f))
+
+    ;; Use bind-key for keys that tend to be overridden.
+    (bind-key "C-M-," 'sp-backward-down-sexp sp-keymap)
+    (bind-key "C-M-." 'sp-next-sexp sp-keymap)))
 
 (provide 'cb-smartparens)
 
