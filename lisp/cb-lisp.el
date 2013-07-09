@@ -35,9 +35,10 @@
 
 (after 'smartparens
 
-  ;; Paredit-style paren adjustment when moving up.
-  (--each cb:lisp-modes
-    (add-to-list 'sp-navigate-reindent-after-up `(interactive ,it)))
+  ;; Add lisp modes to `sp-navigate-reindent-after-up'.
+  ;; Provides Paredit-style paren reindentation when closing parens.
+  (let ((ls (assoc 'interactive sp-navigate-reindent-after-up)))
+    (setcdr ls (-uniq (-concat (cdr ls) cb:lisp-modes))))
 
   (defun sp-lisp-just-one-space (id action ctx)
     "Pad LISP delimiters with spaces."
