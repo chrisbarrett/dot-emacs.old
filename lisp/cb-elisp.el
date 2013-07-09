@@ -97,11 +97,10 @@
 
       (1 font-lock-type-face)))))
 
-(after 'smartparens
-  (hook-fn 'minibuffer-setup-hook
-    "Enable Smartparens during eval-expression."
-    (when (equal this-command 'eval-expression)
-      (paredit-mode +1))))
+(hook-fn 'minibuffer-setup-hook
+  "Enable Paredit during eval-expression."
+  (when (equal this-command 'eval-expression)
+    (paredit-mode +1)))
 
 (use-package lisp-mode
   :defer t
