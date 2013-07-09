@@ -37,7 +37,7 @@
 
   ;; Paredit-style paren adjustment when moving up.
   (--each cb:lisp-modes
-    (add-to-list 'sp-navigate-reindent-after-up it))
+    (add-to-list 'sp-navigate-reindent-after-up `(interactive ,it)))
 
   (defun sp-lisp-just-one-space (id action ctx)
     "Pad LISP delimiters with spaces."
