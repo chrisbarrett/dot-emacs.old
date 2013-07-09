@@ -151,8 +151,14 @@ If this is the trailing colon for a hash key, insert padding."
         (just-one-space))))
 
   (sp-with-modes '(ruby-mode inf-ruby-mode)
-    (sp-local-pair "{" "}" :post-handlers '(:add sp-ruby-just-one-space))
-    (sp-local-pair "[" "]" :post-handlers '(:add sp-ruby-just-one-space))
+
+    (sp-local-pair "{" "}"
+                   :post-handlers '(:add sp-ruby-just-one-space))
+
+    (sp-local-pair "[" "]"
+                   :pre-handlers '(sp-ruby-pre-handler)
+                   :post-handlers '(:add sp-ruby-just-one-space))
+
     (sp-local-pair "#{" "}" :when '(sp-in-string-p))
 
     (sp-local-pair "|" "|"
