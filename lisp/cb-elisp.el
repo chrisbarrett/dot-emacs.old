@@ -99,7 +99,12 @@
 
 (after 'smartparens
   (sp-with-modes cb:elisp-modes
-    (sp-local-pair "`" "'" :when '(sp-in-string-p))))
+    (sp-local-pair "`" "'" :when '(sp-in-string-p)))
+
+  (hook-fn 'minibuffer-setup-hook
+    "Enable Smartparens during eval-expression"
+    (when (equal this-command 'eval-expression)
+      (smartparens-mode +1))))
 
 (use-package lisp-mode
   :defer t
