@@ -107,20 +107,6 @@ If this is the trailing colon for a hash key, insert padding."
   (modify-syntax-entry ?! "w" ruby-mode-syntax-table)
   (modify-syntax-entry ?? "w" ruby-mode-syntax-table)
 
-  (defun sp-ruby-just-one-space (id action ctx)
-    "Pad Ruby delimiters with spaces."
-    (when (and (equal 'insert action)
-               (sp-in-code-p id action ctx))
-      ;; Insert a leading space, unless this is the first position of
-      ;; another list.
-      (save-excursion
-        (search-backward id)
-        (unless (s-matches?
-                 (rx (or (group bol (* space))
-                         (any "(" "[" "{")) eol)
-                 (buffer-substring (line-beginning-position) (point)))
-          (just-one-space)))))
-
   (defun sp-ruby-should-insert-pipe-close (_id _action _ctx)
     "Test whether to insert the closing pipe for a lambda-binding pipe pair."
     (thing-at-point-looking-at
@@ -143,11 +129,11 @@ If this is the trailing colon for a hash key, insert padding."
   (sp-with-modes '(ruby-mode inf-ruby-mode)
 
     (sp-local-pair "{" "}"
-                   :post-handlers '(:add sp-ruby-just-one-space))
+                   :post-handlers '(:add sp-generic-leading-space))
 
     (sp-local-pair "[" "]"
                    :pre-handlers '(sp-ruby-pre-handler)
-                   :post-handlers '(:add sp-ruby-just-one-space))
+                   :post-handlers '(:add sp-generic-leading-space))
 
     (sp-local-pair "#{" "}" :when '(sp-in-string-p))
 

@@ -210,6 +210,14 @@ Binds the given buffer using `with-current-buffer'."
   "Anaphoric form of `-first-window'."
   `(-first-window (lambda (it) ,pred-form)))
 
+;; -----------------------------------------------------------------------------
+
+(defun cb:comma-then-space ()
+  (interactive)
+  (atomic-change-group
+    (insert-char ?\,)
+    (just-one-space)))
+
 (provide 'cb-lib)
 
 ;; Local Variables:

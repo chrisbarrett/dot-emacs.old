@@ -27,17 +27,19 @@
 ;;; Code:
 
 (require 'use-package)
+(require 'cb-foundation)
+(autoload 'emr-line-matches? "emr")
 
 (after 'auto-complete
   (add-to-list 'ac-modes 'python-mode)
   (add-to-list 'ac-modes 'inferior-python-mode))
 
 (after 'smart-operator
+
   (defun cb:python-equals ()
     "Insert an '=' char padded by spaces, except in function arglists."
     (interactive)
-    (if (string-match-p (rx (* space) "def ")
-                        (thing-at-point 'line))
+    (if (emr-line-matches? (rx (* space) "def" (+ space)))
         (insert "=")
       (smart-insert-operator "=")))
 
@@ -46,6 +48,11 @@
     (local-set-key (kbd "=") 'cb:python-equals)
     (local-unset-key (kbd "."))
     (local-unset-key (kbd ":"))))
+
+(after 'smartparens
+  (sp-with-modes cb:python-modes
+    (sp-local-pair "{" "}" :post-handlers '(:add sp-generic-leading-space))
+    (sp-local-pair "[" "]" :post-handlers '(:add sp-generic-leading-space))))
 
 (use-package python
   :ensure   t
@@ -73,12 +80,6 @@
        python-shell-completion-string-code
        "';'.join(get_ipython().Completer.all_completions('''%s'''))\n"))
 
-    (defun cb:comma-then-space ()
-      (interactive)
-      (atomic-change-group
-        (insert-char ?\,)
-        (just-one-space)))
-
     (defun cb-py:restart-python ()
       (save-window-excursion
         (let (kill-buffer-query-functions
@@ -104,7 +105,7 @@
         ;; when switching to REPL buffer. Work around this.
         (-when-let* ((buf (--first-buffer (derived-mode-p 'inferior-python-mode)))
                      (win (or (--first-window (equal (get-buffer "*Python*")
-                                                   (window-buffer it)))
+                                                     (window-buffer it)))
                               (split-window-sensibly)
                               (next-window))))
           (set-window-buffer win buf)

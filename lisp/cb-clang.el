@@ -191,7 +191,7 @@ Remove horizontal whitespace if the insertion results in a ++."
     (cb-c:just-one-space-after-semicolon))
 
   (hook-fn 'c-mode-hook
-    (local-set-key (kbd ",") (command (insert ",") (just-one-space)))
+    (local-set-key (kbd ",") 'cb:comma-then-space)
     (local-set-key (kbd "=") 'c-insert-smart-equals)
     (local-set-key (kbd "|") (smart-op "|"))
     (local-set-key (kbd "?") (smart-op "?"))
