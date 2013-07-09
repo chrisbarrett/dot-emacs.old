@@ -104,7 +104,7 @@
   (hook-fn 'minibuffer-setup-hook
     "Enable Smartparens during eval-expression"
     (when (equal this-command 'eval-expression)
-      (smartparens-mode +1))))
+      (paredit-mode +1))))
 
 (use-package lisp-mode
   :defer t

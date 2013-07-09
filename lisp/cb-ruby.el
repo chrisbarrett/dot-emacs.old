@@ -117,6 +117,20 @@ If this is the trailing colon for a hash key, insert padding."
   (modify-syntax-entry ?! "w" ruby-mode-syntax-table)
   (modify-syntax-entry ?? "w" ruby-mode-syntax-table)
 
+  (defun sp-ruby-just-one-space (id action ctx)
+    "Pad Ruby delimiters with spaces."
+    (when (and (equal 'insert action)
+               (sp-in-code-p id action ctx))
+      ;; Insert a leading space, unless this is the first position of
+      ;; another list.
+      (save-excursion
+        (search-backward id)
+        (unless (s-matches?
+                 (rx (or (group bol (* space))
+                         (any "(" "[" "{")) eol)
+                 (buffer-substring (line-beginning-position) (point)))
+          (just-one-space)))))
+
   (defun sp-ruby-should-insert-pipe-close (id _action _ctx)
     "Test whether to insert the closing pipe for a lambda-binding pipe pair."
     (thing-at-point-looking-at
@@ -137,6 +151,9 @@ If this is the trailing colon for a hash key, insert padding."
         (just-one-space))))
 
   (sp-with-modes '(ruby-mode inf-ruby-mode)
+    (sp-local-pair "{" "}" :post-handlers '(:add sp-ruby-just-one-space))
+    (sp-local-pair "[" "]" :post-handlers '(:add sp-ruby-just-one-space))
+    (sp-local-pair "#{" "}" :when '(sp-in-string-p))
 
     (sp-local-pair "|" "|"
                    :when '(sp-ruby-should-insert-pipe-close)
@@ -239,18 +256,18 @@ If this is the trailing colon for a hash key, insert padding."
        rng-nxml-auto-validate-flag nil
        nxml-degraded t))))
 
-(use-package rsense
-  :ensure t
-  :defer  t
-  :init
-  (hook-fn 'cb:ruby-modes-hook
-    (require 'rsense))
-  :config
-  (progn
-    (define-path cb:rsense-home "bin/rsense-0.3")
-    (setq rsense-home cb:rsense-home)
-    (after 'auto-complete
-      (add-to-list 'ac-sources 'ac-source-rsense))))
+;; (use-package rsense
+;;   :ensure t
+;;   :defer  t
+;;   :init
+;;   (hook-fn 'cb:ruby-modes-hook
+;;     (require 'rsense))
+;;   :config
+;;   (progn
+;;     (define-path cb:rsense-home "bin/rsense-0.3")
+;;     (setq rsense-home cb:rsense-home)
+;;     (after 'auto-complete
+;;       (add-to-list 'ac-sources 'ac-source-rsense))))
 
 (use-package yari
   :ensure t
