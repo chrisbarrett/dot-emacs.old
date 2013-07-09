@@ -65,6 +65,9 @@
     (--each '(")" "]" "}")
       (global-set-key (kbd it) (command (sp-insert-or-up it _arg))))
 
+    (bind-key "C-M-," 'sp-backward-down-sexp sp-keymap)
+    (bind-key "C-M-." 'sp-next-sexp sp-keymap)
+
     (loop for (k f) in
           `(
             ("C-<backspace>" sp-backward-up-sexp)
@@ -83,6 +86,7 @@
             ("M-{"  paredit-wrap-curly)
             ("M-["  paredit-wrap-square)
             ("M-("  paredit-wrap-round)
+
 
             ;; General prefix commands.
 
