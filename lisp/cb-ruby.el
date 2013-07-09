@@ -75,20 +75,8 @@ If this is the trailing colon for a hash key, insert padding."
 
   (defun cb-rb:inside-class? ()
     (save-excursion
-      (let ((end (save-excursion (search-backward-regexp (rx bol "end") nil t))))
-        (search-backward-regexp (rx bol "class") end t))))
-
-  (defun cb-rb:rockets->colons ()
-    "Convert old-style rockets to new hash literal syntax in the current buffer."
-    (interactive)
-    (save-excursion
-      (goto-char (point-min))
-      (while (search-forward-regexp (rx ":" (group-n 1 (+ (not space)))
-                                        (* space)
-                                        "=>"
-                                        (* space))
-                                    nil t)
-        (replace-match "\\1: " t nil))))
+      (sp-backward-up-sexp)
+      (thing-at-point-looking-at "class")))
 
   (ac-define-source ruby-class-keywords
     '((available  . cb-rb:inside-class?)
@@ -104,9 +92,7 @@ If this is the trailing colon for a hash key, insert padding."
   (hook-fn 'cb:ruby-modes-hook
     (add-to-list 'ac-sources 'ac-source-yasnippet)
     (add-to-list 'ac-sources 'ac-source-ruby-class-keywords)
-    (add-to-list 'ac-sources 'ac-source-ruby-class-attributes)
-    (subword-mode +1))
-  )
+    (add-to-list 'ac-sources 'ac-source-ruby-class-attributes)))
 
 (after 'smartparens
   (require 'smartparens-ruby)
@@ -131,23 +117,23 @@ If this is the trailing colon for a hash key, insert padding."
                  (buffer-substring (line-beginning-position) (point)))
           (just-one-space)))))
 
-  (defun sp-ruby-should-insert-pipe-close (id _action _ctx)
+  (defun sp-ruby-should-insert-pipe-close (_id _action _ctx)
     "Test whether to insert the closing pipe for a lambda-binding pipe pair."
     (thing-at-point-looking-at
-     (rx-to-string `(and (or "do" "{") (* space) ,id))))
+     (rx-to-string `(and (or "do" "{") (* space) "|"))))
 
-  (defun sp-ruby-sp-hook-space-before (id action _ctx)
+  (defun sp-ruby-sp-hook-space-before (_id action _ctx)
     "Move to point before ID and insert a space."
     (when (equal 'insert action)
       (save-excursion
-        (search-backward id)
+        (search-backward "|")
         (just-one-space))))
 
-  (defun sp-ruby-sp-hook-space-after (id action _ctx)
+  (defun sp-ruby-sp-hook-space-after (_id action _ctx)
     "Move to point after ID and insert a space."
     (when (equal 'insert action)
       (save-excursion
-        (search-forward id)
+        (search-forward "|")
         (just-one-space))))
 
   (sp-with-modes '(ruby-mode inf-ruby-mode)
@@ -189,7 +175,23 @@ If this is the trailing colon for a hash key, insert padding."
    ("Vagrantfile\\'" . ruby-mode)
    ("\\.jbuilder\\'" . ruby-mode))
   :init
-  (add-to-list 'completion-ignored-extensions ".rbc"))
+  (progn
+    (add-to-list 'completion-ignored-extensions ".rbc")
+    (hook-fn 'cb:ruby-modes-hook
+      (subword-mode +1)))
+  :config
+  (progn
+    (defun cb-rb:rockets->colons ()
+      "Convert old-style rockets to new hash literal syntax in the current buffer."
+      (interactive)
+      (save-excursion
+        (goto-char (point-min))
+        (while (search-forward-regexp (rx ":" (group-n 1 (+ (not space)))
+                                          (* space)
+                                          "=>"
+                                          (* space))
+                                      nil t)
+          (replace-match "\\1: " t nil))))))
 
 (use-package rubocop
   :ensure t
