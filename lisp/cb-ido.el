@@ -27,6 +27,7 @@
 ;;; Code:
 
 (require 'use-package)
+(require 'cb-foundation)
 
 (defmacro declare-ido-wrapper (command)
   "Make COMMAND use ido for file and directory completions."
@@ -74,7 +75,8 @@
     (bind-key "C-x i"   'ido-insert-file)
     (bind-key "C-x C-w" 'ido-write-file)
     (bind-key "C-x k"   'ido-kill-buffer)
-    (bind-key "C-x b"   'ido-switch-buffer))
+    (bind-key "C-x b"   'ido-switch-buffer)
+    (bind-key* "M-I"    (command (ido-find-file-in-dir cb:lisp-dir))))
   :config
   (progn
     (setq
@@ -162,7 +164,6 @@
     (bind-key* "M-X" 'smex-major-mode-commands)
     (bind-key* "M-x" 'smex))
   :config (smex-initialize))
-
 
 (provide 'cb-ido)
 
