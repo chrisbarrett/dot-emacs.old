@@ -36,6 +36,7 @@
   (progn
     (smartparens-global-mode +1)
     (show-smartparens-global-mode +1)
+    (require 'smartparens-config)
 
     (defun sp-insert-or-up (delim &optional arg)
       "Insert a delimiter DELIM if inside a string, else move up."

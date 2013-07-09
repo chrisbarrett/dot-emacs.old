@@ -98,11 +98,8 @@
       (1 font-lock-type-face)))))
 
 (after 'smartparens
-  (sp-with-modes cb:elisp-modes
-    (sp-local-pair "`" "'" :when '(sp-in-string-p)))
-
   (hook-fn 'minibuffer-setup-hook
-    "Enable Smartparens during eval-expression"
+    "Enable Smartparens during eval-expression."
     (when (equal this-command 'eval-expression)
       (paredit-mode +1))))
 
