@@ -204,6 +204,10 @@ Binds the given buffer using `with-current-buffer'."
   "Anaphoric form of `-first-buffer'"
   `(--first (with-current-buffer it ,pred-form) ,bufs))
 
+(defmacro --first-window (pred-form)
+  "Anaphoric form of `get-window-with-predicate'."
+  `(get-window-with-predicate (lambda (it) ,pred-form)))
+
 (provide 'cb-lib)
 
 ;; Local Variables:
