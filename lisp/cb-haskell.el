@@ -210,7 +210,7 @@
     (defun cb:switch-to-haskell ()
       "Switch to the last active Haskell buffer."
       (interactive)
-      (-when-let (buf (last-buffer-for-mode 'haskell-mode))
+      (-when-let (buf (--first-buffer (derived-mode-p 'haskell-mode)))
         (pop-to-buffer buf)))
 
     (hook-fn 'inferior-haskell-mode-hook

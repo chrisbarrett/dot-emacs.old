@@ -29,6 +29,7 @@
 (require 'use-package)
 (require 'dash)
 (require 'cb-lib)
+(require 'cb-foundation)
 
 (define-derived-mode erb-mode html-mode
   "ERB" nil
@@ -69,14 +70,15 @@ If this is the trailing colon for a hash key, insert padding."
                  ruby-forward-sexp nil)))
 
 (after 'auto-complete
-  (add-to-list 'ac-modes 'ruby-mode)
-  (add-to-list 'ac-modes 'inf-ruby-mode)
-  (add-to-list 'ac-modes 'erb-mode)
+  (--each cb:ruby-modes
+    (add-to-list 'ac-modes it))
 
   (defun cb-rb:inside-class? ()
-    (save-excursion
-      (sp-backward-up-sexp)
-      (thing-at-point-looking-at "class")))
+    "Test whether point is in the body of a Ruby class."
+    (and (not (emr-line-matches? (rx bol (* space) "class" (+ space))))
+         (save-excursion
+           (sp-backward-up-sexp)
+           (thing-at-point-looking-at "class"))))
 
   (ac-define-source ruby-class-keywords
     '((available  . cb-rb:inside-class?)
@@ -89,10 +91,12 @@ If this is the trailing colon for a hash key, insert padding."
       (action     . (lambda () (insert " :")))
       (symbol     . "m")))
 
-  (hook-fn 'cb:ruby-modes-hook
+  (defun cb-rb:configure-ac ()
     (add-to-list 'ac-sources 'ac-source-yasnippet)
     (add-to-list 'ac-sources 'ac-source-ruby-class-keywords)
-    (add-to-list 'ac-sources 'ac-source-ruby-class-attributes)))
+    (add-to-list 'ac-sources 'ac-source-ruby-class-attributes))
+
+  (add-hook 'cb:ruby-modes-hook 'cb-rb:configure-ac))
 
 (after 'smartparens
   (require 'smartparens-ruby)
@@ -301,8 +305,7 @@ If this is the trailing colon for a hash key, insert padding."
 
     (defun cb-rb:inf-ruby-window ()
       (-when-let (buf (get-buffer inf-ruby-buffer))
-        (get-window-with-predicate
-         (lambda (w) (equal (window-buffer w) buf)))))
+        (--first-window (equal (window-buffer it) buf))))
 
     (defun restart-ruby ()
       (interactive)
@@ -323,7 +326,7 @@ Start an inferior ruby if necessary."
       (cond
        ((derived-mode-p 'inf-ruby-mode)
         (switch-to-buffer-other-window
-         (last-buffer-for-mode 'ruby-mode)))
+         (--first-buffer (derived-mode-p 'ruby-mode))))
        ((get-buffer inf-ruby-buffer)
         (ruby-switch-to-inf t))
        (t

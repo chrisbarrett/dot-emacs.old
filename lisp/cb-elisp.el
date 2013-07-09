@@ -117,16 +117,10 @@
         (ielm)
         (cb:append-buffer)))
 
-    (defun cb:last-elisp-buffer ()
-      "Find the last active Elisp buffer."
-      (--first (with-current-buffer it
-                 (equal 'emacs-lisp-mode major-mode))
-               (buffer-list)))
-
     (defun cb:switch-to-elisp ()
       "Switch to the last active elisp buffer."
       (interactive)
-      (-when-let (buf (cb:last-elisp-buffer))
+      (-when-let (buf (--first-buffer (derived-mode-p 'emacs-lisp-mode)))
         (switch-to-buffer-other-window buf)))
 
     (define-key emacs-lisp-mode-map (kbd "C-c C-t") 'ert)

@@ -90,7 +90,7 @@
       "Switch to the last active Python buffer."
       (interactive)
       ;; Start inferior python if necessary.
-      (unless (->> (last-buffer-for-mode 'inferior-python-mode)
+      (unless (->> (--first-buffer (derived-mode-p 'inferior-python-mode))
                 (get-buffer-process)
                 (processp))
         (cb-py:restart-python))
@@ -98,17 +98,13 @@
       (if (derived-mode-p 'inferior-python-mode)
           ;; Switch from inferior python to source file.
           (switch-to-buffer-other-window
-           (last-buffer-for-mode 'python-mode))
+           (--first-buffer (derived-mode-p 'python-mode)))
         ;; Switch from source file to REPL.
         ;; HACK: `switch-to-buffer-other-window' does not change window
         ;; when switching to REPL buffer. Work around this.
-        (-when-let* ((buf (--first (with-current-buffer it
-                                     (derived-mode-p 'inferior-python-mode))
-                                   (buffer-list)))
-                     (win (or (get-window-with-predicate
-                               (lambda (w)
-                                 (equal (get-buffer "*Python*")
-                                        (window-buffer w))))
+        (-when-let* ((buf (--first-buffer (derived-mode-p 'inferior-python-mode)))
+                     (win (or (--first-window (equal (get-buffer "*Python*")
+                                                   (window-buffer it)))
                               (split-window-sensibly)
                               (next-window))))
           (set-window-buffer win buf)

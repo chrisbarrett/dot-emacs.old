@@ -103,9 +103,9 @@
 
     (defun cb:find-window-with-mode (mode)
       "Find the first window whose buffer is in major-mode MODE."
-      (get-window-with-predicate
-       (lambda (w) (with-current-buffer (window-buffer w)
-                     (equal mode major-mode)))))
+      (--first-window
+       (with-current-buffer (window-buffer it)
+         (equal mode major-mode))))
 
     (defun cb:w3m-browse-url-as-help (url)
       "Browse the given URL in a help window."

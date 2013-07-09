@@ -79,24 +79,16 @@ If this buffer is a member of `cb:kill-buffer-ignored-list, bury it rather than 
   "Close all buffers not in the ignore list."
   (interactive)
   (delete-other-windows)
-  (--each (buffer-list)
-    (unless (or (-contains? cb:kill-buffer-ignored-list (buffer-name it))
-                (get-buffer-process it))
-      (kill-buffer it))))
+  (->> (--filter-buffers
+        (or (-contains? cb:kill-buffer-ignored-list (buffer-name it))
+            (get-buffer-process it)))
+    (-each 'kill-buffer)))
 
 (hook-fn 'find-file-hook
   "Hide DOS EOL chars."
   (setq buffer-display-table (make-display-table))
   (aset buffer-display-table ?\^M [])
   (aset buffer-display-table ?\^L []))
-
-;;;###autoload
-(defun* last-buffer-for-mode
-    (mode &optional (buffers (buffer-list)))
-  "Return the previous buffer with major mode MODE."
-  (--first (with-current-buffer it
-             (equal mode major-mode))
-           buffers))
 
 (defun cb:timestamp ()
   (format-time-string "%Y%m%d.%H%M" nil t))

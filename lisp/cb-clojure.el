@@ -65,13 +65,13 @@
     (defun cb:switch-to-clojure ()
       "Switch to the last active clojure buffer."
       (interactive)
-      (-when-let (buf (last-buffer-for-mode 'clojure-mode))
+      (-when-let (buf (--first-buffer (derived-mode-p 'clojure-mode)))
         (pop-to-buffer buf)))
 
     (defun cb:eval-last-clj-buffer ()
       "Evaluate that last active clojure buffer without leaving the repl."
       (interactive)
-      (-when-let (buf (last-buffer-for-mode 'clojure-mode))
+      (-when-let (buf (--first-buffer (derived-mode-p 'clojure-mode)))
         (with-current-buffer buf
           (nrepl-eval-buffer))))
 
