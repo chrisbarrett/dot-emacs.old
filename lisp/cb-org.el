@@ -27,6 +27,8 @@
 ;;; Code:
 
 (require 'use-package)
+(require 'cb-foundation)
+(require 'cb-mode-groups)
 
 (use-package org
   :ensure t
@@ -108,11 +110,15 @@
     (define-key org-mode-map (kbd "M-n") 'org-metadown)))
 
 (use-package org-capture
-  :bind ("M-o" . org-capture)
+  :commands (org-capture)
   :init
-  (hook-fn 'org-capture-mode-hook
-    (when (fboundp 'evil-insert)
-      (evil-insert 0)))
+  (progn
+    (when cb:use-vim-keybindings?
+      (bind-key "M-o" 'org-capture))
+
+    (hook-fn 'org-capture-mode-hook
+     (when (fboundp 'evil-insert)
+       (evil-insert 0))))
   :config
   (progn
 

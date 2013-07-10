@@ -134,8 +134,9 @@
            (concat "http://" url)))
         (local-set-key (kbd "q") (command (restore)))))
 
-    (bind-key* "M-e" 'cb:w3m-browse-dwim)
-    )
+    (when cb:use-vim-keybindings?
+      (bind-key* "M-e" 'cb:w3m-browse-dwim)))
+
   :config
   (hook-fn 'w3m-mode-hook
     (buffer-face-set
