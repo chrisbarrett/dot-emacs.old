@@ -158,7 +158,7 @@
          (narrow-to-defun))))
 
 (after 'evil
- (bind-key "M-n" 'cb:narrow-dwim))
+  (bind-key "M-n" 'cb:narrow-dwim))
 (put 'narrow-to-defun  'disabled nil)
 (put 'narrow-to-page   'disabled nil)
 (put 'narrow-to-region 'disabled nil)
@@ -255,15 +255,43 @@ rather than the app bundle."
 
 (declare-modal-view package-list-packages)
 
-;;; Make comint read-only. This will stop the prompts from being editable
-;;; in inferior language modes.
-(setq comint-prompt-read-only t)
-
-;;; Disable backups for files edited with tramp.
+;; Disable backups for files edited with tramp.
 (after 'backup-dir
   (add-to-list 'bkup-backup-directory-info
                (list tramp-file-name-regexp ""))
   (setq tramp-bkup-backup-directory-info nil))
+
+;;; Comint
+
+;; Make comint read-only. This will stop the prompts from being editable
+;; in inferior language modes.
+(setq comint-prompt-read-only t)
+
+(defun cb:append-buffer ()
+  "Enter insertion mode at the end of the current buffer."
+  (interactive)
+  (goto-char (point-max))
+  (if (fboundp 'evil-append-line)
+      (evil-append-line 1)
+    (end-of-line)))
+
+(defun cb:clear-scrollback ()
+  "Erase all but the last line of the current buffer."
+  (interactive)
+  (let ((inhibit-read-only t)
+        (last-line (save-excursion
+                     (goto-char (point-max))
+                     (forward-line -1)
+                     (line-end-position))))
+    (delete-region (point-min) last-line)
+    (goto-char (point-max))))
+
+(hook-fn 'cb:prompt-modes-hook
+  (local-set-key (kbd "C-a") 'move-beginning-of-line)
+  (local-set-key (kbd "C-e") 'move-end-of-line)
+  (local-set-key (kbd "C-l") 'cb:clear-scrollback)
+  (local-set-key (kbd "M->") 'cb:append-buffer)
+  (cb:append-buffer))
 
 (provide 'cb-foundation)
 

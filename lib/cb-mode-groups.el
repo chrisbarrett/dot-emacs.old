@@ -125,24 +125,6 @@
     inferior-haskell-mode
     sclang-post-buffer-mode))
 
-(defun cb:clear-scrollback ()
-  "Erase all but the last line of the current buffer."
-  (interactive)
-  (let ((inhibit-read-only t)
-        (last-line (save-excursion
-                     (goto-char (point-max))
-                     (forward-line -1)
-                     (line-end-position))))
-    (delete-region (point-min) last-line)
-    (goto-char (point-max))))
-
-(hook-fn 'cb:prompt-modes-hook
-  (local-set-key (kbd "C-a") 'move-beginning-of-line)
-  (local-set-key (kbd "C-e") 'move-end-of-line)
-  (local-set-key (kbd "C-l") 'cb:clear-scrollback)
-  (local-set-key (kbd "M->") 'cb:append-buffer)
-  (cb:append-buffer))
-
 (provide 'cb-mode-groups)
 
 ;; Local Variables:

@@ -81,14 +81,6 @@
   (add-hook 'after-init-hook 'evil-mode)
   :config
   (progn
-
-    (defun cb:append-buffer ()
-      "Enter insertion mode at the end of the current buffer."
-      (interactive)
-      (goto-char (point-max))
-      (when (fboundp 'evil-append-line)
-        (evil-append-line 1)))
-
     (defun evil-undefine ()
       (interactive)
       (let (evil-mode-map-alist)
