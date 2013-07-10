@@ -26,7 +26,10 @@
 
 ;;; Code:
 
+(require 'cb-lib)
 (require 'use-package)
+(require 's)
+(autoload 'thing-at-point-url-at-point "thingatpt")
 
 (use-package smtpmail
   :commands smtpmail-send-it
@@ -74,7 +77,7 @@
    bbdb-vcard-import-buffer
    bbdb-vcard-export)
   :config
-  ;; HACK: calls functions that appear not to exist.
+  ;; HACK: ignore calls to unbound functions.
   (progn
     (defalias 'bbdb-record-Notes 'ignore)
     (defalias 'bbdb-record-set-Notes 'ignore)))
@@ -121,7 +124,7 @@
         (local-set-key (kbd "q") (command (restore)))))
 
     (defun cb:w3m-browse-dwim (url)
-      "Browse to URL, ensuring it begins with http:// as reqiured by w3m."
+      "Browse to URL, ensuring it begins with http:// as required by w3m."
       (interactive
        (list
         (read-string "Go to URL: "
