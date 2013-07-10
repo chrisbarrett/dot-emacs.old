@@ -112,6 +112,9 @@
    ("C-SPC" . ace-jump-word-mode)
    ;; Needed for terminal.
    ("C-@" . ace-jump-word-mode))
+  :init
+  (hook-fn 'evil-mode-hook
+    (require 'ace-jump-mode))
   :config
   (progn
     (hook-fn 'ace-jump-mode-end-hook
