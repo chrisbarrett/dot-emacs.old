@@ -77,8 +77,10 @@ Certain commands show buffers in a *modal* manner; they expand to fill the frame
 * I try to keep the startup time under 2 seconds on my machine.
 
 * Configured to use [solarized](https://github.com/bbatsov/solarized-emacs)  and a modified version of [ir-black](https://github.com/jmdeldin/ir-black-theme.el):
-    * `M-x solarized-dark`
-    * `M-x solarized-light`
-    * `M-x ir-black`
+    * `M-x solarized-dark` or `M-x dark`
+    * `M-x solarized-light` or `M-x light`
+    * `M-x ir-black` or `M-x black`
+
+* The selected colour theme is saved between sessions
 
 * The mode-line is customised to remove clutter. The more ubiquitous minor-modes are hidden.
