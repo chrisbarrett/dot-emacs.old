@@ -102,10 +102,11 @@ If this is the trailing colon for a hash key, insert padding."
   (require 'smartparens-ruby)
 
   ;; Change word boundaries so slurping works.
-  (modify-syntax-entry ?@ "w" ruby-mode-syntax-table)
-  (modify-syntax-entry ?_ "w" ruby-mode-syntax-table)
-  (modify-syntax-entry ?! "w" ruby-mode-syntax-table)
-  (modify-syntax-entry ?? "w" ruby-mode-syntax-table)
+  (after 'ruby-mode
+    (modify-syntax-entry ?@ "w" ruby-mode-syntax-table)
+    (modify-syntax-entry ?_ "w" ruby-mode-syntax-table)
+    (modify-syntax-entry ?! "w" ruby-mode-syntax-table)
+    (modify-syntax-entry ?? "w" ruby-mode-syntax-table))
 
   (defun sp-ruby-should-insert-pipe-close (_id _action _ctx)
     "Test whether to insert the closing pipe for a lambda-binding pipe pair."
