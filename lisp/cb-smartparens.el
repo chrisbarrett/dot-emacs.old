@@ -39,7 +39,7 @@
     (show-smartparens-global-mode +1)
     (require 'smartparens-config)
 
-    (defun sp-generic-leading-space (id action ctx)
+    (defun sp-generic-leading-space (&optional id action ctx)
       "Pad ID with a leading space unless point is either:
 1. at the start of a braced expression
 2. at indentation."
@@ -77,7 +77,7 @@
     (sp-pair "{" "}" :bind "M-{")
     (sp-pair "[" "]" :bind "M-[")
     (sp-pair "'" "'" :bind "M-'")
-    (sp-pair "<" ">" :bind "M-<")
+    ;; (sp-pair "<" ">" :bind "M-<")
     (sp-pair "\"" "\"" :bind "M-\"")
     (sp-pair "`" "`" :bind "M-~")
 
@@ -91,9 +91,12 @@
 
             ("C-k"
              ;; kill blank lines or balanced sexps.
-             ,(command (if (emr-blank-line?)
-                           (kill-whole-line)
-                         (sp-kill-sexp))))
+             ,(lambda (&optional arg) (interactive "P")
+                (cond
+                 ((emr-blank-line?)
+                  (kill-whole-line))
+                 (t
+                  (sp-kill-sexp nil arg)))))
 
             ;; General prefix commands.
 
