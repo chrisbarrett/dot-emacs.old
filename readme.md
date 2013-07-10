@@ -56,6 +56,7 @@ Common commands, such as helm or w3m commands, have single-stroke key-bindings:
 * `M-a` - helm-apropos
 * `M-b` - buffers list with helm
 * `M-m` - man page with helm
+* `M-I` - find lisp config file with ido
 
 ### Modal Windows
 
@@ -70,7 +71,6 @@ Certain commands show buffers in a *modal* manner; they expand to fill the frame
 * ansi-term - `M-T`
 * w3m - `M-W`
 * ido notes buffer - `M-O`
-* init.el - `M-I`
 
 ### Misc
 
