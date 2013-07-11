@@ -149,8 +149,8 @@
     (setq imenu-prev-index-position-function nil)
     (add-to-list 'imenu-generic-expression
                  `("SECTION"
-                   ;; Match sections.
-                   ,(rx bol ";;;;" (+ space) (group (+ nonl )))
+                   ;; Match sections with at least 3 semicolons
+                   ,(rx bol (* space) ";;;" (* ";") (+ space) (group (+ nonl )))
                    1) t)))
 
 (use-package smex
