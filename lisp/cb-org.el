@@ -110,7 +110,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
   :config
   (progn
 
-    ;;;; Todo auto-sorting
+;;;; Todo auto-sorting
 
     (defun cb:sort-tasks-in-subtree ()
       "Sort child elements of the tree at point."
@@ -133,7 +133,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
     (add-hook 'org-capture-after-finalize-hook 'cb:sort-todos-by-priority)
 
-    ;;;; Org Habits
+;;;; Org Habits
 
     (defun cb-org:time-freq->range-fmt (str)
       "Turn an English representation of a habit string into a habit time format."
@@ -157,9 +157,8 @@ With prefix argument ARG, show the file and move to the tasks tree."
                                (group-n 3 bow (or "s" "h" "d" "w" "m" "y")))
                            str)
                 (concat ".+"
-                        range-min
-                        (when range-max (concat "/" range-max))
-                        freq))))))
+                        range-min freq
+                        (when range-max (concat "/" range-max freq))))))))
 
     (defun cb-org:read-habit-frequency ()
       "Prompt for a frequency for org-habit."
@@ -175,23 +174,30 @@ With prefix argument ARG, show the file and move to the tasks tree."
                                "  every 3-4 months"))
                      str)))))
 
-    (defun cb-org:read-habit ()
-      (let ((desc (s-trim (read-string "Description: " nil t)))
-            (freq (cb-org:read-habit-frequency))
-            (end (and (ido-yes-or-no-p "Set an end time? ")
-                      (org-read-date)))
-            (newline "\n"))
-        (apply 'concat
-               `("* TODO " ,desc ,newline
-                 "  SCHEDULED: <" ,freq ">" ,newline
-                 "  :PROPERTIES:" ,newline
-                 "  :STYLE: habit" ,newline
-                 ,@(when end
-                     (list (format "  :LAST_REPEAT: [%s]" end)
-                           newline))
-                 "  :END:"))))
+    (defun cb-org:validate-habit (habit)
+      (with-temp-buffer
+        (org-mode)
+        (save-excursion (insert habit))
+        (org-habit-parse-todo)))
 
-    ;;;; Capture templates
+    (defun cb-org:read-habit ()
+      "Read the info from the user to construct a new habit."
+      (let* ((desc (s-trim (read-string "Description: " nil t)))
+             (freq (cb-org:read-habit-frequency))
+             (end (and (ido-yes-or-no-p "Set an end time? ")
+                       (org-read-date)))
+             (habit (concat
+                     "* TODO " desc "\n"
+                     "  SCHEDULED: <" freq ">\n"
+                     "  :PROPERTIES:\n"
+                     "  :STYLE: habit\n"
+                     (when end
+                       (format "  :LAST_REPEAT: [%s]\n" end))
+                     "  :END:")))
+        (when (cb-org:validate-habit habit)
+          habit)))
+
+;;;; Capture templates
 
     (defmacro prev-str-val (sym)
       "Evaluate SYM in the previous active buffer."
@@ -224,7 +230,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
             ("l" "Link" entry
              (file+headline org-default-notes-file "Links")
-             "* %(prev-str-val w3m-buffer-title)%^{Description}\n %(prev-str-val w3m-current-url)"
+             "* %(prev-str-val w3m-buffer-title)%^{Description}\nl %(prev-str-val w3m-current-url)"
              :immediate-finish t)
 
             ("n" "Note" item
@@ -239,7 +245,9 @@ With prefix argument ARG, show the file and move to the tasks tree."
   :commands (org-agenda)
   :init
   (when cb:use-vim-keybindings?
-    (bind-key "M-C" 'org-agenda)))
+    (bind-key "M-C" 'org-agenda))
+  :config
+  (setq org-agenda-files (list org-default-notes-file)))
 
 (provide 'cb-org)
 
