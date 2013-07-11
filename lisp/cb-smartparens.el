@@ -31,6 +31,39 @@
 (require 'cb-lib)
 (require 's)
 
+(after 'evil
+  (defmacro define-evil-sp-key (key sym)
+    "Wrapper around `evil-global-set-key' that defines key under sp prefix."
+    `(evil-global-set-key 'normal ,(kbd (concat ", " key)) ,sym))
+
+  (define-evil-sp-key "A" 'sp-add-to-previous-sexp)
+  (define-evil-sp-key "a" 'sp-add-to-next-sexp)
+  (define-evil-sp-key "B" 'sp-backward-barf-sexp)
+  (define-evil-sp-key "b" 'sp-forward-barf-sexp)
+  (define-evil-sp-key "c" 'sp-convolute-sexp)
+  (define-evil-sp-key "D" 'sp-backward-kill-sexp)
+  (define-evil-sp-key "d" 'sp-kill-sexp)
+  (define-evil-sp-key "e" 'sp-emit-sexp)
+  (define-evil-sp-key "j" 'sp-join-sexp)
+  (define-evil-sp-key "K" 'sp-splice-sexp-killing-backward)
+  (define-evil-sp-key "k" 'sp-splice-sexp-killing-forward)
+  (define-evil-sp-key "n" 'sp-next-sexp)
+  (define-evil-sp-key "p" 'sp-previous-sexp)
+  (define-evil-sp-key "r" 'sp-raise-sexp)
+  (define-evil-sp-key "s" 'sp-splice-sexp-killing-around)
+  (define-evil-sp-key "t" 'sp-transpose-sexp)
+  (define-evil-sp-key "U" 'sp-backward-unwrap-sexp)
+  (define-evil-sp-key "u" 'sp-unwrap-sexp)
+  (define-evil-sp-key "w" 'sp-rewrap-sexp)
+  (define-evil-sp-key "x" 'sp-split-sexp)
+  (define-evil-sp-key "Y" 'sp-backward-copy-sexp)
+  (define-evil-sp-key "y" 'sp-copy-sexp)
+  (define-evil-sp-key "<" 'sp-beginning-of-sexp)
+  (define-evil-sp-key "," 'sp-end-of-sexp)
+
+  (evil-global-set-key 'normal "(" 'sp-backward-up-sexp)
+  (evil-global-set-key 'normal ")" 'sp-forward-sexp))
+
 (use-package smartparens
   :ensure t
   :config
@@ -71,7 +104,6 @@
     (--each '(")" "]" "}")
       (global-set-key (kbd it) (command (sp-insert-or-up it _arg))))
 
-
     ;; Bind Paredit-style wrapping commands.
     (sp-pair "(" ")" :bind "M-(")
     (sp-pair "{" "}" :bind "M-{")
@@ -81,55 +113,20 @@
     (sp-pair "\"" "\"" :bind "M-\"")
     (sp-pair "`" "`" :bind "M-~")
 
-    (loop for (k f) in
-          `(
-            ("C-<backspace>" sp-backward-up-sexp)
-
-            ("DEL"
-             ;; move over pair close when deleting.
-             ,(command (sp-backward-delete-char (or _arg 1))))
-
-            ("C-k"
-             ;; kill blank lines or balanced sexps.
-             ,(lambda (&optional arg) (interactive "P")
-                (cond
-                 ((emr-blank-line?)
-                  (kill-whole-line))
-                 (t
-                  (sp-kill-sexp nil arg)))))
-
-            ;; General prefix commands.
-
-            ("C-x p a"      sp-absorb-sexp)
-            ("C-x p b b"    sp-backward-barf-sexp)
-            ("C-x p b f"    sp-forward-barf-sexp)
-            ("C-x p c"      sp-convolute-sexp)
-            ("C-x p e"      sp-emit-sexp)
-            ("C-x p j"      sp-join-sexp)
-            ("C-x p r"      sp-raise-sexp)
-            ("C-x p s b"    sp-backward-slurp-sexp)
-            ("C-x p s f"    sp-forward-slurp-sexp)
-            ("C-x p s k a"  sp-splice-sexp-killing-around)
-            ("C-x p s k b"  sp-splice-sexp-killing-backward)
-            ("C-x p s k f"  sp-splice-sexp-killing-forward)
-            ("C-x p s k k"  sp-splice-sexp-killing-backward)
-            ("C-x p s s"    sp-splice-sexp)
-            ("C-x p t"      sp-transpose-sexp)
-            ("C-x p u b"    sp-backward-unwrap-sexp)
-            ("C-x p u f"    sp-unwrap-sexp)
-            ("C-x p u u"    sp-unwrap-sexp)
-            ("C-x p x"      sp-split-sexp)
-            ("C-x p y"      sp-copy-sexp)
-            )
-          do (define-key sp-keymap (kbd k) f))
+    (define-key sp-keymap (kbd "C-<backspace>") 'sp-backward-up-sexp)
+    (define-key sp-keymap (kbd "DEL") 'sp-backward-delete-char)
+    (define-key sp-keymap (kbd "C-k")
+      ;; kill blank lines or balanced sexps.
+      (lambda (&optional arg) (interactive "P")
+        (cond
+         ((emr-blank-line?)
+          (kill-whole-line))
+         (t
+          (sp-kill-sexp nil arg)))) )
 
     ;; Use bind-key for keys that tend to be overridden.
     (bind-key "C-M-," 'sp-backward-down-sexp sp-keymap)
-    (bind-key "C-M-." 'sp-next-sexp sp-keymap)
-
-    (after 'evil
-      (evil-global-set-key 'normal (kbd "(") 'sp-backward-up-sexp)
-      (evil-global-set-key 'normal (kbd ")") 'sp-forward-sexp))))
+    (bind-key "C-M-." 'sp-next-sexp sp-keymap)))
 
 (provide 'cb-smartparens)
 
