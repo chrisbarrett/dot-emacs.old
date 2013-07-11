@@ -170,9 +170,13 @@ restore key."
   (interactive)
   (byte-recompile-file (concat user-emacs-directory "init.el") t 0)
   (when (boundp 'cb:lisp-dir)
-   (byte-recompile-directory cb:lisp-dir 0 t)))
+    (byte-recompile-directory cb:lisp-dir 0 t)))
 
 ;;; ----------------------------------------------------------------------------
+
+(defmacro with-previous-buffer (&rest forms)
+  `(with-current-buffer (nth 1 (buffer-list))
+     ,@body))
 
 (defun* -filter-buffers (pred &optional (bufs (buffer-list)))
   "Filter over all the buffers in BUFS.
