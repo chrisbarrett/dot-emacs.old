@@ -66,20 +66,31 @@
                         (projectile-project-root)))))
         (concat proj "Tasks.org")))
 
+    (defun cb-org:show-task-file ()
+      (switch-to-buffer
+       (or (--first-buffer (equal (buffer-file-name) (project-task-file)))
+           (find-file-noselect (project-task-file)))))
+
+    (defun cb-org:task-file-contents ()
+      (save-excursion
+        (-if-let (buf (--first-buffer (equal (buffer-file-name) (project-task-file))))
+          (with-current-buffer buf
+            (font-lock-fontify-buffer)
+            (buffer-string))
+          (with-current-buffer (find-file-noselect (project-task-file) t)
+            (prog1 (buffer-string)
+              (kill-buffer))))))
+
     (defun cb-org:show-tasks (&optional arg)
       "Display the Tasks tree in the `project-task-file'.
 With prefix argument ARG, show the file and move to the tasks tree."
       (interactive "P")
-      (let ((task-file
-             (or (--first-buffer (equal (buffer-file-name) (project-task-file)))
-                 (find-file-noselect (project-task-file)))))
-        (if arg
-            (switch-to-buffer task-file)
-          (with-current-buffer task-file
-            (if (emr-blank? (buffer-string))
-                (user-error "No current tasks")
-              (font-lock-fontify-buffer)
-              (message (s-trim (buffer-string))))))))
+      (if arg
+          (cb-org:show-task-file)
+        (let ((str (cb-org:task-file-contents)))
+          (if (emr-blank? str)
+              (user-error "No current tasks")
+            (message (s-trim str))))))
 
     (bind-key* "M-?" 'cb-org:show-tasks)
 
