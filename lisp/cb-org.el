@@ -50,12 +50,17 @@
       (--each cb:org-minor-modes
         (ignore-errors (diminish it))))
 
-    (declare-modal-executor org-notes
-      :command (find-file org-default-notes-file)
-      :bind    "M-O")
+    (defun cb-org:show-agenda-and-todos ()
+      (execute-kbd-macro
+       [?\M-x ?o ?r ?g ?a ?g ?e ?n ?d ?a ?\C-m ?n])
+      (delete-other-windows))
 
-    (when (or (daemonp) (display-graphic-p))
-      (setq initial-buffer-choice org-default-notes-file)))
+    (declare-modal-executor org-agenda
+      :command (lambda (arg) (interactive "P")
+                 (if arg
+                     (find-file org-default-notes-file)
+                   (cb-org:show-agenda-and-todos)))
+      :bind    "M-O"))
 
   :config
   (progn
@@ -255,8 +260,13 @@ With prefix argument ARG, show the file and move to the tasks tree."
 (use-package org-agenda
   :commands (org-agenda)
   :init
-  (when cb:use-vim-keybindings?
-    (bind-key "M-C" 'org-agenda))
+  (progn
+    (when cb:use-vim-keybindings?
+      (bind-key "M-C" 'org-agenda))
+
+    (when (or (daemonp) (display-graphic-p))
+      (hook-fn 'after-init-hook
+        (cb-org:show-agenda-and-todos))))
   :config
   (setq org-agenda-files (list org-default-notes-file)))
 
