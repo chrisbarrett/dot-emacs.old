@@ -125,7 +125,11 @@
 
     ;; Use bind-key for keys that tend to be overridden.
     (bind-key "C-M-," 'sp-backward-down-sexp sp-keymap)
-    (bind-key "C-M-." 'sp-next-sexp sp-keymap)))
+    (bind-key "C-M-." 'sp-next-sexp sp-keymap)
+
+    (after 'evil
+      (evil-global-set-key 'normal (kbd "(") 'sp-backward-up-sexp)
+      (evil-global-set-key 'normal (kbd ")") 'sp-forward-sexp))))
 
 (provide 'cb-smartparens)
 

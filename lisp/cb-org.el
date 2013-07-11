@@ -26,6 +26,7 @@
 
 ;;; Code:
 
+(require 'dash)
 (require 'use-package)
 (require 'cb-foundation)
 (require 'cb-mode-groups)
@@ -36,6 +37,9 @@
   :idle   (require 'org)
   :init
   (progn
+    (setq org-modules '(org-bbdb org-w3m org-habit)
+          org-directory (concat user-home-directory "org/")
+          org-default-notes-file (concat org-directory "notes.org"))
 
     (after 'evil
       (evil-define-key 'normal org-mode-map (kbd "M-P") 'outline-previous-visible-heading)
@@ -45,10 +49,6 @@
       "Diminish org minor modes."
       (--each cb:org-minor-modes
         (ignore-errors (diminish it))))
-
-    (setq
-     org-directory (concat user-home-directory "org/")
-     org-default-notes-file (concat org-directory "notes.org"))
 
     (declare-modal-executor org-notes
       :command (find-file org-default-notes-file)
@@ -70,26 +70,113 @@
               ,sym))
            ""))
 
+    (defun cb-org:time-freq->range-fmt (str)
+      "Turn an English representation of a habit string into a habit time format."
+      ;; Normalise ranges in string.
+      (let ((str (->> str
+                   (s-trim)
+                   (s-downcase)
+                   (s-replace "every" "")
+                   (s-replace "or" "-")
+                   (s-replace "to" "-")
+                   (s-replace "/"  "-"))))
+        (or (and (s-matches? (rx bol (* space) (or "daily" "day") (* space) eol) str)
+                 "+1d")
+            (destructuring-bind (_input range-min range-max freq)
+                (s-match (rx (group-n 1 (+ num))
+                             (* space)
+                             (? "-" (* space) (group-n 2 (+ num)))
+                             (* space)
+                             (group-n 3 bow (or "s" "h" "d" "w" "m" "y")))
+                         str)
+              (concat ".+"
+                      range-min
+                      (when range-max (concat "/" range-max))
+                      freq)))))
+
+    (defun cb-org:read-habit-frequency ()
+      "Prompt for a frequency for org-habit."
+      (let ((str (read-string "Repeat every: " nil t)))
+        (concat (format-time-string "%Y-%m-%d %a ")
+                (or (cb-org:time-freq->range-fmt str)
+                    (user-error
+                     (s-join "\n"
+                             '("Unrecognised time specification: %s\n"
+                               "Examples:"
+                               "  daily"
+                               "  every 2 days"
+                               "  every 3-4 months"))
+                     str)))))
+
+    (defun cb-org:format-habit-end ()
+      "Format the LAST_REPEAT field of an org habit."
+      (-if-let (date (and (ido-yes-or-no-p "Set an end time? ")
+                          (org-read-date)))
+        (format "\n  :LAST_REPEAT: [%s]" date)
+        ""))
+
+    (defun project-task-file ()
+      (let ((proj (or (ignore-errors (projectile-project-root))
+                      (with-current-buffer (--first-buffer (projectile-project-p))
+                        (projectile-project-root)))))
+        (concat proj "Tasks.org")))
+
+    (defun cb-org:show-tasks (&optional arg)
+      "Display the Tasks tree in the `project-task-file'.
+With prefix argument ARG, show the file and move to the tasks tree."
+      (interactive "P")
+      (let ((task-file
+             (or (--first-buffer (equal (buffer-file-name) (project-task-file)))
+                 (find-file-noselect (project-task-file)))))
+        (if arg
+            (switch-to-buffer task-file)
+          (with-current-buffer task-file
+            (if (emr-blank? (buffer-string))
+                (user-error "No current tasks")
+              (font-lock-fontify-buffer)
+              (message (s-trim (buffer-string))))))))
+
+    (bind-key* "M-?" 'cb-org:show-tasks)
+
     (setq
      org-catch-invisible-edits 'smart
      org-pretty-entities       t
 
      org-capture-templates
-     '(("t" "Todo" entry
+     `(("t" "Task" entry
+        (file+headline (project-task-file) "Tasks")
+        "* TODO %^{Description}"
+        :immediate-finish t)
+
+       ("T" "Todo" entry
         (file+headline org-default-notes-file "Tasks")
-        "* TODO %?\n %i\n")
+        "* TODO [#%^{Priority}] %^{Description}"
+        :immediate-finish t)
+
+       ("h" "Habit" entry
+        (file+headline org-default-notes-file "Habits")
+        ,(s-join "\n"
+                 '("* TODO %?"
+                   "  SCHEDULED: <%(cb-org:read-habit-frequency)>"
+                   "  "
+                   "  :PROPERTIES:"
+                   "  :STYLE: habit %(cb-org:format-habit-end)"
+                   "  :END:")))
 
        ("r" "Reading List" entry
         (file+headline org-default-notes-file "Reading List")
-        "* %?\n %i\n")
+        "* %^{Title}"
+        :immediate-finish t)
 
        ("l" "Link" entry
         (file+headline org-default-notes-file "Links")
-        "* %(prev-str-val w3m-buffer-title)%?\n %(prev-str-val w3m-current-url)\n%i\n")
+        "* %(prev-str-val w3m-buffer-title)%^{Description}\n %(prev-str-val w3m-current-url)"
+        :immediate-finish t)
 
        ("n" "Note" item
         (file+headline org-default-notes-file "Notes")
-        "- %?\n %i\n"))
+        "- %^{Note}"
+        :immediate-finish t))
 
      org-todo-keywords
      '((sequence "TODO(t)" "WAIT(w@/!)" "|" "DONE(d!)" "CANCELED(c@)")))
@@ -117,8 +204,8 @@
       (bind-key "M-o" 'org-capture))
 
     (hook-fn 'org-capture-mode-hook
-     (when (fboundp 'evil-insert)
-       (evil-insert 0))))
+      (when (fboundp 'evil-insert)
+        (evil-insert 0))))
   :config
   (progn
 
