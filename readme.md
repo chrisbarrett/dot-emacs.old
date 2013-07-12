@@ -16,7 +16,8 @@ git clone git@github.com:chrisbarrett/dot-emacs.git .emacs.d
 cd .emacs.d
 make
 ```
-You can install additional features with `make all`, or using their individual make tasks (eg `make ruby`).
+You can install additional features with `make all`, or using their individual
+make tasks (eg `make ruby`). I pretty much only test on my machine, so YMMV.
 
 ## Features
 
@@ -44,7 +45,7 @@ Sane configurations are provided for several languages and environments:
 Common commands, such as helm or w3m commands, have single-stroke key-bindings:
 
 * `C-j` - helm-projectile
-* `M-j` - helm-mini
+* `M-h` - helm-mini
 * `M-r` - rename symbol at point (in defun)
 * `M-R` - rename symbol at point  (in whole buffer)
 * `M-d` - shows current file in dired
@@ -70,7 +71,7 @@ Certain commands show buffers in a *modal* manner; they expand to fill the frame
   * `C-x g r` - magit-reflog
 * ansi-term - `M-T`
 * w3m - `M-W`
-* ido notes buffer - `M-O`
+* org-agenda - `M-O`
 
 ### Misc
 
