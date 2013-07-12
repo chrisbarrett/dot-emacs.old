@@ -93,6 +93,7 @@
 
 (use-package whitespace
   :init (add-hook 'prog-mode-hook 'whitespace-mode)
+  :diminish whitespace-mode
   :config
   (progn
     (setq whitespace-line-column 90
