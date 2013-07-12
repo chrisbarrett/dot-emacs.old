@@ -134,11 +134,6 @@ Puts each XML node on a separate line, except for one-liners."
       (auto-complete-mode +1)
       (add-to-list 'ac-sources 'ac-source-html-tag-source))))
 
-(use-package tagedit
-  :ensure   t
-  :commands tagedit-mode
-  :init     (add-hook 'cb:xml-modes-hook 'tagedit-mode))
-
 (use-package markdown-mode
   :ensure t
   :mode (("\\.md$"          . markdown-mode)
