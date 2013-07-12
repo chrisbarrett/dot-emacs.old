@@ -149,6 +149,24 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
     (add-hook 'org-capture-after-finalize-hook 'cb:sort-todos-by-priority)
 
+    (defun cb-org:read-priority (c)
+      (interactive "cPriority: ")
+      (or (and (characterp c)
+               (s-matches? (rx alpha) (char-to-string c))
+               (upcase (char-to-string c)))
+          (call-interactively 'cb-org:read-priority)))
+
+    (defun cb-org:read-todo ()
+      (let ((desc (s-trim (read-string "Description: " nil t)))
+            (priority (call-interactively 'cb-org:read-priority))
+            (start (and (ido-yes-or-no-p "Set a starting time? ")
+                        (org-read-date)))
+            (due (and (ido-yes-or-no-p "Set a deadline? ")
+                      (org-read-date))))
+        (concat "* TODO [#" priority "] " desc "\n"
+                (when start (concat "  SCHEDULED: <" start "> \n"))
+                (when due   (concat "  DEADLINE:  <" due "> \n")))))
+
 ;;;; Org Habits
 
     (defun cb-org:time-freq->range-fmt (str)
@@ -230,7 +248,8 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
             ("T" "Todo" entry
              (file+headline org-default-notes-file "Tasks")
-             "* TODO [#%^{Priority}] %^{Description}"
+             (function cb-org:read-todo)
+             :empty-lines 1
              :immediate-finish t)
 
             ("h" "Habit" entry
