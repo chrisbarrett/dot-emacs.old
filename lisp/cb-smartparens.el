@@ -104,14 +104,21 @@
     (--each '(")" "]" "}")
       (global-set-key (kbd it) (command (sp-insert-or-up it _arg))))
 
+
     ;; Bind Paredit-style wrapping commands.
     (sp-pair "(" ")" :bind "M-(")
     (sp-pair "{" "}" :bind "M-{")
     (sp-pair "[" "]" :bind "M-[")
-    (sp-pair "'" "'" :bind "M-'")
-    ;; (sp-pair "<" ">" :bind "M-<")
     (sp-pair "\"" "\"" :bind "M-\"")
     (sp-pair "`" "`" :bind "M-~")
+    (sp-pair "'" "'"
+             :bind "M-'"
+             :when '(:add sp-in-code-p)
+             :unless '(:add sp-in-string-p))
+
+    ;; Do not use apostrophe pair in text modes.
+    (sp-with-modes '(text-mode org-mode markdown-mode)
+      (sp-local-pair "'" nil :actions '(:rem insert)))
 
     (define-key sp-keymap (kbd "C-<backspace>") 'sp-backward-up-sexp)
     (define-key sp-keymap (kbd "DEL") 'sp-backward-delete-char)
