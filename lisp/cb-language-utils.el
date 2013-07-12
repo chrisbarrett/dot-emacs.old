@@ -97,7 +97,7 @@
   :config
   (setq whitespace-line-column 90
         whitespace-style '(face lines-tail space-before-tab
-                                space-after-tab trailing)))
+                                space-after-tab)))
 
 (provide 'cb-language-utils)
 

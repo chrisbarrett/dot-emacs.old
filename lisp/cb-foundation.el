@@ -108,6 +108,7 @@
 
 (auto-compression-mode +1)
 (add-hook 'before-save-hook 'whitespace-cleanup)
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
 (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
 
 (put 'activate-input-method 'safe-local-eval-function t)
@@ -219,8 +220,14 @@
 
 (defadvice comment-indent-new-line (after add-space activate)
   "Add a space after opening a new comment line."
-  (unless (thing-at-point-looking-at (rx (+ space)))
-    (just-one-space)))
+  (when (thing-at-point-looking-at (regexp-quote comment-start))
+    (unless (or (thing-at-point-looking-at (rx (+ space))))
+      (just-one-space))))
+
+(defadvice insert-for-yank (after clean-whitespace)
+  "Remove trailing whitespace after insertion."
+  (whitespace-cleanup)
+  (delete-trailing-whitespace))
 
 ;;; Basic hooks
 

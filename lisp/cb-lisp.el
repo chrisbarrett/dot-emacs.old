@@ -55,11 +55,13 @@
                          (any "," "`" "'" "@" "#" "~" "(" "[" "{")) eol)
                  (buffer-substring (line-beginning-position) (point)))
           (just-one-space)))
-      ;; Insert space after separator, unless this form is at the end of
-      ;; another list.
+      ;; Insert space after separator, unless
+      ;; 1. this form is at the end of another list.
+      ;; 2. this form is at the end of the line.
       (save-excursion
         (search-forward (sp-get-pair id :close))
-        (unless (s-matches? (rx (any ")" "]" "}"))
+        (unless (s-matches? (rx (or (any ")" "]" "}")
+                                    eol))
                             (buffer-substring (point) (1+ (point))))
           (just-one-space)))))
 
