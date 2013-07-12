@@ -97,14 +97,6 @@
     (after "man"
       (evil-declare-key 'normal Man-mode-map (kbd "q") 'Man-kill))
 
-    (after "org"
-      (evil-define-key 'normal org-mode-map (kbd "SPC")
-        'org-cycle)
-      (evil-define-key 'normal org-mode-map (kbd "z m")
-        (command (org-global-cycle 1)))
-      (evil-define-key 'normal org-mode-map (kbd "z r")
-        (command (org-global-cycle 0))))
-
     (after "tar-mode"
       (evil-add-hjkl-bindings tar-mode-map))
 

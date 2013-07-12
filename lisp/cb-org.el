@@ -43,7 +43,11 @@
 
     (after 'evil
       (evil-define-key 'normal org-mode-map (kbd "M-P") 'outline-previous-visible-heading)
-      (evil-define-key 'normal org-mode-map (kbd "M-N") 'outline-next-visible-heading))
+      (evil-define-key 'normal org-mode-map (kbd "M-N") 'outline-next-visible-heading)
+
+      (evil-define-key 'normal org-mode-map (kbd "SPC") 'org-cycle)
+      (evil-define-key 'normal org-mode-map (kbd "z m") (command (org-global-cycle 1)))
+      (evil-define-key 'normal org-mode-map (kbd "z r") (command (org-global-cycle 0))))
 
     (hook-fn 'cb:org-minor-modes-hook
       "Diminish org minor modes."
