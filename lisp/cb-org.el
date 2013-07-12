@@ -56,11 +56,12 @@
       (delete-other-windows))
 
     (declare-modal-executor org-agenda
-      :command (lambda (arg) (interactive "P")
-                 (if arg
-                     (find-file org-default-notes-file)
-                   (cb-org:show-agenda-and-todos)))
-      :bind    "M-O"))
+      :bind "M-O"
+      :command
+      (lambda (&optional arg) (interactive "P")
+        (if arg
+            (find-file org-default-notes-file)
+          (cb-org:show-agenda-and-todos)))))
 
   :config
   (progn
