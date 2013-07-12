@@ -162,7 +162,7 @@
         (t
          (narrow-to-defun))))
 
-(after 'evil
+(when cb:use-vim-keybindings?
   (bind-key "M-n" 'cb:narrow-dwim))
 (put 'narrow-to-defun  'disabled nil)
 (put 'narrow-to-page   'disabled nil)
