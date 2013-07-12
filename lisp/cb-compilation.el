@@ -92,27 +92,24 @@
 
 (use-package flyspell
   :diminish flyspell-mode
-  :defer    t
-  :init
-  (progn
-    (add-hook 'text-mode-hook 'flyspell-mode)
-    (add-hook 'prog-mode-hook 'flyspell-prog-mode)
-    (hook-fn 'cb:xml-modes-hook
-      (unless (derived-mode-p 'markdown-mode)
-        (flyspell-prog-mode))))
+  :init (unless noninteractive (require 'flyspell))
   :config
   (progn
-    (setq
-     ispell-program-name
-     (or (executable-find "aspell")
-         (executable-find "ispell"))
 
-     ispell-dictionary
-     (if (s-ends-with? "aspell" ispell-program-name) "en_GB" "english"))
-    
-    (bind-key* "C-'" 'flyspell-auto-correct-word)
     (define-key flyspell-mouse-map [down-mouse-3] 'flyspell-correct-word)
-    (define-key flyspell-mouse-map [mouse-3] 'undefined)))
+    (define-key flyspell-mouse-map [mouse-3] 'undefined)
+    (bind-key* "C-'" 'flyspell-auto-correct-word)
+
+    (setq ispell-program-name "aspell"
+          ispell-dictionary "en_GB")
+
+    (hook-fn 'after-init-hook
+      "Enable flyspell after Emacs has started up."
+      (add-hook 'text-mode-hook 'flyspell-mode)
+      (add-hook 'prog-mode-hook 'flyspell-prog-mode)
+      (hook-fn 'cb:xml-modes-hook
+        (unless (derived-mode-p 'markdown-mode)
+          (flyspell-prog-mode))))))
 
 (use-package flyspell-lazy
   :ensure  t
