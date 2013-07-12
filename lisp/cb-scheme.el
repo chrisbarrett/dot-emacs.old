@@ -60,7 +60,7 @@
                           (cdr geiser-company--completions)))
           (document   . cb:geiser-ac-doc)))
 
-      (hook-fn 'cb:scheme-shared-hook
+      (hook-fn 'cb:scheme-modes-hook
         (setq ac-sources '(ac-source-yasnippet ac-source-geiser))))
 
     (defun geiser-eval-buffer ()
