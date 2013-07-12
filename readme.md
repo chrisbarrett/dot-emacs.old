@@ -1,6 +1,6 @@
 # dot-emacs
 
-This is my Emacs configuration. It is obviously very personalized - my key
+This is my Emacs configuration. It is obviously very personalised - my key
 bindings are designed around [Evil-mode](http://gitorious.org/evil/pages/Home),
 though they can be easily disabled.
 
@@ -17,7 +17,7 @@ make
 ```
 
 You can install additional features with `make all`, or using their individual
-make tasks (eg `make ruby`). I pretty much only test on my machine, so YMMV.
+make tasks (e.g. `make ruby`). I pretty much only test on my machine, so YMMV.
 
 ## Features
 
