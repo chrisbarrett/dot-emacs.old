@@ -41,11 +41,8 @@
 ;;;; Basic paths.
 
 (setq user-emacs-directory (expand-file-name user-emacs-directory))
-(defvar user-home-directory (format "%s/" (getenv "HOME")))
-(defvar user-dropbox-directory (concat user-home-directory "Dropbox/"))
-(add-to-list 'load-path user-dropbox-directory)
+(add-to-list 'load-path (concat (getenv "HOME") "/Dropbox/"))
 (add-to-list 'load-path (concat user-emacs-directory "lisp"))
-(setq-default default-directory user-home-directory)
 
 ;;; Configure packages.
 
@@ -67,8 +64,8 @@
 (setq use-package-verbose nil)
 
 (use-package cb-lib)
-(use-package personal-config)
 (use-package cb-foundation)
+(use-package personal-config)
 (use-package cb-mode-groups)
 (use-package cb-vim :if cb:use-vim-keybindings?)
 (use-package cb-typefaces)

@@ -31,6 +31,9 @@
 (require 'cb-lib)
 (require 'noflet)
 
+(defvar user-home-directory (concat (getenv "HOME") "/"))
+(defvar user-dropbox-directory (concat user-home-directory "Dropbox/"))
+
 (define-path cb:lib-dir       "lib/" t)
 (define-path cb:lisp-dir      "lisp/" t)
 (define-path cb:src-dir       "src")
