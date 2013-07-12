@@ -143,6 +143,10 @@ Puts each XML node on a separate line, except for one-liners."
   :config
   (progn
 
+    (after 'smartparens
+      (sp-with-modes '(markdown-mode)
+        (sp-local-pair "```" "```")))
+
     (after 'evil
       (evil-define-key 'normal markdown-mode-map (kbd "M-P") 'outline-previous-visible-heading)
       (evil-define-key 'normal markdown-mode-map (kbd "M-N") 'outline-next-visible-heading))
