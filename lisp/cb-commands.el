@@ -79,10 +79,10 @@ If this buffer is a member of `cb:kill-buffer-ignored-list, bury it rather than 
   "Close all buffers not in the ignore list."
   (interactive)
   (delete-other-windows)
-  (->> (--filter-buffers
-        (or (-contains? cb:kill-buffer-ignored-list (buffer-name it))
-            (get-buffer-process it)))
-    (-each 'kill-buffer)))
+  (-each (--filter-buffers
+          (not (or (-contains? cb:kill-buffer-ignored-list (buffer-name it))
+                   (get-buffer-process it))))
+         'kill-buffer))
 
 (hook-fn 'find-file-hook
   "Hide DOS EOL chars."
