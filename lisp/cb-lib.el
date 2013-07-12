@@ -27,6 +27,7 @@
 
 (require 'dash)
 (require 'cl-lib)
+(require 'f)
 
 (defvar cb-lib:debug-hooks? nil
   "Set to non-nil to prevent `hook-fn' from catching errors.")
@@ -50,7 +51,7 @@ The arguments passed to the hook function are bound to the symbol 'args'.
     `(add-hook ,hook (lambda (&rest _args)
                        ,docstring
                        (if cb-lib:debug-hooks?
-                           ;; Do not allow errors to propogate from the hook.
+                           ;; Do not allow errors to propagate from the hook.
                            (condition-case err
                                (progn ,@body)
                              (error (message
@@ -72,24 +73,13 @@ The arguments passed to the hook function are bound to the symbol 'args'.
 
 ;;; ----------------------------------------------------------------------------
 
-(defun directory-p (f)
-  "Test whether F is a directory.  Return nil for '.' and '..'."
-  (and (file-directory-p f)
-       (not (string-match "/[.]+$" f))))
-
-(defun directory-subfolders (path)
-  "Return a flat list of all subfolders of PATH."
-  (->> (directory-files path)
-    (--map (concat path it))
-    (-filter 'directory-p)))
-
 (defun cb:prepare-load-dir (dir add-path)
   "Create directory DIR if it does not exist.
 If ADD-PATH is non-nil, add DIR and its children to the load-path."
   (let ((dir (concat user-emacs-directory dir)))
     (unless (file-exists-p dir) (make-directory dir))
     (when add-path
-      (--each (cons dir (directory-subfolders dir))
+      (--each (cons dir (f-entries dir 'f-dir? t))
         (add-to-list 'load-path it)))
     dir))
 
@@ -161,7 +151,7 @@ restore key."
 
        (bind-key* ,bind ',fname))))
 
-(defun cb:truthy? (sym)
+(defun truthy? (sym)
   "Test whether SYM is bound and non-nil."
   (and (boundp sym) (eval sym)))
 

@@ -198,7 +198,7 @@ If this is the trailing colon for a hash key, insert padding."
   :init
   (hook-fn 'ruby-mode-hook
     (robe-mode +1)
-    (unless (cb:truthy? 'inf-ruby-buffer)
+    (unless (truthy? 'inf-ruby-buffer)
       (save-window-excursion
         (inf-ruby)
         (run-with-idle-timer 0.5 nil 'robe-start)))

@@ -93,7 +93,7 @@
 
       (local-set-key (kbd "s-v") 'cb:ansi-term-paste)
 
-      (when (cb:truthy? 'evil-mode)
+      (when (truthy? 'evil-mode)
         (evil-define-key 'normal term-mode-map "p" 'cb:ansi-term-paste))
 
       (define-key term-raw-map (kbd "M-T") 'cb:term-cycle)

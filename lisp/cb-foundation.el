@@ -173,7 +173,7 @@
   (interactive)
   (when file
     (cond
-     ((directory-p file)
+     ((f-dir? file)
       (error "%s is a directory" file))
 
      ((file-writable-p file)
@@ -225,7 +225,7 @@
   "Perform a context-sensitive 'next' action."
   (interactive)
   (cond
-   ((cb:truthy? 'edebug-active)
+   ((truthy? 'edebug-active)
     (edebug-step-mode))
    (t
     (next-error))))

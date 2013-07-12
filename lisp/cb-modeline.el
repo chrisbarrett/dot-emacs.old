@@ -261,7 +261,7 @@
    "%] "
 
    ;; ERT status.
-   (:eval (when (cb:truthy? 'ert-modeline-mode)
+   (:eval (when (truthy? 'ert-modeline-mode)
             (set-face-bold 'ertml-failing-face t)
             (let ((s (s-trim ertml--status-text)))
               (if (s-matches? (rx digit) s)
