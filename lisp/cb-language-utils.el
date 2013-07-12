@@ -91,6 +91,13 @@
   :init     (add-hook 'prog-mode-hook 'highlight-symbol-mode)
   :config   (setq highlight-symbol-idle-delay 0.5))
 
+(use-package whitespace
+  :init (add-hook 'prog-mode-hook 'whitespace-mode)
+  :config
+  (progn
+    (setq whitespace-line-column 90
+          whitespace-style '(face lines-tail))))
+
 (provide 'cb-language-utils)
 
 ;; Local Variables:
