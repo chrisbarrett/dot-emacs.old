@@ -213,6 +213,11 @@
         (whitespace-tab-width tab-width))
     ad-do-it))
 
+(defadvice comment-indent-new-line (after add-space activate)
+  "Add a space after opening a new comment line."
+  (unless (thing-at-point-looking-at (rx (+ space)))
+    (just-one-space)))
+
 ;;; Basic hooks
 
 (defun cb:next-dwim ()
