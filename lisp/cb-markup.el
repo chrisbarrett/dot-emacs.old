@@ -27,14 +27,16 @@
 ;;; Code:
 
 (require 'use-package)
+(require 'cb-lib)
 
 (after 'smart-operator
   (hook-fn 'cb:markup-modes-hook
     (local-set-key (kbd ",") (smart-op ","))))
 
 (after 'smartparens
-  (sp-local-tag '(sgml-mode html-mode) "<" "<_>" "</_>"
-                :transform 'sp-match-sgml-tags))
+  (sp-with-modes '(sgml-mode html-mode)
+    (sp-local-tag  "<" "<_>" "</_>"
+                   :transform 'sp-match-sgml-tags)))
 
 (defun cb:xml-one-liner? (str)
   (save-match-data
@@ -139,18 +141,27 @@ Puts each XML node on a separate line, except for one-liners."
   :mode (("\\.md$"          . markdown-mode)
          ("\\.[mM]arkdown$" . markdown-mode))
   :config
-  (hook-fn 'markdown-mode-hook
-    (buffer-face-set `(:family ,(serif-font) :height 130))
-    (setq imenu-generic-expression
-          '(("title"  "^\\(.*\\)[\n]=+$" 1)
-            ("h2-"    "^\\(.*\\)[\n]-+$" 1)
-            ("h1"   "^# \\(.*\\)$" 1)
-            ("h2"   "^## \\(.*\\)$" 1)
-            ("h3"   "^### \\(.*\\)$" 1)
-            ("h4"   "^#### \\(.*\\)$" 1)
-            ("h5"   "^##### \\(.*\\)$" 1)
-            ("h6"   "^###### \\(.*\\)$" 1)
-            ("fn"   "^\\[\\^\\(.*\\)\\]" 1)))))
+  (progn
+    ;; Customise faces.
+    (set-face-font markdown-inline-code-face (monospace-font))
+    (set-face-font markdown-url-face (monospace-font))
+    (set-face-font markdown-header-delimiter-face (monospace-font))
+    (set-face-font markdown-list-face (monospace-font))
+    (set-face-attribute markdown-header-face-1 nil :height 200)
+    (set-face-attribute markdown-header-face-2 nil :height 160)
+
+    (hook-fn 'markdown-mode-hook
+      (buffer-face-set `(:family ,(serif-font) :height 130))
+      (setq imenu-generic-expression
+            '(("title"  "^\\(.*\\)[\n]=+$" 1)
+              ("h2-"    "^\\(.*\\)[\n]-+$" 1)
+              ("h1"   "^# \\(.*\\)$" 1)
+              ("h2"   "^## \\(.*\\)$" 1)
+              ("h3"   "^### \\(.*\\)$" 1)
+              ("h4"   "^#### \\(.*\\)$" 1)
+              ("h5"   "^##### \\(.*\\)$" 1)
+              ("h6"   "^###### \\(.*\\)$" 1)
+              ("fn"   "^\\[\\^\\(.*\\)\\]" 1))))))
 
 (provide 'cb-markup)
 
@@ -159,3 +170,43 @@ Puts each XML node on a separate line, except for one-liners."
 ;; End:
 
 ;;; cb-markup.el ends here
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
