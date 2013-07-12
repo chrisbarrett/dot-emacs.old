@@ -108,7 +108,7 @@
   :config
   (progn
 
-    (defun cb:switch-to-ielm ()
+    (defun switch-to-ielm ()
       "Start up or switch to an Inferior Emacs Lisp buffer."
       (interactive)
       ;; HACK: rebind switch-to-buffer so ielm opens in another window.
@@ -116,7 +116,7 @@
         (ielm)
         (cb:append-buffer)))
 
-    (defun cb:switch-to-elisp ()
+    (defun switch-to-elisp ()
       "Switch to the last active elisp buffer."
       (interactive)
       (-when-let (buf (--first-buffer (derived-mode-p 'emacs-lisp-mode)))
@@ -124,12 +124,12 @@
 
     (define-key emacs-lisp-mode-map (kbd "C-c C-t") 'ert)
     (define-key emacs-lisp-mode-map (kbd "C-c e b") 'eval-buffer)
-    (define-key emacs-lisp-mode-map (kbd "C-c e f") 'emacs-lisp-byte-compile-and-load)
-    (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'cb:switch-to-ielm)
+    (define-key emacs-lisp-mode-map (kbd "C-c C-l") 'emacs-lisp-byte-compile-and-load)
+    (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'switch-to-ielm)
     (define-key emacs-lisp-mode-map (kbd "C-c e r") 'eval-region)
 
     (hook-fn 'ielm-mode-hook
-      (local-set-key (kbd "C-c C-z") 'cb:switch-to-elisp))
+      (local-set-key (kbd "C-c C-z") 'switch-to-elisp))
 
     (defun cb:special-elisp-file? ()
       (and (derived-mode-p 'emacs-lisp-mode)
@@ -199,9 +199,7 @@
 
 (use-package litable
   :ensure   t
-  :commands litable-mode
-  :defer    t
-  :init     (define-key emacs-lisp-mode-map (kbd "C-c C-l") 'litable-mode))
+  :commands litable-mode)
 
 (provide 'cb-elisp)
 
