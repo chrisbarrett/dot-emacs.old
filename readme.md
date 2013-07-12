@@ -1,9 +1,8 @@
 # dot-emacs
 
 This is my Emacs configuration. It is obviously very personalized - my key
-bindings are designed around
-[Evil-mode](http://gitorious.org/evil/pages/Home), though they can be
-easily disabled.
+bindings are designed around [Evil-mode](http://gitorious.org/evil/pages/Home),
+though they can be easily disabled.
 
 ## Installation
 
@@ -16,16 +15,17 @@ git clone git@github.com:chrisbarrett/dot-emacs.git .emacs.d
 cd .emacs.d
 make
 ```
+
 You can install additional features with `make all`, or using their individual
 make tasks (eg `make ruby`). I pretty much only test on my machine, so YMMV.
 
 ## Features
 
-I use Evil-mode for Vim emulation. Since Evil-mode frees up the Meta key, I
-use M-<key>key</key> for helm and dired commands.
+I use Evil-mode for Vim emulation. Since Evil-mode frees up the Meta key, I use
+M-<key>key</key> for helm and dired commands.
 
-You can restore Emacs' normal key bindings by setting
-`cb:use-vim-keybindings?` to nil in `init.el`.
+You can restore Emacs' normal key bindings by setting `cb:use-vim-keybindings?`
+to nil in `init.el`.
 
 ### Language Config
 
@@ -61,7 +61,9 @@ Common commands, such as helm or w3m commands, have single-stroke key-bindings:
 
 ### Modal Windows
 
-Certain commands show buffers in a *modal* manner; they expand to fill the frame and restore the previous state when toggled or killed. This behaviour is provided for:
+Certain commands show buffers in a *modal* manner; they expand to fill the frame
+and restore the previous state when toggled or killed. This behaviour is
+provided for:
 
 * most magit commands, including:
   * `M-G` - magit-status
@@ -84,4 +86,5 @@ Certain commands show buffers in a *modal* manner; they expand to fill the frame
 
 * The selected colour theme is saved between sessions
 
-* The mode-line is customised to remove clutter. The more ubiquitous minor-modes are hidden.
+* The mode-line is customised to remove clutter. The more ubiquitous minor-modes
+  are hidden.
