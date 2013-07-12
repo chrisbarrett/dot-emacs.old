@@ -95,9 +95,8 @@
   :init (add-hook 'prog-mode-hook 'whitespace-mode)
   :diminish whitespace-mode
   :config
-  (progn
-    (setq whitespace-line-column 90
-          whitespace-style '(face lines-tail))))
+  (setq whitespace-line-column 90
+        whitespace-style '(face lines-tail)))
 
 (provide 'cb-language-utils)
 
