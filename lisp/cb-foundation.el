@@ -26,9 +26,14 @@
 
 ;;; Code:
 
+
 (require 'use-package)
 (require 'cb-lib)
 (require 'noflet)
+
+;; Declare vars that are already set in init.el.
+(defvar user-home-directory)
+(defvar user-dropbox-directory)
 
 (define-path cb:lib-dir       "lib/" t)
 (define-path cb:lisp-dir      "lisp/" t)
