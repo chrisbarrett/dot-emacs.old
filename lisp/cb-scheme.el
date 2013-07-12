@@ -27,58 +27,61 @@
 ;;; Code:
 
 (require 'use-package)
+(require 'noflet)
+(require 'cb-mode-groups)
 
 (use-package geiser
   :ensure t
   :commands run-geiser
-  :init
-  (after "auto-complete"
-    (autoload 'geiser-company--prefix-at-point "geiser-company")
-    (autoload 'geiser-company--doc "geiser-company")
+  :init (hook-fn 'cb:scheme-modes (require 'geiser))
+  :config
+  (progn
+    (after 'auto-complete
+      (autoload 'geiser-company--prefix-at-point "geiser-company")
+      (autoload 'geiser-company--doc "geiser-company")
 
-    (defun cb:geiser-eval-buffer ()
+      (defun cb:geiser-ac-doc (fname &optional module impl)
+        (let* ((symbol (intern fname))
+               (impl (or impl geiser-impl--implementation))
+               (module (geiser-doc--module (or module (geiser-eval--get-module))
+                                           impl)))
+          (-when-let (ds (geiser-doc--get-docstring symbol module))
+            (ignore-errors
+              (with-temp-buffer
+                (geiser-doc--insert-title
+                 (geiser-autodoc--str* (cdr (assoc "signature" ds))))
+                (newline)
+                (insert (or (cdr (assoc "docstring" ds)) ""))
+                (buffer-string))))))
+
+      (ac-define-source geiser
+        '((candidates . (progn
+                          (geiser-company--prefix-at-point)
+                          (cdr geiser-company--completions)))
+          (document   . cb:geiser-ac-doc)))
+
+      (hook-fn 'cb:scheme-shared-hook
+        (setq ac-sources '(ac-source-yasnippet ac-source-geiser))))
+
+    (defun geiser-eval-buffer ()
       "Evaluate the current Scheme buffer with Geiser."
       (interactive)
       ;; Switch to source if we're in the repl.
       (if (derived-mode-p 'repl-mode 'comint-mode 'inferior-scheme-mode)
           (save-excursion
             (switch-to-geiser)
-            (cb:geiser-eval-buffer)
+            (geiser-eval-buffer)
             (switch-to-geiser))
 
         (let (result)
-          (flet ((message (&rest args) (setq result (apply 'format args))))
+          (noflet ((message (&rest args) (setq result (apply 'format args))))
             (save-excursion
               (mark-whole-buffer)
               (geiser-eval-region (region-beginning) (region-end))))
           (message "Buffer evaluated %s" result))))
 
-    (defun cb:geiser-ac-doc (fname &optional module impl)
-      (let* ((symbol (intern fname))
-             (impl (or impl geiser-impl--implementation))
-             (module (geiser-doc--module (or module (geiser-eval--get-module))
-                                         impl)))
-        (-when-let (ds (geiser-doc--get-docstring symbol module))
-          (ignore-errors
-            (with-temp-buffer
-              (geiser-doc--insert-title
-               (geiser-autodoc--str* (cdr (assoc "signature" ds))))
-              (newline)
-              (insert (or (cdr (assoc "docstring" ds)) ""))
-              (buffer-string))))))
+    (define-key scheme-mode-map (kbd "C-c C-l") 'geiser-eval-buffer)
 
-    (ac-define-source geiser
-      '((candidates . (progn
-                        (geiser-company--prefix-at-point)
-                        (cdr geiser-company--completions)))
-        (document   . cb:geiser-ac-doc)))
-
-    (hook-fn 'cb:scheme-shared-hook
-      (local-set-key (kbd "C-c C-l") 'cb:geiser-eval-buffer)
-      (setq ac-sources '(ac-source-yasnippet ac-source-geiser)))
-    )
-  :config
-  (progn
     (defadvice switch-to-geiser (after append-with-evil activate)
       "Move to end of REPL and append-line."
       (when (derived-mode-p 'comint-mode)
@@ -96,7 +99,7 @@
   :init
   (progn
     (setq scheme-r5rs-root (concat cb:etc-dir "r5rs-html/"))
-    (hook-fn 'cb:scheme-shared-hook
+    (hook-fn 'cb:scheme-modes-hook
       (local-set-key (kbd "C-c C-h") 'scheme-r5rs-lookup)
       (set (make-local-variable 'browse-url-browser-function)
            (lambda (url &rest _)

@@ -55,9 +55,7 @@
 
 (define-mode-group cb:scheme-modes
   '(scheme-mode
-    inferior-scheme-mode
-    geiser-repl-mode
-    geiser-mode))
+    inferior-scheme-mode))
 
 (define-mode-group cb:clojure-modes
   '(clojure-mode
