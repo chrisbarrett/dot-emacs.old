@@ -28,6 +28,7 @@
 
 (require 'dash)
 (require 'use-package)
+(require 'cb-lib)
 
 (autoload 'projectile-project-p "projectile")
 (autoload 'projectile-project-root "projectile")
@@ -94,16 +95,21 @@
   :defer    t
   :init
   (progn
-
-    (setq ispell-dictionary "en_GB")
-
     (add-hook 'text-mode-hook 'flyspell-mode)
+    (add-hook 'prog-mode-hook 'flyspell-prog-mode)
     (hook-fn 'cb:xml-modes-hook
       (unless (derived-mode-p 'markdown-mode)
-        (flyspell-prog-mode)))
-    (add-hook 'prog-mode-hook 'flyspell-prog-mode))
+        (flyspell-prog-mode))))
   :config
   (progn
+    (setq
+     ispell-program-name
+     (or (executable-find "aspell")
+         (executable-find "ispell"))
+
+     ispell-dictionary
+     (if (s-ends-with? "aspell" ispell-program-name) "en_GB" "english"))
+    
     (bind-key* "C-'" 'flyspell-auto-correct-word)
     (define-key flyspell-mouse-map [down-mouse-3] 'flyspell-correct-word)
     (define-key flyspell-mouse-map [mouse-3] 'undefined)))
