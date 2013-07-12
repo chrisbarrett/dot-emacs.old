@@ -118,7 +118,7 @@
 
 ;; Rebind to C-c k k ("kill") to prevent accidentally exiting when
 ;; using Org bindings.
-(bind-key* "C-x C-c" (command (message "Type <C-c k e> to exit Emacs")))
+(bind-key* "C-x C-c" (command (message "Type <C-c k k> to exit Emacs")))
 (bind-key* "C-c k k" 'cb:exit-emacs-dwim)
 (bind-key* "C-c k e" 'cb:exit-emacs)
 
