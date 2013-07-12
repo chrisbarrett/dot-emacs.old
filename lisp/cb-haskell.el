@@ -88,7 +88,7 @@
 
   (defun cb-hs:apply-unicode ()
     (cb-hs:apply-font-lock
-     "\\s (?\\(\\\\\\)\\s *\\(\\w\\|_\\|(.*)\\).*?\\s *->" "λ")
+     "\\s ?(?\\(\\\\\\)\\s *\\(\\w\\|_\\|(.*)\\).*?\\s *->" "λ")
     (cb-hs:font-lock '(("<-"     "←")
                        ("->"     "→")
                        ("=>"     "⇒")
@@ -116,50 +116,52 @@
   (--map (add-to-list 'ac-modes it)
          cb:haskell-modes))
 
-(defun cb-hs:smart-pipe ()
-  "Insert a pipe operator. Add padding, unless we're inside a list."
-  (interactive)
-  (if (s-matches? (rx "[" (* (any "|" alnum)) eol)
-                  (buffer-substring (line-beginning-position) (point)))
-      (insert "|")
-    (smart-insert-operator "|")))
+(after 'smart-operator
 
-(defun cb-hs:smart-dot ()
-  "Insert a period. Add padding, unless this line is an import statement."
-  (interactive)
-  (if (emr-line-matches? (rx bol (or "import" "module")))
-      (insert ".")
-    (smart-insert-operator ".")))
+  (defun cb-hs:smart-pipe ()
+    "Insert a pipe operator. Add padding, unless we're inside a list."
+    (interactive)
+    (if (s-matches? (rx "[" (* (any "|" alnum)) eol)
+                    (buffer-substring (line-beginning-position) (point)))
+        (insert "|")
+      (smart-insert-operator "|")))
 
-(defun cb-hs:smart-colon ()
-  (interactive)
-  (if (equal (char-before) ?\:)
-      (atomic-change-group
-        (delete-char -1)
-        (just-one-space)
-        (insert "::")
-        (just-one-space))
-    (insert ":")))
+  (defun cb-hs:smart-dot ()
+    "Insert a period. Add padding, unless this line is an import statement."
+    (interactive)
+    (if (emr-line-matches? (rx bol (or "import" "module")))
+        (insert ".")
+      (smart-insert-operator ".")))
 
-(defun cb-hs:smart-gt ()
-  "Append an arrow to the end of the line if we're in a typesig."
-  (interactive)
-  (let ((lin (buffer-substring (line-beginning-position) (point))))
-    (if (and (s-matches? "::" lin)
-             (not (s-matches? (rx (any "=" "-") (* space) eol) lin)))
+  (defun cb-hs:smart-colon ()
+    (interactive)
+    (if (equal (char-before) ?\:)
         (atomic-change-group
-          (end-of-line)
+          (delete-char -1)
           (just-one-space)
-          (insert "-> "))
-      (smart-insert-operator ">"))))
+          (insert "::")
+          (just-one-space))
+      (insert ":")))
 
-(hook-fn 'haskell-mode-hook
-  (smart-insert-operator-hook)
-  (local-set-key (kbd ".") 'cb-hs:smart-dot)
-  (local-set-key (kbd ">") 'cb-hs:smart-gt)
-  (local-set-key (kbd ":") 'cb-hs:smart-colon)
-  (local-set-key (kbd "|") 'cb-hs:smart-pipe)
-  (local-set-key (kbd "$") (command (smart-insert-operator "$"))))
+  (defun cb-hs:smart-gt ()
+    "Append an arrow to the end of the line if we're in a typesig."
+    (interactive)
+    (let ((lin (buffer-substring (line-beginning-position) (point))))
+      (if (and (s-matches? "::" lin)
+               (not (s-matches? (rx (any "=" "-") (* space) eol) lin)))
+          (atomic-change-group
+            (end-of-line)
+            (just-one-space)
+            (insert "-> "))
+        (smart-insert-operator ">"))))
+
+  (hook-fn 'cb:haskell-modes-hook
+    (smart-insert-operator-hook)
+    (local-set-key (kbd ".") 'cb-hs:smart-dot)
+    (local-set-key (kbd ">") 'cb-hs:smart-gt)
+    (local-set-key (kbd ":") 'cb-hs:smart-colon)
+    (local-set-key (kbd "|") 'cb-hs:smart-pipe)
+    (local-set-key (kbd "$") (command (smart-insert-operator "$")))))
 
 (after 'hideshow
 
