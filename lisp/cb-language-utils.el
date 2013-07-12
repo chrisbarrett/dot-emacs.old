@@ -96,7 +96,8 @@
   :diminish whitespace-mode
   :config
   (setq whitespace-line-column 90
-        whitespace-style '(face lines-tail)))
+        whitespace-style '(face lines-tail space-before-tab
+                                space-after-tab trailing)))
 
 (provide 'cb-language-utils)
 
