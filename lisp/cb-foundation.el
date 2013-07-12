@@ -31,10 +31,6 @@
 (require 'cb-lib)
 (require 'noflet)
 
-;; Declare vars that are already set in init.el.
-(defvar user-home-directory)
-(defvar user-dropbox-directory)
-
 (define-path cb:lib-dir       "lib/" t)
 (define-path cb:lisp-dir      "lisp/" t)
 (define-path cb:src-dir       "src")
@@ -91,11 +87,11 @@
 (setq-default
  tab-width                    4
  indent-tabs-mode             nil
- fill-column                  75)
+ fill-column                  80)
 
 (add-hook 'text-mode-hook 'visual-line-mode)
 (icomplete-mode +1)
-(global-set-key (kbd "RET") 'newline-and-indent)
+(global-set-key (kbd "RET") 'comment-indent-new-line)
 
 ;; Encodings
 
