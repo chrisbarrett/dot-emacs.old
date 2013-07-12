@@ -175,34 +175,17 @@ restore key."
 ;;; ----------------------------------------------------------------------------
 
 (defmacro with-previous-buffer (&rest forms)
+  "Execute FORMS within the context of the previous active buffer."
   `(with-current-buffer (nth 1 (buffer-list))
-     ,@body))
-
-(defun* -filter-buffers (pred &optional (bufs (buffer-list)))
-  "Filter over all the buffers in BUFS.
-PRED should take a buffer as an argument.
-Binds the given buffer using `with-current-buffer'."
-  (--filter-buffers (funcall pred it) bufs))
+     ,@forms))
 
 (defmacro* --filter-buffers (pred-form &optional (bufs '(buffer-list)))
   "Anaphoric form of `-filter-buffers'"
   `(--filter (with-current-buffer it ,pred-form) ,bufs))
 
-(defun* -map-buffers (fn &optional (bufs (buffer-list)))
-  "Map FN over each buffer in BUFS.
-FN should take a buffer as an argument.
-Binds the given buffer using `with-current-buffer'."
-  (--map-buffers (funcall fn it)) bufs)
-
 (defmacro* --map-buffers (form &optional (bufs '(buffer-list)))
   "Anaphoric form of `-map-buffers'"
   `(--map (with-current-buffer it ,form) ,bufs))
-
-(defun* -first-buffer (pred &optional (bufs '(buffer-list)))
-  "Find the first match for PRED in BUFS.
-PRED should take a buffer as an argument.
-Binds the given buffer using `with-current-buffer'."
-  (--first-buffer (funcall pred it) bufs))
 
 (defmacro* --first-buffer (pred-form &optional (bufs '(buffer-list)))
   "Anaphoric form of `-first-buffer'"
@@ -211,7 +194,8 @@ Binds the given buffer using `with-current-buffer'."
 (defalias '-first-window 'get-window-with-predicate)
 
 (defmacro --first-window (pred-form)
-  "Anaphoric form of `-first-window'."
+  "Anaphoric form of `-first-window'.
+Find the first window where PRED-FORM is not nil."
   `(-first-window (lambda (it) ,pred-form)))
 
 ;; -----------------------------------------------------------------------------
