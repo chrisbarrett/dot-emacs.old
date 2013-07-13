@@ -81,11 +81,31 @@
   :commands (org-mac-iCal)
   :init
   (after 'org-agenda
+    ;; Package.el doesn't initialize this package for some reason.
+    ;; Add it to the load path manually.
+    (->> (f-entries cb:elpa-dir)
+      (--first (s-contains? "org-mac-iCal" it))
+      (add-to-list 'load-path))
+
     (add-to-list 'org-agenda-custom-commands
                  '("I" "Import diary from iCal" agenda ""
                    ((org-agenda-mode-hook
                      (lambda ()
-                       (org-mac-iCal))))))))
+                       (require 'org-mac-iCal)
+                       (org-mac-iCal))))))
+
+    (hook-fn 'org-agenda-cleanup-fancy-diary-hook
+      "Ensure all-day events are not orphaned below TODO items."
+      (goto-char (point-min))
+      (save-excursion
+        (while (re-search-forward "^[a-z]" nil t)
+          (goto-char (match-beginning 0))
+          (insert "0:00-24:00 ")))
+      (while (re-search-forward "^ [a-z]" nil t)
+        (goto-char (match-beginning 0))
+        (save-excursion
+          (re-search-backward "^[0-9]+:[0-9]+-[0-9]+:[0-9]+ " nil t))
+        (insert (match-string 0))))))
 
 (provide 'cb-osx)
 
