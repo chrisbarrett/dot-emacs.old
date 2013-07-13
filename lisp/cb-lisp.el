@@ -77,10 +77,7 @@
   (sp-local-pair (-difference cb:lisp-modes cb:elisp-modes)
                  "`" "`" :when '(sp-in-string-p)))
 
-(use-package parenface-plus
-  :ensure t
-  :defer  t
-  :init   (hook-fn 'prog-mode-hook (require 'parenface-plus)))
+(use-package parenface-plus :ensure t)
 
 (use-package eval-sexp-fu
   :commands eval-sexp-fu-flash-mode
