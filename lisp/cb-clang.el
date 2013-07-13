@@ -295,20 +295,20 @@ Remove horizontal whitespace if the insertion results in a ++."
                (save-excursion (insert "\n}"))
                (c-indent-defun)
                (c-indent-line)))
-      (unwind-protect
-          (atomic-change-group
-            (cond
-             ((cb-c:looking-at-flow-control-keyword?)
-              (open-braces-on-new-line))
-             ((and (thing-at-point-looking-at (rx ")" (* space) eol))
-                   (not (cb-c:looking-at-cast?)))
-              (open-braces-on-new-line))
-             (t
-              ;; Do a smartparenish insertion.
-              (insert "{")
-              (sp--self-insert-command 1)
-              (save-excursion (search-backward "{")
-                              (delete-char -1))))))))
+      (ignore-errors
+        (atomic-change-group
+          (cond
+           ((cb-c:looking-at-flow-control-keyword?)
+            (open-braces-on-new-line))
+           ((and (thing-at-point-looking-at (rx ")" (* space) eol))
+                 (not (cb-c:looking-at-cast?)))
+            (open-braces-on-new-line))
+           (t
+            ;; Do a smartparenish insertion.
+            (insert "{")
+            (sp--self-insert-command 1)
+            (save-excursion (search-backward "{")
+                            (delete-char -1))))))))
 
   (define-key smartparens-mode-map (kbd "{")
     (command (if (derived-mode-p 'c-mode)
