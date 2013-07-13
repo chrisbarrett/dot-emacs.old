@@ -26,7 +26,8 @@
 ;;; Code:
 
 (require 'use-package)
-(require 'cb-lib)
+(require 'cb-foundation)
+(require 'cb-typefaces)
 
 (use-package solarized-theme
   :ensure t
@@ -917,7 +918,6 @@
 
 (defalias 'black 'ir-black)
 
-(setq color-theme-is-global nil)
 (defconst cb:last-theme (concat cb:tmp-dir "last-theme"))
 
 (defun cb-colour:load-last-theme ()
