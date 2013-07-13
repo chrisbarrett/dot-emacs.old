@@ -220,7 +220,8 @@
 
 (defadvice comment-indent-new-line (after add-space activate)
   "Add a space after opening a new comment line."
-  (when (thing-at-point-looking-at (regexp-quote comment-start))
+  (when (and comment-start
+             (thing-at-point-looking-at (regexp-quote comment-start)))
     (unless (or (thing-at-point-looking-at (rx (+ space))))
       (just-one-space))))
 

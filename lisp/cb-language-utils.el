@@ -92,12 +92,19 @@
   :config   (setq highlight-symbol-idle-delay 0.5))
 
 (use-package whitespace
-  :init (add-hook 'prog-mode-hook 'whitespace-mode)
+  :init (hook-fn 'prog-mode-hook (whitespace-mode +1))
   :diminish whitespace-mode
   :config
-  (setq whitespace-line-column 90
-        whitespace-style '(face lines-tail space-before-tab
-                                space-after-tab)))
+  (progn
+
+    (defadvice whitespace-turn-on (around ignore-errors activate)
+      "Ignore errors when starting whitespace mode."
+      (condition-case _
+         ad-do-it
+        (void-function)))
+
+    (setq whitespace-line-column 90
+          whitespace-style '(face lines-tail))))
 
 (provide 'cb-language-utils)
 
