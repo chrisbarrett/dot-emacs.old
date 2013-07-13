@@ -68,7 +68,7 @@
   (defun cb:osx-paste ()
     (shell-command-to-string "pbpaste"))
 
-  (defun cb:osx-copy (text &optional push)
+  (defun cb:osx-copy (text &optional _push)
     (let ((process-connection-type nil))
       (let ((proc (start-process "pbcopy" "*Messages*" "pbcopy")))
         (process-send-string proc text)
@@ -76,6 +76,17 @@
 
   (setq interprogram-cut-function   'cb:osx-copy
         interprogram-paste-function 'cb:osx-paste))
+
+(use-package org-mac-iCal
+  :ensure t
+  :commands (org-mac-iCal)
+  :init
+  (after 'org-agenda
+    (add-to-list 'org-agenda-custom-commands
+                 '("I" "Import diary from iCal" agenda ""
+                   ((org-agenda-mode-hook
+                     (lambda ()
+                       (org-mac-iCal))))))))
 
 (provide 'cb-osx)
 
