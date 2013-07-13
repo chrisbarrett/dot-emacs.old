@@ -27,6 +27,7 @@
 ;;; Code:
 
 (require 'use-package)
+(require 'cb-lib)
 
 (use-package exec-path-from-shell
   :ensure t
@@ -42,15 +43,13 @@
 ;; Enable mouse support in terminal.
 (use-package mouse
   :if (not (display-graphic-p))
+  :defines (mouse-sel-mode)
   :config
   (progn
     (xterm-mouse-mode t)
-    (defun track-mouse (e))
-    (setq mouse-sel-mode t)
-
-    (when (equal system-type 'darwin)
-      (global-set-key [mouse-4] (command (scroll-down 1)))
-      (global-set-key [mouse-5] (command (scroll-up 1))))))
+    (defun track-mouse (_))
+    (global-set-key [mouse-4] (command (scroll-down 1)))
+    (global-set-key [mouse-5] (command (scroll-up 1)))))
 
 ;; Set terminfo so ansi-term displays shells correctly.
 
