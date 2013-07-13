@@ -293,8 +293,9 @@ With prefix argument ARG, show the file and move to the tasks tree."
         (cb-org:show-agenda-and-todos))))
   :config
   (progn
-    (define-key org-agenda-mode-map (kbd "M-P") 'org-agenda-previous-item)
-    (define-key org-agenda-mode-map (kbd "M-N") 'org-agenda-next-item)
+    (define-key org-agenda-mode-map (kbd "g") 'org-agenda-goto-date)
+    (define-key org-agenda-mode-map (kbd "j") 'org-agenda-next-item)
+    (define-key org-agenda-mode-map (kbd "k") 'org-agenda-previous-item)
 
     (hook-fn 'org-capture-after-finalize-hook
       "Refresh all org agenda buffers."
