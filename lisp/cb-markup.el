@@ -138,8 +138,8 @@ Puts each XML node on a separate line, except for one-liners."
 
 (use-package markdown-mode
   :ensure t
-  :mode (("\\.md$"          . markdown-mode)
-         ("\\.[mM]arkdown$" . markdown-mode))
+  :mode (("\\.md$"          . gfm-mode)
+         ("\\.[mM]arkdown$" . gfm-mode))
   :config
   (progn
 
