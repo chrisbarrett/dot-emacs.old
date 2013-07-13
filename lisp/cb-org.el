@@ -282,10 +282,10 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
 (use-package calendar
   :init
-  (defvar diary-file (concat cb:tmp-dir "diary"))
+  (setq diary-file (concat cb:etc-dir "diary"))
   :config
   ;; Create the diary file if it does not exist.
-  (unless (f-exists? (concat user-home-directory))
+  (unless (f-exists? diary-file)
     (f-write diary-file)))
 
 (use-package org-agenda

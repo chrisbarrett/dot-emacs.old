@@ -90,9 +90,7 @@
     (add-to-list 'org-agenda-custom-commands
                  '("I" "Import diary from iCal" agenda ""
                    ((org-agenda-mode-hook
-                     (lambda ()
-                       (require 'org-mac-iCal)
-                       (org-mac-iCal))))))
+                     (lambda () (org-mac-iCal))))))
 
     (hook-fn 'org-agenda-cleanup-fancy-diary-hook
       "Ensure all-day events are not orphaned below TODO items."
