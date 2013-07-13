@@ -80,7 +80,6 @@
 (use-package parenface-plus
   :ensure t
   :defer  t
-  :idle   (require 'parenface-plus)
   :init   (hook-fn 'prog-mode-hook (require 'parenface-plus)))
 
 (use-package eval-sexp-fu

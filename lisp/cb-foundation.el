@@ -26,7 +26,6 @@
 
 ;;; Code:
 
-
 (require 'use-package)
 (require 'cb-lib)
 (require 'noflet)
