@@ -136,7 +136,13 @@ If this is the trailing colon for a hash key, insert padding."
                    :pre-handlers '(sp-ruby-pre-handler)
                    :post-handlers '(:add sp-generic-leading-space))
 
-    (sp-local-pair "#{" "}" :when '(sp-in-string-p))
+    (sp-local-pair "%q{" "}" :when '(sp-in-code-p))
+    (sp-local-pair "%Q{" "}" :when '(sp-in-code-p))
+    (sp-local-pair "%w{" "}" :when '(sp-in-code-p))
+    (sp-local-pair "%W{" "}" :when '(sp-in-code-p))
+    (sp-local-pair  "%(" ")" :when '(sp-in-code-p))
+    (sp-local-pair "%x(" ")" :when '(sp-in-code-p))
+    (sp-local-pair  "#{" "}" :when '(sp-in-string-p))
 
     (sp-local-pair "|" "|"
                    :when '(sp-ruby-should-insert-pipe-close)
