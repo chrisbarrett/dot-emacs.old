@@ -46,9 +46,10 @@
 (define-path cb:autosaves-dir "tmp/autosaves/")
 
 (defalias 'yes-or-no-p 'y-or-n-p)
-(autoload 'ido-yes-or-no-p "ido-yes-or-no")
 (autoload 'edebug-step-mode "edebug")
 (autoload 'server-running-p "server")
+(autoload 'ido-yes-or-no-p "ido-yes-or-no")
+(autoload 'thing-at-point-looking-at "thingatpt")
 
 (hook-fn 'after-init-hook
   (unless (server-running-p)
@@ -162,7 +163,7 @@
         (t
          (narrow-to-defun))))
 
-(when cb:use-vim-keybindings?
+(when (truthy? 'cb:use-vim-keybindings?)
   (bind-key "M-n" 'cb:narrow-dwim))
 (put 'narrow-to-defun  'disabled nil)
 (put 'narrow-to-page   'disabled nil)
