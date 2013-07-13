@@ -57,18 +57,19 @@
   (load-theme 'solarized-light 'no-confirm)
   (set-face-underline 'hl-line nil)
 
-  (after "helm"
+  (after 'helm
     (set-face-background  'helm-selection "white")
     (set-face-underline   'helm-selection nil)
     (set-face-foreground  'helm-selection "black"))
 
-  (after "paren"
-    (set-face-foreground  'show-paren-match-face "#fdf6e3")
-    (set-face-background  'show-paren-match-face "black")
-    (set-face-bold        'show-paren-match-face t))
+  (after 'smartparens
+    (set-face-foreground  'sp-show-pair-match-face "#fdf6e3")
+    (set-face-background  'sp-show-pair-match-face "black")
+    (set-face-bold        'sp-show-pair-match-face t))
 
-  (after "parenface-plus"
+  (after 'parenface-plus
     (set-face-foreground  'paren-face "grey80")))
+
 (defalias 'light 'solarized-light)
 
 ;;;###autoload
@@ -76,18 +77,19 @@
   (load-theme 'solarized-dark 'no-confirm)
   (set-face-underline 'hl-line nil)
 
-  (after "helm"
+  (after 'helm
     (set-face-background  'helm-selection "black")
     (set-face-underline   'helm-selection nil)
     (set-face-foreground  'helm-selection "white"))
 
-  (after "paren"
-    (set-face-foreground  'show-paren-match-face "#002b36")
-    (set-face-background  'show-paren-match-face "white")
-    (set-face-bold        'show-paren-match-face t))
+  (after 'smartparens
+    (set-face-foreground  'sp-show-pair-match-face "#002b36")
+    (set-face-background  'sp-show-pair-match-face "white")
+    (set-face-bold        'sp-show-pair-match-face t))
 
-  (after "parenface-plus"
+  (after 'parenface-plus
     (set-face-foreground  'paren-face "grey30")))
+
 (defalias 'dark 'solarized-dark)
 
 ;;;###autoload
@@ -912,6 +914,7 @@
                       :box '(:line-width 1 :color "gray30" :style nil))
   (set-face-attribute 'mode-line-inactive nil
                       :box '(:line-width 1 :color "gray10" :style nil)))
+
 (defalias 'black 'ir-black)
 
 (setq color-theme-is-global nil)
