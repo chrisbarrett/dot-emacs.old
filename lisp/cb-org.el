@@ -26,7 +26,6 @@
 
 ;;; Code:
 
-(require 'dash)
 (require 'use-package)
 (require 'cb-foundation)
 (require 'cb-mode-groups)
@@ -281,6 +280,14 @@ With prefix argument ARG, show the file and move to the tasks tree."
           org-todo-keywords
           '((sequence "TODO(t)" "WAIT(w@/!)" "|" "DONE(d!)" "CANCELED(c@)")))))
 
+(use-package calendar
+  :init
+  (defvar diary-file (concat cb:tmp-dir "diary"))
+  :config
+  ;; Create the diary file if it does not exist.
+  (unless (f-exists? (concat user-home-directory))
+    (f-write diary-file)))
+
 (use-package org-agenda
   :commands (org-agenda)
   :init
@@ -291,6 +298,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
     (when (or (daemonp) (display-graphic-p))
       (hook-fn 'after-init-hook
         (cb-org:show-agenda-and-todos))))
+
   :config
   (progn
     (define-key org-agenda-mode-map (kbd "g") 'org-agenda-goto-date)
@@ -303,7 +311,8 @@ With prefix argument ARG, show the file and move to the tasks tree."
         (with-current-buffer it
           (org-agenda-redo t))))
 
-    (setq org-agenda-files (list org-default-notes-file))))
+    (setq org-agenda-files (list org-default-notes-file)
+          org-agenda-include-diary t)))
 
 (provide 'cb-org)
 
