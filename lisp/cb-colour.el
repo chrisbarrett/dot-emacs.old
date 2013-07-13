@@ -89,7 +89,7 @@
     (set-face-bold        'sp-show-pair-match-face t))
 
   (after 'parenface-plus
-    (set-face-foreground  'paren-face "grey30")))
+    (set-face-foreground  'paren-face "#505070")))
 
 (defalias 'dark 'solarized-dark)
 
