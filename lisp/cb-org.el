@@ -122,7 +122,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
   :commands (org-capture)
   :init
   (progn
-    (when cb:use-vim-keybindings?
+    (when (truthy? 'cb:use-vim-keybindings?)
       (bind-key "M-o" 'org-capture))
 
     (hook-fn 'org-capture-mode-hook
@@ -285,14 +285,24 @@ With prefix argument ARG, show the file and move to the tasks tree."
   :commands (org-agenda)
   :init
   (progn
-    (when cb:use-vim-keybindings?
+    (when (truthy? 'cb:use-vim-keybindings?)
       (bind-key "M-C" 'org-agenda))
 
     (when (or (daemonp) (display-graphic-p))
       (hook-fn 'after-init-hook
         (cb-org:show-agenda-and-todos))))
   :config
-  (setq org-agenda-files (list org-default-notes-file)))
+  (progn
+    (define-key org-agenda-mode-map (kbd "M-P") 'org-agenda-previous-item)
+    (define-key org-agenda-mode-map (kbd "M-N") 'org-agenda-next-item)
+
+    (hook-fn 'org-capture-after-finalize-hook
+      "Refresh all org agenda buffers."
+      (--each (--filter-buffers (derived-mode-p 'org-agenda-mode))
+        (with-current-buffer it
+          (org-agenda-redo t))))
+
+    (setq org-agenda-files (list org-default-notes-file))))
 
 (provide 'cb-org)
 
