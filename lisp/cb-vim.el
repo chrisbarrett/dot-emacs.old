@@ -94,16 +94,19 @@
     (define-key evil-visual-state-map (kbd "C-z") 'evil-undefine)
     (define-key evil-normal-state-map (kbd "K")   'get-documentation)
 
-    (after "man"
+    (after 'man
       (evil-declare-key 'normal Man-mode-map (kbd "q") 'Man-kill))
 
-    (after "tar-mode"
+    (after 'tar-mode
       (evil-add-hjkl-bindings tar-mode-map))
 
-    (after "arc-mode"
+    (after 'arc-mode
       (evil-add-hjkl-bindings archive-mode-map))
 
-    (after "undo-tree"
+    (after 'message
+      (hook-fn 'message-mode-hook (evil-append-line 1)))
+
+    (after 'undo-tree
       ;; Ensure undo-tree commands are remapped. The referenced keymap in
       ;; evil-integration is incorrect.
       (define-key undo-tree-visualizer-mode-map [remap evil-backward-char]
