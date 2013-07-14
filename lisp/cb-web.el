@@ -60,6 +60,7 @@
      bbdb-offer-save 1
      bbdb-use-popup  t
      bbdb-electric   t
+     bbdb-pop-up-window-size 9
      bddb-popup-target-lines     1
      bbdb-dwim-net-address-allow-redundancy t
      bbdb-quiet-about-name-mismatches       2
