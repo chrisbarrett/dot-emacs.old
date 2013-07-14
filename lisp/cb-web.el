@@ -51,6 +51,14 @@
           gnus-startup-file (concat cb:etc-dir "gnus"))
 
     (after 'evil
+      ;; Group mode
+      (define-key gnus-group-mode-map (kbd "j") 'gnus-group-next-unread-group)
+      (define-key gnus-group-mode-map (kbd "k") 'gnus-group-prev-unread-group)
+      (define-key gnus-group-mode-map (kbd "n") 'gnus-group-jump-to-group)
+      ;; Summary mode
+      (define-key gnus-summary-mode-map (kbd "j") 'gnus-summary-next-unread-article)
+      (define-key gnus-summary-mode-map (kbd "k") 'gnus-summary-prev-unread-article)
+      ;; Browse mode
       (define-key gnus-browse-mode-map (kbd "j") 'gnus-browse-next-group)
       (define-key gnus-browse-mode-map (kbd "k") 'gnus-browse-prev-group)
       (define-key gnus-browse-mode-map (kbd "/") 'evil-search-forward)
