@@ -104,13 +104,16 @@ With prefix argument ARG, show the file and move to the tasks tree."
     (bind-key* "M-?" 'cb-org:show-tasks)
 
     (setq org-catch-invisible-edits 'smart
-          org-pretty-entities t)
+          org-pretty-entities t
+          org-todo-keywords
+          '((sequence "TODO(t)" "WAIT(w@/!)" "|" "DONE(d!)" "CANCELED(c@)")))
 
     (--each '("NOTES" "COMMENTS")
       (add-to-list 'org-drawers it))
 
     (hook-fn 'org-mode-hook
       (auto-revert-mode +1)
+      ;; Enter insert mode if this is a capture window or something.
       (unless (buffer-file-name)
         (cb:append-buffer)))
 
@@ -275,10 +278,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
             ("n" "Note" item
              (file+headline org-default-notes-file "Notes")
              "- %^{Note}"
-             :immediate-finish t))
-
-          org-todo-keywords
-          '((sequence "TODO(t)" "WAIT(w@/!)" "|" "DONE(d!)" "CANCELED(c@)")))))
+             :immediate-finish t)))))
 
 (use-package calendar
   :init
@@ -310,6 +310,10 @@ With prefix argument ARG, show the file and move to the tasks tree."
       (--each (--filter-buffers (derived-mode-p 'org-agenda-mode))
         (with-current-buffer it
           (org-agenda-redo t))))
+
+    (defadvice org-agenda-todo (after save-notes-file activate)
+      "Save the notes file after changes in TODO state."
+      (save-buffer org-default-notes-file))
 
     (setq org-agenda-files (list org-default-notes-file)
           org-agenda-include-diary t)))
