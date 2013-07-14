@@ -348,6 +348,9 @@ With prefix argument ARG, show the file and move to the tasks tree."
     (hook-fn 'org-capture-after-finalize-hook
       (cb-org:refresh-agenda))
 
+    (hook-fn 'org-mode-hook
+      (add-hook 'after-save-hook 'cb-org:refresh-agenda))
+
     (defadvice org-agenda-todo (after save-notes-file activate)
       "Save the notes file after changes in TODO state."
       (save-buffer org-default-notes-file))
