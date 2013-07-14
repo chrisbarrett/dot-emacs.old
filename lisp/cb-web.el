@@ -40,11 +40,11 @@
 (use-package gnus
   :commands gnus
   :defer t
+  :init
+  (when (truthy? cb:use-vim-keybindings?)
+    (bind-key* "M-Y" 'gnus))
   :config
   (progn
-    (when (truthy? cb:use-vim-keybindings?)
-      (bind-key "M-M" 'gnus))
-
     (setq gnus-treat-fill t
           gnus-save-newsrc-file nil
           gnus-read-newsrc-file nil
