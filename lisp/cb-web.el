@@ -41,7 +41,10 @@
   :commands gnus
   :defer t
   :config
-  (setq gnus-select-method '(nnml "mail")))
+  (setq gnus-select-method '(nnml "mail")
+        gnus-save-newsrc-file nil
+        gnus-read-newsrc-file nil
+        gnus-startup-file (concat cb:etc-dir "gnus")))
 
 (use-package bbdb
   :ensure t
