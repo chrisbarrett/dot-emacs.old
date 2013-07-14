@@ -63,7 +63,8 @@ Changes the selected buffer."
 
 (defvar cb:kill-buffer-ignored-list
   '("*scratch*" "*Messages*" "*GROUP*"
-    "*shell*" "*eshell*" "*ansi-term*"))
+    "*shell*" "*eshell*" "*ansi-term*"
+    "notes.org"))
 
 ;;;###autoload
 (defun kill-current-buffer ()
