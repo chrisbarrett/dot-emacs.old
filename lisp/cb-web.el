@@ -42,11 +42,20 @@
   :defer t
   :config
   (progn
-    (setq gnus-select-method '(nnml "mail")
-          gnus-treat-fill t
+    (when (truthy? cb:use-vim-keybindings?)
+      (bind-key "M-M" 'gnus))
+
+    (setq gnus-treat-fill t
           gnus-save-newsrc-file nil
           gnus-read-newsrc-file nil
           gnus-startup-file (concat cb:etc-dir "gnus"))
+
+    (after 'evil
+      (define-key gnus-browse-mode-map (kbd "j") 'gnus-browse-next-group)
+      (define-key gnus-browse-mode-map (kbd "k") 'gnus-browse-prev-group)
+      (define-key gnus-browse-mode-map (kbd "/") 'evil-search-forward)
+      (define-key gnus-browse-mode-map (kbd "n") 'evil-search-next)
+      (define-key gnus-browse-mode-map (kbd "N") 'evil-search-previous))
 
     (hook-fn 'gnus-summary-mode-hook
       "Use a summary style better suited to RSS."
