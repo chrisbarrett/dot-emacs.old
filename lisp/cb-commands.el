@@ -149,6 +149,9 @@ If this buffer is a member of `cb:kill-buffer-ignored-list, bury it rather than 
           (set-buffer-modified-p nil)))))))
 
 ;;;###autoload
+(defalias 'rename-file-and-buffer 'rename-buffer-and-file)
+
+;;;###autoload
 (defun delete-buffer-and-file ()
   "Delete a file and its associated buffer."
   (interactive)
@@ -161,6 +164,9 @@ If this buffer is a member of `cb:kill-buffer-ignored-list, bury it rather than 
         (delete-file filename)
         (kill-buffer buffer)
         (message "File '%s' successfully removed" filename)))))
+
+;;;###autoload
+(defalias 'delete-file-and-buffer 'delete-buffer-and-file)
 
 (defun cb:find-autoloads (buffer)
   (->> (with-current-buffer buffer
