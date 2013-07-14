@@ -310,6 +310,12 @@ rather than the app bundle."
   (local-set-key (kbd "M->") 'cb:append-buffer)
   (cb:append-buffer))
 
+(defadvice jit-lock-force-redisplay (around ignore-killed-buffers activate)
+  "Do not perform font-locking on killed buffers."
+  (let ((buf (ad-get-arg 0)))
+    (when (buffer-live-p buf)
+      ad-do-it)))
+
 (provide 'cb-foundation)
 
 ;; Local Variables:
