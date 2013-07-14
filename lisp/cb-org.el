@@ -282,16 +282,49 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
 (use-package calendar
   :init
-  (setq diary-file (concat cb:etc-dir "diary"))
+  (progn
+    (setq diary-file (concat cb:etc-dir "diary"))
+    (add-to-list 'auto-mode-alist `(,(rx bow "diary" eol) . diary-mode)))
   :config
-  ;; Create the diary file if it does not exist.
-  (unless (f-exists? diary-file)
-    (f-write diary-file)))
+  (progn
+
+    ;; Create the diary file if it does not exist.
+    (unless (f-exists? diary-file)
+      (f-write diary-file))
+
+    (defun cb:close-diary ()
+      (kill-buffer)
+      (when (< 1 (length (window-list))) (delete-window))
+      (cb-org:refresh-agenda))
+
+    (defun cb:diary-finalize ()
+      "Accept the diary entry and close the diary."
+      (interactive)
+      (save-buffer)
+      (cb:close-diary))
+
+    (defun cb:diary-cancel ()
+      "Abort the diary entry and close the diary."
+      (interactive)
+      (revert-buffer t t)
+      (cb:close-diary))
+
+    (hook-fn 'diary-mode-hook
+      (add-hook 'after-save-hook 'cb-org:refresh-agenda t 'local)
+      (local-set-key (kbd "C-c C-k") 'cb:diary-cancel)
+      (local-set-key (kbd "C-c C-c") 'cb:diary-finalize))))
 
 (use-package org-agenda
   :commands (org-agenda)
   :init
   (progn
+
+    (defun cb-org:refresh-agenda ()
+      "Refresh all org agenda buffers."
+      (--each (--filter-buffers (derived-mode-p 'org-agenda-mode))
+        (with-current-buffer it
+          (org-agenda-redo t))))
+
     (when (truthy? 'cb:use-vim-keybindings?)
       (bind-key "M-C" 'org-agenda))
 
@@ -301,22 +334,34 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
   :config
   (progn
+    (setq org-agenda-files (list org-default-notes-file)
+          org-agenda-include-diary t)
+
     (define-key org-agenda-mode-map (kbd "g") 'org-agenda-goto-date)
     (define-key org-agenda-mode-map (kbd "j") 'org-agenda-next-item)
     (define-key org-agenda-mode-map (kbd "k") 'org-agenda-previous-item)
 
+    (after 'smartparens
+      (hook-fn 'org-agenda-mode-hook
+        (smartparens-mode -1)))
+
     (hook-fn 'org-capture-after-finalize-hook
-      "Refresh all org agenda buffers."
-      (--each (--filter-buffers (derived-mode-p 'org-agenda-mode))
-        (with-current-buffer it
-          (org-agenda-redo t))))
+      (cb-org:refresh-agenda))
 
     (defadvice org-agenda-todo (after save-notes-file activate)
       "Save the notes file after changes in TODO state."
       (save-buffer org-default-notes-file))
 
-    (setq org-agenda-files (list org-default-notes-file)
-          org-agenda-include-diary t)))
+    ;;;; Diary
+
+    (defadvice org-agenda-diary-entry (after narrow-and-insert activate)
+      "Make the diary entry process similar to org-capture."
+      (narrow-to-region (line-beginning-position) (line-end-position))
+      (cb:append-buffer)
+      ;; Show usage. Run on timer so other messages are buried.
+      (run-with-timer
+       0.1 nil
+       (lambda () (message "<C-c C-c> to commit changes, <C-c C-k> to abort."))))))
 
 (provide 'cb-org)
 
