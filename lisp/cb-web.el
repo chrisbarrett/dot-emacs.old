@@ -41,10 +41,22 @@
   :commands gnus
   :defer t
   :config
-  (setq gnus-select-method '(nnml "mail")
-        gnus-save-newsrc-file nil
-        gnus-read-newsrc-file nil
-        gnus-startup-file (concat cb:etc-dir "gnus")))
+  (progn
+    (setq gnus-select-method '(nnml "mail")
+          gnus-treat-fill t
+          gnus-save-newsrc-file nil
+          gnus-read-newsrc-file nil
+          gnus-startup-file (concat cb:etc-dir "gnus"))
+
+    (hook-fn 'gnus-summary-mode-hook
+      "Use a summary style better suited to RSS."
+      (when (s-matches? (rx bol "nrss:" (* nonl)) gnus-newsgroup-name)
+        (setq-local gnus-show-threads nil)
+        (setq-local gnus-article-sort-functions 'gnus-article-sort-by-date)
+        (setq-local gnus-use-adaptive-scoring nil)
+        (setq-local gnus-use-scoring t)
+        (setq-local gnus-score-find-score-files-function 'gnus-score-find-single)
+        (setq-local gnus-summary-line-format "%U%R%z%d %I%(%[ %s %]%)\n")))))
 
 (use-package bbdb
   :ensure t
