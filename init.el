@@ -80,6 +80,7 @@
 (use-package cb-colour :if (or (daemonp) (display-graphic-p)))
 (use-package cb-smartparens)
 (use-package cb-web)
+(use-package cb-gnus)
 (use-package cb-shell)
 (use-package cb-completion)
 (use-package cb-dired)
