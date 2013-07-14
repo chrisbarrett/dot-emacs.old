@@ -118,7 +118,13 @@ With prefix argument ARG, show the file and move to the tasks tree."
         (cb:append-buffer)))
 
     (define-key org-mode-map (kbd "M-p") 'org-metaup)
-    (define-key org-mode-map (kbd "M-n") 'org-metadown)))
+    (define-key org-mode-map (kbd "M-n") 'org-metadown)
+
+
+    (defadvice org-add-log-note (before exit-minibuffer activate)
+      "Prevent attempts to expand the minibuffer."
+      (when (minibufferp (window-buffer (selected-window)))
+        (other-window 1)))))
 
 (use-package org-capture
   :commands (org-capture)
@@ -145,14 +151,19 @@ With prefix argument ARG, show the file and move to the tasks tree."
         (push-mark end)
         (org-sort-entries t 112)))
 
+    (defmacro with-org-notes-file (&rest body)
+      (declare (indent 1))
+      `(with-current-buffer (find-file-noselect org-default-notes-file)
+         ,@body))
+
     (defun cb:sort-todos-by-priority ()
       "Sort the Tasks list in the notes file."
       (ignore-errors
-        (with-current-buffer (find-file-noselect org-default-notes-file)
-          (save-excursion
-            (goto-char (point-min))
-            (search-forward-regexp (rx bol "*" (+ space) "Tasks" (* space) eol) nil t)
-            (cb:sort-tasks-in-subtree)))))
+        (with-org-notes-file
+         (save-excursion
+           (goto-char (point-min))
+           (search-forward-regexp (rx bol "*" (+ space) "Tasks" (* space) eol) nil t)
+           (cb:sort-tasks-in-subtree)))))
 
     (add-hook 'org-capture-after-finalize-hook 'cb:sort-todos-by-priority)
 
@@ -283,7 +294,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
 (use-package calendar
   :init
   (progn
-    (setq diary-file (concat cb:etc-dir "diary"))
+    (setq diary-file (concat user-dropbox-directory "diary"))
     (add-to-list 'auto-mode-alist `(,(rx bow "diary" eol) . diary-mode)))
   :config
   (progn
@@ -350,10 +361,6 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
     (hook-fn 'org-mode-hook
       (add-hook 'after-save-hook 'cb-org:refresh-agenda))
-
-    (defadvice org-agenda-todo (after save-notes-file activate)
-      "Save the notes file after changes in TODO state."
-      (save-buffer org-default-notes-file))
 
     ;;;; Diary
 
