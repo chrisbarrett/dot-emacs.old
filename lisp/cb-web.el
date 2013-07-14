@@ -58,6 +58,15 @@
       ;; Summary mode
       (define-key gnus-summary-mode-map (kbd "j") 'gnus-summary-next-unread-article)
       (define-key gnus-summary-mode-map (kbd "k") 'gnus-summary-prev-unread-article)
+      (define-key gnus-summary-mode-map (kbd "n") 'gnus-summary-jump-to-group)
+      ;; Article mode
+      (define-key gnus-article-mode-map (kbd "j") 'evil-next-line)
+      (define-key gnus-article-mode-map (kbd "k") 'evil-previous-line)
+      (define-key gnus-article-mode-map (kbd "C-f") 'evil-scroll-page-down)
+      (define-key gnus-article-mode-map (kbd "C-b") 'evil-scroll-page-up)
+      (define-key gnus-article-mode-map (kbd "z z") 'evil-scroll-line-to-center)
+      (define-key gnus-article-mode-map (kbd "z t") 'evil-scroll-line-to-top)
+      (define-key gnus-article-mode-map (kbd "z b") 'evil-scroll-line-to-bottom)
       ;; Browse mode
       (define-key gnus-browse-mode-map (kbd "j") 'gnus-browse-next-group)
       (define-key gnus-browse-mode-map (kbd "k") 'gnus-browse-prev-group)
