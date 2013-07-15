@@ -55,7 +55,7 @@
 
     (defun cb-org:show-agenda-and-todos ()
       (execute-kbd-macro
-       [?\M-x ?o ?r ?g ?a ?g ?e ?n ?d ?a ?\C-m ?n])
+       [?\M-x ?o ?r ?g ?- ?a ?g ?e ?n ?d ?a ?\C-m ?n])
       (delete-other-windows))
 
     (declare-modal-executor org-agenda
