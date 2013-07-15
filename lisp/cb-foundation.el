@@ -209,8 +209,9 @@
 
 (hook-fn 'kill-emacs-hook
   "Ensure tramp resources are released on exit."
-  (when (fboundp 'tramp-cleanup-all-buffers)
-    (tramp-cleanup-all-buffers)))
+  (ignore-errors
+    (when (fboundp 'tramp-cleanup-all-buffers)
+      (tramp-cleanup-all-buffers))))
 
 (defadvice whitespace-cleanup (around whitespace-cleanup-indent-tab activate)
   "Fix `whitespace-cleanup' bug when using `indent-tabs-mode'."
