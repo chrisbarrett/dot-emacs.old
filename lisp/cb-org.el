@@ -152,6 +152,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
         (org-sort-entries t 112)))
 
     (defmacro with-org-notes-file (&rest body)
+      "Excute BODY with the notes file set to the current buffer."
       (declare (indent 0))
       `(with-current-buffer (find-file-noselect org-default-notes-file)
          ,@body))
@@ -175,6 +176,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
           (call-interactively 'cb-org:read-priority)))
 
     (defun cb-org:read-todo ()
+      "Read a todo item for org-capture."
       (save-window-excursion
         (let ((desc (s-trim (read-string "Description: " nil t)))
               (priority (call-interactively 'cb-org:read-priority))
@@ -234,7 +236,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
         (org-habit-parse-todo)))
 
     (defun cb-org:read-habit ()
-      "Read the info from the user to construct a new habit."
+      "Read info from the user to construct a new habit."
       (save-window-excursion
         (let* ((desc (s-trim (read-string "Description: " nil t)))
                (freq (cb-org:read-habit-frequency))
