@@ -263,12 +263,12 @@ With prefix argument ARG, show the file and move to the tasks tree."
            ""))
 
     (setq org-capture-templates
-          `(("t" "Task" entry
+          `(("T" "Task" entry
              (file+headline (project-task-file) "Tasks")
              "* TODO %^{Description}"
              :immediate-finish t)
 
-            ("T" "Todo" entry
+            ("t" "Todo" entry
              (file+headline org-default-notes-file "Tasks")
              (function cb-org:read-todo)
              :empty-lines 1
