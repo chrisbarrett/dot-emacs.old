@@ -102,7 +102,7 @@
     ;; Close paren keys move up sexp.
     (setq sp-navigate-close-if-unbalanced t)
     (--each '(")" "]" "}")
-      (global-set-key (kbd it) (command (sp-insert-or-up it _arg))))
+      (global-set-key (kbd it) (eval `(command (sp-insert-or-up ,it _arg)))))
 
 
     ;; Bind Paredit-style wrapping commands.
