@@ -45,34 +45,12 @@
 
     (hook-fn 'gnus-article-mode-hook
       "Use a sans-serif font for gnus-article-mode."
-      (when (equal major-mode 'text-mode)
-        (buffer-face-set `(:family ,(sans-serif-font) :height 120))))
-
-    (after 'evil
-      ;; Group mode
-      (define-key gnus-group-mode-map (kbd "j") 'gnus-group-next-unread-group)
-      (define-key gnus-group-mode-map (kbd "k") 'gnus-group-prev-unread-group)
-      (define-key gnus-group-mode-map (kbd "n") 'gnus-group-jump-to-group)
-      ;; Summary mode
-      (define-key gnus-summary-mode-map (kbd "j") 'gnus-summary-next-unread-article)
-      (define-key gnus-summary-mode-map (kbd "k") 'gnus-summary-prev-unread-article)
-      (define-key gnus-summary-mode-map (kbd "n") 'gnus-summary-jump-to-group)
-      ;; Article mode
-      (define-key gnus-article-mode-map (kbd "j") 'evil-next-line)
-      (define-key gnus-article-mode-map (kbd "k") 'evil-previous-line)
-      (define-key gnus-article-mode-map (kbd "C-f") 'evil-scroll-page-down)
-      (define-key gnus-article-mode-map (kbd "C-b") 'evil-scroll-page-up)
-      (define-key gnus-article-mode-map (kbd "z z") 'evil-scroll-line-to-center)
-      (define-key gnus-article-mode-map (kbd "z t") 'evil-scroll-line-to-top)
-      (define-key gnus-article-mode-map (kbd "z b") 'evil-scroll-line-to-bottom)
-
-      ;; Browse mode
-      (after 'gnus-srvr
-        (define-key gnus-browse-mode-map (kbd "j") 'gnus-browse-next-group)
-        (define-key gnus-browse-mode-map (kbd "k") 'gnus-browse-prev-group)
-        (define-key gnus-browse-mode-map (kbd "/") 'evil-search-forward)
-        (define-key gnus-browse-mode-map (kbd "n") 'evil-search-next)
-        (define-key gnus-browse-mode-map (kbd "N") 'evil-search-previous)))
+      (setq-local line-spacing 0.25)
+      (buffer-face-set `(:family ,(serif-font) :height 140))
+      (set-face-font 'gnus-header-name (sans-serif-font))
+      (set-face-font 'gnus-header-subject (sans-serif-font))
+      (set-face-font 'gnus-header-content (sans-serif-font))
+      (set-face-font 'gnus-button (sans-serif-font)))
 
     (hook-fn 'gnus-summary-mode-hook
       "Use a summary style better suited to RSS."
@@ -82,7 +60,38 @@
         (setq-local gnus-use-adaptive-scoring nil)
         (setq-local gnus-use-scoring t)
         (setq-local gnus-score-find-score-files-function 'gnus-score-find-single)
-        (setq-local gnus-summary-line-format "%U%R%z%d %I%(%[ %s %]%)\n")))))
+        (setq-local gnus-summary-line-format "%U%R%z%d %I%(%[ %s %]%)\n")))
+
+    ;; Set evil-style motion keys.
+    ;; Load evil-mode if it is available.
+    (require 'evil nil 'no-error)
+    (after 'evil
+
+      (hook-fn 'gnus-group-mode-hook
+        (local-set-key (kbd "j") 'gnus-group-next-unread-group)
+        (local-set-key (kbd "k") 'gnus-group-prev-unread-group)
+        (local-set-key (kbd "n") 'gnus-group-jump-to-group))
+
+      (hook-fn 'gnus-summary-mode-hook
+        (local-set-key (kbd "j") 'gnus-summary-next-unread-article)
+        (local-set-key (kbd "k") 'gnus-summary-prev-unread-article)
+        (local-set-key (kbd "n") 'gnus-summary-jump-to-group))
+
+      (hook-fn 'gnus-article-mode-hook
+        (local-set-key (kbd "j") 'evil-next-line)
+        (local-set-key (kbd "k") 'evil-previous-line)
+        (local-set-key (kbd "C-f") 'evil-scroll-page-down)
+        (local-set-key (kbd "C-b") 'evil-scroll-page-up)
+        (local-set-key (kbd "z z") 'evil-scroll-line-to-center)
+        (local-set-key (kbd "z t") 'evil-scroll-line-to-top)
+        (local-set-key (kbd "z b") 'evil-scroll-line-to-bottom))
+
+      (hook-fn 'gnus-browse-mode-hook
+        (local-set-key (kbd "j") 'gnus-browse-next-group)
+        (local-set-key (kbd "k") 'gnus-browse-prev-group)
+        (local-set-key (kbd "/") 'evil-search-forward)
+        (local-set-key (kbd "n") 'evil-search-next)
+        (local-set-key (kbd "N") 'evil-search-previous)))))
 
 (provide 'cb-gnus)
 
