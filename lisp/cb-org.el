@@ -69,6 +69,15 @@
   :config
   (progn
 
+    (hook-fn kill-emacs-hook
+      "Save notes file when exiting emacs."
+      (ignore-errors
+        (-when-let (buf (--first-buffer (equal buffer-file-name org-default-notes-file)))
+          (with-current-buffer buf
+            (save-buffer)))))
+
+    ;;;; Tasks
+
     (defun project-task-file ()
       (let ((proj (or (ignore-errors (projectile-project-root))
                       (with-current-buffer (--first-buffer (projectile-project-p))
@@ -103,6 +112,8 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
     (bind-key* "M-?" 'cb-org:show-tasks)
 
+    ;;;; Org config
+
     (setq org-catch-invisible-edits 'smart
           org-pretty-entities t
           org-todo-keywords
@@ -119,7 +130,6 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
     (define-key org-mode-map (kbd "M-p") 'org-metaup)
     (define-key org-mode-map (kbd "M-n") 'org-metadown)
-
 
     (defadvice org-add-log-note (before exit-minibuffer activate)
       "Prevent attempts to expand the minibuffer."
