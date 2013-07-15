@@ -51,20 +51,7 @@
     (hook-fn 'cb:org-minor-modes-hook
       "Diminish org minor modes."
       (--each cb:org-minor-modes
-        (ignore-errors (diminish it))))
-
-    (defun cb-org:show-agenda-and-todos ()
-      (execute-kbd-macro
-       [?\M-x ?o ?r ?g ?- ?a ?g ?e ?n ?d ?a ?\C-m ?n])
-      (delete-other-windows))
-
-    (declare-modal-executor org-agenda
-      :bind "M-O"
-      :command
-      (lambda (&optional arg) (interactive "P")
-        (if arg
-            (find-file org-default-notes-file)
-          (cb-org:show-agenda-and-todos)))))
+        (ignore-errors (diminish it)))))
 
   :config
   (progn
@@ -340,9 +327,19 @@ With prefix argument ARG, show the file and move to the tasks tree."
       (local-set-key (kbd "C-c C-c") 'cb:diary-finalize))))
 
 (use-package org-agenda
-  :commands (org-agenda)
+  :commands (org-agenda org-agenda-list)
   :init
   (progn
+
+    (declare-modal-view org-agenda-list)
+
+    (declare-modal-executor org-agenda-list
+      :bind "M-O"
+      :command
+      (lambda (&optional arg) (interactive "P")
+        (if arg
+            (find-file org-default-notes-file)
+          (org-agenda-list))))
 
     (defun cb-org:refresh-agenda ()
       "Refresh all org agenda buffers."
@@ -355,7 +352,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
     (when (or (daemonp) (display-graphic-p))
       (hook-fn 'after-init-hook
-        (cb-org:show-agenda-and-todos))))
+        (org-agenda-list))))
 
   :config
   (progn
@@ -376,8 +373,6 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
     (hook-fn 'org-mode-hook
       (add-hook 'after-save-hook 'cb-org:refresh-agenda))
-
-    ;;;; Diary
 
     (defadvice org-agenda-diary-entry (after narrow-and-insert activate)
       "Make the diary entry process similar to org-capture."
