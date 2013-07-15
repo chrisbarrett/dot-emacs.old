@@ -29,6 +29,7 @@
 (require 's)
 (require 'bind-key)
 (require 'cb-lib)
+(require 'cb-mode-groups)
 (autoload 'emr-reporting-buffer-changes "emr")
 (autoload 'org-move-item-down "org-list")
 (autoload 'org-move-item-up "org-list")
@@ -108,9 +109,10 @@ If this buffer is a member of `cb:kill-buffer-ignored-list, bury it rather than 
     (indent-region (point-min) (point-max))))
 
 ;;;###autoload
-(defun indent-dwim ()
-  "Perform a context-sensitive indentation action."
-  (interactive)
+(defun indent-dwim (&optional arg)
+  "Perform a context-sensitive indentation action.
+With prefix argument ARG, justify text."
+  (interactive "P")
   (cond
    ((region-active-p)
     (indent-region (region-beginning) (region-end))
@@ -120,7 +122,9 @@ If this buffer is a member of `cb:kill-buffer-ignored-list, bury it rather than 
                   font-lock-string-face
                   font-lock-doc-string-face)
                 (face-at-point))
-    (fill-paragraph)
+    (if (apply 'derived-mode-p cb:lisp-modes)
+        (lisp-fill-paragraph arg)
+      (fill-paragraph arg))
     (message "Filled paragraph."))
 
    ((thing-at-point 'defun)
