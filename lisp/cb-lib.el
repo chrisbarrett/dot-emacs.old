@@ -34,7 +34,8 @@
 
 (defmacro hook-fn (hook &optional docstring &rest body)
   "Execute forms when a given hook is called.
-The arguments passed to the hook function are bound to the symbol 'args'.
+The arguments passed to the hook function are bound to the symbol
+'_args' and should generally not be used.
 
 * HOOK is the name of the hook.
 
@@ -48,19 +49,21 @@ The arguments passed to the hook function are bound to the symbol 'args'.
       (if (and (stringp docstring) body)
           (list docstring body)
         (list nil (cons docstring body)))
-    `(add-hook ,hook (lambda (&rest _args)
-                       ,docstring
-                       (if cb-lib:debug-hooks?
-                           ;; Do not allow errors to propagate from the hook.
-                           (condition-case err
-                               (progn ,@body)
-                             (error (message
-                                     "[%s] %s" ',hook
-                                     (error-message-string err))))
-                         (progn ,@body))))))
+    `(let ((hook ,hook))
+       (assert (symbolp hook))
+       (add-hook hook (lambda (&rest _args)
+                        ,docstring
+                        (if cb-lib:debug-hooks?
+                            ;; Do not allow errors to propagate from the hook.
+                            (condition-case err
+                                (progn ,@body)
+                              (error (message
+                                      "[%s] %s" ',hook
+                                      (error-message-string err))))
+                          (progn ,@body)))))))
 
 (defmacro after (feature &rest body)
-  "Like `eval-after-load' - once FEATURE is loaded execute the BODY."
+  "Like `eval-after-load' - once FEATURE is loaded, execute the BODY."
   (declare (indent 1))
   `(eval-after-load ,feature
      '(progn ,@body)))
