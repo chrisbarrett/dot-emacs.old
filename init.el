@@ -28,6 +28,11 @@
 (message "Emacs %s.%s %s"
          emacs-major-version emacs-minor-version system-configuration)
 
+
+(defvar cb:use-vim-keybindings? t
+  "Set to nil to disable Evil-mode and associated key bindings.")
+
+
 ;;; Disable intrusive GUI elements.
 
 (scroll-bar-mode   -1)
@@ -35,8 +40,8 @@
 (blink-cursor-mode -1)
 (menu-bar-mode (if (display-graphic-p) +1 -1))
 
-(defvar cb:use-vim-keybindings? t
-  "Set to nil to disable Evil-mode and associated key bindings.")
+;; Increase GC threshold. Computers have lots of memory these days.
+(setq gc-cons-threshold 20000000)
 
 ;;;; Basic paths.
 
