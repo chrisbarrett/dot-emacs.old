@@ -39,6 +39,7 @@
   :config
   (progn
     (setq gnus-treat-fill t
+          gnus-always-read-dribble-file t
           gnus-save-newsrc-file nil
           gnus-read-newsrc-file nil
           gnus-startup-file (concat cb:etc-dir "gnus"))
@@ -64,7 +65,7 @@
 
     ;; Set evil-style motion keys.
     ;; Load evil-mode if it is available.
-    (require 'evil nil 'no-error)
+                                        ;(require 'evil nil 'no-error)
     (after 'evil
 
       (hook-fn 'gnus-group-mode-hook
@@ -85,6 +86,10 @@
         (local-set-key (kbd "z z") 'evil-scroll-line-to-center)
         (local-set-key (kbd "z t") 'evil-scroll-line-to-top)
         (local-set-key (kbd "z b") 'evil-scroll-line-to-bottom))
+
+      (hook-fn 'gnus-server-mode-hook
+        (local-set-key (kbd "j") 'evil-next-line)
+        (local-set-key (kbd "k") 'evil-previous-line))
 
       (hook-fn 'gnus-browse-mode-hook
         (local-set-key (kbd "j") 'gnus-browse-next-group)
