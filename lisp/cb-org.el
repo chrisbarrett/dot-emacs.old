@@ -152,7 +152,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
         (org-sort-entries t 112)))
 
     (defmacro with-org-notes-file (&rest body)
-      (declare (indent 1))
+      (declare (indent 0))
       `(with-current-buffer (find-file-noselect org-default-notes-file)
          ,@body))
 
@@ -160,10 +160,10 @@ With prefix argument ARG, show the file and move to the tasks tree."
       "Sort the Tasks list in the notes file."
       (ignore-errors
         (with-org-notes-file
-         (save-excursion
-           (goto-char (point-min))
-           (search-forward-regexp (rx bol "*" (+ space) "Tasks" (* space) eol) nil t)
-           (cb:sort-tasks-in-subtree)))))
+          (save-excursion
+            (goto-char (point-min))
+            (search-forward-regexp (rx bol "*" (+ space) "Tasks" (* space) eol) nil t)
+            (cb:sort-tasks-in-subtree)))))
 
     (add-hook 'org-capture-after-finalize-hook 'cb:sort-todos-by-priority)
 
@@ -175,15 +175,16 @@ With prefix argument ARG, show the file and move to the tasks tree."
           (call-interactively 'cb-org:read-priority)))
 
     (defun cb-org:read-todo ()
-      (let ((desc (s-trim (read-string "Description: " nil t)))
-            (priority (call-interactively 'cb-org:read-priority))
-            (start (and (ido-yes-or-no-p "Set a starting time? ")
-                        (org-read-date)))
-            (due (and (ido-yes-or-no-p "Set a deadline? ")
-                      (org-read-date))))
-        (concat "* TODO [#" priority "] " desc "\n"
-                (when start (concat "  SCHEDULED: <" start "> \n"))
-                (when due   (concat "  DEADLINE:  <" due "> \n")))))
+      (save-window-excursion
+        (let ((desc (s-trim (read-string "Description: " nil t)))
+              (priority (call-interactively 'cb-org:read-priority))
+              (start (and (ido-yes-or-no-p "Set a starting time? ")
+                          (org-read-date)))
+              (due (and (ido-yes-or-no-p "Set a deadline? ")
+                        (org-read-date))))
+          (concat "* TODO [#" priority "] " desc "\n"
+                  (when start (concat "  SCHEDULED: <" start "> \n"))
+                  (when due   (concat "  DEADLINE:  <" due "> \n"))))))
 
 ;;;; Org Habits
 
@@ -234,20 +235,21 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
     (defun cb-org:read-habit ()
       "Read the info from the user to construct a new habit."
-      (let* ((desc (s-trim (read-string "Description: " nil t)))
-             (freq (cb-org:read-habit-frequency))
-             (end (and (ido-yes-or-no-p "Set an end time? ")
-                       (org-read-date)))
-             (habit (concat
-                     "* TODO " desc "\n"
-                     "  SCHEDULED: <" freq ">\n"
-                     "  :PROPERTIES:\n"
-                     "  :STYLE: habit\n"
-                     (when end
-                       (format "  :LAST_REPEAT: [%s]\n" end))
-                     "  :END:")))
-        (when (cb-org:validate-habit habit)
-          habit)))
+      (save-window-excursion
+        (let* ((desc (s-trim (read-string "Description: " nil t)))
+               (freq (cb-org:read-habit-frequency))
+               (end (and (ido-yes-or-no-p "Set an end time? ")
+                         (org-read-date)))
+               (habit (concat
+                       "* TODO " desc "\n"
+                       "  SCHEDULED: <" freq ">\n"
+                       "  :PROPERTIES:\n"
+                       "  :STYLE: habit\n"
+                       (when end
+                         (format "  :LAST_REPEAT: [%s]\n" end))
+                       "  :END:")))
+          (when (cb-org:validate-habit habit)
+            habit))))
 
 ;;;; Capture templates
 
