@@ -26,6 +26,8 @@
 
 ;;; Code:
 
+(require 'cb-lib)
+
 (defun fortune ()
   "Display a quotation from the 'fortune' program."
   (interactive)
@@ -40,10 +42,8 @@
   (run-with-idle-timer
    0.1 nil
    (lambda ()
-     (when (-contains? '("*scratch*"
-                         "notes.org"
-                         "todo.org")
-                       (buffer-name))
+     (when (or (-contains? '("*scratch*" "notes.org" "todo.org") (buffer-name))
+               (derived-mode-p 'org-agenda-mode))
        (fortune)))))
 
 (hook-fn 'after-make-frame-functions (cb:show-fortune))
