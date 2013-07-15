@@ -69,7 +69,7 @@
   :config
   (progn
 
-    (hook-fn kill-emacs-hook
+    (hook-fn 'kill-emacs-hook
       "Save notes file when exiting emacs."
       (ignore-errors
         (-when-let (buf (--first-buffer (equal buffer-file-name org-default-notes-file)))
@@ -359,6 +359,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
   :config
   (progn
+
     (setq org-agenda-files (list org-default-notes-file)
           org-agenda-include-diary t)
 
