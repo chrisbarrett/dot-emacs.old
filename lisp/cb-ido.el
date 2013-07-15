@@ -132,14 +132,13 @@
   :commands ido-yes-or-no-mode
   :init (after 'ido (ido-yes-or-no-mode +1)))
 
-(use-package ido-better-flex
+(use-package flx
   :ensure t
-  :commands ido-better-flex/enable
-  :init (after 'ido (ido-better-flex/enable)))
-
-(use-package ido-speed-hack
-  :defer t
-  :init (after 'ido (require 'ido-speed-hack)))
+  :config
+  (after 'ido
+    (flx-ido-mode +1)
+    ;; Override ido faces with flx ones.
+    (setq ido-use-faces nil)))
 
 (use-package imenu
   :commands imenu
@@ -152,18 +151,6 @@
                    ;; Match sections with at least 3 semicolons
                    ,(rx bol (* space) ";;;" (* ";") (+ space) (group (+ nonl )))
                    1) t)))
-
-(use-package smex
-  :ensure t
-  :idle   (require 'smex)
-  :commands
-  (smex
-   smex-major-mode-commands)
-  :init
-  (progn
-    (bind-key* "M-X" 'smex-major-mode-commands)
-    (bind-key* "M-x" 'smex))
-  :config (smex-initialize))
 
 (provide 'cb-ido)
 
