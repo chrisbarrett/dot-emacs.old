@@ -64,39 +64,44 @@
         (setq-local gnus-summary-line-format "%U%R%z%d %I%(%[ %s %]%)\n")))
 
     ;; Set evil-style motion keys.
-    ;; Load evil-mode if it is available.
-                                        ;(require 'evil nil 'no-error)
     (after 'evil
 
-      (hook-fn 'gnus-group-mode-hook
-        (local-set-key (kbd "j") 'gnus-group-next-unread-group)
-        (local-set-key (kbd "k") 'gnus-group-prev-unread-group)
-        (local-set-key (kbd "n") 'gnus-group-jump-to-group))
+      (after 'gnus-group
+        ;; gnus-group-mode
+        (bind-key "j" 'gnus-group-next-group gnus-group-mode-map)
+        (bind-key "k" 'gnus-group-prev-group gnus-group-mode-map)
+        (bind-key "n" 'gnus-group-jump-to-group gnus-group-mode-map))
 
-      (hook-fn 'gnus-summary-mode-hook
-        (local-set-key (kbd "j") 'gnus-summary-next-unread-article)
-        (local-set-key (kbd "k") 'gnus-summary-prev-unread-article)
-        (local-set-key (kbd "n") 'gnus-summary-jump-to-group))
+      (after 'gnus-sum
+        ;; gnus-summary-mode
+        (bind-key "j" 'gnus-summary-next-article gnus-summary-mode-map)
+        (bind-key "k" 'gnus-summary-prev-article gnus-summary-mode-map)
+        (bind-key "n" 'gnus-summary-jump-to-group gnus-summary-mode-map))
 
-      (hook-fn 'gnus-article-mode-hook
-        (local-set-key (kbd "j") 'evil-next-line)
-        (local-set-key (kbd "k") 'evil-previous-line)
-        (local-set-key (kbd "C-f") 'evil-scroll-page-down)
-        (local-set-key (kbd "C-b") 'evil-scroll-page-up)
-        (local-set-key (kbd "z z") 'evil-scroll-line-to-center)
-        (local-set-key (kbd "z t") 'evil-scroll-line-to-top)
-        (local-set-key (kbd "z b") 'evil-scroll-line-to-bottom))
+      (after 'gnus-art
+        ;; gnus-article-mode
+        (bind-key "j" 'next-line gnus-article-mode-map)
+        (bind-key "k" 'previous-line gnus-article-mode-map)
+        (bind-key "C-n" 'gnus-summary-next-article gnus-article-mode-map)
+        (bind-key "C-p" 'gnus-summary-prev-article gnus-article-mode-map)
+        (bind-key "C-f" 'evil-scroll-page-down gnus-article-mode-map)
+        (bind-key "C-b" 'evil-scroll-page-up gnus-article-mode-map)
+        (bind-key "z z" 'evil-scroll-line-to-center gnus-article-mode-map)
+        (bind-key "z t" 'evil-scroll-line-to-top gnus-article-mode-map)
+        (bind-key "z b" 'evil-scroll-line-to-bottom gnus-article-mode-map))
 
-      (hook-fn 'gnus-server-mode-hook
-        (local-set-key (kbd "j") 'evil-next-line)
-        (local-set-key (kbd "k") 'evil-previous-line))
-
-      (hook-fn 'gnus-browse-mode-hook
-        (local-set-key (kbd "j") 'gnus-browse-next-group)
-        (local-set-key (kbd "k") 'gnus-browse-prev-group)
-        (local-set-key (kbd "/") 'evil-search-forward)
-        (local-set-key (kbd "n") 'evil-search-next)
-        (local-set-key (kbd "N") 'evil-search-previous)))))
+      (after 'gnus-srvr
+        ;; gnus-server-mode
+        (bind-key "j" 'evil-next-line gnus-server-mode-map)
+        (bind-key "k" 'evil-previous-line gnus-server-mode-map)
+        ;; gnus-browse-mode
+        (bind-key "j" 'gnus-browse-next-group gnus-browse-mode-map)
+        (bind-key "k" 'gnus-browse-prev-group gnus-browse-mode-map)
+        (bind-key "C-f" 'evil-scroll-page-down gnus-browse-mode-map)
+        (bind-key "C-b" 'evil-scroll-page-up gnus-browse-mode-map)
+        (bind-key "/" 'evil-search-forward gnus-browse-mode-map)
+        (bind-key "n" 'evil-search-next gnus-browse-mode-map)
+        (bind-key "N" 'evil-search-previous gnus-browse-mode-map)))))
 
 (provide 'cb-gnus)
 
