@@ -278,9 +278,10 @@ With prefix argument ARG, show the file and move to the tasks tree."
              :empty-lines 1
              :immediate-finish t)
 
-            ("r" "Reading List" entry
-             (file+headline org-default-notes-file "Reading List")
+            ("r" "Reading" entry
+             (file+headline org-default-notes-file "Readings")
              "* %^{Title}"
+             :empty-lines 1
              :immediate-finish t)
 
             ("l" "Link" entry
