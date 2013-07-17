@@ -105,7 +105,9 @@ With prefix argument ARG, show the file and move to the tasks tree."
     (setq org-catch-invisible-edits 'smart
           org-pretty-entities t
           org-todo-keywords
-          '((sequence "TODO(t)" "WAIT(w@/!)" "|" "DONE(d!)" "CANCELED(c@)")))
+          '((sequence
+             "TODO(t)" "NEXT(n@/!)" "WAITING(w@/!)" "SOMEDAY(s)"
+             "|" "DONE(d!)" "DEFERRED" "CANCELLED(c@)")))
 
     (--each '("NOTES" "COMMENTS")
       (add-to-list 'org-drawers it))
@@ -338,7 +340,10 @@ With prefix argument ARG, show the file and move to the tasks tree."
           org-agenda-include-diary t
           org-agenda-span 'week
           org-agenda-skip-deadline-if-done t
-          org-agenda-skip-scheduled-if-done t)
+          org-agenda-skip-scheduled-if-done t
+          ;; Ensure the agenda shows the whole coming week.
+          org-agenda-start-on-weekday nil
+          org-agenda-ndays 7)
 
     (define-key org-agenda-mode-map (kbd "g") 'org-agenda-goto-date)
     (define-key org-agenda-mode-map (kbd "j") 'org-agenda-next-item)
