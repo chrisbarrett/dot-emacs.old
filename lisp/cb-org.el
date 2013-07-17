@@ -102,12 +102,26 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
     ;;;; Org config
 
+    (defface org-todo-next
+      '((((background dark))
+         (:foreground "OrangeRed1" :bold t))
+        (((background light))
+         (:foreground "OrangeRed4" :bold t))
+        (t
+         (:inherit org-todo)))
+      "Face for todos with the NEXT label."
+      :group 'org-faces)
+
     (setq org-catch-invisible-edits 'smart
           org-pretty-entities t
+
           org-todo-keywords
           '((sequence
-             "TODO(t)" "NEXT(n@/!)" "WAITING(w@/!)" "SOMEDAY(s)"
-             "|" "DONE(d!)" "DEFERRED" "CANCELLED(c@)")))
+             "NEXT(n@/!)" "TODO(t)" "WAITING(w@/!)" "SOMEDAY(s)"
+             "|" "DONE(d!)" "DEFERRED" "CANCELLED(c@)"))
+
+          org-todo-keyword-faces
+          '(("NEXT" . org-todo-next)))
 
     (--each '("NOTES" "COMMENTS")
       (add-to-list 'org-drawers it))
