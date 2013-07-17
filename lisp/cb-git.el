@@ -106,6 +106,7 @@
       (destructuring-bind (min-arity . _max) (function-arity fname)
         `(lambda (&optional arg) (interactive "p")
            (global-git-gutter+-mode +1)
+           (require 'magit)
            (if (equal 0 ,min-arity)
                (funcall ',fname)
              (funcall ',fname arg)))))
@@ -120,7 +121,11 @@
               ("g C" . git-gutter+-stage-and-commit)
               )
       (evil-global-set-key 'normal (kbd (car it))
-                           (git-gutter-command (cdr it))))))
+                           (git-gutter-command (cdr it))))
+
+    (defadvice git-gutter+-commit (after select-log activate)
+      "Select the log window when committing."
+      (select-window (--first-window (derived-mode-p 'magit-log-edit-mode))))))
 
 (use-package git-gutter-fringe+
   :ensure t
