@@ -359,7 +359,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
     (setq org-agenda-files (list org-default-notes-file)
           org-agenda-include-diary t
-          org-agenda-span 'month)
+          org-agenda-span 'week)
 
     (define-key org-agenda-mode-map (kbd "g") 'org-agenda-goto-date)
     (define-key org-agenda-mode-map (kbd "j") 'org-agenda-next-item)
