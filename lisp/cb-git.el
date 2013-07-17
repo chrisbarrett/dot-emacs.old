@@ -95,13 +95,31 @@
   :init
   (add-to-list 'safe-local-variable-values '(gac-automatically-push-p . t)))
 
-(use-package git-gutter
+(use-package git-gutter+
   :ensure t
-  :bind ("C-x g g" . git-gutter:toggle)
-  :commands
-  (git-gutter:toggle
-   git-gutter:clean
-   git-gutter))
+  :bind ("C-x g g" . git-gutter+-mode)
+  :config
+  (after 'evil
+
+    (defun git-gutter-command (fname)
+      "Activate git-gutter mode when executing fname."
+      (assert (symbolp fname))
+      `(lambda (&optional arg) (interactive "p")
+         (git-gutter+-mode +1)
+         (funcall ',fname arg)))
+
+    (evil-global-set-key 'normal (kbd "g RET") 'git-gutter+-mode)
+    (--each '(("g n" . git-gutter+-next-hunk)
+              ("g n" . git-gutter+-next-hunk)
+              ("g ?" . git-gutter+-popup-hunk)
+              ("g p" . git-gutter+-previous-hunk)
+              ("g s" . git-gutter+-revert-hunk)
+              ("g s" . git-gutter+-stage-hunks)
+              ("g c" . git-gutter+-commit)
+              ("g C" . git-gutter+-stage-and-commit)
+              )
+      (evil-global-set-key 'normal (kbd (car it))
+                           (git-gutter-command (cdr it))))))
 
 (use-package gist
   :ensure t
