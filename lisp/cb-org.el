@@ -158,10 +158,10 @@ With prefix argument ARG, show the file and move to the tasks tree."
       "Sort the Tasks list in the notes file."
       (ignore-errors
         (with-org-notes-file
-          (save-excursion
-            (goto-char (point-min))
-            (search-forward-regexp (rx bol "*" (+ space) "Tasks" (* space) eol) nil t)
-            (cb:sort-tasks-in-subtree)))))
+         (save-excursion
+           (goto-char (point-min))
+           (search-forward-regexp (rx bol "*" (+ space) "Tasks" (* space) eol) nil t)
+           (cb:sort-tasks-in-subtree)))))
 
     (add-hook 'org-capture-after-finalize-hook 'cb:sort-todos-by-priority)
 
