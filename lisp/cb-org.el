@@ -149,40 +149,15 @@ With prefix argument ARG, show the file and move to the tasks tree."
         (push-mark end)
         (org-sort-entries t 112)))
 
-    (defmacro with-org-notes-file (&rest body)
-      "Excute BODY with the notes file set to the current buffer."
-      (declare (indent 0))
-      `(with-current-buffer (find-file-noselect org-default-notes-file)
-         ,@body))
-
-    (defun cb:sort-todos-by-priority ()
-      "Sort the Tasks list in the notes file."
-      (ignore-errors
-        (with-org-notes-file
-         (save-excursion
-           (goto-char (point-min))
-           (search-forward-regexp (rx bol "*" (+ space) "Tasks" (* space) eol) nil t)
-           (cb:sort-tasks-in-subtree)))))
-
-    (add-hook 'org-capture-after-finalize-hook 'cb:sort-todos-by-priority)
-
-    (defun cb-org:read-priority (c)
-      (interactive "cPriority: ")
-      (or (and (characterp c)
-               (s-matches? (rx alpha) (char-to-string c))
-               (upcase (char-to-string c)))
-          (call-interactively 'cb-org:read-priority)))
-
     (defun cb-org:read-todo ()
       "Read a todo item for org-capture."
       (save-window-excursion
         (let ((desc (s-trim (read-string "Description: " nil t)))
-              (priority (call-interactively 'cb-org:read-priority))
               (start (and (ido-yes-or-no-p "Set a starting time? ")
                           (org-read-date)))
               (due (and (ido-yes-or-no-p "Set a deadline? ")
                         (org-read-date))))
-          (concat "* TODO [#" priority "] " desc "\n"
+          (concat "* TODO " desc "\n"
                   (when start (concat "  SCHEDULED: <" start "> \n"))
                   (when due   (concat "  DEADLINE:  <" due "> \n"))))))
 
