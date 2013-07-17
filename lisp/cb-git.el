@@ -105,12 +105,11 @@
       (assert (symbolp fname))
       (destructuring-bind (min-arity . _max) (function-arity fname)
         `(lambda (&optional arg) (interactive "p")
-           (git-gutter+-mode +1)
+           (global-git-gutter+-mode +1)
            (if (equal 0 ,min-arity)
                (funcall ',fname)
              (funcall ',fname arg)))))
 
-    (evil-global-set-key 'normal (kbd "g RET") 'git-gutter+-mode)
     (--each '(("g n" . git-gutter+-next-hunk)
               ("g n" . git-gutter+-next-hunk)
               ("g ?" . git-gutter+-popup-hunk)
