@@ -38,7 +38,8 @@
   (progn
     (setq org-modules '(org-bbdb org-w3m org-habit)
           org-directory (concat user-home-directory "org/")
-          org-default-notes-file (concat org-directory "notes.org"))
+          org-default-notes-file (concat org-directory "notes.org")
+          org-reverse-note-order t)
 
     (after 'evil
       (evil-define-key 'normal org-mode-map (kbd "M-P") 'outline-previous-visible-heading)
@@ -359,7 +360,9 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
     (setq org-agenda-files (list org-default-notes-file)
           org-agenda-include-diary t
-          org-agenda-span 'week)
+          org-agenda-span 'week
+          org-agenda-skip-deadline-if-done t
+          org-agenda-skip-scheduled-if-done t)
 
     (define-key org-agenda-mode-map (kbd "g") 'org-agenda-goto-date)
     (define-key org-agenda-mode-map (kbd "j") 'org-agenda-next-item)
