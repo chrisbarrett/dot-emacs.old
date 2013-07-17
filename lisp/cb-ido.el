@@ -134,6 +134,10 @@
 
 (use-package flx
   :ensure t
+  :defer t)
+
+(use-package flx-ido
+  :ensure t
   :config
   (after 'ido
     (flx-ido-mode +1)
