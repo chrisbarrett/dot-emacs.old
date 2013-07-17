@@ -121,6 +121,10 @@
       (evil-global-set-key 'normal (kbd (car it))
                            (git-gutter-command (cdr it))))))
 
+(use-package git-gutter-fringe+
+  :ensure t
+  :if (or (daemonp) (display-graphic-p)))
+
 (use-package gist
   :ensure t
   :commands
