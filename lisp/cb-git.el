@@ -97,16 +97,18 @@
 
 (use-package git-gutter+
   :ensure t
-  :bind ("C-x g g" . git-gutter+-mode)
   :config
   (after 'evil
 
     (defun git-gutter-command (fname)
       "Activate git-gutter mode when executing fname."
       (assert (symbolp fname))
-      `(lambda (&optional arg) (interactive "p")
-         (git-gutter+-mode +1)
-         (funcall ',fname arg)))
+      (destructuring-bind (min-arity . _max) (function-arity fname)
+        `(lambda (&optional arg) (interactive "p")
+           (git-gutter+-mode +1)
+           (if (equal 0 ,min-arity)
+               (funcall ',fname)
+             (funcall ',fname arg)))))
 
     (evil-global-set-key 'normal (kbd "g RET") 'git-gutter+-mode)
     (--each '(("g n" . git-gutter+-next-hunk)
