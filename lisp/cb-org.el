@@ -358,6 +358,7 @@ This can be 0 for immediate, or a floating point value.")
           org-agenda-span 'week
           org-agenda-skip-deadline-if-done t
           org-agenda-skip-scheduled-if-done t
+          org-agenda-skip-deadline-prewarning-if-scheduled t
           ;; Ensure the agenda shows the whole coming week.
           org-agenda-start-on-weekday nil
           org-agenda-ndays 7)
