@@ -78,7 +78,18 @@
   :ensure   t
   :commands evil-mode
   :init
-  (add-hook 'after-init-hook 'evil-mode)
+  (progn
+    (add-hook 'after-init-hook 'evil-mode)
+
+    (defun evil-global-set-keys (state &rest defs)
+      "Variadic version of `evil-global-set-key'
+Define keys in STATE.
+DEFS are the bindings to declare, comprised of alternating string-symbol pairs."
+      (declare (indent 1))
+      (after 'evil
+        (--each (-partition-all 2 defs)
+          (destructuring-bind (key value) it
+            (evil-global-set-key state (kbd key) value))))))
   :config
   (progn
     (defun evil-undefine ()
