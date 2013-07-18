@@ -66,6 +66,17 @@
 
   :config
   (progn
+
+    ;;;; Evil keys for magit diff.
+
+    (define-key magit-diff-mode-map (kbd "C-f") 'evil-scroll-page-down)
+    (define-key magit-diff-mode-map (kbd "C-b") 'evil-scroll-page-up)
+    (define-key magit-diff-mode-map (kbd "j") 'evil-next-line)
+    (define-key magit-diff-mode-map (kbd "k") 'evil-previous-line)
+    (define-key magit-diff-mode-map (kbd "/") 'evil-search-forward)
+
+    ;;;; View behaviour
+
     (declare-ido-wrapper magit-read-top-dir)
     (declare-modal-view magit-status)
     (declare-modal-view magit-log)
