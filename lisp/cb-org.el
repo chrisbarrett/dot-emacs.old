@@ -335,7 +335,7 @@ This can be 0 for immediate, or a floating point value.")
       (lambda (&optional arg) (interactive "P")
         (if arg
             (find-file org-default-notes-file)
-          (org-agenda-list))))
+          (org-agenda-list nil nil 1))))
 
     (defun cb-org:refresh-agenda ()
       "Refresh all org agenda buffers."
