@@ -247,6 +247,12 @@ With prefix argument ARG, show the file and move to the tasks tree."
               ,sym))
            ""))
 
+    (defun cb-org:capture-todo ()
+      "Capture a todo."
+      (org-capture nil "t"))
+
+    (global-set-key (kbd "M-t") 'cb-org:capture-todo)
+
     (setq org-capture-templates
           `(("T" "Task" entry
              (file+headline (project-task-file) "Tasks")
