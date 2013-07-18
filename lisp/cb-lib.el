@@ -28,6 +28,7 @@
 (require 'dash)
 (require 'cl-lib)
 (require 'f)
+(require 'bind-key)
 
 (defvar cb-lib:debug-hooks? nil
   "Set to non-nil to prevent `hook-fn' from catching errors.")
@@ -190,6 +191,22 @@ restore key."
   "Anaphoric form of `-first-window'.
 Find the first window where PRED-FORM is not nil."
   `(-first-window (lambda (it) ,pred-form)))
+
+;; -----------------------------------------------------------------------------
+
+(defmacro* bind-keys (&rest bindings &key map overriding? &allow-other-keys)
+  "Variadic form of `bind-key'.
+* MAP is an optional keymap.  The bindings will only be enabled when this keymap is active.
+
+* OVERRIDING? prevents other maps from overriding the binding.  It
+  uses `bind-key*' instead of the default `bind-key'.
+
+* BINDINGS are alternating strings and functions to use for keybindings."
+  (declare (indent 0))
+  (let ((bind (if overriding? #'bind-key* #'bind-key))
+        (bs (->> bindings (-partition-all 2) (--remove (keywordp (car it))))))
+    `(progn
+       ,@(loop for (k f) in bs collect `(,bind ,k ,f ,map)))))
 
 ;; -----------------------------------------------------------------------------
 
