@@ -145,7 +145,8 @@ With prefix argument ARG, show the file and move to the tasks tree."
   :init
   (progn
     (when (truthy? 'cb:use-vim-keybindings?)
-      (bind-key "M-o" 'org-capture))
+      (bind-key* "M-o" 'org-capture)
+      (bind-key* "M-k" (command (org-capture nil "t"))))
 
     (hook-fn 'org-capture-mode-hook
       (when (fboundp 'evil-insert)
@@ -246,12 +247,6 @@ With prefix argument ARG, show the file and move to the tasks tree."
              (with-previous-buffer
               ,sym))
            ""))
-
-    (defun cb-org:capture-todo ()
-      "Capture a todo."
-      (org-capture nil "t"))
-
-    (global-set-key (kbd "M-t") 'cb-org:capture-todo)
 
     (setq org-capture-templates
           `(("T" "Task" entry

@@ -58,8 +58,7 @@
       (bind-key* "M-i" 'helm-imenu)
       (bind-key* "M-f" 'helm-etags-select)
       (bind-key* "M-m" 'helm-man-woman)
-      (bind-key* "M-w" 'helm-w3m-bookmarks)
-      (bind-key* "M-k" 'helm-show-kill-ring))))
+      (bind-key* "M-w" 'helm-w3m-bookmarks))))
 
 (use-package helm-projectile
   :ensure t
