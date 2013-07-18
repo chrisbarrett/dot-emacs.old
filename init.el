@@ -72,7 +72,7 @@
 (use-package cb-foundation)
 (use-package personal-config)
 (use-package cb-mode-groups)
-(use-package cb-vim :if cb:use-vim-keybindings?)
+(use-package cb-evil :if cb:use-vim-keybindings?)
 (use-package cb-typefaces)
 (use-package cb-modeline)
 (use-package cb-osx :if (equal system-type 'darwin))

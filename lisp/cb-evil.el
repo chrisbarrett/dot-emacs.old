@@ -1,4 +1,4 @@
-;;; cb-vim.el --- Configuration for Evil and Vim
+;;; cb-evil.el --- Configuration for Evil and Vim
 
 ;; Copyright (C) 2013 Chris Barrett
 
@@ -175,10 +175,10 @@ DEFS are the bindings to declare, comprised of alternating string-symbol pairs."
     (define-key evil-normal-state-map (kbd "C--") 'evil-numbers/dec-at-pt)
     (define-key evil-normal-state-map (kbd "C-=") 'evil-numbers/inc-at-pt)))
 
-(provide 'cb-vim)
+(provide 'cb-evil)
 
 ;; Local Variables:
 ;; lexical-binding: t
 ;; End:
 
-;;; cb-vim.el ends here
+;;; cb-evil.el ends here
