@@ -104,6 +104,7 @@
   (add-to-list 'safe-local-variable-values '(gac-automatically-push-p . t)))
 
 (use-package git-gutter+
+  :diminish git-gutter+-mode
   :ensure t
   :config
   (progn
