@@ -377,7 +377,7 @@ This can be 0 for immediate, or a floating point value.")
       (cb-org:refresh-agenda))
 
     (hook-fn 'org-mode-hook
-      (add-hook 'after-save-hook 'cb-org:refresh-agenda))
+      (add-hook 'after-save-hook 'cb-org:refresh-agenda nil 'local))
 
     (defadvice org-agenda-diary-entry (after narrow-and-insert activate)
       "Make the diary entry process similar to org-capture."
