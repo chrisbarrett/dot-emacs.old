@@ -169,13 +169,9 @@ With prefix argument ARG, show the file and move to the tasks tree."
       "Read a todo item for org-capture."
       (save-window-excursion
         (let ((desc (s-trim (read-string "Description: " nil t)))
-              (start (and (ido-yes-or-no-p "Set a starting time? ")
-                          (org-read-date)))
-              (due (and (ido-yes-or-no-p "Set a deadline? ")
-                        (org-read-date))))
+              (start (org-read-date)))
           (concat "* TODO " desc "\n"
-                  (when start (concat "  SCHEDULED: <" start "> \n"))
-                  (when due   (concat "  DEADLINE:  <" due "> \n"))))))
+                  "  SCHEDULED: <" start "> \n"))))
 
 ;;;; Org Habits
 
