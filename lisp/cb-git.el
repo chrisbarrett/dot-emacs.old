@@ -98,30 +98,15 @@
 (use-package git-gutter+
   :ensure t
   :config
-  (after 'evil
-
-    (defun git-gutter-command (fname)
-      "Activate git-gutter mode when executing fname."
-      (assert (symbolp fname))
-      (destructuring-bind (min-arity . _max) (function-arity fname)
-        `(lambda (&optional arg) (interactive "p")
-           (global-git-gutter+-mode +1)
-           (require 'magit)
-           (if (equal 0 ,min-arity)
-               (funcall ',fname)
-             (funcall ',fname arg)))))
-
-    (--each '(("g n" . git-gutter+-next-hunk)
-              ("g n" . git-gutter+-next-hunk)
-              ("g ?" . git-gutter+-popup-hunk)
-              ("g p" . git-gutter+-previous-hunk)
-              ("g s" . git-gutter+-revert-hunk)
-              ("g s" . git-gutter+-stage-hunks)
-              ("g c" . git-gutter+-commit)
-              ("g C" . git-gutter+-stage-and-commit)
-              )
-      (evil-global-set-key 'normal (kbd (car it))
-                           (git-gutter-command (cdr it))))
+  (progn
+    (evil-global-set-keys 'normal
+      "g n" 'git-gutter+-next-hunk
+      "g p" 'git-gutter+-previous-hunk
+      "g h" 'git-gutter+-popup-hunk
+      "g x" 'git-gutter+-revert-hunk
+      "g s" 'git-gutter+-stage-hunks
+      "g c" 'git-gutter+-commit
+      "g C" 'git-gutter+-stage-and-commit)
 
     (defadvice git-gutter+-commit (after select-log activate)
       "Select the log window when committing."
