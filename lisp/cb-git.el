@@ -107,6 +107,13 @@
   :ensure t
   :config
   (progn
+    (--each '(find-file-hook after-save-hook)
+      (hook-fn it
+        "Enable git gutter when viewing files in a git repository."
+        (when (vc-git-root (buffer-file-name))
+          (require 'magit)
+          (git-gutter+-mode +1))))
+
     (evil-global-set-keys 'normal
       "g n" 'git-gutter+-next-hunk
       "g p" 'git-gutter+-previous-hunk
