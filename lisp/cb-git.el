@@ -59,6 +59,7 @@
       (define-key dired-mode-map (kbd "M-G") 'magit-status))
 
     (evil-global-set-keys 'normal
+      "g P" 'magit-key-mode-popup-pushing
       "g l" 'magit-log
       "g r" 'magit-reflog
       "g D" 'magit-diff-working-tree))
