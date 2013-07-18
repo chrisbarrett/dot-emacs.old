@@ -27,6 +27,7 @@
 ;;; Code:
 
 (require 'use-package)
+(require 'cb-lib)
 
 (autoload 'woman-file-name-all-completions "woman")
 (autoload 'Man-getpage-in-background "man")
@@ -86,10 +87,10 @@
 Define keys in STATE.
 DEFS are the bindings to declare, comprised of alternating string-symbol pairs."
       (declare (indent 1))
-      (after 'evil
-        (--each (-partition-all 2 defs)
-          (destructuring-bind (key value) it
-            (evil-global-set-key state (kbd key) value))))))
+      (eval `(after 'evil
+               (--each (-partition-all 2 ',defs)
+                 (destructuring-bind (key value) it
+                   (evil-global-set-key ',state (kbd key) value)))))))
   :config
   (progn
     (defun evil-undefine ()
