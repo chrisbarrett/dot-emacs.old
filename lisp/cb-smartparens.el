@@ -32,37 +32,46 @@
 (require 's)
 
 (after 'evil
-  (defmacro define-evil-sp-key (key sym)
-    "Wrapper around `evil-global-set-key' that defines key under sp prefix."
-    `(evil-global-set-key 'normal ,(kbd (concat ", " key)) ,sym))
-
-  (define-evil-sp-key "A" 'sp-add-to-previous-sexp)
-  (define-evil-sp-key "a" 'sp-add-to-next-sexp)
-  (define-evil-sp-key "B" 'sp-backward-barf-sexp)
-  (define-evil-sp-key "b" 'sp-forward-barf-sexp)
-  (define-evil-sp-key "c" 'sp-convolute-sexp)
-  (define-evil-sp-key "D" 'sp-backward-kill-sexp)
-  (define-evil-sp-key "d" 'sp-kill-sexp)
-  (define-evil-sp-key "e" 'sp-emit-sexp)
-  (define-evil-sp-key "j" 'sp-join-sexp)
-  (define-evil-sp-key "K" 'sp-splice-sexp-killing-backward)
-  (define-evil-sp-key "k" 'sp-splice-sexp-killing-forward)
-  (define-evil-sp-key "n" 'sp-next-sexp)
-  (define-evil-sp-key "p" 'sp-previous-sexp)
-  (define-evil-sp-key "r" 'sp-raise-sexp)
-  (define-evil-sp-key "s" 'sp-splice-sexp-killing-around)
-  (define-evil-sp-key "t" 'sp-transpose-sexp)
-  (define-evil-sp-key "U" 'sp-backward-unwrap-sexp)
-  (define-evil-sp-key "u" 'sp-unwrap-sexp)
-  (define-evil-sp-key "w" 'sp-rewrap-sexp)
-  (define-evil-sp-key "x" 'sp-split-sexp)
-  (define-evil-sp-key "Y" 'sp-backward-copy-sexp)
-  (define-evil-sp-key "y" 'sp-copy-sexp)
-  (define-evil-sp-key "<" 'sp-beginning-of-sexp)
-  (define-evil-sp-key "," 'sp-end-of-sexp)
-
   (evil-global-set-key 'normal "(" 'sp-backward-up-sexp)
-  (evil-global-set-key 'normal ")" 'sp-forward-sexp))
+  (evil-global-set-key 'normal ")" 'sp-forward-sexp)
+
+  ;; Define a special state for smartparens operations.
+
+  (evil-define-state paren "Paren editing state."
+    :tag "<Paren> "
+    :message "-- PAREN --"
+    :cursor (bar . 2))
+
+  ;; Configure entry and exit from paren state.
+  (evil-global-set-key 'normal (kbd ",") 'evil-paren-state)
+  (define-key evil-paren-state-map (kbd "ESC") 'evil-normal-state)
+  (define-key evil-paren-state-map (kbd "C-g") 'evil-normal-state)
+  ;; Define paren state keys.
+  (evil-global-set-keys 'paren
+    "A" 'sp-add-to-previous-sexp
+    "a" 'sp-add-to-next-sexp
+    "B" 'sp-backward-barf-sexp
+    "b" 'sp-forward-barf-sexp
+    "c" 'sp-convolute-sexp
+    "D" 'sp-backward-kill-sexp
+    "d" 'sp-kill-sexp
+    "e" 'sp-emit-sexp
+    "j" 'sp-join-sexp
+    "K" 'sp-splice-sexp-killing-backward
+    "k" 'sp-splice-sexp-killing-forward
+    "n" 'sp-next-sexp
+    "p" 'sp-previous-sexp
+    "r" 'sp-raise-sexp
+    "s" 'sp-splice-sexp-killing-around
+    "t" 'sp-transpose-sexp
+    "U" 'sp-backward-unwrap-sexp
+    "u" 'sp-unwrap-sexp
+    "w" 'sp-rewrap-sexp
+    "x" 'sp-split-sexp
+    "Y" 'sp-backward-copy-sexp
+    "y" 'sp-copy-sexp
+    "<" 'sp-beginning-of-sexp
+    "," 'sp-end-of-sexp))
 
 (use-package smartparens
   :ensure t
