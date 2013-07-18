@@ -169,7 +169,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
     (defun cb-org:read-todo ()
       "Read a todo item for org-capture."
       (save-window-excursion
-        (let ((desc (s-trim (read-string "Description: " nil t)))
+        (let ((desc (s-trim (read-string "TODO: " nil t)))
               (start (org-read-date)))
           (concat "* TODO " desc "\n"
                   "  SCHEDULED: <" start "> \n"))))
