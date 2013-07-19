@@ -118,9 +118,11 @@
 
 ;; Rebind to C-c k k ("kill") to prevent accidentally exiting when
 ;; using Org bindings.
-(bind-key* "C-x C-c" (command (message "Type <C-c k k> to exit Emacs")))
-(bind-key* "C-c k k" 'cb:exit-emacs-dwim)
-(bind-key* "C-c k e" 'cb:exit-emacs)
+(bind-keys
+  :overriding? t
+  "C-x C-c" (command (message "Type <C-c k k> to exit Emacs"))
+  "C-c k k" 'cb:exit-emacs-dwim
+  "C-c k e" 'cb:exit-emacs)
 
 (defun cb:exit-emacs ()
   (interactive)
@@ -137,15 +139,16 @@
 ;;; Help commands
 
 (define-prefix-command 'help-find-map)
-(bind-key "C-h e"   'help-find-map)
-(bind-key "C-h e e" 'view-echo-area-messages)
-(bind-key "C-h e f" 'find-function)
-(bind-key "C-h e k" 'find-function-on-key)
-(bind-key "C-h e l" 'find-library)
-(bind-key "C-h e p" 'find-library)
-(bind-key "C-h e v" 'find-variable)
-(bind-key "C-h e a" 'apropos)
-(bind-key "C-h e V" 'apropos-value)
+(bind-keys
+  "C-h e"   'help-find-map
+  "C-h e e" 'view-echo-area-messages
+  "C-h e f" 'find-function
+  "C-h e k" 'find-function-on-key
+  "C-h e l" 'find-library
+  "C-h e p" 'find-library
+  "C-h e v" 'find-variable
+  "C-h e a" 'apropos
+  "C-h e V" 'apropos-value)
 
 ;;; Narrowing
 

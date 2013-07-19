@@ -51,14 +51,16 @@
       (define-key helm-map (kbd "C-[") 'helm-keyboard-quit))
 
     (after 'evil
-      (bind-key* "M-a" 'helm-apropos)
-      (bind-key* "M-b" 'helm-buffers-list)
-      (bind-key* "C-x C-b" 'helm-buffers-list)
-      (bind-key* "M-h" 'helm-mini)
-      (bind-key* "M-i" 'helm-imenu)
-      (bind-key* "M-f" 'helm-etags-select)
-      (bind-key* "M-m" 'helm-man-woman)
-      (bind-key* "M-w" 'helm-w3m-bookmarks))))
+      (bind-keys
+       :overriding? t
+       "M-a" 'helm-apropos
+       "M-b" 'helm-buffers-list
+       "C-x C-b" 'helm-buffers-list
+       "M-h" 'helm-mini
+       "M-i" 'helm-imenu
+       "M-f" 'helm-etags-select
+       "M-m" 'helm-man-woman
+       "M-w" 'helm-w3m-bookmarks))))
 
 (use-package helm-projectile
   :ensure t

@@ -257,12 +257,14 @@ Repeated invocations toggle between the two most recently open buffers."
   (interactive)
   (switch-to-buffer (other-buffer (current-buffer) 1)))
 
-(bind-key "C-c k b" 'clean-buffers)
-(bind-key "C-<up>" 'move-line-up)
-(bind-key "C-<down>" 'move-line-down)
 (bind-key* "C-;" 'swap-with-previous-buffer)
-(bind-key "s-f" 'cb:rotate-buffers)
-(bind-key "C-x C-o" 'other-window)
+(bind-keys
+  "C-c k b"  'clean-buffers
+  "C-<up>"   'move-line-up
+  "C-<down>" 'move-line-down
+  "s-f"      'cb:rotate-buffers
+  "C-x C-o"  'other-window)
+
 
 (define-key prog-mode-map (kbd "M-q") 'indent-dwim)
 

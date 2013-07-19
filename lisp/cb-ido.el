@@ -70,13 +70,14 @@
    ido-completing-read)
   :init
   (progn
-    (bind-key "C-x C-f" 'ido-find-file)
-    (bind-key "C-x d"   'ido-dired)
-    (bind-key "C-x i"   'ido-insert-file)
-    (bind-key "C-x C-w" 'ido-write-file)
-    (bind-key "C-x k"   'ido-kill-buffer)
-    (bind-key "C-x b"   'ido-switch-buffer)
-    (bind-key* "M-I"    (command (ido-find-file-in-dir cb:lisp-dir))))
+    (bind-key* "M-I" (command (ido-find-file-in-dir cb:lisp-dir)))
+    (bind-keys
+      "C-x C-f" 'ido-find-file
+      "C-x d"   'ido-dired
+      "C-x i"   'ido-insert-file
+      "C-x C-w" 'ido-write-file
+      "C-x k"   'ido-kill-buffer
+      "C-x b"   'ido-switch-buffer))
   :config
   (progn
     (setq
