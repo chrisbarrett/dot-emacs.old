@@ -55,13 +55,13 @@ The arguments passed to the hook function are bound to the symbol
        (add-hook hook (lambda (&rest _args)
                         ,docstring
                         (if cb-lib:debug-hooks?
-                            ;; Do not allow errors to propagate from the hook.
-                            (condition-case err
-                                (progn ,@body)
-                              (error (message
-                                      "[%s] %s" ',hook
-                                      (error-message-string err))))
-                          (progn ,@body)))))))
+                            (progn ,@body)
+                          ;; Do not allow errors to propagate from the hook.
+                          (condition-case err
+                              (progn ,@body)
+                            (error (message
+                                    "[%s] %s" ',hook
+                                    (error-message-string err))))))))))
 
 (defmacro after (feature &rest body)
   "Like `eval-after-load' - once FEATURE is loaded, execute the BODY."
