@@ -103,12 +103,6 @@
       :bind "M-W"
       :restore-bindings '("M-W" "M-E"))
 
-    (defun cb:find-window-with-mode (mode)
-      "Find the first window whose buffer is in major-mode MODE."
-      (--first-window
-       (with-current-buffer (window-buffer it)
-         (equal mode major-mode))))
-
     (defun cb:w3m-browse-url-as-help (url)
       "Browse the given URL in a help window."
       (interactive
@@ -117,7 +111,9 @@
                      (thing-at-point-url-at-point)
                      t)))
       (with-window-restore
-        (let ((win (or (cb:find-window-with-mode 'w3m-mode) (split-window))))
+        (let ((win (or (--first-window (with-current-buffer (window-buffer it)
+                                         (derived-mode-p 'w3m-mode)))
+                       (split-window))))
           (select-window win)
           (w3m-browse-url url))
         (local-set-key (kbd "q") (command (restore)))))
