@@ -28,6 +28,10 @@
 
 (require 'use-package)
 (require 'cb-lib)
+(require 'cb-evil)
+(autoload 'vc-git-root "vc-git")
+(autoload 'git-gutter+-refresh "git-gutter+")
+(autoload 'vc-git-register "vc-git")
 
 (define-prefix-command 'git-map)
 (bind-key "C-x g" 'git-map)
