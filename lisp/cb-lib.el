@@ -60,7 +60,7 @@ The arguments passed to the hook function are bound to the symbol
                           (condition-case err
                               (progn ,@body)
                             (error (message
-                                    "[%s] %s" ',hook
+                                    "[%s] %s" ,hook
                                     (error-message-string err))))))))))
 
 (defmacro after (feature &rest body)
