@@ -137,8 +137,14 @@
       "g C" 'git-gutter+-stage-and-commit)
 
     (defadvice git-gutter+-commit (after select-log activate)
-      "Select the log window when committing."
-      (select-window (--first-window (derived-mode-p 'magit-log-edit-mode))))))
+      "Select the log window when committing.
+Ensure a window is created for the commit window."
+      (let* ((buf (--first-buffer (derived-mode-p 'magit-log-edit-mode)))
+             (win (--first-window (equal buf (window-buffer it)))))
+        (if win
+            (select-window win)
+          (select-window (split-window-below -5))
+          (switch-to-buffer buf))))))
 
 (use-package git-gutter-fringe+
   :ensure t
