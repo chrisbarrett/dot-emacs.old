@@ -34,7 +34,7 @@
   :commands gnus
   :defer t
   :init
-  (when (truthy? cb:use-vim-keybindings?)
+  (when (true? cb:use-vim-keybindings?)
     (bind-key* "M-Y" 'gnus))
   :config
   (progn

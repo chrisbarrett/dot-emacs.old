@@ -162,7 +162,7 @@
         (t
          (narrow-to-defun))))
 
-(when (truthy? 'cb:use-vim-keybindings?)
+(when (true? cb:use-vim-keybindings?)
   (bind-key "M-n" 'cb:narrow-dwim))
 (put 'narrow-to-defun  'disabled nil)
 (put 'narrow-to-page   'disabled nil)
@@ -237,7 +237,7 @@
   "Perform a context-sensitive 'next' action."
   (interactive)
   (cond
-   ((truthy? 'edebug-active)
+   ((true? edebug-active)
     (edebug-step-mode))
    (t
     (next-error))))

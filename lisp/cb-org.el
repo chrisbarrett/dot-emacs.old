@@ -144,7 +144,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
   :commands (org-capture)
   :init
   (progn
-    (when (truthy? 'cb:use-vim-keybindings?)
+    (when (true? cb:use-vim-keybindings?)
       (bind-key* "M-o" 'org-capture)
       (bind-key* "M-k" (command (org-capture nil "t"))))
 
@@ -340,7 +340,7 @@ This can be 0 for immediate, or a floating point value.")
         (with-current-buffer it
           (org-agenda-redo t))))
 
-    (when (truthy? 'cb:use-vim-keybindings?)
+    (when (true? cb:use-vim-keybindings?)
       (bind-key "M-C" 'org-agenda))
 
     (when (or (daemonp) (display-graphic-p))

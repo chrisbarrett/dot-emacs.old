@@ -58,7 +58,7 @@
   :commands popwin-mode
   :init
   (hook-fn 'window-configuration-change-hook
-    (unless (truthy? 'popwin-mode)
+    (unless (true? popwin-mode)
       (popwin-mode +1)))
   :config
   (progn
@@ -109,7 +109,7 @@
 (use-package winner
   :commands winner-mode
   :init (hook-fn 'window-configuration-change-hook
-          (unless (truthy? 'winner-mode)
+          (unless (true? winner-mode)
             (winner-mode +1))))
 
 (use-package window-number

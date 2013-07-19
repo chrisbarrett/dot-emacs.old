@@ -155,9 +155,9 @@ restore key."
 
        (bind-key* ,bind ',fname))))
 
-(defun truthy? (sym)
+(defmacro true? (sym)
   "Test whether SYM is bound and non-nil."
-  (and (boundp sym) (eval sym)))
+  `(and (boundp ',sym) (eval ',sym)))
 
 (defun byte-compile-conf ()
   "Recompile all configuration files."
