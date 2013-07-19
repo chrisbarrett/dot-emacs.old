@@ -203,14 +203,6 @@ Ensure a window is created for the commit window."
   :init
   (progn
 
-    (defun cb:apply-diff ()
-      (let ((file ediff-merge-store-file))
-        (set-buffer ediff-buffer-C)
-        (write-region (point-min) (point-max) file)
-        (message "Merge buffer saved in: %s" file)
-        (set-buffer-modified-p nil)
-        (sit-for 1)))
-
     (defun cb:handle-git-merge (local remote base merged)
       "Configure this emacs session for use as the git mergetool."
       (add-hook 'ediff-quit-hook 'kill-emacs)
@@ -219,6 +211,15 @@ Ensure a window is created for the commit window."
 
   :config
   (progn
+
+    (defun cb:apply-diff ()
+      (let ((file ediff-merge-store-file))
+        (set-buffer ediff-buffer-C)
+        (write-region (point-min) (point-max) file)
+        (message "Merge buffer saved in: %s" file)
+        (set-buffer-modified-p nil)
+        (sit-for 1)))
+
     (setq diff-switches "-u"
           ediff-window-setup-function 'ediff-setup-windows-plain)
     (add-hook 'ediff-startup-hook 'turn-off-evil-mode)))
