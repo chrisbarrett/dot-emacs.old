@@ -136,6 +136,14 @@
       "g c" 'git-gutter+-commit
       "g C" 'git-gutter+-stage-and-commit)
 
+    (defadvice git-gutter+-commit (before save-windows activate)
+      "Save window state before and after git gutter commits."
+      (setq magit-pre-log-edit-window-configuration (current-window-configuration)))
+
+    (defadvice git-gutter+-stage-and-commit (before save-windows activate)
+      "Save window state before and after git gutter commits."
+      (setq magit-pre-log-edit-window-configuration (current-window-configuration)))
+
     (defadvice git-gutter+-commit (after select-log activate)
       "Select the log window when committing.
 Ensure a window is created for the commit window."
