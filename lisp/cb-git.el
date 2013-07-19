@@ -122,6 +122,7 @@
   (progn
 
     (defun cb-git:add ()
+      "Run 'git add' on the file for the current buffer."
       (interactive)
       (cond
        ((not (buffer-file-name))
