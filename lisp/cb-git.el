@@ -120,12 +120,19 @@
   :ensure t
   :config
   (progn
-    (--each '(find-file-hook after-save-hook)
-      (hook-fn it
-        "Enable git gutter when viewing files in a git repository."
-        (when (vc-git-root (buffer-file-name))
-          (require 'magit)
-          (git-gutter+-mode +1))))
+
+    (defun cb-git:add ()
+      (interactive)
+      (cond
+       ((not (buffer-file-name))
+        (user-error "Buffer has no corresponding file"))
+       ((not (vc-git-root (buffer-file-name)))
+        (user-error "Not a git repository"))
+       ((yes-or-no-p "Stage all changes to this file?")
+        (save-buffer)
+        (vc-git-register (list (buffer-file-name)))
+        (message "Done.")))
+      (git-gutter+-refresh))
 
     (evil-global-set-keys 'normal
       "g n" 'git-gutter+-next-hunk
@@ -133,8 +140,16 @@
       "g h" 'git-gutter+-popup-hunk
       "g x" 'git-gutter+-revert-hunk
       "g s" 'git-gutter+-stage-hunks
+      "g a" 'cb-git:add
       "g c" 'git-gutter+-commit
       "g C" 'git-gutter+-stage-and-commit)
+
+    ;; Enable git gutter when viewing files in a git repository.
+    (--each '(find-file-hook after-save-hook)
+      (hook-fn it
+        (when (vc-git-root (buffer-file-name))
+          (require 'magit)
+          (git-gutter+-mode +1))))
 
     (defadvice git-gutter+-commit (before save-windows activate)
       "Save window state before and after git gutter commits."
