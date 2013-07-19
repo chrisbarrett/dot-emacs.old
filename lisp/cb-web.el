@@ -136,9 +136,24 @@
       (bind-key* "M-e" 'cb:w3m-browse-dwim)))
 
   :config
-  (hook-fn 'w3m-mode-hook
-    (buffer-face-set
-     `(:family ,(serif-font) :height 130))))
+  (progn
+    (bind-keys
+      :map w3m-mode-map
+      "z t" 'evil-scroll-line-to-top
+      "z b" 'evil-scroll-line-to-bottom
+      "z z" 'evil-scroll-line-to-center
+      "C-f" 'evil-scroll-page-down
+      "C-b" 'evil-scroll-page-up
+      "y"   'evil-yank
+      "p"   'evil-paste-after
+      "/"   'evil-search-forward
+      "?"   'evil-search-backward
+      "n"   'evil-search-next
+      "N"   'evil-search-previous)
+
+    (hook-fn 'w3m-mode-hook
+      (buffer-face-set
+       `(:family ,(serif-font) :height 130)))))
 
 (use-package erc
   :defer t
