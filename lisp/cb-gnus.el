@@ -67,41 +67,49 @@
     (after 'evil
 
       (after 'gnus-group
-        ;; gnus-group-mode
-        (bind-key "j" 'gnus-group-next-group gnus-group-mode-map)
-        (bind-key "k" 'gnus-group-prev-group gnus-group-mode-map)
-        (bind-key "n" 'gnus-group-jump-to-group gnus-group-mode-map))
+        (bind-keys
+          :map gnus-group-mode-map
+          "j" 'gnus-group-next-group
+          "k" 'gnus-group-prev-group
+          "n" 'gnus-group-jump-to-group))
 
       (after 'gnus-sum
-        ;; gnus-summary-mode
-        (bind-key "j" 'gnus-summary-next-article gnus-summary-mode-map)
-        (bind-key "k" 'gnus-summary-prev-article gnus-summary-mode-map)
-        (bind-key "n" 'gnus-summary-jump-to-group gnus-summary-mode-map))
+        (bind-keys
+          :map gnus-summary-mode-map
+          "j" 'gnus-summary-next-article
+          "k" 'gnus-summary-prev-article
+          "n" 'gnus-summary-next-unread-article))
 
       (after 'gnus-art
-        ;; gnus-article-mode
-        (bind-key "j" 'next-line gnus-article-mode-map)
-        (bind-key "k" 'previous-line gnus-article-mode-map)
-        (bind-key "C-n" 'gnus-summary-next-article gnus-article-mode-map)
-        (bind-key "C-p" 'gnus-summary-prev-article gnus-article-mode-map)
-        (bind-key "C-f" 'evil-scroll-page-down gnus-article-mode-map)
-        (bind-key "C-b" 'evil-scroll-page-up gnus-article-mode-map)
-        (bind-key "z z" 'evil-scroll-line-to-center gnus-article-mode-map)
-        (bind-key "z t" 'evil-scroll-line-to-top gnus-article-mode-map)
-        (bind-key "z b" 'evil-scroll-line-to-bottom gnus-article-mode-map))
+        (bind-keys
+          :map gnus-article-mode-map
+          "j" 'next-line
+          "k" 'previous-line
+          "w" 'evil-forward-word-begin
+          "e" 'evil-forward-word-end
+          "b" 'evil-backward-word-begin
+          "C-n" 'gnus-summary-next-article
+          "C-p" 'gnus-summary-prev-article
+          "C-f" 'evil-scroll-page-down
+          "C-b" 'evil-scroll-page-up
+          "z z" 'evil-scroll-line-to-center
+          "z t" 'evil-scroll-line-to-top
+          "z b" 'evil-scroll-line-to-bottom))
 
       (after 'gnus-srvr
-        ;; gnus-server-mode
-        (bind-key "j" 'evil-next-line gnus-server-mode-map)
-        (bind-key "k" 'evil-previous-line gnus-server-mode-map)
-        ;; gnus-browse-mode
-        (bind-key "j" 'gnus-browse-next-group gnus-browse-mode-map)
-        (bind-key "k" 'gnus-browse-prev-group gnus-browse-mode-map)
-        (bind-key "C-f" 'evil-scroll-page-down gnus-browse-mode-map)
-        (bind-key "C-b" 'evil-scroll-page-up gnus-browse-mode-map)
-        (bind-key "/" 'evil-search-forward gnus-browse-mode-map)
-        (bind-key "n" 'evil-search-next gnus-browse-mode-map)
-        (bind-key "N" 'evil-search-previous gnus-browse-mode-map)))))
+        (bind-keys
+          :map gnus-server-mode-map
+          "j" 'evil-next-line
+          "k" 'evil-previous-line)
+        (bind-keys
+          :map gnus-browse-mode-map
+          "j" 'gnus-browse-next-group
+          "k" 'gnus-browse-prev-group
+          "C-f" 'evil-scroll-page-down
+          "C-b" 'evil-scroll-page-up
+          "/" 'evil-search-forward
+          "n" 'evil-search-next
+          "N" 'evil-search-previous)))))
 
 (provide 'cb-gnus)
 
