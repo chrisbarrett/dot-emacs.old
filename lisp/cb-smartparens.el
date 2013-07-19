@@ -115,7 +115,6 @@
 
 
     ;; Bind Paredit-style wrapping commands.
-    (sp-pair "<" ">" :bind "M-<" :actions nil)
     (sp-pair "(" ")" :bind "M-(")
     (sp-pair "{" "}" :bind "M-{")
     (sp-pair "[" "]" :bind "M-[")
