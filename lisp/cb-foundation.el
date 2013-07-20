@@ -96,6 +96,12 @@
 (icomplete-mode +1)
 (global-set-key (kbd "RET") 'comment-indent-new-line)
 
+;; Enable alt latin input method
+;; (setq-default default-input-method 'latin-alt-postfix)
+(setq default-input-method 'latin-alt-postfix)
+(hook-fn 'prog-mode-hook
+  (set-input-method nil))
+
 ;; Encodings
 
 (setq locale-coding-system   'utf-8)
