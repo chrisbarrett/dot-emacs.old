@@ -100,6 +100,11 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
     (bind-key* "M-?" 'cb-org:show-tasks)
 
+    ;;;; Org babel
+
+    (org-babel-do-load-languages
+     'org-babel-load-languages '((python . t)))
+
     ;;;; Org config
 
     (defface org-todo-next
