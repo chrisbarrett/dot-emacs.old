@@ -102,6 +102,9 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
     ;;;; Org babel
 
+    (setq org-src-fontify-natively t
+          org-confirm-babel-evaluate nil)
+
     (org-babel-do-load-languages
      'org-babel-load-languages '((python . t)))
 
