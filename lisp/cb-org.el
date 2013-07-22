@@ -30,6 +30,11 @@
 (require 'cb-foundation)
 (require 'cb-mode-groups)
 
+(after 'smartparens
+  (sp-with-modes '(org-mode)
+    (sp-local-pair "#+BEGIN_SRC" "#+END_SRC")
+    (sp-local-pair "#+begin_src" "#+end_src")))
+
 (use-package org
   :ensure t
   :defer  t
