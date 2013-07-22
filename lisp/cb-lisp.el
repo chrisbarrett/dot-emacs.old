@@ -105,9 +105,7 @@
     (let ((current-prefix-arg '-))
       (slime)))
   :config
-  (progn
-    (setq slime-lisp-implementations `((lisp ("sbcl" "--noinform"))))
-    (slime-setup '(slime-fancy))))
+  (setq slime-lisp-implementations `((lisp ("sbcl" "--noinform")))))
 
 (use-package ac-slime
   :ensure   t
