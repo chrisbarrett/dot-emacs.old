@@ -58,6 +58,9 @@
   (load-theme 'solarized-light 'no-confirm)
   (set-face-underline 'hl-line nil)
 
+  (after 'org
+    (set-face-background 'org-block-background "#f8f1dc"))
+
   (after 'helm
     (set-face-background  'helm-selection "white")
     (set-face-underline   'helm-selection nil)
@@ -77,6 +80,9 @@
 (cb:define-theme solarized-dark
   (load-theme 'solarized-dark 'no-confirm)
   (set-face-underline 'hl-line nil)
+
+  (after 'org
+    (set-face-background 'org-block-background "#11303b"))
 
   (after 'helm
     (set-face-background  'helm-selection "black")
