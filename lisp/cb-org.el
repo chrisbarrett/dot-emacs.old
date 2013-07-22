@@ -108,6 +108,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
     (org-babel-do-load-languages
      'org-babel-load-languages '((python . t)
                                  (ruby . t)
+                                 (clojure . t)
                                  (haskell . t)))
 
     ;;;; Org config
