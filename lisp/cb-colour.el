@@ -102,6 +102,10 @@
 ;;;###autoload
 (cb:define-theme ir-black
   (load-theme 'ir-black 'no-confirm)
+
+  (after 'org
+    (set-face-background 'org-block-background "#151515"))
+
   (let* ((class '((class color) (min-colors 89)))
          ;; Solarized palette
          (base03    "#002b36")
@@ -539,7 +543,7 @@
      `(highlight-changes-delete ((,class (:foreground ,red :underline t))))
 
      ;; hl-line-mode
-     `(hl-line ((,class (:underline nil :background "gray10"))))
+     `(hl-line ((,class (:underline nil :background "gray15"))))
 
      ;; ido-mode
      `(ido-first-match ((,class (:foreground ,green :weight bold))))
