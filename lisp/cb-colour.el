@@ -59,6 +59,10 @@
   (set-face-underline 'hl-line nil)
 
   (after 'org
+    (set-face-underline  'org-block-begin-line t)
+    (set-face-attribute  'org-block-end-line nil :overline t)
+    (set-face-background 'org-block-begin-line "#f8f1dc")
+    (set-face-background 'org-block-end-line "#f8f1dc")
     (set-face-background 'org-block-background "#f8f1dc"))
 
   (after 'helm
@@ -82,6 +86,10 @@
   (set-face-underline 'hl-line nil)
 
   (after 'org
+    (set-face-underline  'org-block-begin-line t)
+    (set-face-attribute  'org-block-end-line nil :overline t)
+    (set-face-background 'org-block-end-line "#11303b")
+    (set-face-background 'org-block-begin-line "#11303b")
     (set-face-background 'org-block-background "#11303b"))
 
   (after 'helm
@@ -104,6 +112,10 @@
   (load-theme 'ir-black 'no-confirm)
 
   (after 'org
+    (set-face-underline  'org-block-begin-line t)
+    (set-face-attribute  'org-block-end-line nil :overline t)
+    (set-face-background 'org-block-begin-line "#151515")
+    (set-face-background 'org-block-end-line "#151515")
     (set-face-background 'org-block-background "#151515"))
 
   (let* ((class '((class color) (min-colors 89)))
