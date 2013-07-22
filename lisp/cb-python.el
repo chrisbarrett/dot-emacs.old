@@ -110,6 +110,7 @@
                               (next-window))))
           (set-window-buffer win buf)
           (select-window win)
+          (goto-char (point-max))
           (when (fboundp 'evil-append-line)
             (evil-append-line 1)))))
 
