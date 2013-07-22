@@ -543,7 +543,7 @@
      `(highlight-changes-delete ((,class (:foreground ,red :underline t))))
 
      ;; hl-line-mode
-     `(hl-line ((,class (:underline nil :background "gray15"))))
+     `(hl-line ((,class (:underline nil :background "gray13"))))
 
      ;; ido-mode
      `(ido-first-match ((,class (:foreground ,green :weight bold))))
