@@ -106,7 +106,8 @@ With prefix argument ARG, show the file and move to the tasks tree."
           org-confirm-babel-evaluate nil)
 
     (org-babel-do-load-languages
-     'org-babel-load-languages '((python . t)))
+     'org-babel-load-languages '((python . t)
+                                 (haskell . t)))
 
     ;;;; Org config
 
