@@ -157,8 +157,8 @@
           (git-gutter+-mode +1))))
 
     (hook-fn 'git-gutter+-mode-hook
-      (run-with-idle-timer 0.3 t (lambda () (when (true? git-gutter+-mode)
-                                     (git-gutter+-refresh)))))
+      (run-with-idle-timer 1 t (lambda () (when (true? git-gutter+-mode)
+                                            (git-gutter+-refresh)))))
 
     (defadvice git-gutter+-commit (before save-windows activate)
       "Save window state before and after git gutter commits."
