@@ -87,7 +87,7 @@
 Creates STATE bindings for keymap. DEFS are alternating keys and functions."
       (declare (indent 2))
       `(after 'evil
-         ,@(--map `(evil-define-key ,state ,keymap (kbd ,(car it)) ,(cdr it))
+         ,@(--map `(evil-define-key ,state ,keymap (kbd ,(car it)) ,(cadr it))
                   (-partition-all 2 defs))))
 
     (defmacro evil-global-set-keys (state &rest defs)
@@ -95,7 +95,7 @@ Creates STATE bindings for keymap. DEFS are alternating keys and functions."
 Creates STATE bindings for DEFS. DEFS are comprised of alternating string-symbol pairs."
       (declare (indent 1))
       `(after 'evil
-         ,@(--map `(evil-global-set-key ,state (kbd ,(car it)) ,(cdr it))
+         ,@(--map `(evil-global-set-key ,state (kbd ,(car it)) ,(cadr it))
                   (-partition-all 2 defs)))))
   :config
   (progn
