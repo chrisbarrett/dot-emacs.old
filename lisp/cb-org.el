@@ -308,6 +308,19 @@ With prefix argument ARG, show the file and move to the tasks tree."
              "- %^{Note}"
              :immediate-finish t)))))
 
+(use-package org-clock
+  :config
+  (progn
+
+    (org-clock-persistence-insinuate)
+    (setq org-clock-history-length 20
+          org-clock-in-resume t
+          org-clock-into-drawer t
+          org-clock-remove-zero-time-clocks t
+          org-clock-persist t
+          org-clock-persist-query-resume nil
+          org-clock-report-include-clocking-task t)))
+
 (use-package calendar
   :init
   (progn
