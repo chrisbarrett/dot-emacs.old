@@ -90,15 +90,13 @@ Creates STATE bindings for keymap. DEFS are alternating keys and functions."
          ,@(--map `(evil-define-key ,state ,keymap (kbd ,(car it)) ,(cdr it))
                   (-partition-all 2 defs))))
 
-    (defun evil-global-set-keys (state &rest defs)
+    (defmacro evil-global-set-keys (state &rest defs)
       "Variadic version of `evil-global-set-key'
-Define keys in STATE.
-DEFS are the bindings to declare, comprised of alternating string-symbol pairs."
+Creates STATE bindings for DEFS. DEFS are comprised of alternating string-symbol pairs."
       (declare (indent 1))
-      (eval `(after 'evil
-               (--each (-partition-all 2 ',defs)
-                 (destructuring-bind (key value) it
-                   (evil-global-set-key ',state (kbd key) value)))))))
+      `(after 'evil
+         ,@(--map `(evil-global-set-key ,state (kbd ,(car it)) ,(cdr it))
+                  (-partition-all 2 defs)))))
   :config
   (progn
     (defun evil-undefine ()
