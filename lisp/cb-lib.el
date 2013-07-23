@@ -216,6 +216,19 @@ Find the first window where PRED-FORM is not nil."
                         `(bind-key* ,k ,f)
                       `(bind-key ,k ,f ,map))))))
 
+(defmacro define-keys (keymap &rest bindings)
+  "Variadic form of `define-key'.
+* KEYMAP is a keymap to add the bindings to.
+* BINDINGS are the bindings to add to the keymap."
+  (declare (indent 1))
+  (let ((bs (->> bindings (-partition-all 2) (--remove (keywordp (car it))))))
+    `(progn
+       ,@(loop for (k f) in bs
+               collect `(define-key
+                          ,keymap
+                          ,(if (stringp k) `(kbd ,k) k)
+                          ,f)))))
+
 ;; -----------------------------------------------------------------------------
 
 (defun cb:comma-then-space ()
