@@ -33,7 +33,9 @@
 (defvar cb-lib:debug-hooks? nil
   "Set to non-nil to prevent `hook-fn' from catching errors.")
 
-(defmacro hook-fn (hook &optional docstring &rest body)
+(defmacro* hook-fn (hook &optional docstring
+                         &rest body
+                         &key local append &allow-other-keys)
   "Execute forms when a given hook is called.
 The arguments passed to the hook function are bound to the symbol
 '_args' and should generally not be used.
@@ -43,7 +45,9 @@ The arguments passed to the hook function are bound to the symbol
 * DOCSTRING optionally documents the forms.  Otherwise, it is
   evaluated as part of BODY.
 
-* BODY is a list of forms to evaluate when the hook is run."
+* BODY is a list of forms to evaluate when the hook is run.
+
+* APPEND and LOCAL are passed to the underlying call to `add-hook'."
   (declare (indent 1) (doc-string 2))
   ;; Sort the docstring form from the body.
   (destructuring-bind (docstring body)
@@ -52,16 +56,19 @@ The arguments passed to the hook function are bound to the symbol
         (list nil (cons docstring body)))
     `(let ((hook ,hook))
        (assert (symbolp hook))
-       (add-hook hook (lambda (&rest _args)
-                        ,docstring
-                        (if cb-lib:debug-hooks?
-                            (progn ,@body)
-                          ;; Do not allow errors to propagate from the hook.
-                          (condition-case err
-                              (progn ,@body)
-                            (error (message
-                                    "[%s] %s" ,hook
-                                    (error-message-string err))))))))))
+       (add-hook hook
+                 (lambda (&rest _args)
+                   ,docstring
+                   (if cb-lib:debug-hooks?
+                       (progn ,@body)
+                     ;; Do not allow errors to propagate from the hook.
+                     (condition-case err
+                         (progn ,@body)
+                       (error (message
+                               "[%s] %s" ,hook
+                               (error-message-string err))))))
+                 ,append ,local)
+       hook)))
 
 (defmacro after (feature &rest body)
   "Like `eval-after-load' - once FEATURE is loaded, execute the BODY."
