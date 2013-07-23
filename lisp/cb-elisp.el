@@ -31,11 +31,15 @@
 (require 'cb-lib)
 (require 'cb-evil)
 
+(defun cb:special-elisp-file? ()
+  (and (derived-mode-p 'emacs-lisp-mode)
+       (or (true? scratch-buffer)
+           (-contains? '("*scratch*" ".dir-locals.el") (buffer-name)))))
+
 (after 'flycheck
   (hook-fn 'flycheck-before-syntax-check-hook
-    "Disable flycheck for scratch buffers using the *scratch* package."
-    (when (and (derived-mode-p 'emacs-lisp-mode)
-               (true? scratch-buffer))
+    "Disable flycheck for certain elisp buffers."
+    (when (cb:special-elisp-file?)
       (flycheck-mode -1))))
 
 (after 'projectile
@@ -146,11 +150,6 @@
 
     ;;;; File handling
 
-    (defun cb:special-elisp-file? ()
-      (and (derived-mode-p 'emacs-lisp-mode)
-           (-contains? '("*scratch*" ".dir-locals.el")
-                       (buffer-name))))
-
     (defun cb:elisp-after-save ()
       "Check parens are balanced and byte-compile."
       (check-parens)
@@ -160,11 +159,6 @@
 
     (hook-fn 'emacs-lisp-mode-hook
       (add-hook 'after-save-hook 'cb:elisp-after-save t 'local))
-
-    (hook-fn 'flycheck-mode-hook
-      "Disable flycheck mode for scratch buffer."
-      (when (cb:special-elisp-file?)
-        (add-hook 'flycheck-before-syntax-check-hook (lambda () (flycheck-mode -1)) nil t)))
 
     ;;;; Advices
 
