@@ -337,7 +337,8 @@ With prefix argument ARG, show the file and move to the tasks tree."
 (use-package appt
   :config
   (progn
-    (setq appt-message-warning-time 60)
+    (setq appt-message-warning-time 60
+          appt-display-interval 15)
 
     (hook-fn 'diary-mode-hook
       (hook-fn 'after-save-hook
