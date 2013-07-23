@@ -28,6 +28,14 @@
 
 (require 'use-package)
 (require 'noflet)
+(require 'cb-lib)
+
+(after 'flycheck
+  (hook-fn 'flycheck-before-syntax-check-hook
+    "Disable flycheck for scratch buffers using the *scratch* package."
+    (when (and (derived-mode-p 'emacs-lisp-mode)
+               (true? scratch-buffer))
+      (flycheck-mode -1))))
 
 (after 'projectile
 
