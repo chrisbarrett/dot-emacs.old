@@ -43,10 +43,9 @@
   :idle   (require 'org)
   :init
   (progn
-    (setq org-modules '(org-bbdb org-w3m org-habit)
-          org-directory (concat user-home-directory "org/")
-          org-default-notes-file (concat org-directory "notes.org")
-          org-reverse-note-order t)
+    ;; Configure vars that other packages may need.
+    (setq org-directory (concat user-home-directory "org/")
+          org-default-notes-file (concat org-directory "notes.org"))
 
     (after 'evil
       (evil-define-key 'normal org-mode-map (kbd "M-P") 'outline-previous-visible-heading)
@@ -63,6 +62,13 @@
 
   :config
   (progn
+    (setq org-modules '(org-bbdb org-w3m org-habit)
+          org-startup-indented t
+          org-log-into-drawer t
+          org-log-done '(time)
+          org-reverse-note-order nil
+          org-return-follows-link t)
+
     ;;;; Auto-save notes file
 
     (defvar cb-org:notes-save-timer
