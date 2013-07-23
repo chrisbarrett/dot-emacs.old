@@ -29,6 +29,7 @@
 (require 'use-package)
 (require 'cb-foundation)
 (require 'cb-mode-groups)
+(require 'noflet)
 
 (after 'smartparens
   (sp-with-modes '(org-mode)
@@ -332,6 +333,21 @@ With prefix argument ARG, show the file and move to the tasks tree."
       (add-hook 'after-save-hook 'cb-org:refresh-agenda t 'local)
       (local-set-key (kbd "C-c C-k") 'cb:diary-cancel)
       (local-set-key (kbd "C-c C-c") 'cb:diary-finalize))))
+
+(use-package appt
+  :config
+  (progn
+    (setq appt-message-warning-time 60)
+
+    (hook-fn 'diary-mode-hook
+      (hook-fn 'after-save-hook
+        "Update the appointments ledger after saving."
+        :local t
+        (noflet ((message (&rest args)))
+          (appt-activate -1)
+          (save-window-excursion
+            (appt-activate +1)))))))
+
 
 (use-package org-agenda
   :commands (org-agenda org-agenda-list)
