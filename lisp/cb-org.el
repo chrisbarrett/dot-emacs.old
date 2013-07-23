@@ -409,7 +409,7 @@ This can be 0 for immediate, or a floating point value.")
 
     (when (or (daemonp) (display-graphic-p))
       (hook-fn 'after-init-hook
-        (org-agenda-list))))
+        (org-agenda-list nil nil 1))))
 
   :config
   (progn
