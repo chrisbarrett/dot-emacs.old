@@ -51,8 +51,7 @@
 
 (after 'smartparens
   (sp-with-modes cb:python-modes
-    (sp-local-pair "{" "}" :post-handlers '(:add sp-generic-leading-space))
-    (sp-local-pair "[" "]" :post-handlers '(:add sp-generic-leading-space))))
+    (sp-local-pair "{" "}" :post-handlers '(:add sp-generic-leading-space))))
 
 (use-package python
   :ensure   t
