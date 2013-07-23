@@ -28,8 +28,11 @@
 
 (require 'use-package)
 (require 'dash)
-(autoload 'smartparens-mode-map "smartparens")
+(require 'cb-lib)
 (autoload 'c-mode-map "cc-mode")
+(autoload 'thing-at-point-looking-at "thingatpt")
+(autoload 'smartparens-mode-map "smartparens")
+(autoload 'beginning-of-sexp "thingatpt")
 
 (after 'cc-mode
 
@@ -283,50 +286,44 @@ Remove horizontal whitespace if the insertion results in a ++."
 
 (after 'smartparens
 
-  (defun c-insert-smart-lbrace ()
-    "Insert a left brace, possibly with formatting."
-    (interactive)
-    (cl-flet ((open-braces-on-new-line
-               ()
-               "Insert and put braces on new lines."
-               (newline)
-               (insert "{")
-               (newline)
-               (save-excursion (insert "\n}"))
-               (c-indent-defun)
-               (c-indent-line)))
-      (ignore-errors
-        (atomic-change-group
-          (cond
-           ((cb-c:looking-at-flow-control-keyword?)
-            (open-braces-on-new-line))
-           ((and (thing-at-point-looking-at (rx ")" (* space) eol))
-                 (not (cb-c:looking-at-cast?)))
-            (open-braces-on-new-line))
-           (t
-            ;; Do a smartparenish insertion.
-            (insert "{")
-            (sp--self-insert-command 1)
-            (save-excursion (search-backward "{")
-                            (delete-char -1))))))))
+  (defun cb-c:format-after-brace (_id action contexxt)
+    "Apply formatting after a brace insertion."
+    (when (and (equal action 'insert)
+               (equal context 'code)
+               (save-excursion
+                 ;; Search backward for flow control keywords.
+                 (search-backward "{")
+                 (or (thing-at-point-looking-at
+                      (rx symbol-start (or "else" "do")))
+                     (progn
+                       (sp-previous-sexp)
+                       (thing-at-point-looking-at
+                        (rx symbol-start (or "if" "for" "while")))))))
+      ;; Insert a space for padding.
+      (save-excursion
+        (search-backward "{")
+        (just-one-space))
+      ;; Put braces on new line.
+      (newline)
+      (save-excursion (newline-and-indent))
+      (c-indent-line)))
 
-  (define-key smartparens-mode-map (kbd "{")
-    (command (if (derived-mode-p 'c-mode)
-                 (c-insert-smart-lbrace)
-               ;; HACK: simulate propert sp-insertion. I have no idea how
-               ;; to do this cleanly.
-               (insert "{")
-               (sp--self-insert-command 1)
-               (save-excursion (search-backward "{")
-                               (delete-char -1)))))
+  (defun cb-c:format-after-paren (_id action context)
+    "Insert a space after flow control keywords."
+    (when (and (equal action 'insert)
+               (equal context 'code)
+               (save-excursion
+                 (search-backward "(")
+                 (thing-at-point-looking-at
+                  (rx symbol-start (or "=" "return" "if" "while" "for")
+                      (* space)))))
+      (save-excursion
+        (search-backward "(")
+        (just-one-space))))
 
-  (defadvice sp--self-insert-command
-    (before flow-control-keyword-insert-space activate)
-    "Insert a space after a flow control keyword in c modes."
-    (when  (and (derived-mode-p 'c-mode 'cc-mode 'c++-mode)
-                (thing-at-point-looking-at
-                 (rx symbol-start (or "if" "when" "while" "for"))))
-      (just-one-space))))
+  (sp-with-modes '(c-mode cc-mode c++-mode)
+    (sp-local-pair "{" "}" :post-handlers '(:add cb-c:format-after-brace))
+    (sp-local-pair "(" ")" :post-handlers '(:add cb-c:format-after-paren))))
 
 (use-package google-c-style
   :ensure   t
