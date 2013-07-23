@@ -32,6 +32,9 @@
 (require 'noflet)
 (require 'f)
 
+(defvar org-directory (concat user-home-directory "org/"))
+(defvar org-default-notes-file (concat org-directory "notes.org"))
+
 (after 'smartparens
   (sp-with-modes '(org-mode)
     (sp-local-pair "#+BEGIN_SRC" "#+END_SRC")
@@ -41,25 +44,6 @@
   :ensure t
   :defer  t
   :idle   (require 'org)
-  :init
-  (progn
-    ;; Configure vars that other packages may need.
-    (setq org-directory (concat user-home-directory "org/")
-          org-default-notes-file (concat org-directory "notes.org"))
-
-    (after 'evil
-      (evil-define-key 'normal org-mode-map (kbd "M-P") 'outline-previous-visible-heading)
-      (evil-define-key 'normal org-mode-map (kbd "M-N") 'outline-next-visible-heading)
-
-      (evil-define-key 'normal org-mode-map (kbd "SPC") 'org-cycle)
-      (evil-define-key 'normal org-mode-map (kbd "z m") (command (org-global-cycle 1)))
-      (evil-define-key 'normal org-mode-map (kbd "z r") (command (org-global-cycle 0))))
-
-    (hook-fn 'cb:org-minor-modes-hook
-      "Diminish org minor modes."
-      (--each cb:org-minor-modes
-        (ignore-errors (diminish it)))))
-
   :config
   (progn
     (setq org-modules '(org-bbdb org-w3m org-habit)
@@ -68,6 +52,19 @@
           org-log-done '(time)
           org-reverse-note-order nil
           org-return-follows-link t)
+
+    (hook-fn 'cb:org-minor-modes-hook
+      "Diminish org minor modes."
+      (--each cb:org-minor-modes
+        (ignore-errors (diminish it))))
+
+    (after 'evil
+      (evil-define-key 'normal org-mode-map (kbd "M-P") 'outline-previous-visible-heading)
+      (evil-define-key 'normal org-mode-map (kbd "M-N") 'outline-next-visible-heading)
+
+      (evil-define-key 'normal org-mode-map (kbd "SPC") 'org-cycle)
+      (evil-define-key 'normal org-mode-map (kbd "z m") (command (org-global-cycle 1)))
+      (evil-define-key 'normal org-mode-map (kbd "z r") (command (org-global-cycle 0))))
 
     ;;;; Auto-save notes file
 
