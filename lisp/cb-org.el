@@ -341,6 +341,10 @@ With prefix argument ARG, show the file and move to the tasks tree."
       (local-set-key (kbd "C-c C-k") 'cb:diary-cancel)
       (local-set-key (kbd "C-c C-c") 'cb:diary-finalize))))
 
+(use-package diary-lib
+  :config
+  (add-hook 'diary-list-entries-hook 'diary-sort-entries t))
+
 (use-package appt
   :config
   (progn
@@ -348,13 +352,13 @@ With prefix argument ARG, show the file and move to the tasks tree."
           appt-display-interval 15)
 
     (hook-fn 'diary-mode-hook
+      (save-window-excursion
+        (appt-activate +1))
       (hook-fn 'after-save-hook
         "Update the appointments ledger after saving."
         :local t
-        (noflet ((message (&rest args)))
-          (appt-activate -1)
-          (save-window-excursion
-            (appt-activate +1)))))))
+        (save-window-excursion
+          (appt-check 'force))))))
 
 (use-package org-agenda
   :commands (org-agenda org-agenda-list)
