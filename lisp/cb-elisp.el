@@ -117,6 +117,8 @@
   :config
   (progn
 
+    ;;;; IELM
+
     (defun switch-to-ielm ()
       "Start up or switch to an Inferior Emacs Lisp buffer."
       (interactive)
@@ -131,14 +133,18 @@
       (-when-let (buf (--first-buffer (derived-mode-p 'emacs-lisp-mode)))
         (switch-to-buffer-other-window buf)))
 
+    (hook-fn 'ielm-mode-hook
+      (local-set-key (kbd "C-c C-z") 'switch-to-elisp))
+
+    ;;;; keys
+
     (define-key emacs-lisp-mode-map (kbd "C-c C-t") 'ert)
     (define-key emacs-lisp-mode-map (kbd "C-c e b") 'eval-buffer)
     (define-key emacs-lisp-mode-map (kbd "C-c C-l") 'emacs-lisp-byte-compile-and-load)
     (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'switch-to-ielm)
     (define-key emacs-lisp-mode-map (kbd "C-c e r") 'eval-region)
 
-    (hook-fn 'ielm-mode-hook
-      (local-set-key (kbd "C-c C-z") 'switch-to-elisp))
+    ;;;; File handling
 
     (defun cb:special-elisp-file? ()
       (and (derived-mode-p 'emacs-lisp-mode)
@@ -159,6 +165,8 @@
       "Disable flycheck mode for scratch buffer."
       (when (cb:special-elisp-file?)
         (add-hook 'flycheck-before-syntax-check-hook (lambda () (flycheck-mode -1)) nil t)))
+
+    ;;;; Advices
 
     (defadvice eval-buffer (after buffer-evaluated-feedback activate)
       "Message that the buffer has been evaluated."
