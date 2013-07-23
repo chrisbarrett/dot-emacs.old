@@ -120,7 +120,7 @@ With prefix argument ARG, justify text."
 
    ((-contains? '(font-lock-comment-face
                   font-lock-string-face
-                  font-lock-doc-string-face)
+                  font-lock-doc-face)
                 (face-at-point))
     (if (apply 'derived-mode-p cb:lisp-modes)
         (lisp-fill-paragraph arg)
