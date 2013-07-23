@@ -175,11 +175,10 @@
 
 (use-package edebug
   :defer t
+  :commands edebug-next-mode
   :init
-  (progn
-    (autoload 'edebug-next-mode "edebug")
-    (hook-fn 'emacs-lisp-mode-hook
-      (local-set-key (kbd "C-x X d") 'edebug-defun))))
+  (hook-fn 'emacs-lisp-mode-hook
+    (local-set-key (kbd "C-x X d") 'edebug-defun)))
 
 (use-package ert-modeline
   :defer    t
