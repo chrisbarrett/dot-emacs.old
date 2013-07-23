@@ -82,6 +82,14 @@
   (progn
     (add-hook 'after-init-hook 'evil-mode)
 
+    (defmacro evil-define-keys (state keymap &rest defs)
+      "Variadic version of `evil-define-key'.
+Creates STATE bindings for keymap. DEFS are alternating keys and functions."
+      (declare (indent 2))
+      `(after 'evil
+         ,@(--map `(evil-define-key ,state ,keymap (kbd ,(car it)) ,(cdr it))
+                  (-partition-all 2 defs))))
+
     (defun evil-global-set-keys (state &rest defs)
       "Variadic version of `evil-global-set-key'
 Define keys in STATE.

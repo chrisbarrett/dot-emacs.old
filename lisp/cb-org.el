@@ -58,13 +58,12 @@
       (--each cb:org-minor-modes
         (ignore-errors (diminish it))))
 
-    (after 'evil
-      (evil-define-key 'normal org-mode-map (kbd "M-P") 'outline-previous-visible-heading)
-      (evil-define-key 'normal org-mode-map (kbd "M-N") 'outline-next-visible-heading)
-
-      (evil-define-key 'normal org-mode-map (kbd "SPC") 'org-cycle)
-      (evil-define-key 'normal org-mode-map (kbd "z m") (command (org-global-cycle 1)))
-      (evil-define-key 'normal org-mode-map (kbd "z r") (command (org-global-cycle 0))))
+    (evil-define-keys 'normal org-mode-map
+      "M-P" 'outline-previous-visible-heading
+      "M-N" 'outline-next-visible-heading
+      "SPC" 'org-cycle
+      "z m" (command (org-global-cycle 1))
+      "z r" (command (org-global-cycle 0)))
 
     ;;;; Auto-save notes file
 
