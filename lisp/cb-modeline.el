@@ -273,6 +273,7 @@
                       'face 'mode-line-minor-mode))
    (:propertize mode-line-process
                 face mode-line-process)
+   " "
    (global-mode-string global-mode-string)))
 
 
