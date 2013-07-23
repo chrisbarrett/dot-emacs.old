@@ -30,6 +30,7 @@
 (require 'cb-foundation)
 (require 'cb-mode-groups)
 (require 'noflet)
+(require 'f)
 
 (after 'smartparens
   (sp-with-modes '(org-mode)
@@ -62,12 +63,18 @@
 
   :config
   (progn
+    ;;;; Auto-save notes file
 
-    (hook-fn 'kill-emacs-hook
-      "Save notes file when exiting emacs."
-      (ignore-errors
-        (-when-let (buf (--first-buffer (equal buffer-file-name org-default-notes-file)))
-          (with-current-buffer buf
+    (defvar cb-org:notes-save-timer
+      (run-with-idle-timer 5 t 'cb-org:save-notes)
+      "Timer that automatically saves the notes buffer on idle.")
+
+    (defun cb-org:save-notes ()
+      "Save the notes file."
+      (-when-let (notes (--first-buffer (equal (buffer-file-name it)
+                                               org-default-notes-file)))
+        (with-current-buffer notes
+          (when (buffer-modified-p)
             (save-buffer)))))
 
     ;;;; Tasks
@@ -348,7 +355,6 @@ With prefix argument ARG, show the file and move to the tasks tree."
           (appt-activate -1)
           (save-window-excursion
             (appt-activate +1)))))))
-
 
 (use-package org-agenda
   :commands (org-agenda org-agenda-list)
