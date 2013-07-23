@@ -71,8 +71,10 @@
 
     ;;;; Auto-save notes file
 
+    (defvar cb-org:notes-save-idle-delay 40)
+
     (defvar cb-org:notes-save-timer
-      (run-with-idle-timer 5 t 'cb-org:save-notes)
+      (run-with-idle-timer cb-org:notes-save-idle-delay t 'cb-org:save-notes)
       "Timer that automatically saves the notes buffer on idle.")
 
     (defun cb-org:save-notes ()
