@@ -105,6 +105,22 @@
           (re-search-backward "^[0-9]+:[0-9]+-[0-9]+:[0-9]+ " nil t))
         (insert (match-string 0))))))
 
+(defun mac-open-dwim (str)
+  "Pass STR to OS X's open command.
+When used interactively, makes a guess at what to pass."
+  (interactive
+   (list
+    (let ((default (or (thing-at-point-url-at-point)
+                       (get-text-property (point) 'shr-url)
+                       (when (boundp 'w3m-current-url) w3m-current-url)
+                       (buffer-file-name))))
+      (if default
+          (read-string (format "Open (%s): " default) nil t default)
+        (read-string "Open: " nil t)))))
+  (shell-command (format "open %s" str)))
+
+(bind-key* "S-s-<return>" 'mac-open-dwim)
+
 (provide 'cb-osx)
 
 ;; Local Variables:
