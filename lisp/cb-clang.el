@@ -65,7 +65,7 @@
 
 (defun cb-c:looking-at-flow-control-header? ()
   (thing-at-point-looking-at
-   (rx (* nonl) (32 ";") (* space)
+   (rx (* nonl) (? ";") (* space)
        (or "if" "when" "while" "for")
        (* nonl)
        "("
