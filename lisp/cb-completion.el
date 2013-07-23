@@ -65,10 +65,11 @@
 
     (ac-flyspell-workaround)
 
-    (define-key ac-completing-map (kbd "C-n") 'ac-next)
-    (define-key ac-completing-map (kbd "C-p") 'ac-previous)
-    (define-key ac-completing-map "\t" 'ac-complete)
-    (define-key ac-completing-map (kbd "M-RET") 'ac-help)))
+    (define-keys ac-completing-map
+      "C-n"   'ac-next
+      "C-p"   'ac-previous
+      "\t"    'ac-complete
+      "M-RET" 'ac-help)))
 
 (use-package yasnippet
   :ensure t

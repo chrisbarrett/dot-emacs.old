@@ -73,11 +73,12 @@
 
     ;;;; Evil keys for magit diff.
 
-    (define-key magit-diff-mode-map (kbd "C-f") 'evil-scroll-page-down)
-    (define-key magit-diff-mode-map (kbd "C-b") 'evil-scroll-page-up)
-    (define-key magit-diff-mode-map (kbd "j") 'evil-next-line)
-    (define-key magit-diff-mode-map (kbd "k") 'evil-previous-line)
-    (define-key magit-diff-mode-map (kbd "/") 'evil-search-forward)
+    (define-keys magit-diff-mode-map
+      "C-f" 'evil-scroll-page-down
+      "C-b" 'evil-scroll-page-up
+      "j"   'evil-next-line
+      "k"   'evil-previous-line
+      "/"   'evil-search-forward)
 
     ;;;; View behaviour
 

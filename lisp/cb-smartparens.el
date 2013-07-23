@@ -129,16 +129,18 @@
     (sp-with-modes '(text-mode org-mode markdown-mode)
       (sp-local-pair "'" nil :actions '(:rem insert)))
 
-    (define-key sp-keymap (kbd "C-<backspace>") 'sp-backward-up-sexp)
-    (define-key sp-keymap (kbd "DEL") 'sp-backward-delete-char)
-    (define-key sp-keymap (kbd "C-k")
-      ;; kill blank lines or balanced sexps.
-      (lambda (&optional arg) (interactive "P")
-        (cond
-         ((emr-blank-line?)
-          (kill-whole-line))
-         (t
-          (sp-kill-sexp nil arg)))) )
+    (defun cb-sp:kill-blank-lines (&optional arg)
+      (interactive "P")
+      (cond
+       ((emr-blank-line?)
+        (kill-whole-line))
+       (t
+        (sp-kill-sexp nil arg))))
+
+    (define-keys sp-keymap
+      "C-<backspace>" 'sp-backward-up-sexp
+      "DEL"           'sp-backward-delete-char
+      "C-k"           'cb-sp:kill-blank-lines)
 
     ;; Use bind-key for keys that tend to be overridden.
     (bind-key "C-M-," 'sp-backward-down-sexp sp-keymap)

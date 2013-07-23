@@ -122,11 +122,14 @@
        (t
         (python-shell-send-defun arg))))
 
-    (define-key python-mode-map (kbd ",") 'cb:comma-then-space)
-    (define-key python-mode-map (kbd "C-c C-z") 'cb:switch-to-python)
-    (define-key python-mode-map (kbd "C-c C-c") 'cb-py:eval-dwim)
-    (define-key inferior-python-mode-map (kbd ",") 'cb:comma-then-space)
-    (define-key inferior-python-mode-map (kbd "C-c C-z") 'cb:switch-to-python)))
+    (define-keys python-mode-map
+      "," 'cb:comma-then-space
+      "C-c C-z" 'cb:switch-to-python
+      "C-c C-c" 'cb-py:eval-dwim)
+
+    (define-keys inferior-python-mode-map
+      "," 'cb:comma-then-space
+      "C-c C-z" 'cb:switch-to-python)))
 
 (use-package jedi
   :ensure   t

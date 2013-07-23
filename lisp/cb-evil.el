@@ -98,13 +98,15 @@ DEFS are the bindings to declare, comprised of alternating string-symbol pairs."
       (let (evil-mode-map-alist)
         (call-interactively (key-binding (this-command-keys)))))
 
-    (define-key evil-normal-state-map (kbd "M-z") 'evil-emacs-state)
-    (define-key evil-emacs-state-map  (kbd "M-z") 'evil-normal-state)
-    (define-key evil-normal-state-map (kbd "C-z") 'evil-undefine)
-    (define-key evil-normal-state-map (kbd "SPC") 'evil-toggle-fold)
+    (define-keys evil-normal-state-map
+      "M-z" 'evil-emacs-state
+      "C-z" 'evil-undefine
+      "SPC" 'evil-toggle-fold
+      "K"   'get-documentation)
+
     (define-key evil-insert-state-map (kbd "C-z") 'evil-undefine)
+    (define-key evil-emacs-state-map  (kbd "M-z") 'evil-normal-state)
     (define-key evil-visual-state-map (kbd "C-z") 'evil-undefine)
-    (define-key evil-normal-state-map (kbd "K")   'get-documentation)
 
     (after 'man
       (evil-declare-key 'normal Man-mode-map (kbd "q") 'Man-kill))
@@ -121,14 +123,11 @@ DEFS are the bindings to declare, comprised of alternating string-symbol pairs."
     (after 'undo-tree
       ;; Ensure undo-tree commands are remapped. The referenced keymap in
       ;; evil-integration is incorrect.
-      (define-key undo-tree-visualizer-mode-map [remap evil-backward-char]
-        'undo-tree-visualize-switch-branch-left)
-      (define-key undo-tree-visualizer-mode-map [remap evil-forward-char]
-        'undo-tree-visualize-switch-branch-right)
-      (define-key undo-tree-visualizer-mode-map [remap evil-next-line]
-        'undo-tree-visualize-redo)
-      (define-key undo-tree-visualizer-mode-map [remap evil-previous-line]
-        'undo-tree-visualize-undo))
+      (define-keys undo-tree-visualizer-mode-map
+        [remap evil-backward-char] 'undo-tree-visualize-switch-branch-left
+        [remap evil-forward-char]  'undo-tree-visualize-switch-branch-right
+        [remap evil-next-line]     'undo-tree-visualize-redo
+        [remap evil-previous-line] 'undo-tree-visualize-undo))
 
     (evil-global-set-key 'insert (kbd "S-TAB") 'tab-to-tab-stop)
 
@@ -172,8 +171,9 @@ DEFS are the bindings to declare, comprised of alternating string-symbol pairs."
    evil-numbers/inc-at-pt)
   :init
   (after 'evil
-    (define-key evil-normal-state-map (kbd "C--") 'evil-numbers/dec-at-pt)
-    (define-key evil-normal-state-map (kbd "C-=") 'evil-numbers/inc-at-pt)))
+    (define-keys evil-normal-state-map
+      "C--" 'evil-numbers/dec-at-pt
+      "C-=" 'evil-numbers/inc-at-pt)))
 
 (provide 'cb-evil)
 

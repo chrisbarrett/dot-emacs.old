@@ -157,8 +157,9 @@ With prefix argument ARG, show the file and move to the tasks tree."
       (unless (buffer-file-name)
         (cb:append-buffer)))
 
-    (define-key org-mode-map (kbd "M-p") 'org-metaup)
-    (define-key org-mode-map (kbd "M-n") 'org-metadown)
+    (define-keys org-mode-map
+      "M-p" 'org-metaup
+      "M-n" 'org-metadown)
 
     (defadvice org-add-log-note (before exit-minibuffer activate)
       "Prevent attempts to expand the minibuffer."
@@ -404,9 +405,11 @@ This can be 0 for immediate, or a floating point value.")
           org-agenda-start-on-weekday nil
           org-agenda-ndays 7)
 
-    (define-key org-agenda-mode-map (kbd "g") 'org-agenda-goto-date)
-    (define-key org-agenda-mode-map (kbd "j") 'org-agenda-next-item)
-    (define-key org-agenda-mode-map (kbd "k") 'org-agenda-previous-item)
+
+    (define-keys org-agenda-mode-map
+      "g" 'org-agenda-goto-date
+      "j" 'org-agenda-next-item
+      "k" 'org-agenda-previous-item)
 
     (after 'smartparens
       (hook-fn 'org-agenda-mode-hook

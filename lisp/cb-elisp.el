@@ -121,6 +121,13 @@
   :config
   (progn
 
+    (define-keys emacs-lisp-mode-map
+      "C-c C-t" 'ert
+      "C-c e b" 'eval-buffer
+      "C-c C-l" 'emacs-lisp-byte-compile-and-load
+      "C-c C-z" 'switch-to-ielm
+      "C-c e r" 'eval-region)
+
     ;;;; IELM
 
     (defun switch-to-ielm ()
@@ -139,14 +146,6 @@
 
     (hook-fn 'ielm-mode-hook
       (local-set-key (kbd "C-c C-z") 'switch-to-elisp))
-
-    ;;;; keys
-
-    (define-key emacs-lisp-mode-map (kbd "C-c C-t") 'ert)
-    (define-key emacs-lisp-mode-map (kbd "C-c e b") 'eval-buffer)
-    (define-key emacs-lisp-mode-map (kbd "C-c C-l") 'emacs-lisp-byte-compile-and-load)
-    (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'switch-to-ielm)
-    (define-key emacs-lisp-mode-map (kbd "C-c e r") 'eval-region)
 
     ;;;; File handling
 

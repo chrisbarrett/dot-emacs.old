@@ -220,40 +220,36 @@ If this is the trailing colon for a hash key, insert padding."
   :config
   (progn
     ;; Rebind rinari keys.
-    (loop
-     initially
-     (progn
-       (define-prefix-command 'cb:rinari-map)
-       (define-key rinari-minor-mode-map (kbd "C-c f") 'cb:rinari-map))
-     for (k . f) in
-     '((";" 'rinari-find-by-context)
-       ("C" 'rinari-find-cells)
-       ("F" 'rinari-find-features)
-       ("M" 'rinari-find-mailer)
-       ("S" 'rinari-find-steps)
-       ("Y" 'rinari-find-sass)
-       ("a" 'rinari-find-application)
-       ("c" 'rinari-find-controller)
-       ("e" 'rinari-find-environment)
-       ("f" 'rinari-find-file-in-project)
-       ("h" 'rinari-find-helper)
-       ("i" 'rinari-find-migration)
-       ("j" 'rinari-find-javascript)
-       ("l" 'rinari-find-lib)
-       ("m" 'rinari-find-model)
-       ("n" 'rinari-find-configuration)
-       ("o" 'rinari-find-log)
-       ("p" 'rinari-find-public)
-       ("r" 'rinari-find-rspec)
-       ("s" 'rinari-find-script)
-       ("t" 'rinari-find-test)
-       ("u" 'rinari-find-plugin)
-       ("v" 'rinari-find-view)
-       ("w" 'rinari-find-worker)
-       ("x" 'rinari-find-fixture)
-       ("y" 'rinari-find-stylesheet)
-       ("z" 'rinari-find-rspec-fixture))
-     do (define-key cb:rinari-map k f))
+    (define-prefix-command 'cb:rinari-map)
+    (define-key rinari-minor-mode-map (kbd "C-c f") 'cb:rinari-map)
+    (define-keys cb:rinari-map
+      ";" 'rinari-find-by-context
+      "C" 'rinari-find-cells
+      "F" 'rinari-find-features
+      "M" 'rinari-find-mailer
+      "S" 'rinari-find-steps
+      "Y" 'rinari-find-sass
+      "a" 'rinari-find-application
+      "c" 'rinari-find-controller
+      "e" 'rinari-find-environment
+      "f" 'rinari-find-file-in-project
+      "h" 'rinari-find-helper
+      "i" 'rinari-find-migration
+      "j" 'rinari-find-javascript
+      "l" 'rinari-find-lib
+      "m" 'rinari-find-model
+      "n" 'rinari-find-configuration
+      "o" 'rinari-find-log
+      "p" 'rinari-find-public
+      "r" 'rinari-find-rspec
+      "s" 'rinari-find-script
+      "t" 'rinari-find-test
+      "u" 'rinari-find-plugin
+      "v" 'rinari-find-view
+      "w" 'rinari-find-worker
+      "x" 'rinari-find-fixture
+      "y" 'rinari-find-stylesheet
+      "z" 'rinari-find-rspec-fixture)
 
     (hook-fn 'rinari-minor-mode-hook
       (setq
@@ -386,8 +382,9 @@ an irb error message."
       str)
 
     (inf-ruby-setup-keybindings)
-    (define-key ruby-mode-map (kbd "C-c C-c") 'cb-rb:eval-dwim)
-    (define-key ruby-mode-map (kbd "C-c C-z") 'cb-rb:switch-to-ruby)
+    (define-keys ruby-mode-map
+      "C-c C-c" 'cb-rb:eval-dwim
+      "C-c C-z" 'cb-rb:switch-to-ruby)
     (define-key inf-ruby-mode-map (kbd "C-c C-z") 'cb-rb:switch-to-ruby)
     (define-key inf-ruby-minor-mode-map (kbd "C-c C-z") 'cb-rb:switch-to-ruby)
 
