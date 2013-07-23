@@ -72,6 +72,7 @@
                           "after"
                           "noflet"
                           "ac-define-source"
+                          "evil-global-set-keys"
                           "flycheck-declare-checker"
                           "cl-destructuring-bind"
                           "cl-defstruct")
