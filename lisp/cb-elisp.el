@@ -29,6 +29,7 @@
 (require 'use-package)
 (require 'noflet)
 (require 'cb-lib)
+(require 'cb-evil)
 
 (after 'flycheck
   (hook-fn 'flycheck-before-syntax-check-hook
