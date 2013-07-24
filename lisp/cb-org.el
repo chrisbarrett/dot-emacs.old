@@ -88,7 +88,7 @@ Make the 'q' key restore the previous window configuration."
   :idle   (require 'org)
   :config
   (progn
-    (setq org-modules '(org-bbdb org-w3m org-habit)
+    (setq org-modules '(org-bbdb org-crypt org-w3m org-habit)
           org-startup-indented t
           org-log-into-drawer t
           org-log-done 'time
@@ -452,7 +452,27 @@ This can be 0 for immediate, or a floating point value.")
   :config
   (progn
     (org-crypt-use-before-save-magic)
-    (setq org-tags-exclude-from-inheritance '("crypt"))))
+    (setq org-tags-exclude-from-inheritance '("crypt"))
+
+    ;;;; Decrypt with C-c C-c
+
+    (defun cb-org:looking-at-pgp-section? ()
+      (unless (org-before-first-heading-p)
+        (save-excursion
+          (org-back-to-heading t)
+          (let ((heading-point (point))
+                (heading-was-invisible-p
+                 (save-excursion
+                   (outline-end-of-heading)
+                   (outline-invisible-p))))
+            (forward-line)
+            (looking-at "-----BEGIN PGP MESSAGE-----")))))
+
+    (hook-fn 'org-ctrl-c-ctrl-c-hook
+      ;; Motion behaviour stolen from implementation of
+      (when (cb-org:looking-at-pgp-section?)
+        (org-decrypt-entry)
+        t))))
 
 (use-package appt
   :defer t
