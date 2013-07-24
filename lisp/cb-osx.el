@@ -117,7 +117,7 @@ When used interactively, makes a guess at what to pass."
       (if default
           (read-string (format "Open (%s): " default) nil t default)
         (read-string "Open: " nil t)))))
-  (shell-command (format "open %s" str)))
+  (shell-command (format "open '%s'" str)))
 
 (bind-key* "S-s-<return>" 'mac-open-dwim)
 
