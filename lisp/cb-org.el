@@ -35,6 +35,8 @@
 (defvar org-directory (f-join user-home-directory "org"))
 (defvar org-default-notes-file (f-join org-directory "notes.org"))
 (defvar org-id-locations-file (f-join cb:tmp-dir "org-id-locations"))
+(defvar org-clock-persist-file (f-join user-dropbox-directory ".org-clock-save.el"))
+(defvar diary-file (f-join user-dropbox-directory "diary"))
 
 (after 'smartparens
   (sp-with-modes '(org-mode)
@@ -173,7 +175,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
 (use-package org-capture
   :commands (org-capture)
-  :config
+  :init
   (progn
 
     (defun cb-org:capture-todo (&optional arg)
@@ -187,7 +189,10 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
     (when (true? cb:use-vim-keybindings?)
       (bind-key* "M-o" 'org-capture)
-      (bind-key* "M-k" 'cb-org:capture-todo))
+      (bind-key* "M-k" 'cb-org:capture-todo)))
+
+  :config
+  (progn
 
     (hook-fn 'org-capture-mode-hook
       (when (fboundp 'evil-insert)
@@ -322,9 +327,10 @@ With prefix argument ARG, show the file and move to the tasks tree."
              :immediate-finish t)))))
 
 (use-package org-clock
+  :defer t
+  :init (after 'org (require 'org-clock))
   :config
   (progn
-    (defvar org-clock-persist-file (f-join user-dropbox-directory ".org-clock-save.el"))
     (org-clock-persistence-insinuate)
     (setq org-clock-history-length 20
           org-clock-in-resume t
@@ -335,13 +341,11 @@ With prefix argument ARG, show the file and move to the tasks tree."
           org-clock-report-include-clocking-task t)))
 
 (use-package calendar
-  :init
-  (progn
-    (setq diary-file (f-join user-dropbox-directory "diary"))
-    (add-to-list 'auto-mode-alist `(,(rx bow "diary" eol) . diary-mode)))
+  :mode  ("diary$" . diary-mode)
+  :defer t
+  :init (after 'org (require 'calendar))
   :config
   (progn
-
     ;; Create the diary file if it does not exist.
     (unless (f-exists? diary-file)
       (f-write diary-file))
@@ -363,24 +367,26 @@ With prefix argument ARG, show the file and move to the tasks tree."
       (revert-buffer t t)
       (cb:close-diary))
 
+    (require 'diary-lib)
+    (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
+
     (hook-fn 'diary-mode-hook
       (add-hook 'after-save-hook 'cb-org:refresh-agenda t 'local)
       (local-set-key (kbd "C-c C-k") 'cb:diary-cancel)
       (local-set-key (kbd "C-c C-c") 'cb:diary-finalize))))
 
-(use-package diary-lib
-  :config
-  (add-hook 'diary-list-entries-hook 'diary-sort-entries t))
-
 (use-package appt
+  :defer t
+  :init (after 'calendar (require 'appt))
   :config
   (progn
     (setq appt-message-warning-time 60
           appt-display-interval 15)
 
+    (save-window-excursion
+      (appt-activate +1))
+
     (hook-fn 'diary-mode-hook
-      (save-window-excursion
-        (appt-activate +1))
       (hook-fn 'after-save-hook
         "Update the appointments ledger after saving."
         :local t
