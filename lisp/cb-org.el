@@ -191,9 +191,16 @@ With prefix argument ARG, show the file and move to the tasks tree."
       "Capture a new todo. With prefix argument ARG, show todo list."
       (interactive "P")
       (if arg
+          ;; Show the todo list.
+          ;; Make the 'q' key restore the previous window configuration.
           (with-window-restore
             (org-todo-list)
-            (buffer-local-set-key (kbd "q") (command (restore))))
+            (with-current-buffer
+                (window-buffer (--first-window
+                                (with-current-buffer (window-buffer it)
+                                  (derived-mode-p 'org-agenda-mode))))
+              (buffer-local-set-key (kbd "q") (command (restore)))))
+        ;; Perform todo capture.
         (org-capture nil "t")))
 
     (when (true? cb:use-vim-keybindings?)
