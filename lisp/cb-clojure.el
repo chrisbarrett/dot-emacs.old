@@ -87,14 +87,12 @@
       (local-set-key (kbd "C-c C-h") 'nrepl-doc)
       (local-set-key (kbd "C-c C-f") 'nrepl-eval-buffer))
 
-    (--each '(nrepl-mode-hook nrepl-interaction-mode-hook)
-      (hook-fn it
-        :dynamic t
-        (nrepl-turn-on-eldoc-mode)
-        (subword-mode +1)
-        (local-set-key (kbd "C-l") 'nrepl-clear-buffer)
-        (local-set-key (kbd "C-c C-z") 'cb:switch-to-clojure)
-        (local-set-key (kbd "C-c C-f") 'cb:eval-last-clj-buffer)))))
+    (hook-fns '(nrepl-mode-hook nrepl-interaction-mode-hook)
+      (nrepl-turn-on-eldoc-mode)
+      (subword-mode +1)
+      (local-set-key (kbd "C-l") 'nrepl-clear-buffer)
+      (local-set-key (kbd "C-c C-z") 'cb:switch-to-clojure)
+      (local-set-key (kbd "C-c C-f") 'cb:eval-last-clj-buffer))))
 
 (use-package ac-nrepl
   :ensure t

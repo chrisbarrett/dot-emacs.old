@@ -32,13 +32,9 @@
   "Create a hook bound as NAME that is run after each hook in HOOKS."
   (declare (indent 1))
   `(progn
-     ;; Define combined hook.
      (defvar ,name nil "Auto-generated combined hook.")
-     ;; Add combined hook to each of the given hooks.
-     (--each ,hooks
-       (hook-fn it
-         :dynamic t
-         (run-hooks ',name)))))
+     (hook-fns ',(eval hooks)
+       (run-hooks ',name))))
 
 (defmacro define-mode-group (name modes)
   "Create an ad-hoc relationship between language modes.

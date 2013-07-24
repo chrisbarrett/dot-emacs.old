@@ -34,7 +34,7 @@
   "Set to non-nil to prevent `hook-fn' from catching errors.")
 
 (defmacro* hook-fn (hook &rest body
-                         &key local append dynamic (arglist '(&rest _args))
+                         &key local append (arglist '(&rest _args))
                          &allow-other-keys)
   "Execute forms when a given hook is called.
 
@@ -45,14 +45,10 @@
 * APPEND and LOCAL are passed to the underlying call to
   `add-hook'.
 
-* DYNAMIC relaxes the requirement that HOOK be a symbol at
-  macro-expansion time.
-
 * ARGLIST overrides the default arglist for the hook's function."
   (declare (indent 1) (doc-string 2))
 
-  (unless dynamic
-    (assert (symbolp (eval hook))))
+  (assert (symbolp (eval hook)))
 
   `(let ((hook ,hook))
      (add-hook hook
@@ -67,6 +63,17 @@
                              (error-message-string err))))))
                ,append ,local)
      hook))
+
+(defmacro hook-fns (hooks &rest args)
+  "A sequence wrapper for `hook-fn'.
+
+* HOOKS is a list of hooks
+
+* ARGS are applied to each call to `hook-fn'."
+  (declare (indent 1) (doc-string 2))
+  `(progn
+     ,@(--map `(hook-fn ',it ,@args)
+              (eval hooks))))
 
 (defmacro after (feature &rest body)
   "Like `eval-after-load' - once FEATURE is loaded, execute the BODY."

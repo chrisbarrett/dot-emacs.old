@@ -153,12 +153,10 @@
       "g C" 'git-gutter+-stage-and-commit)
 
     ;; Enable git gutter when viewing files in a git repository.
-    (--each '(find-file-hook after-save-hook)
-      (hook-fn it
-        :dynamic t
-        (when (vc-git-root (buffer-file-name))
-          (require 'magit)
-          (git-gutter+-mode +1))))
+    (hook-fns '(find-file-hook after-save-hook)
+      (when (vc-git-root (buffer-file-name))
+        (require 'magit)
+        (git-gutter+-mode +1)))
 
     (hook-fn 'git-gutter+-mode-hook
       (run-with-idle-timer 1 t (lambda () (when (true? git-gutter+-mode)

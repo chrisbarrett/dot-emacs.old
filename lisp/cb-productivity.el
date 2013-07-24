@@ -118,14 +118,10 @@
   :config
   (progn
     (hook-fn 'ace-jump-mode-end-hook
-      (ignore-errors
-        (exit-recursive-edit)))
-
+      (ignore-errors (exit-recursive-edit)))
     ;; Use ESC to quit ace-jump.
-    (--each '(ace-jump-line-mode ace-jump-word-mode ace-jump-char-mode)
-      (hook-fn it
-        :dynamic t
-        (local-set-key (kbd "ESC") 'keyboard-quit)))))
+    (hook-fns '(ace-jump-line-mode ace-jump-word-mode ace-jump-char-mode)
+      (local-set-key (kbd "ESC") 'keyboard-quit))))
 
 (use-package hideshow
   :diminish hs-minor-mode
