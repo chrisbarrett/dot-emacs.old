@@ -91,7 +91,7 @@ Make the 'q' key restore the previous window configuration."
     (setq org-modules '(org-bbdb org-w3m org-habit)
           org-startup-indented t
           org-log-into-drawer t
-          org-log-done '(time)
+          org-log-done 'time
           org-reverse-note-order nil
           org-return-follows-link t)
 
