@@ -424,7 +424,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
           (appt-check 'force))))))
 
 (use-package org-agenda
-  :commands (org-agenda org-agenda-list)
+  :commands (org-agenda org-agenda-list org-agenda-redo)
   :init
   (progn
     (defvar org-my-archive-expiry-days 2
