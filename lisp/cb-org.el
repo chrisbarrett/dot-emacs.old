@@ -81,11 +81,24 @@ Make the 'q' key restore the previous window configuration."
                               (derived-mode-p 'org-agenda-mode))))
           (buffer-local-set-key (kbd "q") (command (restore))))))
 
+    (defun cb-org:show-agenda-list ()
+      "Show the todo list.
+Make the 'q' key restore the previous window configuration."
+      (interactive)
+      (with-window-restore
+        (org-agenda-list nil nil 1)
+        (with-current-buffer
+            (window-buffer (--first-window
+                            (with-current-buffer (window-buffer it)
+                              (derived-mode-p 'org-agenda-mode))))
+          (buffer-local-set-key (kbd "q") (command (restore)))
+          (delete-other-windows))))
+
     ;; Override the default M-o bindings with org commands.
     (global-unset-key (kbd "M-o"))
     (bind-keys
       :overriding? t
-      "M-o a" (command (org-agenda-list nil nil 1))
+      "M-o a" 'cb-org:show-agenda-list
       "M-o d" (command (find-file org-agenda-diary-file))
       "M-o c" (command (org-capture))
       "M-o K" (command (org-capture nil "T"))
@@ -418,8 +431,6 @@ With prefix argument ARG, show the file and move to the tasks tree."
       "The number of days after which a completed task should be auto-archived.
 This can be 0 for immediate, or a floating point value.")
 
-    (declare-modal-view org-agenda-list)
-
     (defun cb-org:refresh-agenda ()
       "Refresh all org agenda buffers."
       (--each (--filter-buffers (derived-mode-p 'org-agenda-mode))
@@ -431,7 +442,7 @@ This can be 0 for immediate, or a floating point value.")
 
     (when (or (daemonp) (display-graphic-p))
       (hook-fn 'after-init-hook
-        (org-agenda-list nil nil 1))))
+        (cb-org:show-agenda-list))))
 
   :config
   (progn
