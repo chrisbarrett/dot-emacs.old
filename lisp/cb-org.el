@@ -122,14 +122,14 @@ Make the 'q' key restore the previous window configuration."
           org-reverse-note-order nil
           org-return-follows-link t)
 
-    ;;;; Hooks
+;;;; Hooks
 
     (hook-fn 'cb:org-minor-modes-hook
       "Diminish org minor modes."
       (--each cb:org-minor-modes
         (ignore-errors (diminish it))))
 
-    ;;;; Auto-save notes file
+;;;; Auto-save notes file
 
     (defvar cb-org:notes-save-idle-delay 40)
 
