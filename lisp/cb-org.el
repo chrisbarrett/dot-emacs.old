@@ -85,16 +85,8 @@ Make the 'q' key restore the previous window configuration."
 (use-package org
   :ensure t
   :defer  t
-  :idle   (require 'org)
-  :config
+  :init
   (progn
-    (setq org-modules '(org-bbdb org-crypt org-w3m org-habit)
-          org-startup-indented t
-          org-log-into-drawer t
-          org-log-done 'time
-          org-reverse-note-order nil
-          org-return-follows-link t)
-
     ;; Override the default M-o bindings with org commands.
     (define-prefix-command 'cb-org-map)
 
@@ -119,7 +111,16 @@ Make the 'q' key restore the previous window configuration."
       "M-N" 'outline-next-visible-heading
       "SPC" 'org-cycle
       "z m" (command (org-global-cycle 1))
-      "z r" (command (org-global-cycle 0)))
+      "z r" (command (org-global-cycle 0))))
+
+  :config
+  (progn
+    (setq org-modules '(org-bbdb org-crypt org-w3m org-habit)
+          org-startup-indented t
+          org-log-into-drawer t
+          org-log-done 'time
+          org-reverse-note-order nil
+          org-return-follows-link t)
 
     ;;;; Hooks
 
