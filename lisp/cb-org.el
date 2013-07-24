@@ -68,15 +68,14 @@ Make the 'q' key restore the previous window configuration."
 (defun cb-org:show-agenda-list ()
   "Show the todo list.
 Make the 'q' key restore the previous window configuration."
-      (interactive)
-      (with-window-restore
-        (org-agenda-list nil nil 1)
-        (with-current-buffer
-            (window-buffer (--first-window
-                            (with-current-buffer (window-buffer it)
-                              (derived-mode-p 'org-agenda-mode))))
-          (buffer-local-set-key (kbd "q") (command (restore)))
-          (delete-other-windows))))
+  (interactive)
+  (with-window-restore
+    (org-agenda-list nil nil 1)
+    (with-current-buffer
+        (window-buffer (--first-window
+                        (with-current-buffer (window-buffer it)
+                          (derived-mode-p 'org-agenda-mode))))
+      (buffer-local-set-key (kbd "q") (command (restore))))))
 
 (after 'smartparens
   (sp-with-modes '(org-mode)
