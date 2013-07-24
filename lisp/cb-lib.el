@@ -49,13 +49,13 @@ The arguments passed to the hook function are bound to the symbol
 
 * APPEND and LOCAL are passed to the underlying call to `add-hook'."
   (declare (indent 1) (doc-string 2))
+  (assert (symbolp (eval hook)))
   ;; Sort the docstring form from the body.
   (destructuring-bind (docstring body)
       (if (and (stringp docstring) body)
           (list docstring body)
         (list nil (cons docstring body)))
     `(let ((hook ,hook))
-       (assert (symbolp hook))
        (add-hook hook
                  (lambda (&rest _args)
                    ,docstring
