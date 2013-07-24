@@ -44,6 +44,15 @@
     (sp-local-pair "#+BEGIN_SRC" "#+END_SRC")
     (sp-local-pair "#+begin_src" "#+end_src")))
 
+(defmacro with-org-default-notes-buffer (&rest body)
+  "Perform BODY with the `org-defaut-notes-buffer' set to current."
+  (declare (indent 0))
+  (let ((buf (cl-gensym)))
+    `(-when-let (,buf (--first-buffer (equal (buffer-file-name it)
+                                             org-default-notes-file)))
+       (with-current-buffer ,buf
+         ,@body))))
+
 (use-package org
   :ensure t
   :defer  t
@@ -69,7 +78,7 @@
       "z m" (command (org-global-cycle 1))
       "z r" (command (org-global-cycle 0)))
 
-    ;;;; Auto-save notes file
+;;;; Auto-save notes file
 
     (defvar cb-org:notes-save-idle-delay 40)
 
@@ -79,13 +88,11 @@
 
     (defun cb-org:save-notes ()
       "Save the notes file."
-      (-when-let (notes (--first-buffer (equal (buffer-file-name it)
-                                               org-default-notes-file)))
-        (with-current-buffer notes
-          (when (buffer-modified-p)
-            (save-buffer)))))
+      (with-org-default-notes-buffer
+        (when (buffer-modified-p)
+          (save-buffer))))
 
-    ;;;; Tasks
+;;;; Tasks
 
     (defun project-task-file ()
       (let ((proj (or (ignore-errors (projectile-project-root))
@@ -121,7 +128,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
     (bind-key* "M-?" 'cb-org:show-tasks)
 
-    ;;;; Org babel
+;;;; Org babel
 
     (setq org-src-fontify-natively t
           org-confirm-babel-evaluate nil)
@@ -134,7 +141,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
                                  (clojure . t)
                                  (haskell . t)))
 
-    ;;;; Org config
+;;;; Org config
 
     (defface org-todo-next
       '((((background dark))
@@ -196,9 +203,12 @@ With prefix argument ARG, show the file and move to the tasks tree."
   :config
   (progn
 
-    (hook-fn 'org-capture-mode-hook
-      (when (fboundp 'evil-insert)
-        (evil-insert 0)))
+    (hook-fn org-capture-after-finalize-hook
+      "Indent the notes buffer after capture."
+      (with-org-default-notes-buffer
+        (indent-buffer)))
+
+    (add-hook 'org-capture-mode-hook cb:append-buffer)
 
 ;;;; Todo auto-sorting
 
