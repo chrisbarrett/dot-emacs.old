@@ -452,7 +452,8 @@ This can be 0 for immediate, or a floating point value.")
   :config
   (progn
     (org-crypt-use-before-save-magic)
-    (setq org-tags-exclude-from-inheritance '("crypt"))
+    (setq org-tags-exclude-from-inheritance '("crypt")
+          org-crypt-disable-auto-save nil)
 
     ;;;; Decrypt with C-c C-c
 
