@@ -371,59 +371,6 @@ With prefix argument ARG, show the file and move to the tasks tree."
           org-clock-persist-query-resume nil
           org-clock-report-include-clocking-task t)))
 
-(use-package calendar
-  :mode  ("diary$" . diary-mode)
-  :defer t
-  :init (after 'org (require 'calendar))
-  :config
-  (progn
-    ;; Create the diary file if it does not exist.
-    (unless (f-exists? diary-file)
-      (f-write diary-file))
-
-    (defun cb:close-diary ()
-      (kill-buffer)
-      (when (< 1 (length (window-list))) (delete-window))
-      (cb-org:refresh-agenda))
-
-    (defun cb:diary-finalize ()
-      "Accept the diary entry and close the diary."
-      (interactive)
-      (save-buffer)
-      (cb:close-diary))
-
-    (defun cb:diary-cancel ()
-      "Abort the diary entry and close the diary."
-      (interactive)
-      (revert-buffer t t)
-      (cb:close-diary))
-
-    (require 'diary-lib)
-    (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
-
-    (hook-fn 'diary-mode-hook
-      (add-hook 'after-save-hook 'cb-org:refresh-agenda t 'local)
-      (local-set-key (kbd "C-c C-k") 'cb:diary-cancel)
-      (local-set-key (kbd "C-c C-c") 'cb:diary-finalize))))
-
-(use-package appt
-  :defer t
-  :init (after 'calendar (require 'appt))
-  :config
-  (progn
-    (setq appt-message-warning-time 60
-          appt-display-interval 15)
-
-    (save-window-excursion
-      (appt-activate +1))
-
-    (hook-fn 'diary-mode-hook
-      (hook-fn 'after-save-hook
-        "Update the appointments ledger after saving."
-        :local t
-        (save-window-excursion
-          (appt-check 'force))))))
-
 (use-package org-agenda
   :commands (org-agenda org-agenda-list org-agenda-redo)
   :init
@@ -448,7 +395,8 @@ This can be 0 for immediate, or a floating point value.")
   :config
   (progn
 
-    (setq org-agenda-files (list org-default-notes-file)
+    (setq org-agenda-files (list org-default-notes-file org-agenda-diary-file)
+          org-agenda-include-diary t
           org-agenda-insert-diary-extract-time t
           org-agenda-span 'week
           org-agenda-skip-deadline-if-done t
@@ -491,6 +439,28 @@ This can be 0 for immediate, or a floating point value.")
         (org-map-entries 'org-archive-subtree "/DONE" 'file)))
 
     (defalias 'archive-done-tasks 'org-archive-done-tasks)))
+
+(use-package appt
+  :defer t
+  :init (after 'org (require 'appt))
+  :config
+  (progn
+    ;; Create empty diary file to keep emacs happy.
+    (unless (f-exists? diary-file)
+      (f-write diary-file))
+
+    (setq appt-message-warning-time 60
+          appt-display-interval 15)
+
+    (save-window-excursion
+      (appt-activate +1))
+
+    (hook-fn 'diary-mode-hook
+      (hook-fn 'after-save-hook
+        "Update the appointments ledger after saving."
+        :local t
+        (save-window-excursion
+          (appt-check 'force))))))
 
 (provide 'cb-org)
 
