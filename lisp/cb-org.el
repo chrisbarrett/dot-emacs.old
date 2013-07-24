@@ -168,11 +168,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
     (--each '("NOTES" "COMMENTS")
       (add-to-list 'org-drawers it))
 
-    (hook-fn 'org-mode-hook
-      (auto-revert-mode +1)
-      ;; Enter insert mode if this is a capture window or something.
-      (unless (buffer-file-name)
-        (cb:append-buffer)))
+    (add-hook 'org-mode-hook 'auto-revert-mode)
 
     (define-keys org-mode-map
       "M-p" 'org-metaup
@@ -215,8 +211,6 @@ With prefix argument ARG, show the file and move to the tasks tree."
       "Indent the notes buffer after capture."
       (with-org-default-notes-buffer
         (indent-buffer)))
-
-    (add-hook 'org-capture-mode-hook cb:append-buffer)
 
 ;;;; Todo auto-sorting
 
