@@ -40,10 +40,11 @@
               (-contains? '("*scratch*" ".dir-locals.el") (buffer-name)))))))
 
 (after 'flycheck
-  (hook-fn 'flycheck-before-syntax-check-hook
-    "Disable flycheck for certain elisp buffers."
-    (when (cb:special-elisp-file?)
-      (flycheck-mode -1))))
+  ;; Use advice to ensure the mode is not started.
+  (defadvice flycheck-may-enable-mode
+    (around dont-activate-if-special-el-file activate)
+    "Prevent flycheck from running for certain elisp file types."
+    (or (not (cb:special-elisp-file?)) ad-do-it)))
 
 (after 'projectile
 
