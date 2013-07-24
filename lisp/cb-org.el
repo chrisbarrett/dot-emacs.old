@@ -172,17 +172,25 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
 (use-package org-capture
   :commands (org-capture)
-  :init
+  :config
   (progn
+
+    (defun cb-org:capture-todo (&optional arg)
+      "Capture a new todo. With prefix argument ARG, show todo list."
+      (interactive "P")
+      (if arg
+          (with-window-restore
+            (org-todo-list)
+            (buffer-local-set-key (kbd "q") (command (restore))))
+        (org-capture nil "t")))
+
     (when (true? cb:use-vim-keybindings?)
       (bind-key* "M-o" 'org-capture)
-      (bind-key* "M-k" (command (org-capture nil "t"))))
+      (bind-key* "M-k" 'cb-org:capture-todo))
 
     (hook-fn 'org-capture-mode-hook
       (when (fboundp 'evil-insert)
-        (evil-insert 0))))
-  :config
-  (progn
+        (evil-insert 0)))
 
 ;;;; Todo auto-sorting
 
