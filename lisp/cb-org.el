@@ -32,8 +32,9 @@
 (require 'noflet)
 (require 'f)
 
-(defvar org-directory (concat user-home-directory "org/"))
-(defvar org-default-notes-file (concat org-directory "notes.org"))
+(defvar org-directory (f-join user-home-directory "org"))
+(defvar org-default-notes-file (f-join org-directory "notes.org"))
+(defvar org-id-locations-file (f-join cb:tmp-dir "org-id-locations"))
 
 (after 'smartparens
   (sp-with-modes '(org-mode)
@@ -87,7 +88,7 @@
       (let ((proj (or (ignore-errors (projectile-project-root))
                       (with-current-buffer (--first-buffer (projectile-project-p))
                         (projectile-project-root)))))
-        (concat proj "Tasks.org")))
+        (f-join proj "Tasks.org")))
 
     (defun cb-org:show-task-file ()
       (switch-to-buffer
@@ -336,7 +337,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
 (use-package calendar
   :init
   (progn
-    (setq diary-file (concat user-dropbox-directory "diary"))
+    (setq diary-file (f-join user-dropbox-directory "diary"))
     (add-to-list 'auto-mode-alist `(,(rx bow "diary" eol) . diary-mode)))
   :config
   (progn
