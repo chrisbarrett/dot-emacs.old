@@ -89,6 +89,7 @@
 
     (--each '(nrepl-mode-hook nrepl-interaction-mode-hook)
       (hook-fn it
+        :dynamic t
         (nrepl-turn-on-eldoc-mode)
         (subword-mode +1)
         (local-set-key (kbd "C-l") 'nrepl-clear-buffer)

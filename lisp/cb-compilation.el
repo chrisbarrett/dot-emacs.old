@@ -122,7 +122,9 @@
   (flycheck-mode flycheck-mode-on-safe)
   :init
   (--each '(prog-mode-hook text-mode-hook)
-    (hook-fn it (flycheck-mode-on-safe)))
+    (hook-fn it
+      :dynamic t
+      (flycheck-mode-on-safe)))
 
   :config
   (defadvice flycheck-buffer (around dont-throw-in-ido-for-fuck-sake activate)

@@ -123,7 +123,9 @@
 
     ;; Use ESC to quit ace-jump.
     (--each '(ace-jump-line-mode ace-jump-word-mode ace-jump-char-mode)
-      (hook-fn it (local-set-key (kbd "ESC") 'keyboard-quit)))))
+      (hook-fn it
+        :dynamic t
+        (local-set-key (kbd "ESC") 'keyboard-quit)))))
 
 (use-package hideshow
   :diminish hs-minor-mode

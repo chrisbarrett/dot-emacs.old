@@ -155,6 +155,7 @@
     ;; Enable git gutter when viewing files in a git repository.
     (--each '(find-file-hook after-save-hook)
       (hook-fn it
+        :dynamic t
         (when (vc-git-root (buffer-file-name))
           (require 'magit)
           (git-gutter+-mode +1))))

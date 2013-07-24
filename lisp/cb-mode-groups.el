@@ -37,6 +37,7 @@
      ;; Add combined hook to each of the given hooks.
      (--each ,hooks
        (hook-fn it
+         :dynamic t
          (run-hooks ',name)))))
 
 (defmacro define-mode-group (name modes)

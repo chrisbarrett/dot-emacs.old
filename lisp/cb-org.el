@@ -210,7 +210,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
   :config
   (progn
 
-    (hook-fn org-capture-after-finalize-hook
+    (hook-fn 'org-capture-after-finalize-hook
       "Indent the notes buffer after capture."
       (with-org-default-notes-buffer
         (indent-buffer)))
