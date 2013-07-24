@@ -40,11 +40,6 @@
 (defvar org-export-publishing-directory (f-join user-home-directory "Desktop"))
 (defvar org-agenda-diary-file (f-join org-directory "diary.org"))
 
-(after 'smartparens
-  (sp-with-modes '(org-mode)
-    (sp-local-pair "#+BEGIN_SRC" "#+END_SRC")
-    (sp-local-pair "#+begin_src" "#+end_src")))
-
 (defmacro with-org-default-notes-buffer (&rest body)
   "Perform BODY with the `org-defaut-notes-buffer' set to current."
   (declare (indent 0))
@@ -53,6 +48,36 @@
                                              org-default-notes-file)))
        (with-current-buffer ,buf
          ,@body))))
+
+(defun cb-org:show-todo-list ()
+  "Show the todo list.
+Make the 'q' key restore the previous window configuration."
+  (interactive)
+  (with-window-restore
+    (org-todo-list)
+    (with-current-buffer
+        (window-buffer (--first-window
+                        (with-current-buffer (window-buffer it)
+                          (derived-mode-p 'org-agenda-mode))))
+      (buffer-local-set-key (kbd "q") (command (restore))))))
+
+(defun cb-org:show-agenda-list ()
+  "Show the todo list.
+Make the 'q' key restore the previous window configuration."
+      (interactive)
+      (with-window-restore
+        (org-agenda-list nil nil 1)
+        (with-current-buffer
+            (window-buffer (--first-window
+                            (with-current-buffer (window-buffer it)
+                              (derived-mode-p 'org-agenda-mode))))
+          (buffer-local-set-key (kbd "q") (command (restore)))
+          (delete-other-windows))))
+
+(after 'smartparens
+  (sp-with-modes '(org-mode)
+    (sp-local-pair "#+BEGIN_SRC" "#+END_SRC")
+    (sp-local-pair "#+begin_src" "#+end_src")))
 
 (use-package org
   :ensure t
@@ -66,33 +91,6 @@
           org-log-done '(time)
           org-reverse-note-order nil
           org-return-follows-link t)
-
-    ;;;; Key bindings
-
-    (defun cb-org:show-todo-list ()
-      "Show the todo list.
-Make the 'q' key restore the previous window configuration."
-      (interactive)
-      (with-window-restore
-        (org-todo-list)
-        (with-current-buffer
-            (window-buffer (--first-window
-                            (with-current-buffer (window-buffer it)
-                              (derived-mode-p 'org-agenda-mode))))
-          (buffer-local-set-key (kbd "q") (command (restore))))))
-
-    (defun cb-org:show-agenda-list ()
-      "Show the todo list.
-Make the 'q' key restore the previous window configuration."
-      (interactive)
-      (with-window-restore
-        (org-agenda-list nil nil 1)
-        (with-current-buffer
-            (window-buffer (--first-window
-                            (with-current-buffer (window-buffer it)
-                              (derived-mode-p 'org-agenda-mode))))
-          (buffer-local-set-key (kbd "q") (command (restore)))
-          (delete-other-windows))))
 
     ;; Override the default M-o bindings with org commands.
     (global-unset-key (kbd "M-o"))
