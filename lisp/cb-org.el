@@ -323,7 +323,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
 (use-package org-clock
   :config
   (progn
-
+    (defvar org-clock-persist-file (f-join user-dropbox-directory ".org-clock-save.el"))
     (org-clock-persistence-insinuate)
     (setq org-clock-history-length 20
           org-clock-in-resume t
