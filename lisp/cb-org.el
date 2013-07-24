@@ -73,6 +73,7 @@
         (ignore-errors (diminish it))))
 
     (evil-define-keys 'normal org-mode-map
+      "<return>" 'org-return
       "M-P" 'outline-previous-visible-heading
       "M-N" 'outline-next-visible-heading
       "SPC" 'org-cycle
