@@ -40,6 +40,10 @@
 (defvar org-export-publishing-directory (f-join user-home-directory "Desktop"))
 (defvar org-agenda-diary-file (f-join org-directory "diary.org"))
 
+(declare-modal-executor org-agenda-fullscreen
+  :bind "M-O"
+  :command cb-org:show-agenda-list)
+
 (defmacro with-org-default-notes-buffer (&rest body)
   "Perform BODY with the `org-defaut-notes-buffer' set to current."
   (declare (indent 0))
