@@ -37,6 +37,7 @@
 (defvar org-id-locations-file (f-join cb:tmp-dir "org-id-locations"))
 (defvar org-clock-persist-file (f-join user-dropbox-directory ".org-clock-save.el"))
 (defvar diary-file (f-join user-dropbox-directory "diary"))
+(defvar org-export-publishing-directory (f-join user-home-directory "Desktop"))
 
 (after 'smartparens
   (sp-with-modes '(org-mode)
