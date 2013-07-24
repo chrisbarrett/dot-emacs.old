@@ -36,8 +36,9 @@
 (defvar org-default-notes-file (f-join org-directory "notes.org"))
 (defvar org-id-locations-file (f-join cb:tmp-dir "org-id-locations"))
 (defvar org-clock-persist-file (f-join user-dropbox-directory ".org-clock-save.el"))
-(defvar diary-file (f-join user-dropbox-directory "diary"))
+(defvar diary-file (f-join cb:tmp-dir "diary"))
 (defvar org-export-publishing-directory (f-join user-home-directory "Desktop"))
+(defvar org-agenda-diary-file (f-join org-directory "diary.org"))
 
 (after 'smartparens
   (sp-with-modes '(org-mode)
@@ -447,7 +448,7 @@ This can be 0 for immediate, or a floating point value.")
   (progn
 
     (setq org-agenda-files (list org-default-notes-file)
-          org-agenda-include-diary t
+          org-agenda-insert-diary-extract-time t
           org-agenda-span 'week
           org-agenda-skip-deadline-if-done t
           org-agenda-skip-scheduled-if-done t
