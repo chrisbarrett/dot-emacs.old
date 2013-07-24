@@ -129,7 +129,7 @@ Make the 'q' key restore the previous window configuration."
       (--each cb:org-minor-modes
         (ignore-errors (diminish it))))
 
-;;;; Auto-save notes file
+    ;;;; Auto-save notes file
 
     (defvar cb-org:notes-save-idle-delay 40)
 
@@ -142,6 +142,15 @@ Make the 'q' key restore the previous window configuration."
       (with-org-default-notes-buffer
         (when (buffer-modified-p)
           (save-buffer))))
+
+;;;; Editing commands
+
+    (defun org-insert-inactive-timestamp (&optional arg)
+      (interactive "p")
+      (org-time-stamp arg t))
+
+    (define-key org-mode-map (kbd "C-c C-.") 'org-insert-inactive-timestamp)
+
 
 ;;;; Tasks
 
