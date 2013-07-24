@@ -35,7 +35,7 @@
   (and (derived-mode-p 'emacs-lisp-mode)
        (when (buffer-file-name)
          (or
-          (s-starts-with? "org-" (f-filename (buffer-name)))
+          (s-matches? (rx (? ".") "org-") (f-filename (buffer-name)))
           (or (true? scratch-buffer)
               (-contains? '("*scratch*" ".dir-locals.el") (buffer-name)))))))
 
