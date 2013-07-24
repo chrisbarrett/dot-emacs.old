@@ -443,7 +443,7 @@ This can be 0 for immediate, or a floating point value.")
 
     (when (or (daemonp) (display-graphic-p))
       (hook-fn 'after-init-hook
-        (cb-org:show-agenda-list))))
+        (executor:org-agenda-fullscreen))))
 
   :config
   (progn
