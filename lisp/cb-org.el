@@ -54,6 +54,31 @@
        (with-current-buffer ,buf
          ,@body))))
 
+(defun cb-org:show-todo-list ()
+  "Show the todo list.
+Make the 'q' key restore the previous window configuration."
+  (interactive)
+  (with-window-restore
+    (org-todo-list)
+    (with-current-buffer
+        (window-buffer (--first-window
+                        (with-current-buffer (window-buffer it)
+                          (derived-mode-p 'org-agenda-mode))))
+      (buffer-local-set-key (kbd "q") (command (restore))))))
+
+
+(define-prefix-command 'cb:org-map)
+(bind-keys
+  :global t
+  :map cb:org-map
+  "C-o a" (command (org-agenda-list nil nil 1))
+  "C-o d" (command (find-file org-agenda-diary-file))
+  "C-o c" (command (org-capture))
+  "C-o K" (command (org-capture nil "T"))
+  "C-o k" (command (org-capture nil "t"))
+  "C-o n" (command (find-file org-default-notes-file))
+  "C-o t" 'cb-org:show-todo-list)
+
 (use-package org
   :ensure t
   :defer  t
@@ -187,29 +212,6 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
 (use-package org-capture
   :commands (org-capture)
-  :init
-  (progn
-
-    (defun cb-org:capture-todo (&optional arg)
-      "Capture a new todo. With prefix argument ARG, show todo list."
-      (interactive "P")
-      (if arg
-          ;; Show the todo list.
-          ;; Make the 'q' key restore the previous window configuration.
-          (with-window-restore
-            (org-todo-list)
-            (with-current-buffer
-                (window-buffer (--first-window
-                                (with-current-buffer (window-buffer it)
-                                  (derived-mode-p 'org-agenda-mode))))
-              (buffer-local-set-key (kbd "q") (command (restore)))))
-        ;; Perform todo capture.
-        (org-capture nil "t")))
-
-    (when (true? cb:use-vim-keybindings?)
-      (bind-key* "M-o" 'org-capture)
-      (bind-key* "M-k" 'cb-org:capture-todo)))
-
   :config
   (progn
 
@@ -419,14 +421,6 @@ With prefix argument ARG, show the file and move to the tasks tree."
 This can be 0 for immediate, or a floating point value.")
 
     (declare-modal-view org-agenda-list)
-
-    (declare-modal-executor org-agenda-list
-      :bind "M-O"
-      :command
-      (lambda (&optional arg) (interactive "P")
-        (if arg
-            (find-file org-default-notes-file)
-          (org-agenda-list nil nil 1))))
 
     (defun cb-org:refresh-agenda ()
       "Refresh all org agenda buffers."
