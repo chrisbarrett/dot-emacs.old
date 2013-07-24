@@ -29,6 +29,7 @@
 (require 'cl-lib)
 (require 'f)
 (require 'bind-key)
+(autoload 'sp-splice-sexp-killing-around "smartparens")
 
 (defvar cb-lib:debug-hooks? t
   "Set to non-nil to prevent `hook-fn' from catching errors.")
@@ -262,6 +263,32 @@ Find the first window where PRED-FORM is not nil."
 (defun sum (&rest values)
   "Sum VALUES.  The input may be a list of values of any level of nesting."
   (-reduce '+ (-flatten values)))
+
+(defmacro cal (&rest expression)
+  "Evaluate algebraic EXPRESSION using calc."
+  (eval-when-compile
+    (autoload 'sp-splice-sexp-killing-around "smartparens"))
+  (let*
+      ((expr (with-temp-buffer
+               (lisp-mode)
+               (insert (->> expression
+                         (-map 'pp-to-string)
+                         (apply 'concat)
+                         (s-replace (rx space) "")))
+               ;; Unpack comma forms applied by the lisp reader.
+               (goto-char (point-min))
+               (while (search-forward "(\\," nil t)
+                 (forward-char -1)
+                 (sp-splice-sexp-killing-around))
+               (buffer-string)))
+       (result (calc-eval expr)))
+    (if (listp result)
+        (destructuring-bind (pos err) result
+          (error "%s\n%s\n%s^"
+                 err
+                 expr
+                 (s-repeat pos " ")))
+      (read (s-replace "," "" result)))))
 
 (provide 'cb-lib)
 

@@ -73,6 +73,7 @@
    `(
      ;; General keywords
      (,(rx "(" (group (or "use-package"
+                          "cal"
                           "hook-fn"
                           "after"
                           "noflet"
