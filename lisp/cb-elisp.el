@@ -33,18 +33,19 @@
 
 (defun cb:special-elisp-file? ()
   (and (derived-mode-p 'emacs-lisp-mode)
-       (when (buffer-file-name)
-         (or
-          (s-matches? (rx bol (? ".") "org-") (f-filename (buffer-name)))
-          (or (true? scratch-buffer)
-              (-contains? '("*scratch*" ".dir-locals.el") (buffer-name)))))))
+       (buffer-file-name)
+       (or
+        (true? scratch-buffer)
+        (s-matches? (rx bol (? ".") (or "org-" "dir-locals"))
+                    (buffer-name))
+        (equal "*scratch*" (buffer-name)))))
 
 (after 'flycheck
   ;; Use advice to ensure the mode is not started.
   (defadvice flycheck-may-enable-mode
     (around dont-activate-if-special-el-file activate)
     "Prevent flycheck from running for certain elisp file types."
-    (or (not (cb:special-elisp-file?)) ad-do-it)))
+    (and (not (cb:special-elisp-file?)) ad-do-it)))
 
 (after 'projectile
 
