@@ -315,19 +315,16 @@ With prefix argument ARG, show the file and move to the tasks tree."
             ("t" "Todo" entry
              (file+headline org-default-notes-file "Tasks")
              (function cb-org:read-todo)
-             :empty-lines 1
              :immediate-finish t)
 
             ("h" "Habit" entry
              (file+headline org-default-notes-file "Habits")
              (function cb-org:read-habit)
-             :empty-lines 1
              :immediate-finish t)
 
             ("r" "Reading" entry
              (file+headline org-default-notes-file "Readings")
              "* %^{Title}"
-             :empty-lines 1
              :immediate-finish t)
 
             ("l" "Link" entry
