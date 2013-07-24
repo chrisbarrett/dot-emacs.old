@@ -155,13 +155,13 @@
     ;;;; File handling
 
     (hook-fn 'emacs-lisp-mode-hook
+      (when (cb:special-elisp-file?)
+        (setq-local no-byte-compile t))
       (hook-fn 'after-save-hook
         "Check parens are balanced and byte-compile."
         :local t
         (check-parens)
-        (ignore-errors
-          (unless (or (cb:special-elisp-file?) no-byte-compile)
-            (byte-compile-file (buffer-file-name))))))
+        (byte-compile-file (buffer-file-name))))
 
     ;;;; Advices
 
