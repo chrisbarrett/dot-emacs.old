@@ -33,16 +33,12 @@
 (defvar cb-lib:debug-hooks? t
   "Set to non-nil to prevent `hook-fn' from catching errors.")
 
-(defmacro* hook-fn (hook &optional docstring
-                         &rest body
+(defmacro* hook-fn (hook &rest body
                          &key local append dynamic (arglist '(&rest _args))
                          &allow-other-keys)
   "Execute forms when a given hook is called.
 
 * HOOK is the name of the hook.
-
-* DOCSTRING optionally documents the forms.  Otherwise, it is
-  evaluated as part of BODY.
 
 * BODY is a list of forms to evaluate when the hook is run.
 
@@ -56,28 +52,21 @@
   (declare (indent 1) (doc-string 2))
 
   (unless dynamic
-    (assert (consp hook))
-    (assert (symbolp (second hook))))
+    (assert (symbolp (eval hook))))
 
-  ;; Sort the docstring form from the body.
-  (destructuring-bind (docstring body)
-      (if (and (stringp docstring) body)
-          (list docstring body)
-        (list nil (cons docstring body)))
-    `(let ((hook ,hook))
-       (add-hook hook
-                 (lambda ,arglist
-                   ,docstring
-                   (if cb-lib:debug-hooks?
+  `(let ((hook ,hook))
+     (add-hook hook
+               (lambda ,arglist
+                 (if cb-lib:debug-hooks?
+                     (progn ,@body)
+                   ;; Do not allow errors to propagate from the hook.
+                   (condition-case err
                        (progn ,@body)
-                     ;; Do not allow errors to propagate from the hook.
-                     (condition-case err
-                         (progn ,@body)
-                       (error (message
-                               "[%s] %s" ,hook
-                               (error-message-string err))))))
-                 ,append ,local)
-       hook)))
+                     (error (message
+                             "[%s] %s" ,hook
+                             (error-message-string err))))))
+               ,append ,local)
+     hook))
 
 (defmacro after (feature &rest body)
   "Like `eval-after-load' - once FEATURE is loaded, execute the BODY."
