@@ -260,7 +260,7 @@ Find the first window where PRED-FORM is not nil."
 ;; -----------------------------------------------------------------------------
 
 (defun sum (&rest values)
-  "Sum VALUES. The input may be a list of values of any level of nesting."
+  "Sum VALUES.  The input may be a list of values of any level of nesting."
   (-reduce '+ (-flatten values)))
 
 (provide 'cb-lib)
