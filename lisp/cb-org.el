@@ -446,6 +446,14 @@ This can be 0 for immediate, or a floating point value.")
 
     (defalias 'archive-done-tasks 'org-archive-done-tasks)))
 
+(use-package org-crypt
+  :defer t
+  :init (after 'org (require 'org-crypt))
+  :config
+  (progn
+    (org-crypt-use-before-save-magic)
+    (setq org-tags-exclude-from-inheritance '("crypt"))))
+
 (use-package appt
   :defer t
   :init (after 'org (require 'appt))
