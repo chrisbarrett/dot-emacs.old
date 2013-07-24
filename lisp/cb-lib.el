@@ -30,15 +30,14 @@
 (require 'f)
 (require 'bind-key)
 
-(defvar cb-lib:debug-hooks? nil
+(defvar cb-lib:debug-hooks? t
   "Set to non-nil to prevent `hook-fn' from catching errors.")
 
 (defmacro* hook-fn (hook &optional docstring
                          &rest body
-                         &key local append &allow-other-keys)
+                         &key local append dynamic (arglist '(&rest _args))
+                         &allow-other-keys)
   "Execute forms when a given hook is called.
-The arguments passed to the hook function are bound to the symbol
-'_args' and should generally not be used.
 
 * HOOK is the name of the hook.
 
@@ -47,9 +46,19 @@ The arguments passed to the hook function are bound to the symbol
 
 * BODY is a list of forms to evaluate when the hook is run.
 
-* APPEND and LOCAL are passed to the underlying call to `add-hook'."
+* APPEND and LOCAL are passed to the underlying call to
+  `add-hook'.
+
+* DYNAMIC relaxes the requirement that HOOK be a symbol at
+  macro-expansion time.
+
+* ARGLIST overrides the default arglist for the hook's function."
   (declare (indent 1) (doc-string 2))
-  (assert (symbolp (eval hook)))
+
+  (unless dynamic
+    (assert (consp hook))
+    (assert (symbolp (second hook))))
+
   ;; Sort the docstring form from the body.
   (destructuring-bind (docstring body)
       (if (and (stringp docstring) body)
@@ -57,7 +66,7 @@ The arguments passed to the hook function are bound to the symbol
         (list nil (cons docstring body)))
     `(let ((hook ,hook))
        (add-hook hook
-                 (lambda (&rest _args)
+                 (lambda ,arglist
                    ,docstring
                    (if cb-lib:debug-hooks?
                        (progn ,@body)
