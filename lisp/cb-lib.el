@@ -229,6 +229,21 @@ Find the first window where PRED-FORM is not nil."
                           ,(if (stringp k) `(kbd ,k) k)
                           ,f)))))
 
+(defun buffer-local-set-key (key command)
+  "Map KEY to COMMAND in this buffer alone."
+  (interactive "KSet key on this buffer: \naCommand: ")
+  (let ((mode-name (intern (format "%s-magic" (buffer-name)))))
+    (eval
+     `(define-minor-mode ,mode-name
+        "Automagically built minor mode to define buffer-local keys."))
+    (let* ((mapname (format "%s-map" mode-name))
+           (map (intern mapname)))
+      (unless (boundp (intern mapname))
+        (set map (make-sparse-keymap)))
+      (eval
+       `(define-key ,map ,key ',command)))
+    (funcall mode-name t)))
+
 ;; -----------------------------------------------------------------------------
 
 (defun cb:comma-then-space ()
