@@ -449,12 +449,16 @@ This can be 0 for immediate, or a floating point value.")
 
 (use-package org-crypt
   :defer t
-  :init (after 'org (require 'org-crypt))
+  :init
+  (after 'org
+    (require 'org-crypt)
+    (org-crypt-use-before-save-magic))
   :config
   (progn
-    (org-crypt-use-before-save-magic)
     (setq org-tags-exclude-from-inheritance '("crypt")
           org-crypt-disable-auto-save nil)
+
+    (define-key org-mode-map (kbd "C-c c") 'org-encrypt-entry)
 
     ;;;; Decrypt with C-c C-c
 
