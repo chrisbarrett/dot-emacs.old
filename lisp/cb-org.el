@@ -80,6 +80,11 @@
       "z m" (command (org-global-cycle 1))
       "z r" (command (org-global-cycle 0)))
 
+    (defun org-show-diary ()
+      "Open the org diary file."
+      (interactive)
+      (find-file org-agenda-diary-file))
+
 ;;;; Auto-save notes file
 
     (defvar cb-org:notes-save-idle-delay 40)
