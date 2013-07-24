@@ -33,8 +33,11 @@
 
 (defun cb:special-elisp-file? ()
   (and (derived-mode-p 'emacs-lisp-mode)
-       (or (true? scratch-buffer)
-           (-contains? '("*scratch*" ".dir-locals.el") (buffer-name)))))
+       (when (buffer-file-name)
+         (or
+          (s-starts-with? "org-" (f-filename (buffer-name)))
+          (or (true? scratch-buffer)
+              (-contains? '("*scratch*" ".dir-locals.el") (buffer-name)))))))
 
 (after 'flycheck
   (hook-fn 'flycheck-before-syntax-check-hook
