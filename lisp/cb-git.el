@@ -143,8 +143,14 @@
       (git-gutter+-refresh))
 
     (evil-global-set-keys 'normal
-      "g n" 'git-gutter+-next-hunk
-      "g p" 'git-gutter+-previous-hunk
+      "g n" (lambda (arg)
+              (interactive "p")
+              (git-gutter+-refresh)
+              (git-gutter+-next-hunk arg))
+      "g p" (lambda (arg)
+              (interactive "p")
+              (git-gutter+-refresh)
+              (git-gutter+-previous-hunk arg))
       "g h" 'git-gutter+-popup-hunk
       "g x" 'git-gutter+-revert-hunk
       "g s" 'git-gutter+-stage-hunks
