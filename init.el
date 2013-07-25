@@ -43,17 +43,20 @@
 ;; Increase GC threshold. Computers have lots of memory these days.
 (setq gc-cons-threshold 20000000)
 
+(require 'package)
+(require 'cl)
+(require 'cl-lib)
+
 ;;;; Basic paths.
 
 (setq user-emacs-directory (expand-file-name user-emacs-directory))
 (add-to-list 'load-path (concat (getenv "HOME") "/Dropbox/"))
 (add-to-list 'load-path (concat user-emacs-directory "lisp"))
 
-;;; Configure packages.
+(delete-if (lambda (f) (string-match-p (rx "/lisp/org" eol) f)) load-path)
+(add-to-list 'load-path (concat user-emacs-directory "etc/org-mode/lisp"))
 
-(require 'package)
-(require 'cl)
-(require 'cl-lib)
+;;; Configure packages.
 
 (cl-loop for source in
          '(("melpa"     . "http://melpa.milkbox.net/packages/")

@@ -200,3 +200,24 @@ haskell : $(scion_server)
 $(scion_server) :
 	git clone $(scion_url) $(scion_dest)
 	cd $(scion_dest) && cabal install
+
+# ----------------------------------------------------------------------------
+
+org_url  = http://orgmode.org/org-latest.tar.gz
+org_gz   = $(tmp)/org-latest.tar.gz
+org_src = $(etc)/org-mode
+
+.PHONY: org
+org : $(org_src)
+
+.PHONY: clean_org
+clean_org :
+	rm -fr $(org_src)
+	rm -fr $(org_gz)
+
+$(org_gz)  :| $(tmp)
+	curl $(org_url) -o $(org_gz)
+
+$(org_src) :| $(org_gz)
+	tar xvfz $(org_gz) --directory=$(etc)
+	cd $(org_src) && make
