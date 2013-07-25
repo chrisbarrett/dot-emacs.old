@@ -122,8 +122,7 @@ given key."
     (sp-local-pair "#+begin_src" "#+end_src")))
 
 (use-package org
-  :ensure t
-  :defer  t
+  :defer t
   :init
   (progn
     ;; Override the default M-o bindings with org commands.
