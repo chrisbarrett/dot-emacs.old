@@ -308,7 +308,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
         (let ((desc (s-trim (read-string "Description: " nil t)))
               (date (org-read-date)))
           (concat "* " desc "\n"
-                  "  " date))))
+                  "  SCHEDULED: <" date ">"))))
 
  ;;;; TODOS
 
