@@ -28,6 +28,7 @@
 
 (require 'use-package)
 (require 'cb-foundation)
+(require 'cb-evil)
 
 (hook-fn 'after-init-hook
   (bury-buffer "*Compile-Log*"))
@@ -59,13 +60,12 @@
 
 (use-package popwin
   :ensure t
-  :commands popwin-mode
-  :init
-  (hook-fn 'window-configuration-change-hook
-    (unless (true? popwin-mode)
-      (popwin-mode +1)))
   :config
   (progn
+    (hook-fn 'window-configuration-change-hook
+      (unless (true? popwin-mode)
+        (popwin-mode +1)))
+
     (hook-fn 'popwin:after-popup-hook
       "Quit popups with Q"
       (when (fboundp 'evil-define-key)
@@ -122,11 +122,11 @@
   :commands window-number-meta-mode
   :init (hook-fn 'window-configuration-change-hook (window-number-meta-mode +1)))
 
-
 (provide 'cb-window-management)
 
 ;; Local Variables:
 ;; lexical-binding: t
+;; byte-compile-warnings: (not obsolete)
 ;; End:
 
-;;; cb-windowing.el ends here
+;;; cb-window-management.el ends here
