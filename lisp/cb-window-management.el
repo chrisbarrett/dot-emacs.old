@@ -27,6 +27,10 @@
 ;;; Code:
 
 (require 'use-package)
+(require 'cb-foundation)
+
+(hook-fn 'after-init-hook
+  (bury-buffer "*Compile-Log*"))
 
 (use-package workgroups
   :ensure t
