@@ -89,25 +89,32 @@ Make the 'q' key restore the previous window configuration."
                           (derived-mode-p 'org-agenda-mode))))
       (buffer-local-set-key (kbd "q") (command (restore))))))
 
+(defun cb-org:ensure-field (kvp &optional permissive?)
+  "Insert metadata key-value pair KVP at point.
+No insertion is done if the field is already set in the current
+buffer.  When PERMISSIVE is set, allow duplicate instances of the
+given key."
+  (destructuring-bind (key . val) (s-split (rx space) kvp)
+    (unless (s-matches? (rx-to-string
+                         (if permissive?
+                             `(and bol ,key (* space) ,(or (car val) ""))
+                           `(and bol ,key (* space))))
+                        (buffer-string))
+      (insert (concat kvp "\n")))))
+
 (defun cb-org:format-project-task-file ()
+  "Ensure the current project tasks file has its metadata fields set."
   (save-excursion
     (goto-char (point-min))
     ;; Skip file variables.
     (when (emr-line-matches? (rx "-*-" (* nonl) "-*-"))
       (forward-line))
     (beginning-of-line)
-    (let ((str (buffer-string)))
-      ;; Insert missing metadata and options.
-      (unless (s-matches? (rx bol "#+TITLE:") str)
-        (insert "#+TITLE: Tasks\n"))
-      (unless (s-matches? (rx bol "#+Author:") str)
-        (insert (format "#+Author: %s\n" user-full-name)))
-      (unless (s-matches? (rx bol "#+STARTUP: lognotestate") str)
-        (insert "#+STARTUP: lognotestate\n"))
-      (unless (s-matches? (rx bol "#+STARTUP: lognotedone") str)
-        (insert "#+STARTUP: lognotedone\n"))
-      (unless (s-matches? (rx bol "#+DESCRIPTION:") str)
-        (insert "#+DESCRIPTION: Project-level notes and todos\n")))))
+    (cb-org:ensure-field "#+TITLE: Tasks")
+    (cb-org:ensure-field (concat "#+AUTHOR: " user-full-name))
+    (cb-org:ensure-field "#+STARTUP: lognotestate" t)
+    (cb-org:ensure-field "#+STARTUP: lognotedone" t)
+    (cb-org:ensure-field "#+DESCRIPTION: Project-level notes and todos")))
 
 (after 'smartparens
   (sp-with-modes '(org-mode)
@@ -164,6 +171,11 @@ Make the 'q' key restore the previous window configuration."
     (hook-fn 'org-mode-hook
       (when (and (equal (buffer-name) "*Org Note*"))
         (cb:append-buffer)))
+
+    ;; Move point out of header to first item.
+    (hook-fn 'org-mode-hook
+      (when (and (bobp) (emr-line-matches? (rx bol "#+")))
+        (forward-paragraph)))
 
     ;; Diminish org minor modes.
     (hook-fn 'cb:org-minor-modes-hook
