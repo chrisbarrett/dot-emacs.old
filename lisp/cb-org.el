@@ -124,6 +124,11 @@ Make the 'q' key restore the previous window configuration."
 
 ;;;; Hooks
 
+    ;; Enter insert state for popup notes.
+    (hook-fn 'org-mode-hook
+      (when (and (equal (buffer-name) "*Org Note*"))
+        (cb:append-buffer)))
+
     (hook-fn 'cb:org-minor-modes-hook
       "Diminish org minor modes."
       (--each cb:org-minor-modes
