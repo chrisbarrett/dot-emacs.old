@@ -443,15 +443,6 @@ This can be 0 for immediate, or a floating point value.")
       (hook-fn 'org-agenda-mode-hook
         (smartparens-mode -1)))
 
-    (defadvice org-agenda-diary-entry (after narrow-and-insert activate)
-      "Make the diary entry process similar to org-capture."
-      (narrow-to-region (line-beginning-position) (line-end-position))
-      (cb:append-buffer)
-      ;; Show usage. Run on timer so other messages are buried.
-      (run-with-timer
-       0.1 nil
-       (lambda () (message "<C-c C-c> to commit changes, <C-c C-k> to abort."))))
-
     ;;;; Agenda refresh
 
     (defun cb-org:refresh-agenda ()
