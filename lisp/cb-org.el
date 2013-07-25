@@ -36,7 +36,6 @@
 (defvar org-default-notes-file (f-join org-directory "notes.org"))
 (defvar org-id-locations-file (f-join cb:tmp-dir "org-id-locations"))
 (defvar org-clock-persist-file (f-join user-dropbox-directory ".org-clock-save.el"))
-(defvar diary-file (f-join cb:tmp-dir "diary"))
 (defvar org-export-publishing-directory (f-join user-home-directory "Desktop"))
 (defvar org-agenda-diary-file (f-join org-directory "diary.org"))
 
@@ -395,12 +394,6 @@ With prefix argument ARG, show the file and move to the tasks tree."
       "The number of days after which a completed task should be auto-archived.
 This can be 0 for immediate, or a floating point value.")
 
-    (defun cb-org:refresh-agenda ()
-      "Refresh all org agenda buffers."
-      (--each (--filter-buffers (derived-mode-p 'org-agenda-mode))
-        (with-current-buffer it
-          (org-agenda-redo t))))
-
     (when (true? cb:use-vim-keybindings?)
       (bind-key "M-C" 'org-agenda))
 
@@ -421,6 +414,7 @@ This can be 0 for immediate, or a floating point value.")
           org-agenda-start-on-weekday nil
           org-agenda-ndays 7)
 
+    ;;;; Keys
 
     (define-keys org-agenda-mode-map
       "g" 'org-agenda-goto-date
@@ -431,12 +425,6 @@ This can be 0 for immediate, or a floating point value.")
       (hook-fn 'org-agenda-mode-hook
         (smartparens-mode -1)))
 
-    (hook-fn 'org-capture-after-finalize-hook
-      (cb-org:refresh-agenda))
-
-    (hook-fn 'org-mode-hook
-      (add-hook 'after-save-hook 'cb-org:refresh-agenda nil 'local))
-
     (defadvice org-agenda-diary-entry (after narrow-and-insert activate)
       "Make the diary entry process similar to org-capture."
       (narrow-to-region (line-beginning-position) (line-end-position))
@@ -445,6 +433,20 @@ This can be 0 for immediate, or a floating point value.")
       (run-with-timer
        0.1 nil
        (lambda () (message "<C-c C-c> to commit changes, <C-c C-k> to abort."))))
+
+    ;;;; Agenda refresh
+
+    (defun cb-org:refresh-agenda ()
+      "Refresh all org agenda buffers."
+      (--each (--filter-buffers (derived-mode-p 'org-agenda-mode))
+        (with-current-buffer it
+          (org-agenda-redo t))))
+
+    (hook-fn 'org-capture-after-finalize-hook
+      (cb-org:refresh-agenda))
+
+    (hook-fn 'org-mode-hook
+      (add-hook 'after-save-hook 'cb-org:refresh-agenda nil 'local))
 
     ;;;; Archiving
 
@@ -493,10 +495,6 @@ This can be 0 for immediate, or a floating point value.")
   :init (after 'org (require 'appt))
   :config
   (progn
-    ;; Create empty diary file to keep emacs happy.
-    (unless (f-exists? diary-file)
-      (f-write diary-file))
-
     (setq appt-message-warning-time 60
           appt-display-interval 15)
 
@@ -509,6 +507,7 @@ This can be 0 for immediate, or a floating point value.")
         (hook-fn 'after-save-hook
           :local t
           (save-window-excursion
+            (org-agenda-to-appt t)
             (appt-check 'force)))))))
 
 (provide 'cb-org)
