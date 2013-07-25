@@ -52,6 +52,7 @@
 ;;; Configure packages.
 
 (require 'package)
+(require 'cl)
 (require 'cl-lib)
 
 (cl-loop for source in
