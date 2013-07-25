@@ -300,17 +300,17 @@ With prefix argument ARG, show the file and move to the tasks tree."
         (with-current-buffer it
           (indent-buffer))))
 
-;;;; Todo auto-sorting
+ ;;;; Diary
 
-    (defun cb:sort-tasks-in-subtree ()
-      "Sort child elements of the tree at point."
-      (let ((beg (1+ (line-number-at-pos)))
-            (end (save-excursion
-                   (org-mark-subtree)
-                   (region-end))))
-        (push-mark beg)
-        (push-mark end)
-        (org-sort-entries t 112)))
+    (defun cb-org:read-diary-entry ()
+      "Read info from the user to construct a new diary entry."
+      (save-window-excursion
+        (let ((desc (s-trim (read-string "Description: " nil t)))
+              (date (org-read-date)))
+          (concat "* " desc "\n"
+                  "  " date))))
+
+ ;;;; TODOS
 
     (defun* cb-org:read-todo (&optional (prompt "TODO: "))
       "Read a todo item for org-capture."
@@ -319,6 +319,19 @@ With prefix argument ARG, show the file and move to the tasks tree."
               (start (org-read-date)))
           (concat "* TODO " desc "\n"
                   "  SCHEDULED: <" start "> \n"))))
+
+    (defun cb-org:read-project-task ()
+      "Read info from the user to construct a task for the current project."
+      (save-window-excursion
+        (-if-let (f (project-task-file))
+          (prog1 (cb-org:read-todo (format "TODO [%s]: " (f-short f)))
+            (setq org-last-project-task-file f))
+          (user-error "Not in a project"))))
+
+    ;; Insert task file headers.
+    (hook-fn 'org-capture-after-finalize-hook
+      (with-current-buffer (find-file-noselect org-last-project-task-file)
+        (cb-org:format-project-task-file)))
 
 ;;;; Org Habits
 
@@ -384,27 +397,6 @@ With prefix argument ARG, show the file and move to the tasks tree."
                        "  :END:")))
           (when (cb-org:validate-habit habit)
             habit))))
-
-    (defun cb-org:read-diary-entry ()
-      "Read info from the user to construct a new diary entry."
-      (save-window-excursion
-        (let ((desc (s-trim (read-string "Description: " nil t)))
-              (date (org-read-date)))
-          (concat "* " desc "\n"
-                  "  " date))))
-
-    (defun cb-org:read-project-task ()
-      "Read info from the user to construct a task for the current project."
-      (save-window-excursion
-        (-if-let (f (project-task-file))
-          (prog1 (cb-org:read-todo (format "TODO [%s]: " (f-short f)))
-            (setq org-last-project-task-file f))
-          (user-error "Not in a project"))))
-
-    ;; Insert task file headers.
-    (hook-fn 'org-capture-after-finalize-hook
-      (with-current-buffer (find-file-noselect org-last-project-task-file)
-        (cb-org:format-project-task-file)))
 
 ;;;; Capture templates
 
