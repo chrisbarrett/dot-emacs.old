@@ -349,6 +349,11 @@ With prefix argument ARG, show the file and move to the tasks tree."
               ,sym))
            ""))
 
+    ;; Enter insertion mode in capture buffer.
+    (hook-fn 'org-capture-mode-hook
+      (when (fboundp 'evil-append-line)
+        (evil-append-line 1)))
+
     (setq org-capture-templates
           `(("T" "Task" entry
              (file+headline (project-task-file) "Tasks")
@@ -377,13 +382,13 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
             ("l" "Link" entry
              (file+headline org-default-notes-file "Links")
-             "* %(prev-str-val w3m-buffer-title)%^{Description}\nl %(prev-str-val w3m-current-url)"
+             "* %(prev-str-val w3m-buffer-title)%^{Description}\nl %url"
              :immediate-finish t)
 
             ("n" "Note" item
              (file+headline org-default-notes-file "Notes")
-             "- %^{Note}"
-             :immediate-finish t)))))
+             "- %?\n"
+             :prepend t)))))
 
 (use-package org-clock
   :defer t
