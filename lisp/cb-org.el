@@ -249,8 +249,9 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
     (hook-fn 'org-capture-after-finalize-hook
       "Indent the notes buffer after capture."
-      (with-org-default-notes-buffer
-        (indent-buffer)))
+      (--each (--filter-buffers (derived-mode-p 'org-mode))
+        (with-current-buffer it
+          (indent-buffer))))
 
 ;;;; Todo auto-sorting
 
