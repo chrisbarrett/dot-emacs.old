@@ -129,8 +129,8 @@ Make the 'q' key restore the previous window configuration."
       (when (and (equal (buffer-name) "*Org Note*"))
         (cb:append-buffer)))
 
+    ;; Diminish org minor modes.
     (hook-fn 'cb:org-minor-modes-hook
-      "Diminish org minor modes."
       (--each cb:org-minor-modes
         (ignore-errors (diminish it))))
 
@@ -155,7 +155,6 @@ Make the 'q' key restore the previous window configuration."
       (org-time-stamp arg t))
 
     (define-key org-mode-map (kbd "C-c C-.") 'org-insert-inactive-timestamp)
-
 
 ;;;; Tasks
 
