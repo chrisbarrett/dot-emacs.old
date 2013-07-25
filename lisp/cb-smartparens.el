@@ -42,6 +42,10 @@
     :message "-- PAREN --"
     :cursor (bar . 2))
 
+  (hook-fn 'evil-paren-state-entry-hook
+    (when (equal last-command 'evil-end-of-line)
+      (forward-char)))
+
   ;; Configure entry and exit from paren state.
   (evil-global-set-key 'normal (kbd ",") 'evil-paren-state)
   (define-key evil-paren-state-map (kbd "ESC") 'evil-normal-state)
