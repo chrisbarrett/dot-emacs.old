@@ -38,6 +38,7 @@
 (defvar org-clock-persist-file (f-join user-dropbox-directory ".org-clock-save.el"))
 (defvar org-export-publishing-directory (f-join user-home-directory "Desktop"))
 (defvar org-agenda-diary-file (f-join org-directory "diary.org"))
+(defvar org-export-exclude-tags '("noexport" "crypt"))
 
 (declare-modal-executor org-agenda-fullscreen
   :bind "M-O"
@@ -474,8 +475,8 @@ This can be 0 for immediate, or a floating point value.")
     (org-crypt-use-before-save-magic))
   :config
   (progn
-    (setq org-tags-exclude-from-inheritance '("crypt")
-          org-crypt-disable-auto-save nil)
+    (setq org-crypt-disable-auto-save nil)
+    (add-to-list 'org-tags-exclude-from-inheritance "crypt")
 
     (define-key org-mode-map (kbd "C-c c") 'org-encrypt-entry)
 
