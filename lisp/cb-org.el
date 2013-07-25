@@ -332,6 +332,14 @@ With prefix argument ARG, show the file and move to the tasks tree."
           (when (cb-org:validate-habit habit)
             habit))))
 
+    (defun cb-org:read-diary-entry ()
+      "Read info from the user to construct a new diary entry."
+      (save-window-excursion
+        (let ((desc (s-trim (read-string "Description: " nil t)))
+              (date (org-read-date)))
+          (concat "* " desc "\n"
+                  "  " date))))
+
 ;;;; Capture templates
 
     (defmacro prev-str-val (sym)
@@ -350,6 +358,11 @@ With prefix argument ARG, show the file and move to the tasks tree."
             ("t" "Todo" entry
              (file+headline org-default-notes-file "Tasks")
              (function cb-org:read-todo)
+             :immediate-finish t)
+
+            ("d" "Diary" entry
+             (file+datetree org-agenda-diary-file)
+             (function cb-org:read-diary-entry)
              :immediate-finish t)
 
             ("h" "Habit" entry
