@@ -103,15 +103,7 @@ Make the 'q' key restore the previous window configuration."
       "C-o K" (command (org-capture nil "T"))
       "C-o k" (command (org-capture nil "t"))
       "C-o n" (command (find-file org-default-notes-file))
-      "C-o t" 'cb-org:show-todo-list)
-
-    (evil-define-keys 'normal org-mode-map
-      "<return>" 'org-return
-      "M-P" 'outline-previous-visible-heading
-      "M-N" 'outline-next-visible-heading
-      "SPC" 'org-cycle
-      "z m" (command (org-global-cycle 1))
-      "z r" (command (org-global-cycle 0))))
+      "C-o t" 'cb-org:show-todo-list))
 
   :config
   (progn
@@ -121,6 +113,14 @@ Make the 'q' key restore the previous window configuration."
           org-log-done 'time
           org-reverse-note-order nil
           org-return-follows-link t)
+
+    (evil-define-keys 'normal org-mode-map
+      "<return>" 'org-return
+      "M-P" 'outline-previous-visible-heading
+      "M-N" 'outline-next-visible-heading
+      "SPC" 'org-cycle
+      "z m" (command (org-global-cycle 1))
+      "z r" (command (org-global-cycle 0)))
 
 ;;;; Hooks
 
