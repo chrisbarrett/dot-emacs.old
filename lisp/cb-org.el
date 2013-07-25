@@ -89,6 +89,26 @@ Make the 'q' key restore the previous window configuration."
                           (derived-mode-p 'org-agenda-mode))))
       (buffer-local-set-key (kbd "q") (command (restore))))))
 
+(defun cb-org:format-project-task-file ()
+  (save-excursion
+    (goto-char (point-min))
+    ;; Skip file variables.
+    (when (emr-line-matches? (rx "-*-" (* nonl) "-*-"))
+      (forward-line))
+    (beginning-of-line)
+    (let ((str (buffer-string)))
+      ;; Insert missing metadata and options.
+      (unless (s-matches? (rx bol "#+TITLE:") str)
+        (insert "#+TITLE: Tasks\n"))
+      (unless (s-matches? (rx bol "#+Author:") str)
+        (insert (format "#+Author: %s\n" user-full-name)))
+      (unless (s-matches? (rx bol "#+STARTUP: lognotestate") str)
+        (insert "#+STARTUP: lognotestate\n"))
+      (unless (s-matches? (rx bol "#+STARTUP: lognotedone") str)
+        (insert "#+STARTUP: lognotedone\n"))
+      (unless (s-matches? (rx bol "#+DESCRIPTION:") str)
+        (insert "#+DESCRIPTION: Project-level notes and todos\n")))))
+
 (after 'smartparens
   (sp-with-modes '(org-mode)
     (sp-local-pair "#+BEGIN_SRC" "#+END_SRC")
@@ -115,6 +135,10 @@ Make the 'q' key restore the previous window configuration."
       "C-o K" (command (org-capture nil "T"))
       "C-o k" (command (org-capture nil "t"))
       "C-o n" (command (find-file org-default-notes-file))
+      "C-o p" (command (when (find-file (or (project-task-file)
+                                            org-last-project-task-file
+                                            (user-error "Not in a project")))
+                         (cb-org:format-project-task-file)))
       "C-o t" 'cb-org:show-todo-list))
 
   :config
@@ -171,9 +195,9 @@ Make the 'q' key restore the previous window configuration."
 ;;;; Tasks
 
     (defun project-task-file ()
-      (let ((proj (or (ignore-errors (projectile-project-root))
-                      (with-current-buffer (--first-buffer (projectile-project-p))
-                        (projectile-project-root)))))
+      (-when-let (proj (or (ignore-errors (projectile-project-root))
+                           (with-current-buffer (--first-buffer (projectile-project-p))
+                             (projectile-project-root))))
         (f-join proj "Tasks.org")))
 
     (defun cb-org:show-task-file ()
@@ -359,11 +383,17 @@ With prefix argument ARG, show the file and move to the tasks tree."
                   "  " date))))
 
     (defun cb-org:read-project-task ()
+      "Read info from the user to construct a task for the current project."
       (save-window-excursion
-        (concat
-         (unless (f-exists? (project-task-file))
-           "#+TITLE: Tasks\n#+DESCRIPTION: Project-level notes and todos\n\n")
-         (cb-org:read-todo "TASK: "))))
+        (-if-let (f (project-task-file))
+          (prog1 (cb-org:read-todo (format "TODO [%s]: " (f-short f)))
+            (setq org-last-project-task-file f))
+          (user-error "Not in a project"))))
+
+    ;; Insert task file headers.
+    (hook-fn 'org-capture-after-finalize-hook
+      (with-current-buffer (find-file-noselect org-last-project-task-file)
+        (cb-org:format-project-task-file)))
 
 ;;;; Capture templates
 
@@ -381,7 +411,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
     (setq org-capture-templates
           `(("T" "Task" entry
-             (file (project-task-file))
+             (file+headline (project-task-file) "Todos")
              (function cb-org:read-project-task)
              :immediate-finish t
              :empty-lines 1)
