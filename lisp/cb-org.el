@@ -363,12 +363,14 @@ With prefix argument ARG, show the file and move to the tasks tree."
           `(("T" "Task" entry
              (file+headline (project-task-file) "Tasks")
              "* TODO %^{Description}"
-             :immediate-finish t)
+             :immediate-finish t
+             :empty-lines 1)
 
             ("t" "Todo" entry
              (file+headline org-default-notes-file "Tasks")
              (function cb-org:read-todo)
-             :immediate-finish t)
+             :immediate-finish t
+             :empty-lines 1)
 
             ("d" "Diary" entry
              (file+datetree org-agenda-diary-file)
@@ -378,7 +380,8 @@ With prefix argument ARG, show the file and move to the tasks tree."
             ("h" "Habit" entry
              (file+headline org-default-notes-file "Habits")
              (function cb-org:read-habit)
-             :immediate-finish t)
+             :immediate-finish t
+             :empty-lines 1)
 
             ("r" "Reading" entry
              (file+headline org-default-notes-file "Readings")
