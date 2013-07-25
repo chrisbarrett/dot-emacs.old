@@ -264,10 +264,10 @@ With prefix argument ARG, show the file and move to the tasks tree."
         (push-mark end)
         (org-sort-entries t 112)))
 
-    (defun cb-org:read-todo ()
+    (defun* cb-org:read-todo (&optional (prompt "TODO: "))
       "Read a todo item for org-capture."
       (save-window-excursion
-        (let ((desc (s-trim (read-string "TODO: " nil t)))
+        (let ((desc (s-trim (read-string prompt nil t)))
               (start (org-read-date)))
           (concat "* TODO " desc "\n"
                   "  SCHEDULED: <" start "> \n"))))
@@ -345,6 +345,13 @@ With prefix argument ARG, show the file and move to the tasks tree."
           (concat "* " desc "\n"
                   "  " date))))
 
+    (defun cb-org:read-project-task ()
+      (save-window-excursion
+        (concat
+         (unless (f-exists? (project-task-file))
+           "#+TITLE: Tasks\n#+DESCRIPTION: Project-level notes and todos\n\n")
+         (cb-org:read-todo "TASK: "))))
+
 ;;;; Capture templates
 
     (defmacro prev-str-val (sym)
@@ -361,8 +368,8 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
     (setq org-capture-templates
           `(("T" "Task" entry
-             (file+headline (project-task-file) "Tasks")
-             "* TODO %^{Description}"
+             (file (project-task-file))
+             (function cb-org:read-project-task)
              :immediate-finish t
              :empty-lines 1)
 
