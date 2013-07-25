@@ -412,7 +412,6 @@ This can be 0 for immediate, or a floating point value.")
   (progn
 
     (setq org-agenda-files (list org-default-notes-file org-agenda-diary-file)
-          org-agenda-include-diary t
           org-agenda-insert-diary-extract-time t
           org-agenda-span 'week
           org-agenda-skip-deadline-if-done t
@@ -504,12 +503,13 @@ This can be 0 for immediate, or a floating point value.")
     (save-window-excursion
       (appt-activate +1))
 
-    (hook-fn 'diary-mode-hook
-      (hook-fn 'after-save-hook
-        "Update the appointments ledger after saving."
-        :local t
-        (save-window-excursion
-          (appt-check 'force))))))
+    ;; Update the appointments ledger when saving the diary file.
+    (hook-fn 'org-mode-hook
+      (when (equal (buffer-file-name) org-agenda-diary-file)
+        (hook-fn 'after-save-hook
+          :local t
+          (save-window-excursion
+            (appt-check 'force)))))))
 
 (provide 'cb-org)
 
