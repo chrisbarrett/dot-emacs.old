@@ -111,4 +111,8 @@
 (use-package cb-productivity)
 (use-package cb-fortune)
 
+;; Local Variables:
+;; byte-compile-warnings: (not cl-functions)
+;; End:
+
 ;;; init.el ends here
