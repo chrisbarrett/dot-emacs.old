@@ -26,6 +26,7 @@
 
 ;;; Code:
 
+(require 'cb-lib)
 (require 'dash)
 
 (defmacro define-combined-hook (name hooks)
@@ -50,75 +51,77 @@
          (--map (intern (concat (symbol-name it) "-hook"))
                 ,modes)))))
 
-(define-mode-group cb:scheme-modes
-  '(scheme-mode
-    inferior-scheme-mode))
+(eval-and-compile
 
-(define-mode-group cb:clojure-modes
-  '(clojure-mode
-    clojurescript-mode))
+  (define-mode-group cb:scheme-modes
+    '(scheme-mode
+      inferior-scheme-mode))
 
-(define-mode-group cb:elisp-modes
-  '(emacs-lisp-mode
-    ielm-mode))
+  (define-mode-group cb:clojure-modes
+    '(clojure-mode
+      clojurescript-mode))
 
-(define-mode-group cb:slime-modes
-  '(slime-mode
-    slime-repl-mode))
+  (define-mode-group cb:elisp-modes
+    '(emacs-lisp-mode
+      ielm-mode))
 
-(define-mode-group cb:lisp-modes
-  `(,@cb:scheme-modes
-    ,@cb:clojure-modes
-    ,@cb:elisp-modes
-    ,@cb:slime-modes
-    common-lisp-mode
-    inferior-lisp-mode
-    lisp-mode
-    repl-mode))
+  (define-mode-group cb:slime-modes
+    '(slime-mode
+      slime-repl-mode))
 
-(define-mode-group cb:haskell-modes
-  '(haskell-mode
-    inferior-haskell-mode
-    haskell-interactive-mode
-    haskell-c-mode
-    haskell-cabal-mode))
+  (define-mode-group cb:lisp-modes
+    `(,@cb:scheme-modes
+      ,@cb:clojure-modes
+      ,@cb:elisp-modes
+      ,@cb:slime-modes
+      common-lisp-mode
+      inferior-lisp-mode
+      lisp-mode
+      repl-mode))
 
-(define-mode-group cb:python-modes
-  '(python-mode
-    inferior-python-mode))
+  (define-mode-group cb:haskell-modes
+    '(haskell-mode
+      inferior-haskell-mode
+      haskell-interactive-mode
+      haskell-c-mode
+      haskell-cabal-mode))
 
-(define-mode-group cb:ruby-modes
-  '(inf-ruby-mode
-    ruby-mode))
+  (define-mode-group cb:python-modes
+    '(python-mode
+      inferior-python-mode))
 
-(define-mode-group cb:rails-modes
-  `(,@cb:ruby-modes
-    erb-mode))
+  (define-mode-group cb:ruby-modes
+    '(inf-ruby-mode
+      ruby-mode))
 
-(define-mode-group cb:xml-modes
-  '(sgml-mode
-    nxml-mode))
+  (define-mode-group cb:rails-modes
+    `(,@cb:ruby-modes
+      erb-mode))
 
-(define-mode-group cb:org-minor-modes
-  '(orgtbl-mode
-    orgstruct-mode
-    orgstruct++-mode))
+  (define-mode-group cb:xml-modes
+    '(sgml-mode
+      nxml-mode))
 
-(define-mode-group cb:conf-modes
-  '(conf-unix-mode
-    conf-windows-mode
-    conf-javaprop-mode))
+  (define-mode-group cb:org-minor-modes
+    '(orgtbl-mode
+      orgstruct-mode
+      orgstruct++-mode))
 
-(define-mode-group cb:prompt-modes
-  '(comint-mode
-    inf-ruby-mode
-    inferior-python-mode
-    ielm-mode
-    erc-mode
-    slime-repl-mode
-    inferior-scheme-mode
-    inferior-haskell-mode
-    sclang-post-buffer-mode))
+  (define-mode-group cb:conf-modes
+    '(conf-unix-mode
+      conf-windows-mode
+      conf-javaprop-mode))
+
+  (define-mode-group cb:prompt-modes
+    '(comint-mode
+      inf-ruby-mode
+      inferior-python-mode
+      ielm-mode
+      erc-mode
+      slime-repl-mode
+      inferior-scheme-mode
+      inferior-haskell-mode
+      sclang-post-buffer-mode)))
 
 (provide 'cb-mode-groups)
 
