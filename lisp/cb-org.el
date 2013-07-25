@@ -39,6 +39,18 @@
 (defvar org-export-publishing-directory (f-join user-home-directory "Desktop"))
 (defvar org-agenda-diary-file (f-join org-directory "diary.org"))
 (defvar org-export-exclude-tags '("noexport" "crypt"))
+(defvar org-last-project-task-file nil)
+
+
+(defun cb-org:org-special-buffers ()
+  "Return org buffers that have special functions."
+  (let ((bufs (->> (org-agenda-files)
+                (-concat (list org-agenda-diary-file
+                               org-default-notes-file
+                               org-last-project-task-file))
+                (-remove 'null)
+                (-uniq))))
+    (-remove 'null (--filter-buffers (-contains? bufs (buffer-file-name it))))))
 
 (declare-modal-executor org-agenda-fullscreen
   :bind "M-O"
@@ -249,7 +261,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
     (hook-fn 'org-capture-after-finalize-hook
       "Indent the notes buffer after capture."
-      (--each (--filter-buffers (derived-mode-p 'org-mode))
+      (--each (cb-org:org-special-buffers)
         (with-current-buffer it
           (indent-buffer))))
 
