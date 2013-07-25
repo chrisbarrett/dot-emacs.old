@@ -26,6 +26,8 @@
 
 ;;; Code:
 
+(require 'cb-lib)
+(require 'cb-foundation)
 (require 'use-package)
 
 (use-package auto-complete
@@ -85,7 +87,8 @@
     (add-hook 'sgml-mode-hook 'yas-minor-mode)
     (hook-fn 'find-file-hook
       "Use yasnippet mode for files in the snippet directory."
-      (when (s-contains? cb:yasnippet-dir (buffer-file-name))
+      (when (and (fboundp 'snippet-mode)
+                 (s-contains? cb:yasnippet-dir (buffer-file-name)))
         (snippet-mode))))
   :config
   (progn
