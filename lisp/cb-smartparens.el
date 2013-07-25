@@ -126,8 +126,8 @@
              :unless '(:add sp-in-string-p))
 
     ;; Do not use apostrophe pair in text modes.
-    (sp-with-modes '(text-mode org-mode markdown-mode)
-      (sp-local-pair "'" nil :actions '(:rem insert)))
+    (sp-with-modes '(text-mode org-mode markdown-mode magit-log-edit-mode)
+      (sp-local-pair "'" "'" :actions '(:rem insert)))
 
     (defun cb-sp:kill-blank-lines (&optional arg)
       (interactive "P")
