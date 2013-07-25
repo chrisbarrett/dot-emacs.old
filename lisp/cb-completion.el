@@ -73,7 +73,7 @@
 
 (use-package yasnippet
   :ensure t
-  :idle   (require 'yasnippet)
+  :if (not noninteractive)
   :diminish yas-minor-mode
   :commands
   (yas-global-mode
