@@ -40,6 +40,7 @@
 (defvar org-agenda-diary-file (f-join org-directory "diary.org"))
 (defvar org-export-exclude-tags '("noexport" "crypt"))
 (defvar org-last-project-task-file nil)
+(defvar calendar-date-style 'european)
 
 
 (defun cb-org:org-special-buffers ()
