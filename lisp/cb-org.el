@@ -66,6 +66,13 @@
        (with-current-buffer ,buf
          ,@body))))
 
+(defun cb-org:project-task-file ()
+  "Get the path to a task file at the root directory of the current project."
+  (-when-let (proj (or (ignore-errors (projectile-project-root))
+                       (with-current-buffer (--first-buffer (projectile-project-p))
+                         (projectile-project-root))))
+    (f-join proj "Tasks.org")))
+
 (defun cb-org:show-todo-list ()
   "Show the todo list.
 Make the 'q' key restore the previous window configuration."
@@ -142,7 +149,7 @@ given key."
       "C-o K" (command (org-capture nil "T"))
       "C-o k" (command (org-capture nil "t"))
       "C-o n" (command (find-file org-default-notes-file))
-      "C-o p" (command (when (find-file (or (project-task-file)
+      "C-o p" (command (when (find-file (or (cb-org:project-task-file)
                                             org-last-project-task-file
                                             (user-error "Not in a project")))
                          (cb-org:format-project-task-file)))
@@ -206,29 +213,23 @@ given key."
 
 ;;;; Tasks
 
-    (defun project-task-file ()
-      (-when-let (proj (or (ignore-errors (projectile-project-root))
-                           (with-current-buffer (--first-buffer (projectile-project-p))
-                             (projectile-project-root))))
-        (f-join proj "Tasks.org")))
-
     (defun cb-org:show-task-file ()
       (switch-to-buffer
-       (or (--first-buffer (equal (buffer-file-name) (project-task-file)))
-           (find-file-noselect (project-task-file)))))
+       (or (--first-buffer (equal (buffer-file-name) (cb-org:project-task-file)))
+           (find-file-noselect (cb-org:project-task-file)))))
 
     (defun cb-org:task-file-contents ()
       (save-excursion
-        (-if-let (buf (--first-buffer (equal (buffer-file-name) (project-task-file))))
+        (-if-let (buf (--first-buffer (equal (buffer-file-name) (cb-org:project-task-file))))
           (with-current-buffer buf
             (font-lock-fontify-buffer)
             (buffer-string))
-          (with-current-buffer (find-file-noselect (project-task-file) t)
+          (with-current-buffer (find-file-noselect (cb-org:project-task-file) t)
             (prog1 (buffer-string)
               (kill-buffer))))))
 
     (defun cb-org:show-tasks (&optional arg)
-      "Display the Tasks tree in the `project-task-file'.
+      "Display the Tasks tree in the `cb-org:project-task-file'.
 With prefix argument ARG, show the file and move to the tasks tree."
       (interactive "P")
       (if arg
@@ -324,7 +325,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
     (defun cb-org:read-project-task ()
       "Read info from the user to construct a task for the current project."
       (save-window-excursion
-        (-if-let (f (project-task-file))
+        (-if-let (f (cb-org:project-task-file))
           (prog1 (cb-org:read-todo (format "TODO [%s]: " (f-short f)))
             (setq org-last-project-task-file f))
           (user-error "Not in a project"))))
@@ -415,7 +416,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
     (setq org-capture-templates
           `(("T" "Task" entry
-             (file+headline (project-task-file) "Todos")
+             (file+headline (cb-org:project-task-file) "Todos")
              (function cb-org:read-project-task)
              :immediate-finish t
              :empty-lines 1)
