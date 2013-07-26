@@ -31,6 +31,8 @@
 (require 'cb-mode-groups)
 (require 'noflet)
 (require 'f)
+(autoload 'projectile-project-root "projectile")
+(autoload 'projectile-project-p "projectile")
 
 (defvar org-directory (f-join user-home-directory "org"))
 (defvar org-default-notes-file (f-join org-directory "notes.org"))
