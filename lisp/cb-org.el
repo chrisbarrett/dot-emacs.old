@@ -467,7 +467,14 @@ With prefix argument ARG, show the file and move to the tasks tree."
           org-clock-remove-zero-time-clocks t
           org-clock-persist t
           org-clock-persist-query-resume nil
-          org-clock-report-include-clocking-task t)))
+          org-clock-report-include-clocking-task t)
+
+    ;; Remove empty LOGBOOK drawers when clocking out.
+    (hook-fn 'org-clock-out-hook
+      :append t
+      (save-excursion
+        (beginning-of-line 0)
+        (org-remove-empty-drawer-at "LOGBOOK" (point))))))
 
 (use-package org-agenda
   :commands (org-agenda org-agenda-list org-agenda-redo)
