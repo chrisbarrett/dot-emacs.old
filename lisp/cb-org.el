@@ -44,17 +44,6 @@
 (defvar org-last-project-task-file nil)
 (defvar calendar-date-style 'european)
 
-
-(defun cb-org:org-special-buffers ()
-  "Return org buffers that have special functions."
-  (let ((bufs (->> (org-agenda-files)
-                (-concat (list org-agenda-diary-file
-                               org-default-notes-file
-                               org-last-project-task-file))
-                (-remove 'null)
-                (-uniq))))
-    (-remove 'null (--filter-buffers (-contains? bufs (buffer-file-name it))))))
-
 (declare-modal-executor org-agenda-fullscreen
   :bind "M-O"
   :command cb-org:show-agenda-list)
