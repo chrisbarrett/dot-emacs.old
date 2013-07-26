@@ -298,12 +298,6 @@ With prefix argument ARG, show the file and move to the tasks tree."
   :config
   (progn
 
-    (hook-fn 'org-capture-after-finalize-hook
-      "Indent the notes buffer after capture."
-      (--each (cb-org:org-special-buffers)
-        (with-current-buffer it
-          (indent-buffer))))
-
  ;;;; Diary
 
     (defun cb-org:read-diary-entry ()
@@ -331,11 +325,6 @@ With prefix argument ARG, show the file and move to the tasks tree."
           (prog1 (cb-org:read-todo (format "TODO [%s]: " (f-short f)))
             (setq org-last-project-task-file f))
           (user-error "Not in a project"))))
-
-    ;; Insert task file headers.
-    (hook-fn 'org-capture-after-finalize-hook
-      (with-current-buffer (find-file-noselect org-last-project-task-file)
-        (cb-org:format-project-task-file)))
 
 ;;;; Org Habits
 
@@ -404,6 +393,11 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
 ;;;; Capture templates
 
+    ;; Insert task file headers.
+    (hook-fn 'org-capture-after-finalize-hook
+      (with-current-buffer (find-file-noselect org-last-project-task-file)
+        (cb-org:format-project-task-file)))
+
     (defmacro prev-str-val (sym)
       "Evaluate SYM in the previous active buffer."
       `(or (ignore-errors
@@ -415,6 +409,9 @@ With prefix argument ARG, show the file and move to the tasks tree."
     (hook-fn 'org-capture-mode-hook
       (when (fboundp 'evil-append-line)
         (evil-append-line 1)))
+
+    (add-hook 'org-capture-before-finalize-hook 'indent-buffer 'append)
+
 
     (setq org-capture-templates
           `(("T" "Task" entry
