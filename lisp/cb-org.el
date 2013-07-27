@@ -553,7 +553,6 @@ This can be 0 for immediate, or a floating point value.")
             (looking-at "-----BEGIN PGP MESSAGE-----")))))
 
     (hook-fn 'org-ctrl-c-ctrl-c-hook
-      ;; Motion behaviour stolen from implementation of
       (when (cb-org:looking-at-pgp-section?)
         (org-decrypt-entry)
         t))))
