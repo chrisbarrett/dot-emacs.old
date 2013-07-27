@@ -61,16 +61,16 @@
 
 ;;; Configure packages.
 
-(cl-loop for source in
-         '(("melpa"     . "http://melpa.milkbox.net/packages/")
-           ("marmalade" . "http://marmalade-repo.org/packages/"))
-         do (add-to-list 'package-archives source)
-         finally (package-initialize))
+(loop for source in
+      '(("melpa"     . "http://melpa.milkbox.net/packages/")
+        ("marmalade" . "http://marmalade-repo.org/packages/"))
+      do (add-to-list 'package-archives source)
+      finally (package-initialize))
 
-(cl-loop for pkg in '(bind-key use-package diminish s dash cl-lib f noflet)
-         initially (unless package-archive-contents (package-refresh-contents))
-         unless (package-installed-p pkg)
-         do (package-install pkg))
+(loop for pkg in '(bind-key use-package diminish s dash cl-lib f noflet)
+      initially (unless package-archive-contents (package-refresh-contents))
+      unless (package-installed-p pkg)
+      do (package-install pkg))
 
 (require 'use-package)
 (setq use-package-verbose nil)
