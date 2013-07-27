@@ -136,7 +136,7 @@ given key."
       "C-o" 'cb-org-map
       "C-o a" 'cb-org:show-agenda-list
       "C-o d" (command (find-file org-agenda-diary-file))
-      "C-o c" (command (org-capture))
+      "C-o c" 'org-capture
       "C-o K" (command (org-capture nil "T"))
       "C-o k" (command (org-capture nil "t"))
       "C-o n" (command (find-file org-default-notes-file))
