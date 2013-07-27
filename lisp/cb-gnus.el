@@ -49,9 +49,12 @@
                     gnus-secondary-select-methods ',gnus-secondary-select-methods)
               (message "Downloading news...")
               (gnus)
+              (message "Saving dribble file...")
+              (gnus-dribble-save)
               (message "Finished."))
            (lambda (&rest _)
              (-when-let (b (get-buffer "*Group*"))
+               (gnus-dribble-read-file)
                (with-current-buffer b
                  (gnus-group-list-groups)))
              (run-with-timer gnus-async-refresh-rate nil 'gnus-refresh-async)
