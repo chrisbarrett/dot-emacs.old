@@ -53,8 +53,11 @@
 (add-to-list 'load-path (concat (getenv "HOME") "/Dropbox/"))
 (add-to-list 'load-path (concat user-emacs-directory "lisp"))
 
-(delete-if (lambda (f) (string-match-p (rx "/lisp/org" eol) f)) load-path)
-(add-to-list 'load-path (concat user-emacs-directory "etc/org-mode/lisp"))
+;; As a special case, ensure we're using the latest version of org-mode and not
+;; the version shipped with Emacs.
+(let ((org-src  (concat user-emacs-directory "etc/org-mode/lisp")))
+  (when (file-exists-p org-src)
+    (add-to-list 'load-path org-src)))
 
 ;;; Configure packages.
 
