@@ -44,7 +44,7 @@
     (add-hook 'server-done-hook  'save-place-kill-emacs-hook)
 
     (setq save-place-file (concat cb:tmp-dir "saved-places"))
-    (setq-default saveplace t)))
+    (setq-default save-place t)))
 
 (use-package recentf
   :defer t
