@@ -31,11 +31,15 @@
 (require 's)
 (autoload 'thing-at-point-url-at-point "thingatpt")
 
+(use-package smtpmail-async
+  :defer t
+  :commands async-smtpmail-send-it)
+
 (use-package smtpmail
   :commands smtpmail-send-it
   :init
-  (setq send-mail-function 'smtpmail-send-it
-        message-send-mail-function 'smtpmail-send-it)
+  (setq send-mail-function 'async-smtpmail-send-it
+        message-send-mail-function 'async-smtpmail-send-it)
   :config
   (when (equal system-type 'darwin)
     (setq starttls-gnutls-program (executable-find "gnutls-cli")
