@@ -119,9 +119,9 @@
   (after 'org
     (set-face-underline  'org-block-begin-line t)
     (set-face-attribute  'org-block-end-line nil :overline t)
-    (set-face-background 'org-block-end-line "#11303b")
-    (set-face-background 'org-block-begin-line "#11303b")
-    (set-face-background 'org-block-background "#11303b"))
+    (set-face-background 'org-block-end-line "#222727")
+    (set-face-background 'org-block-begin-line "#222727")
+    (set-face-background 'org-block-background "#222727"))
 
   (after 'helm
     (set-face-background  'helm-selection "black")
