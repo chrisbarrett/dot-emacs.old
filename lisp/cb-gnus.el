@@ -87,9 +87,10 @@
 
          ;; Update the group view.
          (-when-let (b (get-buffer "*Group*"))
-           (gnus-dribble-read-file)
-           (with-current-buffer b
-             (gnus-group-list-groups))))))))
+           (when (buffer-live-p b)
+             (gnus-dribble-read-file)
+             (with-current-buffer b
+               (gnus-group-list-groups)))))))))
 
 (use-package gnus
   :commands gnus
