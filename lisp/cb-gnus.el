@@ -29,6 +29,7 @@
 (require 'use-package)
 (require 'cb-foundation)
 (require 'cb-typefaces)
+(autoload 'gnus-dribble-read-file "gnus-start")
 
 (defvar gnus-startup-file (concat cb:etc-dir "gnus"))
 
