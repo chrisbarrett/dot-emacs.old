@@ -35,6 +35,16 @@
 (after 'personal-config
   (after 'async
     (defvar gnus-async-refresh-rate 120)
+    (defvar gnus-async-refreshing? nil)
+    (defvar gnus-async-refresh-timer
+      (run-with-timer
+       nil
+       gnus-async-refresh-rate
+       (lambda ()
+         (unless gnus-async-refreshing?
+           (setq gnus-async-refreshing? t)
+           (gnus-refresh-async))
+         (setq gnus-async-refreshing? nil))))
 
     (defun gnus-refresh-async ()
       "Spawn a background Emacs instance to download the latest news and emails."
@@ -53,8 +63,8 @@
           (gnus)
           (prog1
               ;; Get the unread counts of groups with new news.
-              (cl-flet ((group-at-point () (-when-let (g (gnus-group-name-at-point))
-                                             (cons g (gnus-group-unread g)))))
+              (cl-flet ((group-at-point () (let ((g (gnus-group-name-at-point)))
+                                             (when g (cons g (gnus-group-unread g))))))
                 (goto-char (point-min))
                 (cl-loop with items = (group-at-point)
                          while (not (eobp))
@@ -67,22 +77,19 @@
             (message "Finished.")))
 
        (lambda (news)
+
+         ;; Notify of new email.  Find the name of the nnimap group, and
+         ;; report the number of unread items if there are any.
+         (-when-let* ((imap (second (assoc 'nnimap gnus-secondary-select-methods)))
+                      (unread (cdr (assoc imap news))))
+           (message (format "%s unread %s" unread (if (= 1 unread) "email" "emails")))
+           (sit-for 2))
+
+         ;; Update the group view.
          (-when-let (b (get-buffer "*Group*"))
-
-           ;; Notify of new email.  Find the name of the nnimap group, and
-           ;; report the number of unread items if there are any.
-           (-when-let* ((imap (second (assoc 'nnimap gnus-secondary-select-methods)))
-                        (unread (cdr (assoc imap news))))
-             (message (format "%s unread %s" unread (if (= 1 unread) "email" "emails")))
-             (sit-for 2))
-
            (gnus-dribble-read-file)
            (with-current-buffer b
-             (gnus-group-list-groups)))
-
-         (run-with-timer gnus-async-refresh-rate nil 'gnus-refresh-async))))
-
-    (gnus-refresh-async)))
+             (gnus-group-list-groups))))))))
 
 (use-package gnus
   :commands gnus
