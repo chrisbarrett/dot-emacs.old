@@ -39,28 +39,47 @@
     (defun gnus-refresh-async ()
       "Spawn a background Emacs instance to download the latest news and emails."
       (interactive)
-      (condition-case err
-          (async-start
-           `(lambda ()
-              (message "Preparing environment...")
-              (require 'gnus)
-              (setq gnus-startup-file ,gnus-startup-file
-                    gnus-select-method ',gnus-select-method
-                    gnus-secondary-select-methods ',gnus-secondary-select-methods)
-              (message "Downloading news...")
-              (gnus)
-              (message "Saving dribble file...")
-              (gnus-dribble-save)
-              (message "Finished."))
-           (lambda (&rest _)
-             (-when-let (b (get-buffer "*Group*"))
-               (gnus-dribble-read-file)
-               (with-current-buffer b
-                 (gnus-group-list-groups)))
-             (run-with-timer gnus-async-refresh-rate nil 'gnus-refresh-async)
-             (message "News updated.")))
-        (error
-         (warn "[gnus refresh] %s" (error-message-string))
+      (async-start
+
+       `(lambda ()
+          (message "Preparing environment...")
+          (require 'gnus)
+          (require 'cl-lib)
+          (setq gnus-startup-file ,gnus-startup-file
+                gnus-always-read-dribble-file t
+                gnus-select-method ',gnus-select-method
+                gnus-secondary-select-methods ',gnus-secondary-select-methods)
+          (message "Downloading news...")
+          (gnus)
+          (prog1
+              ;; Get the unread counts of groups with new news.
+              (cl-flet ((group-at-point () (-when-let (g (gnus-group-name-at-point))
+                                             (cons g (gnus-group-unread g)))))
+                (goto-char (point-min))
+                (cl-loop with items = (group-at-point)
+                         while (not (eobp))
+                         initially (message "Collating unread items...")
+                         collect (group-at-point)
+                         do (forward-line)))
+
+            (message "Saving dribble file...")
+            (gnus-dribble-save)
+            (message "Finished.")))
+
+       (lambda (news)
+         (-when-let (b (get-buffer "*Group*"))
+
+           ;; Notify of new email.  Find the name of the nnimap group, and
+           ;; report the number of unread items if there are any.
+           (-when-let* ((imap (second (assoc 'nnimap gnus-secondary-select-methods)))
+                        (unread (cdr (assoc imap news))))
+             (message (format "%s unread %s" unread (if (= 1 unread) "email" "emails")))
+             (sit-for 2))
+
+           (gnus-dribble-read-file)
+           (with-current-buffer b
+             (gnus-group-list-groups)))
+
          (run-with-timer gnus-async-refresh-rate nil 'gnus-refresh-async))))
 
     (gnus-refresh-async)))
