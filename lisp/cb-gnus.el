@@ -39,22 +39,26 @@
     (defun gnus-refresh-async ()
       "Spawn a background Emacs instance to download the latest news and emails."
       (interactive)
-      (async-start
-       `(lambda ()
-          (message "Preparing environment...")
-          (require 'gnus)
-          (setq gnus-startup-file ,gnus-startup-file
-                gnus-select-method ',gnus-select-method
-                gnus-secondary-select-methods ',gnus-secondary-select-methods)
-          (message "Downloading news...")
-          (gnus)
-          (message "Finished."))
-       (lambda (&rest _)
-         (-when-let (b (get-buffer "*Group*"))
-           (with-current-buffer b
-             (gnus-group-list-groups)))
-         (run-with-timer gnus-async-refresh-rate nil 'gnus-refresh-async)
-         (message "News updated."))))
+      (condition-case err
+          (async-start
+           `(lambda ()
+              (message "Preparing environment...")
+              (require 'gnus)
+              (setq gnus-startup-file ,gnus-startup-file
+                    gnus-select-method ',gnus-select-method
+                    gnus-secondary-select-methods ',gnus-secondary-select-methods)
+              (message "Downloading news...")
+              (gnus)
+              (message "Finished."))
+           (lambda (&rest _)
+             (-when-let (b (get-buffer "*Group*"))
+               (with-current-buffer b
+                 (gnus-group-list-groups)))
+             (run-with-timer gnus-async-refresh-rate nil 'gnus-refresh-async)
+             (message "News updated.")))
+        (error
+         (warn "[gnus refresh] %s" (error-message-string))
+         (run-with-timer gnus-async-refresh-rate nil 'gnus-refresh-async))))
 
     (gnus-refresh-async)))
 
