@@ -172,7 +172,9 @@
     (while (emr-line-matches? (rx bol (or "import" "infix") (+ space)))
       (haskell-ds-forward-decl))
     (unless (eobp)
-      (ignore-errors (forward-line -1))))
+      (ignore-errors (forward-line -1))
+      (while (emr-line-matches? (rx bol (* space) "--"))
+        (forward-line -1))))
 
   (add-to-list 'hs-special-modes-alist
                `(haskell-mode
