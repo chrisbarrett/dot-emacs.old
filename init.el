@@ -55,9 +55,11 @@
 
 ;; As a special case, ensure we're using the latest version of org-mode and not
 ;; the version shipped with Emacs.
-(let ((org-src  (concat user-emacs-directory "etc/org-mode/lisp")))
-  (when (file-exists-p org-src)
-    (add-to-list 'load-path org-src)))
+(let ((org-src  (concat user-emacs-directory "etc/org-mode/lisp"))
+      (default-directory user-emacs-directory))
+  (unless (file-exists-p org-src)
+    (async-shell-command "make org" "*make org*"))
+  (add-to-list 'load-path org-src))
 
 ;;; Configure packages.
 
