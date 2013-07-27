@@ -92,33 +92,45 @@ Make the 'q' key restore the previous window configuration."
   "Insert metadata key-value pair KVP at point.
 No insertion is done if the field is already set in the current
 buffer.  When PERMISSIVE is set, allow duplicate instances of the
-given key."
+given key.
+Non-nil if the field was inserted."
   (destructuring-bind (key . val) (s-split (rx space) kvp)
     (unless (s-matches? (rx-to-string
                          (if permissive?
                              `(and bol ,key (* space) ,(or (car val) ""))
                            `(and bol ,key (* space))))
                         (buffer-string))
-      (insert (concat kvp "\n")))))
+      (insert (concat kvp "\n"))
+      'inserted)))
 
 (defun cb-org:format-project-task-file ()
-  "Ensure the current project tasks file has its metadata fields set."
+  "Ensure the current project tasks file has its metadata fields set.
+Non-nil if modifications where made."
   (save-excursion
     (goto-char (point-min))
     ;; Skip file variables.
     (when (emr-line-matches? (rx "-*-" (* nonl) "-*-"))
       (forward-line))
     (beginning-of-line)
-    (cb-org:ensure-field "#+TITLE: Tasks")
-    (cb-org:ensure-field (concat "#+AUTHOR: " user-full-name))
-    (cb-org:ensure-field "#+STARTUP: lognotestate" t)
-    (cb-org:ensure-field "#+STARTUP: lognotedone" t)
-    (cb-org:ensure-field "#+DESCRIPTION: Project-level notes and todos")))
+    (let ((changed? (list
+                     (cb-org:ensure-field "#+TITLE: Tasks")
+                     (cb-org:ensure-field (concat "#+AUTHOR: " user-full-name))
+                     (cb-org:ensure-field "#+STARTUP: lognotestate" t)
+                     (cb-org:ensure-field "#+STARTUP: lognotedone" t)
+                     (cb-org:ensure-field "#+DESCRIPTION: Project-level notes and todos"))))
+      (-any? 'identity changed?))))
 
 (after 'smartparens
   (sp-with-modes '(org-mode)
     (sp-local-pair "#+BEGIN_SRC" "#+END_SRC")
     (sp-local-pair "#+begin_src" "#+end_src")))
+
+(defun org-forward-move-past-headers ()
+  "Move point past the header lines of an org document."
+  (while (or (emr-line-matches? (rx bol (or "#+" "-*-")))
+             (emr-blank-line?))
+    (unless (eobp)
+      (forward-line))))
 
 (use-package org
   :defer t
@@ -170,10 +182,7 @@ given key."
       (when (and (equal (buffer-name) "*Org Note*"))
         (cb:append-buffer)))
 
-    ;; Move point out of header to first item.
-    (hook-fn 'org-mode-hook
-      (when (and (bobp) (emr-line-matches? (rx bol "#+")))
-        (forward-paragraph)))
+    (add-hook 'org-mode-hook 'org-forward-move-past-headers)
 
     ;; Diminish org minor modes.
     (hook-fn 'cb:org-minor-modes-hook
@@ -386,7 +395,8 @@ With prefix argument ARG, show the file and move to the tasks tree."
     (hook-fn 'org-capture-after-finalize-hook
       (when org-last-project-task-file
         (with-current-buffer (find-file-noselect org-last-project-task-file)
-          (cb-org:format-project-task-file))))
+          (when (cb-org:format-project-task-file)
+            (org-forward-move-past-headers)))))
 
     (defmacro prev-str-val (sym)
       "Evaluate SYM in the previous active buffer."
