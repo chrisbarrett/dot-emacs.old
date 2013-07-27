@@ -38,7 +38,7 @@
         message-send-mail-function 'smtpmail-send-it)
   :config
   (when (equal system-type 'darwin)
-    (setq starttls-gnutls-program (executable-find "gnutils-cli")
+    (setq starttls-gnutls-program (executable-find "gnutls-cli")
           starttls-use-gnutls t)))
 
 (use-package bbdb
