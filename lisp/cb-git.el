@@ -128,7 +128,12 @@
 
 (use-package git-gutter+
   :diminish git-gutter+-mode
+  :defer t
   :ensure t
+  :init
+  (hook-fn 'find-file-hook
+    (when (vc-git-root (buffer-file-name))
+      (require 'git-gutter+)))
   :config
   (progn
 
