@@ -30,6 +30,34 @@
 (require 'cb-foundation)
 (require 'cb-typefaces)
 
+(defvar gnus-startup-file (concat cb:etc-dir "gnus"))
+
+(after 'personal-config
+  (after 'async
+    (defvar gnus-async-refresh-rate 120)
+
+    (defun gnus-refresh-async ()
+      "Spawn a background Emacs instance to download the latest news and emails."
+      (interactive)
+      (async-start
+       `(lambda ()
+          (message "Preparing environment...")
+          (require 'gnus)
+          (setq gnus-startup-file ,gnus-startup-file
+                gnus-select-method ',gnus-select-method
+                gnus-secondary-select-methods ',gnus-secondary-select-methods)
+          (message "Downloading news...")
+          (gnus)
+          (message "Finished."))
+       (lambda (&rest _)
+         (-when-let (b (get-buffer "*Group*"))
+           (with-current-buffer b
+             (gnus-group-list-groups)))
+         (run-with-timer gnus-async-refresh-rate nil 'gnus-refresh-async)
+         (message "News updated."))))
+
+    (gnus-refresh-async)))
+
 (use-package gnus
   :commands gnus
   :defer t
@@ -41,8 +69,7 @@
     (setq gnus-treat-fill t
           gnus-always-read-dribble-file t
           gnus-save-newsrc-file nil
-          gnus-read-newsrc-file nil
-          gnus-startup-file (concat cb:etc-dir "gnus"))
+          gnus-read-newsrc-file nil)
 
     (hook-fn 'gnus-article-mode-hook
       "Use a sans-serif font for gnus-article-mode."
