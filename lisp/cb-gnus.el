@@ -42,13 +42,12 @@
        gnus-async-refresh-rate
        (lambda ()
          (unless gnus-async-refreshing?
-           (setq gnus-async-refreshing? t)
-           (gnus-refresh-async))
-         (setq gnus-async-refreshing? nil))))
+           (gnus-refresh-async)))))
 
     (defun gnus-refresh-async ()
       "Spawn a background Emacs instance to download the latest news and emails."
       (interactive)
+      (setq gnus-async-refreshing? t)
       (async-start
 
        `(lambda ()
@@ -90,7 +89,9 @@
            (when (buffer-live-p b)
              (gnus-dribble-read-file)
              (with-current-buffer b
-               (gnus-group-list-groups)))))))))
+               (gnus-group-list-groups))))
+
+         (setq gnus-async-refreshing? nil))))))
 
 (use-package gnus
   :commands gnus
