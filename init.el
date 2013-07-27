@@ -69,7 +69,7 @@
       do (add-to-list 'package-archives source)
       finally (package-initialize))
 
-(loop for pkg in '(bind-key use-package diminish s dash cl-lib f noflet)
+(loop for pkg in '(bind-key use-package)
       initially (unless package-archive-contents (package-refresh-contents))
       unless (package-installed-p pkg)
       do (package-install pkg))
@@ -78,6 +78,12 @@
 (setq use-package-verbose nil)
 
 (use-package cb-lib)
+(use-package diminish)
+(use-package dash)
+(use-package s)
+(use-package f)
+(use-package noflet)
+(use-package async)
 (use-package cb-foundation)
 (use-package personal-config)
 (use-package cb-mode-groups)
