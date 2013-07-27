@@ -384,8 +384,9 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
     ;; Insert task file headers.
     (hook-fn 'org-capture-after-finalize-hook
-      (with-current-buffer (find-file-noselect org-last-project-task-file)
-        (cb-org:format-project-task-file)))
+      (when org-last-project-task-file
+        (with-current-buffer (find-file-noselect org-last-project-task-file)
+          (cb-org:format-project-task-file))))
 
     (defmacro prev-str-val (sym)
       "Evaluate SYM in the previous active buffer."
