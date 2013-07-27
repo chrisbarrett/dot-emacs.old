@@ -70,7 +70,11 @@
   :defer t
   :init
   (when (true? cb:use-vim-keybindings?)
-    (bind-key* "M-Y" 'gnus))
+    (bind-key* "M-Y" (command
+                      (gnus-dribble-read-file)
+                      (-if-let (b (get-buffer "*Group*"))
+                        (switch-to-buffer b)
+                        (gnus nil 'dont-connect)))))
   :config
   (progn
     (setq gnus-treat-fill t
