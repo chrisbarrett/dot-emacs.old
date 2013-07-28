@@ -66,22 +66,35 @@
         (--map (plist-get it :unread-count))
         (-sum))))
 
-  (defun cb-gnus:update-modeline-for-news (news-plist)
+  (defun cb-gnus:update-modeline-unread (count)
     (setq modeline-mail-indicator
-          (-when-let (sum (cb-gnus:sum-unread news-plist))
-            (and (plusp sum) (format " %s unread" sum)))))
+          (when (plusp count)
+            (format " %s unread" count))))
 
   (defun cb-gnus:scrape-group-buffer-for-news ()
-    (with-current-buffer "*Group*"
-      (save-excursion
-        (goto-char (point-min))
-        (cl-loop while (not (eobp))
-                 for group = (gnus-group-name-at-point)
-                 when group collect (cons group (gnus-group-unread group))
-                 do (forward-line)))))
+    (-when-let (buf (get-buffer "*Group*"))
+      (with-current-buffer buf
+        (save-excursion
+          (goto-char (point-min))
+          (cl-loop while (not (eobp))
+                   for group = (gnus-group-name-at-point)
+                   do (gnus-group-update-group group)
+                   when group collect
+                   (list :name group
+                         :unread-count (gnus-group-unread group))
+                   do (forward-line))))))
 
-  (hook-fns '(gnus-started-hook gnus-after-getting-new-news-hook gnus-article-mode-hook)
-    (cb-gnus:update-modeline-for-news (cb-gnus:scrape-group-buffer-for-news)))
+  (hook-fns '(gnus-started-hook
+              gnus-after-getting-new-news-hook
+              gnus-article-prepare-hook
+              gnus-summary-mode-hook
+              gnus-summary-menu-hook
+              gnus-summary-exit-hook
+              gnus-summary-update-hook
+              gnus-article-mode-hook)
+    (->> (cb-gnus:scrape-group-buffer-for-news)
+      (cb-gnus:sum-unread)
+      (cb-gnus:update-modeline-unread)))
 
   (defun gnus-refresh-async ()
     "Spawn a background Emacs instance to download the latest news and emails."
@@ -117,8 +130,7 @@
 
      (lambda (news)
        ;; Notify user of new email.
-       (-when-let (unread (cb-gnus:sum-unread news))
-         (cb-gnus:update-modeline-for-news news))
+       (cb-gnus:update-modeline-unread (cb-gnus:sum-unread news))
        ;; Update the group view.
        (-when-let (b (get-buffer "*Group*"))
          (when (buffer-live-p b)
