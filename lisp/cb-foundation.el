@@ -326,6 +326,22 @@ rather than the app bundle."
     (when (buffer-live-p buf)
       ad-do-it)))
 
+;;; Arrow keys are for suckers.
+
+(defun you-lack-discipline ()
+  "Admonish the user for using the arrow keys."
+  (interactive)
+  (let ((img (f-join cb:tmp-dir "discipline.jpg")))
+    (unless (f-exists? img)
+      (url-copy-file
+       "http://ulrichdesign.ca/wp-content/uploads/2011/11/YOU-LACK-discipline.jpg"
+       img))
+    (insert-image (create-image img))
+    (user-error "Arrow keys are not the Emacs Way")))
+
+(--each '([up] [left] [down] [right])
+  (global-set-key it 'you-lack-discipline))
+
 (provide 'cb-foundation)
 
 ;; Local Variables:
