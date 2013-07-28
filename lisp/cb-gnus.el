@@ -37,6 +37,14 @@
 
 (after 'personal-config
 
+  ;;;; Asynchronous gnus updates
+
+  ;; Use a timer to periodically cache gnus news in the background. A global
+  ;; lock is used to ensure only a single refresh is run at a time.
+  ;;
+  ;; Once an async process is launched, a timer is also started to enforce a
+  ;; timeout. This is needed because gnus will sometimes hang when fetching.
+
   (defvar gnus-async-refresh-rate 120)
   (defvar gnus-async-refreshing? nil
     "Lock to prevent the timer spawning multiple concurrent refreshes.")
