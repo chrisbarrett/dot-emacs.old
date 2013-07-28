@@ -90,6 +90,7 @@
           (require 'gnus)
           (require 'cl-lib)
           (setq gnus-startup-file ,gnus-startup-file
+                gnus-expert-user t
                 gnus-current-startup-file ,gnus-current-startup-file
                 gnus-always-read-dribble-file t
                 gnus-select-method ',gnus-select-method
@@ -109,6 +110,7 @@
             (message "Saving dribble file...")
             (gnus-dribble-save)
             (gnus-batch-kill)
+            (gnus-group-exit)
             (message "Finished.")))
 
        (lambda (news)
