@@ -75,6 +75,7 @@
      (,(rx "(" (group (or "use-package"
                           "cal"
                           "hook-fn"
+                          "hook-fns"
                           "after"
                           "noflet"
                           "ac-define-source"
