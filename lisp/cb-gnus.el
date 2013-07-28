@@ -44,16 +44,19 @@
   ;; timeout. This is needed because gnus will sometimes hang when fetching.
 
   (defvar gnus-async-refresh-rate 120)
+  (defvar gnus-async-timeout 60)
   (defvar gnus-async-refresh-timer
     (run-with-timer
      nil
      gnus-async-refresh-rate
      (lambda ()
        (let ((proc (gnus-refresh-async)))
-         ;; Set a timeout to kill stuck processes.
-         (eval `(run-with-timer 60 nil (lambda ()
-                                         (unless (async-ready ,proc)
-                                           (kill-process ,proc)))))))))
+         (eval `(run-with-timer gnus-async-timeout nil
+                                (lambda ()
+                                  (when (process-live-p ,proc)
+                                    (let (kill-buffer-query-functions)
+                                      (kill-process ,proc)
+                                      (kill-buffer (process-buffer ,proc)))))))))))
 
   (defun cb-gnus:length-unread-mail (news)
     "Return the number of unread emails in NEWS."
