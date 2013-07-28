@@ -107,8 +107,7 @@
                      for group = (gnus-group-name-at-point)
                      when group collect
                      (list :name group
-                           :unread-count (gnus-group-unread group)
-                           :info (gnus-get-info group))
+                           :unread-count (gnus-group-unread group))
                      do (forward-line))
           (message "Saving dribble file...")
           (gnus-dribble-save)
@@ -119,10 +118,7 @@
      (lambda (news)
        ;; Notify user of new email.
        (-when-let (unread (cb-gnus:sum-unread news))
-         (cb-gnus:update-modeline-for-news news)
-         (when (plusp unread)
-           (message (format "%s new %s" unread (if (= 1 unread) "email" "emails"))))
-         (sit-for 2))
+         (cb-gnus:update-modeline-for-news news))
        ;; Update the group view.
        (-when-let (b (get-buffer "*Group*"))
          (when (buffer-live-p b)
