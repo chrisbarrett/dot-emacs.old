@@ -101,7 +101,6 @@ as terminals, w3m, gnus and dired.
 - =M-I= - find lisp config file with ido
 - =M-i= - helm-imenu
 - =M-m= - man page with helm
-- =M-o= - org-capture
 - =M-R= - rename symbol at point  (in whole buffer)
 - =M-r= - rename symbol at point (in defun)
 - =M-s= - Google search
@@ -109,3 +108,8 @@ as terminals, w3m, gnus and dired.
 - =M-W= - w3m
 - =M-w= - w3m bookmarks
 - =M-Y= - gnus
+
+** OS X-specific
+=cmd-shift-return= runs OS X's =open= command.
++ URL at point will open in the default browser
++ Files will open with the default application for their type
