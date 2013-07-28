@@ -46,7 +46,14 @@
      gnus-async-refresh-rate
      (lambda ()
        (unless gnus-async-refreshing?
-         (gnus-refresh-async)))))
+         ;; Acquire refresh lock.
+         (setq gnus-async-refreshing? t)
+         (let ((proc (gnus-refresh-async)))
+           ;; Set a timeout that releases the lock and kills stuck processes.
+           (eval `(run-with-timer 60 nil (lambda ()
+                                           (unless (async-ready ,proc)
+                                             (kill-process ,proc))
+                                           (setq gnus-async-refreshing? nil)))))))))
 
   (defun cb-gnus:length-unread-mail (news)
     "Return the number of unread emails in NEWS."
@@ -79,8 +86,6 @@
   (defun gnus-refresh-async ()
     "Spawn a background Emacs instance to download the latest news and emails."
     (interactive)
-    ;; Acquire refresh lock.
-    (setq gnus-async-refreshing? t)
     (async-start
 
      `(lambda ()
@@ -119,9 +124,7 @@
          (when (buffer-live-p b)
            (gnus-dribble-read-file)
            (with-current-buffer b
-             (gnus-group-list-groups))))
-       ;; Release lock.
-       (setq gnus-async-refreshing? nil)))))
+             (gnus-group-list-groups))))))))
 
 (use-package gnus
   :commands gnus
