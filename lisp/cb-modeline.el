@@ -276,8 +276,8 @@
    (:propertize mode-line-process
                 face mode-line-process)
    " "
-   (:eval (propertize modeline-mail-indicator
-                      'face 'mode-line-emphasis))
+   (:eval (or (propertize modeline-mail-indicator 'face 'mode-line-emphasis)
+              ""))
    " "
    (global-mode-string global-mode-string)))
 
