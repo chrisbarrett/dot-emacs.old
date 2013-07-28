@@ -43,7 +43,7 @@
   ;; async process is launched, a timer is also started to enforce a
   ;; timeout. This is needed because gnus will sometimes hang when fetching.
 
-  (defvar gnus-async-refresh-rate 120)
+  (defvar gnus-async-refresh-rate 60)
   (defvar gnus-async-timeout 60)
   (defvar gnus-async-refresh-timer
     (run-with-timer
