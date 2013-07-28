@@ -58,18 +58,18 @@
                                       (kill-process ,proc)
                                       (kill-buffer (process-buffer ,proc)))))))))))
 
-  (defun cb-gnus:length-unread-mail (news)
-    "Return the number of unread emails in NEWS."
+  (defun cb-gnus:sum-unread (news-plist)
+    "Return the number of unread emails in NEWS-PLIST."
     (-when-let (imap (second (assoc 'nnimap gnus-secondary-select-methods)))
-      (->> news
-        (--filter (s-contains? imap (car it)))
-        (-map 'cdr)
+      (->> news-plist
+        (--filter (s-contains? imap (plist-get it :name)))
+        (--map (plist-get it :unread-count))
         (-sum))))
 
-  (defun cb-gnus:update-modeline-for-news (news)
+  (defun cb-gnus:update-modeline-for-news (news-plist)
     (setq modeline-mail-indicator
-          (-when-let (unread (cb-gnus:length-unread-mail news))
-            (and (plusp unread) (format " %s unread" unread)))))
+          (-when-let (sum (cb-gnus:sum-unread news-plist))
+            (and (plusp sum) (format " %s unread" sum)))))
 
   (defun cb-gnus:scrape-group-buffer-for-news ()
     (with-current-buffer "*Group*"
@@ -105,7 +105,10 @@
             (cl-loop while (not (eobp))
                      initially (message "Collating unread items...")
                      for group = (gnus-group-name-at-point)
-                     when group collect (cons group (gnus-group-unread group))
+                     when group collect
+                     (list :name group
+                           :unread-count (gnus-group-unread group)
+                           :info (gnus-get-info group))
                      do (forward-line))
           (message "Saving dribble file...")
           (gnus-dribble-save)
@@ -115,7 +118,7 @@
 
      (lambda (news)
        ;; Notify user of new email.
-       (-when-let (unread (cb-gnus:length-unread-mail news))
+       (-when-let (unread (cb-gnus:sum-unread news))
          (cb-gnus:update-modeline-for-news news)
          (when (plusp unread)
            (message (format "%s new %s" unread (if (= 1 unread) "email" "emails"))))
