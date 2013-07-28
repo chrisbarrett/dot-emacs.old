@@ -117,7 +117,8 @@
        ;; Notify of new email.
        (-when-let (unread (cb-gnus:length-unread-mail news))
          (cb-gnus:update-modeline-for-news news)
-         (message (format "%s new %s" unread (if (= 1 unread) "email" "emails")))
+         (when (plusp unread)
+           (message (format "%s new %s" unread (if (= 1 unread) "email" "emails"))))
          (sit-for 2))
        ;; Update the group view.
        (-when-let (b (get-buffer "*Group*"))
