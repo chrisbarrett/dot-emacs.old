@@ -80,10 +80,7 @@
                  when group collect (cons group (gnus-group-unread group))
                  do (forward-line)))))
 
-  (hook-fn 'gnus-started-hook
-    (cb-gnus:update-modeline-for-news (cb-gnus:scrape-group-buffer-for-news)))
-
-  (hook-fn 'gnus-article-mode-hook
+  (hook-fns '(gnus-started-hook gnus-after-getting-new-news-hook gnus-article-mode-hook)
     (cb-gnus:update-modeline-for-news (cb-gnus:scrape-group-buffer-for-news)))
 
   (defun gnus-refresh-async ()
