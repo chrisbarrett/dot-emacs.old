@@ -132,6 +132,11 @@ Non-nil if modifications where made."
     (unless (eobp)
       (forward-line))))
 
+(after 'message
+  (add-hook 'message-mode-hook 'orgstruct++-mode)
+  (add-hook 'message-mode-hook 'orgtbl-mode)
+  (define-key message-mode-map (kbd "C-c RET RET") 'org-ctrl-c-ret))
+
 (use-package org
   :defer t
   :init
