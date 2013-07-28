@@ -31,7 +31,6 @@
 (require 's)
 (autoload 'thing-at-point-url-at-point "thingatpt")
 
-
 (after 'message
 
   (defun cb-mail:next-field ()
