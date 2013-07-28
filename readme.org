@@ -65,7 +65,7 @@ this works.
 ** Git commands
 =git-gutter+-mode= is enabled for files in git repositories. This allows you to
 see modified hunks and stage them individually while you're editing. Common
-magit commands are available under the `g` prefix key in Evil's normal state.
+magit commands are available under the =g= prefix key in Evil's normal state.
 
 ** Org
 Common org-mode commands are bound to the =C-o= global prefix. I use custom
