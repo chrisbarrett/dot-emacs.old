@@ -122,7 +122,7 @@
           (message "Finished.")))
 
      (lambda (news)
-       ;; Notify of new email.
+       ;; Notify user of new email.
        (-when-let (unread (cb-gnus:length-unread-mail news))
          (cb-gnus:update-modeline-for-news news)
          (when (plusp unread)
