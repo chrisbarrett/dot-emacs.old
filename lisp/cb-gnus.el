@@ -31,12 +31,15 @@
 (require 'cb-typefaces)
 (autoload 'gnus-dribble-read-file "gnus-start")
 
-(defvar gnus-startup-file (concat cb:etc-dir "gnus"))
+(defvar gnus-startup-file (f-join cb:etc-dir "gnus"))
+(defvar gnus-current-startup-file (f-join cb:etc-dir "gnus"))
 
 (after 'personal-config
+
   (after 'async
     (defvar gnus-async-refresh-rate 120)
-    (defvar gnus-async-refreshing? nil)
+    (defvar gnus-async-refreshing? nil
+      "Lock to prevent the timer spawning multiple concurrent refreshes.")
     (defvar gnus-async-refresh-timer
       (run-with-timer
        nil
@@ -45,9 +48,40 @@
          (unless gnus-async-refreshing?
            (gnus-refresh-async)))))
 
+    (defun cb-gnus:length-unread-mail (news)
+      "Return the number of unread emails in NEWS."
+      (-when-let (imap (second (assoc 'nnimap gnus-secondary-select-methods)))
+        (->> news
+          (--filter (s-contains? imap (car it)))
+          (-map 'cdr)
+          (-sum))))
+
+    (defun cb-gnus:update-modeline-for-news (news)
+      (setq modeline-mail-indicator
+            (-when-let (unread (cb-gnus:length-unread-mail news))
+              (and (plusp unread) (format " %s unread" unread)))))
+
+    (defun cb-gnus:scrape-group-buffer-for-news ()
+      (with-current-buffer "*Group*"
+        (save-excursion
+          (cl-flet ((group-at-point () (let ((g (gnus-group-name-at-point)))
+                                         (when g (cons g (gnus-group-unread g))))))
+            (goto-char (point-min))
+            (cl-loop while (not (eobp))
+                     initially (message "Collating unread items...")
+                     collect (group-at-point)
+                     do (forward-line))))))
+
+    (hook-fn 'gnus-started-hook
+      (cb-gnus:update-modeline-for-news (cb-gnus:scrape-group-buffer-for-news)))
+
+    (hook-fn 'gnus-article-mode-hook
+      (cb-gnus:update-modeline-for-news (cb-gnus:scrape-group-buffer-for-news)))
+
     (defun gnus-refresh-async ()
       "Spawn a background Emacs instance to download the latest news and emails."
       (interactive)
+      ;; Acquire refresh lock.
       (setq gnus-async-refreshing? t)
       (async-start
 
@@ -56,6 +90,7 @@
           (require 'gnus)
           (require 'cl-lib)
           (setq gnus-startup-file ,gnus-startup-file
+                gnus-current-startup-file ,gnus-current-startup-file
                 gnus-always-read-dribble-file t
                 gnus-select-method ',gnus-select-method
                 gnus-secondary-select-methods ',gnus-secondary-select-methods)
@@ -73,24 +108,22 @@
 
             (message "Saving dribble file...")
             (gnus-dribble-save)
+            (gnus-batch-kill)
             (message "Finished.")))
 
        (lambda (news)
-
-         ;; Notify of new email.  Find the name of the nnimap group, and
-         ;; report the number of unread items if there are any.
-         (-when-let* ((imap (second (assoc 'nnimap gnus-secondary-select-methods)))
-                      (unread (cdr (assoc imap news))))
+         ;; Notify of new email.
+         (-when-let (unread (cb-gnus:length-unread-mail news))
+           (cb-gnus:update-modeline-for-news news)
            (message (format "%s unread %s" unread (if (= 1 unread) "email" "emails")))
            (sit-for 2))
-
          ;; Update the group view.
          (-when-let (b (get-buffer "*Group*"))
            (when (buffer-live-p b)
              (gnus-dribble-read-file)
              (with-current-buffer b
                (gnus-group-list-groups))))
-
+         ;; Release lock.
          (setq gnus-async-refreshing? nil))))))
 
 (use-package gnus
@@ -99,7 +132,6 @@
   :init
   (when (true? cb:use-vim-keybindings?)
     (bind-key* "M-Y" (command
-                      (gnus-dribble-read-file)
                       (-if-let (b (get-buffer "*Group*"))
                         (switch-to-buffer b)
                         (gnus nil 'dont-connect)))))

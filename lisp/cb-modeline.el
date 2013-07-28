@@ -205,6 +205,8 @@
   "Face for the warning when point is past column 80."
   :group 'modeline)
 
+(defvar modeline-mail-indicator nil)
+
 (setq-default
  mode-line-format
  `(
@@ -273,6 +275,9 @@
                       'face 'mode-line-minor-mode))
    (:propertize mode-line-process
                 face mode-line-process)
+   " "
+   (:eval (propertize modeline-mail-indicator
+                      'face 'mode-line-emphasis))
    " "
    (global-mode-string global-mode-string)))
 
