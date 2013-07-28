@@ -1,0 +1,111 @@
+#+TITLE: dot-emacs
+#+AUTHOR: Chris Barrett
+
+* Description
+This is my personal Emacs configuration. It is obviously very personalised and you'd be crazy to use it as-is.
+
+* Installation
+Requires GNU Make, curl and Git.
+
+#+BEGIN_SRC sh
+  cd
+  mv .emacs.d .emacs.d.backup
+  git clone git@github.com:chrisbarrett/dot-emacs.git .emacs.d
+  cd .emacs.d
+  make
+#+END_SRC
+
+Additional features can be installed using =make all=, or using the individual tasks in the makefile (e.g. =make ruby=). I pretty much only test on my machine, so YMMV.
+
+The load sequence will search for a file called =personal-config.el=, which is a
+good place to put things like your gnus server configuration, email address, etc.
+
+#+BEGIN_SRC elisp
+  (setq user-full-name    "Jane Coder"
+        user-mail-address "foo@bar.com")
+
+  ;; SMTP
+
+  (setq smtpmail-mail-address user-mail-address
+        smtpmail-smtp-server "smtp.foo.bar.com")
+
+  ;; GNUS
+
+  (setq gnus-select-method '(nntp "news.gwene.org")
+        gnus-secondary-select-methods
+        `((nnimap "mail"
+                  (nnimap-user "foo@bar.com")
+                  (nnimap-address "imap.foo.bar.com")
+                  (nnimap-list-pattern ("INBOX" "mail/*"))
+                  (nnimap-server-port 993)
+                  (nnimap-stream ssl)
+                  (nnimap-authenticator login))))
+
+  (provide 'personal-config)
+#+END_SRC
+
+* Features
+** Evilness
+I use *Evil-mode* so I can have vim in my Emacs so I can edit while I edit. You
+can restore Emacs' normal key bindings by setting =cb:use-vim-keybindings?= to
+nil in /init.el/. I try to remmember to make my bindings test for that so people
+testing this config out aren't completely stuffed.
+
+** Custom mode-line
+The mode-line is set up to remove clutter. If you have a personal configuration
+it will display notifications when you have unread mail in gnus.
+
+** Modal buffers
+Certain command display buffers in a /modal/ manner; they expand to fill the
+frame and restore the previous state when killed. This behaviour is provided for
+most magit commands, ansi-term, org-agenda and others. Check the implementation
+of =declare-modal-view= and =declare-modal-executor= in /cb-lib.el/ to see how
+this works.
+
+** Git commands
+=git-gutter+-mode= is enabled for files in git repositories. This allows you to
+see modified hunks and stage them individually while you're editing. Common
+magit commands are available under the `g` prefix key in Evil's normal state.
+
+** Org
+Common org-mode commands are bound to the =C-o= global prefix. I use custom
+org-capture commands with support for project-specific todo files.
+ - =M-O= - org agenda
+- =C-o k= - capture todo
+- =C-o d= - go to org diary file
+- =C-o n= - go to notes file
+- =C-o p= - go to project task file
+- =C-o K= - capture a task to the project's taskfile
+
+** Language Support
+I have sane configurations for several languages and environments:
+- Ruby/Rails
+- Haskell
+- C
+- Python
+- Elisp
+- Clojure
+- Scheme
+- SuperCollider
+
+** Chorded key bindings
+Since Evil frees up the Meta key, I use =M-/key/= to display modal views such
+as terminals, w3m, gnus and dired.
+- =C-j= - helm-projectile
+- =M-a= - helm-apropos
+- =M-b= - buffers list with helm
+- =M-d= - shows current file in dired
+- =M-e= - go to URL
+- =M-G= - magit status
+- =M-h= - helm-mini
+- =M-I= - find lisp config file with ido
+- =M-i= - helm-imenu
+- =M-m= - man page with helm
+- =M-o= - org-capture
+- =M-R= - rename symbol at point  (in whole buffer)
+- =M-r= - rename symbol at point (in defun)
+- =M-s= - Google search
+- =M-T= - ansi-term
+- =M-W= - w3m
+- =M-w= - w3m bookmarks
+- =M-Y= - gnus
