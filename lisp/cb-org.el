@@ -508,6 +508,9 @@ This can be 0 for immediate, or a floating point value.")
           org-agenda-start-on-weekday nil
           org-agenda-ndays 7)
 
+    (after 'org-agenda
+      (org-agenda-to-appt))
+
     ;;;; Keys
 
     (define-keys org-agenda-mode-map
@@ -583,9 +586,6 @@ This can be 0 for immediate, or a floating point value.")
   (progn
     (setq appt-message-warning-time 60
           appt-display-interval 15)
-
-    (after 'org-agenda
-      (org-agenda-to-appt))
 
     (save-window-excursion
       (appt-activate +1))
