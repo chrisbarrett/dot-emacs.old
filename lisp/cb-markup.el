@@ -153,12 +153,14 @@ Puts each XML node on a separate line, except for one-liners."
 
     ;; Customise faces.
     (set-face-font markdown-inline-code-face (monospace-font))
+    (set-face-font markdown-pre-face (monospace-font))
     (set-face-font markdown-url-face (monospace-font))
     (set-face-font markdown-header-delimiter-face (monospace-font))
     (set-face-font markdown-header-rule-face (monospace-font))
     (set-face-font markdown-list-face (monospace-font))
     (set-face-attribute markdown-header-face-1 nil :height 200)
     (set-face-attribute markdown-header-face-2 nil :height 160)
+    (set-face-font markdown-header-face (sans-serif-font))
 
     (hook-fn 'markdown-mode-hook
       (buffer-face-set `(:family ,(serif-font) :height 130))
