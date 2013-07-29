@@ -526,14 +526,10 @@ This can be 0 for immediate, or a floating point value.")
 
     (defun cb-org:refresh-agenda ()
       "Refresh all org agenda buffers."
-      (--each (--filter-buffers (derived-mode-p 'org-agenda-mode))
-        (with-current-buffer it
-          (org-agenda-redo t))))
-
-    (hook-fn 'org-capture-after-finalize-hook
-      (org-agenda-to-appt)
-      (message nil)
-      (cb-org:refresh-agenda))
+      (save-excursion
+        (--each (--filter-buffers (derived-mode-p 'org-agenda-mode))
+         (with-current-buffer it
+           (org-agenda-redo t)))))
 
     (hook-fn 'org-mode-hook
       (add-hook 'after-save-hook 'cb-org:refresh-agenda nil 'local))
