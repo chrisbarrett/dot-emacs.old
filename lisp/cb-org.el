@@ -526,8 +526,8 @@ This can be 0 for immediate, or a floating point value.")
       "Refresh all org agenda buffers."
       (save-excursion
         (--each (--filter-buffers (derived-mode-p 'org-agenda-mode))
-         (with-current-buffer it
-           (org-agenda-redo t)))))
+          (with-current-buffer it
+            (org-agenda-redo t)))))
 
     (hook-fn 'org-mode-hook
       (add-hook 'after-save-hook 'cb-org:refresh-agenda nil 'local))
