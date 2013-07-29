@@ -125,13 +125,6 @@ Non-nil if modifications where made."
     (sp-local-pair "#+BEGIN_SRC" "#+END_SRC")
     (sp-local-pair "#+begin_src" "#+end_src")))
 
-(defun org-forward-move-past-headers ()
-  "Move point past the header lines of an org document."
-  (while (or (emr-line-matches? (rx bol (or "#+" "-*-")))
-             (emr-blank-line?))
-    (unless (eobp)
-      (forward-line))))
-
 (after 'message
   (add-hook 'message-mode-hook 'orgstruct++-mode)
   (add-hook 'message-mode-hook 'orgtbl-mode)
@@ -186,8 +179,6 @@ Non-nil if modifications where made."
     (hook-fn 'org-mode-hook
       (when (and (equal (buffer-name) "*Org Note*"))
         (cb:append-buffer)))
-
-    (add-hook 'org-mode-hook 'org-forward-move-past-headers)
 
     ;; Diminish org minor modes.
     (hook-fn 'cb:org-minor-modes-hook
@@ -395,6 +386,13 @@ With prefix argument ARG, show the file and move to the tasks tree."
             habit))))
 
 ;;;; Capture templates
+
+    (defun org-forward-move-past-headers ()
+      "Move point past the header lines of an org document."
+      (while (or (emr-line-matches? (rx bol (or "#+" "-*-")))
+                 (emr-blank-line?))
+        (unless (eobp)
+          (forward-line))))
 
     ;; Insert task file headers.
     (hook-fn 'org-capture-after-finalize-hook
