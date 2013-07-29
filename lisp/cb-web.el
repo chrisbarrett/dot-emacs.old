@@ -93,7 +93,7 @@
      bbdb-elided-display         t
      bbdb/mail-auto-create-p     'bbdb-ignore-some-messages-hook
      )
-    (bbdb-initialize)))
+    (bbdb-initialize 'gnus 'message)))
 
 (use-package bbdb-vcard
   :commands
