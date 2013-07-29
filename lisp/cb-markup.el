@@ -147,9 +147,9 @@ Puts each XML node on a separate line, except for one-liners."
       (sp-with-modes '(markdown-mode)
         (sp-local-pair "```" "```")))
 
-    (after 'evil
-      (evil-define-key 'normal markdown-mode-map (kbd "M-P") 'outline-previous-visible-heading)
-      (evil-define-key 'normal markdown-mode-map (kbd "M-N") 'outline-next-visible-heading))
+    (evil-define-keys 'normal markdown-mode-map
+      "M-P" 'outline-previous-visible-heading
+      "M-N" 'outline-next-visible-heading)
 
     ;; Customise faces.
     (set-face-font markdown-inline-code-face (monospace-font))
