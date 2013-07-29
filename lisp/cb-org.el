@@ -528,6 +528,8 @@ This can be 0 for immediate, or a floating point value.")
           (org-agenda-redo t))))
 
     (hook-fn 'org-capture-after-finalize-hook
+      (org-agenda-to-appt)
+      (message nil)
       (cb-org:refresh-agenda))
 
     (hook-fn 'org-mode-hook
