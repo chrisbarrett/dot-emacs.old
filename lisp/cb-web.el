@@ -78,20 +78,20 @@
   (progn
     (setq
      bbdb-offer-save 1
-     bbdb-use-popup  t
-     bbdb-electric   t
+     bbdb-use-popup t
+     bbdb-electric t
      bbdb-pop-up-window-size 9
-     bddb-popup-target-lines     1
+     bddb-popup-target-lines 1
      bbdb-dwim-net-address-allow-redundancy t
-     bbdb-quiet-about-name-mismatches       2
-     bbdb-always-add-address     t
-     bbdb-canonicalize-redundant-nets-p     t
+     bbdb-quiet-about-name-mismatches 2
+     bbdb-always-add-address t
+     bbdb-canonicalize-redundant-nets-p t
      bbdb-completion-type nil
-     bbdb-complete-name-allow-cycling       t
-     bbbd-message-caching-enabled           t
-     bbdb-use-alternate-names    t
-     bbdb-elided-display         t
-     bbdb/mail-auto-create-p     'bbdb-ignore-some-messages-hook
+     bbdb-complete-name-allow-cycling t
+     bbbd-message-caching-enabled t
+     bbdb-use-alternate-names t
+     bbdb-elided-display t
+     bbdb/mail-auto-create-p 'bbdb-ignore-some-messages-hook
      )
     (bbdb-initialize 'gnus 'message)))
 
