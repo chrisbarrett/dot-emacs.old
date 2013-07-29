@@ -584,6 +584,9 @@ This can be 0 for immediate, or a floating point value.")
     (setq appt-message-warning-time 60
           appt-display-interval 15)
 
+    (after 'org-agenda
+      (org-agenda-to-appt))
+
     (save-window-excursion
       (appt-activate +1))
 
