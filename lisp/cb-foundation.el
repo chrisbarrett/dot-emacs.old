@@ -339,8 +339,8 @@ rather than the app bundle."
     (user-error "Arrow keys are not the Emacs Way")))
 
 (--each '([up] [left] [down] [right])
-  (define-key prog-mode-map it 'you-lack-discipline)
-  (define-key text-mode-map it 'you-lack-discipline))
+  (hook-fns '(prog-mode-hook text-mode-hook)
+    (local-set-key it 'you-lack-discipline)))
 
 ;;; Hippie-expand
 
