@@ -342,6 +342,22 @@ rather than the app bundle."
   (define-key prog-mode-map it 'you-lack-discipline)
   (define-key text-mode-map it 'you-lack-discipline))
 
+;;; Hippie-expand
+
+(bind-key "M-/" 'hippie-expand)
+(setq hippie-expand-try-functions-list
+      '(try-expand-dabbrev
+        try-expand-dabbrev-all-buffers
+        try-expand-dabbrev-from-kill
+        try-complete-file-name-partially
+        try-complete-file-name
+        try-expand-all-abbrevs
+        try-expand-list
+        try-expand-line
+        try-complete-lisp-symbol-partially
+        try-complete-lisp-symbol))
+
+
 (provide 'cb-foundation)
 
 ;; Local Variables:

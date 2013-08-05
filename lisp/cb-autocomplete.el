@@ -1,9 +1,9 @@
-;;; cb-completion.el --- Configuration for completion utilities
+;;; cb-autocomplete.el --- Configuration for auto-complete
 
 ;; Copyright (C) 2013 Chris Barrett
 
 ;; Author: Chris Barrett <chris.d.barrett@me.com>
-;; Version: 20130527.0016
+;; Version: 20130805.0331
 
 ;; This file is not part of GNU Emacs.
 
@@ -22,13 +22,12 @@
 
 ;;; Commentary:
 
-;; Configuration for completion utilities
+;; Configuration for auto-complete
 
 ;;; Code:
 
-(require 'cb-lib)
-(require 'cb-foundation)
 (require 'use-package)
+(require 'cb-lib)
 
 (use-package auto-complete
   :ensure   t
@@ -73,59 +72,10 @@
       "\t"    'ac-complete
       "M-RET" 'ac-help)))
 
-(use-package yasnippet
-  :ensure t
-  :if (not noninteractive)
-  :diminish yas-minor-mode
-  :commands
-  (yas-global-mode
-   yas-minor-mode
-   snippet-mode)
-  :init
-  (progn
-    (add-hook 'prog-mode-hook 'yas-minor-mode)
-    (add-hook 'sgml-mode-hook 'yas-minor-mode)
-    (hook-fn 'find-file-hook
-      "Use yasnippet mode for files in the snippet directory."
-      (when (and (fboundp 'snippet-mode)
-                 (s-contains? cb:yasnippet-dir (buffer-file-name)))
-        (snippet-mode))))
-  :config
-  (progn
-    (setq
-     yas-prompt-functions'(yas-ido-prompt)
-     yas/trigger-key (kbd "RET"))
-    (add-to-list 'yas-snippet-dirs cb:yasnippet-dir)
-    (yas-global-mode t)
-    (hook-fn 'snippet-mode-hook
-      (setq require-final-newline nil))))
-
-(use-package hippie-exp
-  :bind ("M-/" . hippie-expand)
-  :config
-  (setq hippie-expand-try-functions-list
-        '(try-expand-dabbrev
-          try-expand-dabbrev-all-buffers
-          try-expand-dabbrev-from-kill
-          try-complete-file-name-partially
-          try-complete-file-name
-          try-expand-all-abbrevs
-          try-expand-list
-          try-expand-line
-          try-complete-lisp-symbol-partially
-          try-complete-lisp-symbol)))
-
-(use-package abbrev
-  :defer    t
-  :diminish abbrev-mode)
-
-(use-package fuzzy
-  :ensure t)
-
-(provide 'cb-completion)
+(provide 'cb-autocomplete)
 
 ;; Local Variables:
 ;; lexical-binding: t
 ;; End:
 
-;;; cb-completion.el ends here
+;;; cb-autocomplete.el ends here
