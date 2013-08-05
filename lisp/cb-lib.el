@@ -290,6 +290,14 @@ Find the first window where PRED-FORM is not nil."
                  (s-repeat pos " ")))
       (read (s-replace "," "" result)))))
 
+(defun filter-atoms (predicate)
+  "Return the elements of the default obarray that match PREDICATE."
+  (let (acc)
+    (mapatoms (lambda (atom)
+                (when (funcall predicate atom)
+                  (push atom acc))))
+    acc))
+
 (provide 'cb-lib)
 
 ;; Local Variables:
