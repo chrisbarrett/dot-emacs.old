@@ -34,6 +34,7 @@
 
 (defvar gnus-startup-file (f-join cb:etc-dir "gnus"))
 (defvar gnus-current-startup-file (f-join cb:etc-dir "gnus"))
+(defvar gnus-dribble-directory (f-join cb:etc-dir "gnus-dribble"))
 
 (after 'personal-config
 
@@ -84,17 +85,9 @@
                          :unread-count (gnus-group-unread group))
                    do (forward-line))))))
 
-  (hook-fns '(gnus-started-hook
-              gnus-after-getting-new-news-hook
-              gnus-article-prepare-hook
-              gnus-summary-mode-hook
-              gnus-summary-menu-hook
-              gnus-summary-exit-hook
-              gnus-summary-update-hook
-              gnus-article-mode-hook)
-    (->> (cb-gnus:scrape-group-buffer-for-news)
-      (cb-gnus:sum-unread)
-      (cb-gnus:update-modeline-unread)))
+  (hook-fns (filter-atoms (lambda (x) (s-matches? "^gnus-.*-hook$" (symbol-name x))))
+    (-when-let (sum (cb-gnus:sum-unread (cb-gnus:scrape-group-buffer-for-news)))
+      (cb-gnus:update-modeline-unread sum)))
 
   (defun gnus-refresh-async ()
     "Spawn a background Emacs instance to download the latest news and emails."
@@ -106,6 +99,7 @@
         (require 'gnus)
         (require 'cl-lib)
         (setq gnus-startup-file ,gnus-startup-file
+              gnus-dribble-directory ,gnus-dribble-directory
               gnus-expert-user t
               gnus-current-startup-file ,gnus-current-startup-file
               gnus-always-read-dribble-file t
@@ -130,7 +124,8 @@
 
      (lambda (news)
        ;; Notify user of new email.
-       (cb-gnus:update-modeline-unread (cb-gnus:sum-unread news))
+       (when news
+         (cb-gnus:update-modeline-unread (cb-gnus:sum-unread news)))
        ;; Update the group view.
        (-when-let (b (get-buffer "*Group*"))
          (when (buffer-live-p b)
@@ -138,21 +133,22 @@
            (with-current-buffer b
              (gnus-group-list-groups))))))))
 
+(defun show-gnus ()
+  "Start gnus.  If gnus is already running, switch to the groups buffer."
+  (interactive)
+  (-if-let (b (get-buffer "*Group*"))
+    (switch-to-buffer b)
+    (gnus)))
+
 (use-package gnus
   :commands gnus
   :defer t
   :init
   (when (true? cb:use-vim-keybindings?)
-    (bind-key* "M-Y" (command
-                      (-if-let (b (get-buffer "*Group*"))
-                        (switch-to-buffer b)
-                        (gnus nil 'dont-connect)))))
+    (bind-key* "M-Y" 'show-gnus))
   :config
   (progn
-    (setq gnus-treat-fill t
-          gnus-always-read-dribble-file t
-          gnus-save-newsrc-file nil
-          gnus-read-newsrc-file nil)
+    ;;;; Custom faces
 
     (hook-fn 'gnus-article-mode-hook
       "Use a sans-serif font for gnus-article-mode."
