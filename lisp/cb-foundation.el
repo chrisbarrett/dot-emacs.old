@@ -47,7 +47,6 @@
 (defalias 'yes-or-no-p 'y-or-n-p)
 (autoload 'edebug-step-mode "edebug")
 (autoload 'server-running-p "server")
-(autoload 'ido-yes-or-no-p "ido-yes-or-no")
 (autoload 'thing-at-point-looking-at "thingatpt")
 
 (hook-fn 'after-init-hook
@@ -132,12 +131,12 @@
 
 (defun cb:exit-emacs ()
   (interactive)
-  (when (ido-yes-or-no-p "Kill Emacs? ")
+  (when (yes-or-no-p "Kill Emacs? ")
     (save-buffers-kill-emacs)))
 
 (defun cb:exit-emacs-dwim ()
   (interactive)
-  (when (ido-yes-or-no-p "Kill Emacs? ")
+  (when (yes-or-no-p "Kill Emacs? ")
     (if (daemonp)
         (server-save-buffers-kill-terminal nil)
       (save-buffers-kill-emacs))))
@@ -194,7 +193,7 @@
 
      ;; Prompt user whether to escalate. Ensure the tramp connection is
      ;; cleaned up afterwards.
-     ((and (ido-yes-or-no-p "Edit file with sudo?  ")
+     ((and (yes-or-no-p "Edit file with sudo?  ")
            (find-alternate-file (concat "/sudo:root@localhost:" file)))
       (add-hook 'kill-buffer-hook 'tramp-cleanup-this-connection nil t)))))
 
@@ -340,7 +339,8 @@ rather than the app bundle."
     (user-error "Arrow keys are not the Emacs Way")))
 
 (--each '([up] [left] [down] [right])
-  (global-set-key it 'you-lack-discipline))
+  (define-key prog-mode-map it 'you-lack-discipline)
+  (define-key text-mode-map it 'you-lack-discipline))
 
 (provide 'cb-foundation)
 

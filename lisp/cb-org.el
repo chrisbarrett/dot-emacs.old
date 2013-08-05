@@ -372,7 +372,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
       (save-window-excursion
         (let* ((desc (s-trim (read-string "Description: " nil t)))
                (freq (cb-org:read-habit-frequency))
-               (end (and (ido-yes-or-no-p "Set an end time? ")
+               (end (and (yes-or-no-p "Set an end time? ")
                          (org-read-date)))
                (habit (concat
                        "* TODO " desc "\n"
