@@ -35,6 +35,8 @@
 (autoload 'projectile-project-p "projectile")
 
 (defvar org-directory (f-join user-home-directory "org"))
+(defvar org-mobile-inbox-for-pull (f-join org-directory "mobile.org"))
+(defvar org-mobile-directory (f-join user-dropbox-directory "Apps" "MobileOrg"))
 (defvar org-default-notes-file (f-join org-directory "notes.org"))
 (defvar org-id-locations-file (f-join cb:tmp-dir "org-id-locations"))
 (defvar org-clock-persist-file (f-join user-dropbox-directory ".org-clock-save.el"))
