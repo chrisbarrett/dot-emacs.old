@@ -132,6 +132,14 @@ Non-nil if modifications where made."
   (add-hook 'message-mode-hook 'orgtbl-mode)
   (define-key message-mode-map (kbd "C-c RET RET") 'org-ctrl-c-ret))
 
+(defun cb-org:capture-dwim ()
+  (interactive)
+  (cond
+   ((region-active-p)
+    (org-capture nil "n"))
+   (t
+    (org-capture nil "t"))))
+
 (use-package org
   :defer t
   :init
@@ -140,7 +148,8 @@ Non-nil if modifications where made."
     (define-prefix-command 'cb-org-map)
 
     (after 'evil
-      (evil-global-set-key 'normal (kbd "C-o") 'cb-org-map))
+      (evil-global-set-key 'normal (kbd "C-o") 'cb-org-map)
+      (evil-global-set-key 'visual (kbd "C-o") 'cb-org-map))
 
     (bind-keys
       :overriding? t
@@ -150,7 +159,7 @@ Non-nil if modifications where made."
       "C-o d" (command (find-file org-agenda-diary-file))
       "C-o c" 'org-capture
       "C-o K" (command (org-capture nil "T"))
-      "C-o k" (command (org-capture nil "t"))
+      "C-o k" 'cb-org:capture-dwim
       "C-o n" (command (find-file org-default-notes-file))
       "C-o p" (command (when (find-file (or (cb-org:project-task-file)
                                             org-last-project-task-file
@@ -454,7 +463,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
             ("n" "Note" item
              (file+headline org-default-notes-file "Notes")
-             "- %?\n"
+             "- %i%?\n"
              :prepend t)))))
 
 (use-package org-clock
