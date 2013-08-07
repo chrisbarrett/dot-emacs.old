@@ -298,6 +298,11 @@ Find the first window where PRED-FORM is not nil."
                   (push atom acc))))
     acc))
 
+(defun current-region ()
+  "Return the current active region, or nil if there is no region active."
+  (when (region-active-p)
+    (buffer-substring (region-beginning) (region-end))))
+
 (provide 'cb-lib)
 
 ;; Local Variables:
