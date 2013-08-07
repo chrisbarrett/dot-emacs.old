@@ -86,7 +86,8 @@
                    do (forward-line))))))
 
   (hook-fns (filter-atoms (lambda (x) (s-matches? "^gnus-.*-hook$" (symbol-name x))))
-    (-when-let (sum (cb-gnus:sum-unread (cb-gnus:scrape-group-buffer-for-news)))
+    (-when-let (sum (ignore-errors
+                      (cb-gnus:sum-unread (cb-gnus:scrape-group-buffer-for-news))))
       (cb-gnus:update-modeline-unread sum)))
 
   (defun gnus-refresh-async ()
