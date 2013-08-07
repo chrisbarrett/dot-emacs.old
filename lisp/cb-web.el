@@ -29,6 +29,7 @@
 (require 'cb-lib)
 (require 'use-package)
 (require 's)
+(require 'async)
 (autoload 'thing-at-point-url-at-point "thingatpt")
 
 (after 'message
@@ -52,9 +53,23 @@
   (define-key message-mode-map (kbd "M-N") 'cb-mail:next-field)
   (define-key message-mode-map (kbd "M-P") 'cb-mail:prev-field))
 
-(use-package smtpmail-async
-  :defer t
-  :commands async-smtpmail-send-it)
+(defvar async-smtpmail-sent-hook nil)
+
+(defun async-smtpmail-send-it (&rest _)
+  "Send mail asynchronously using another emacs process."
+  (let ((to (message-field-value "To")))
+    (message "Delivering message to %s..." to)
+    (async-start
+     `(lambda ()
+        (require 'smtpmail)
+        (with-temp-buffer
+          (insert ,(buffer-substring-no-properties (point-min) (point-max)))
+          ;; Pass in the variable environment for smtpmail
+          ,(async-inject-variables "\\`\\(smtpmail\\|\\(user-\\)?mail\\)-")
+          (smtpmail-send-it)))
+     `(lambda (&optional ignore)
+        (message "Delivering message to %s...done" ,to)
+        (run-hooks async-smtpmail-sent-hook)))))
 
 (use-package smtpmail
   :commands smtpmail-send-it

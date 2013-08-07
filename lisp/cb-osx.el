@@ -28,6 +28,7 @@
 
 (require 'use-package)
 (require 'cb-lib)
+(autoload 'thing-at-point-url-at-point "thingatpt")
 
 (use-package exec-path-from-shell
   :ensure t
@@ -59,6 +60,13 @@
      "tic" " tic" "tic"
      "-o" terminfo
      "/Applications/Emacs.app/Contents/Resources/etc/e/eterm-color.ti")))
+
+;; Play Mail's message sent sound when sending mail.
+
+(hook-fn 'async-smtpmail-sent-hook
+  (let ((snd "/Applications/Mail.app/Contents/Resources/Mail Sent.aiff"))
+    (when (file-exists-p snd)
+      (start-process "Mail sent" " mail sent" "afplay" snd))))
 
 ;; Use system clipboard.
 
