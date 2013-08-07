@@ -396,6 +396,28 @@ With prefix argument ARG, show the file and move to the tasks tree."
           (when (cb-org:validate-habit habit)
             habit))))
 
+;;;; Links
+
+    (defun cb-org:get-link-title ()
+      (or (ignore-errors
+            (with-current-buffer (--first-buffer (derived-mode-p 'w3m-mode))
+              w3m-current-url))
+          (read-string "LINK TITLE: " nil t)))
+
+    (defun cb-org:get-link-url ()
+      "Get a url in a context-sensitive manner."
+      (or (thing-at-point-url-at-point)
+          (ignore-errors
+            (with-current-buffer (--first-buffer (derived-mode-p 'w3m-mode))
+              w3m-current-url))
+          (read-string "URL: " nil t)))
+
+    (defun cb-org:read-link ()
+      "Capture a link in a context-sensitive way."
+      (let ((title (cb-org:get-link-title))
+            (url (cb-org:get-link-url)))
+        (concat  "* " title "\n" url)))
+
 ;;;; Capture templates
 
     (defun org-forward-move-past-headers ()
@@ -412,20 +434,12 @@ With prefix argument ARG, show the file and move to the tasks tree."
           (when (cb-org:format-project-task-file)
             (org-forward-move-past-headers)))))
 
-    (defmacro prev-str-val (sym)
-      "Evaluate SYM in the previous active buffer."
-      `(or (ignore-errors
-             (with-previous-buffer
-              ,sym))
-           ""))
-
     ;; Enter insertion mode in capture buffer.
     (hook-fn 'org-capture-mode-hook
       (when (fboundp 'evil-append-line)
         (evil-append-line 1)))
 
     (add-hook 'org-capture-before-finalize-hook 'indent-buffer 'append)
-
 
     (setq org-capture-templates
           `(("T" "Task" entry
@@ -458,7 +472,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
             ("l" "Link" entry
              (file+headline org-default-notes-file "Links")
-             "* %(prev-str-val w3m-buffer-title)%^{Description}\nl %url"
+             (function cb-org:read-link)
              :immediate-finish t)
 
             ("n" "Note" item
