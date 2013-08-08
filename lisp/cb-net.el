@@ -26,11 +26,12 @@
 
 ;;; Code:
 
-(require 'cb-lib)
+(require 'cb-foundation)
 (require 'use-package)
 (require 's)
 (require 'async)
 (autoload 'thing-at-point-url-at-point "thingatpt")
+(autoload 'message-field-value "message")
 
 (after 'message
 
@@ -71,11 +72,11 @@
         (message "Delivering message to %s...done" ,to)
         (run-hooks 'async-smtpmail-sent-hook)))))
 
+(defvar message-send-mail-function 'async-smtpmail-send-it)
+(defvar send-mail-function 'async-smtpmail-send-it)
+
 (use-package smtpmail
   :commands smtpmail-send-it
-  :init
-  (setq send-mail-function 'async-smtpmail-send-it
-        message-send-mail-function 'async-smtpmail-send-it)
   :config
   (progn
 
@@ -95,7 +96,7 @@
   (progn
     (add-hook 'gnus-startup-hook 'bbdb-insinuate-gnus)
     (add-hook 'message-mode-hook 'bbdb-insinuate-mail)
-    (setq bbdb-file (concat user-dropbox-directory ".bbdb")))
+    (defvar bbdb-file (concat user-dropbox-directory ".bbdb")))
   :config
   (progn
     (setq
