@@ -69,7 +69,7 @@
           (smtpmail-send-it)))
      `(lambda (&optional ignore)
         (message "Delivering message to %s...done" ,to)
-        (run-hooks async-smtpmail-sent-hook)))))
+        (run-hooks 'async-smtpmail-sent-hook)))))
 
 (use-package smtpmail
   :commands smtpmail-send-it
