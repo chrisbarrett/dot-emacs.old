@@ -1,4 +1,4 @@
-;;; cb-web.el --- Configuration for web and Internet stuff
+;;; cb-net.el --- Configuration for web and Internet stuff
 
 ;; Copyright (C) 2013 Chris Barrett
 
@@ -212,10 +212,10 @@
      '("JOIN" "NICK" "PART" "QUIT" "MODE"
        "324" "329" "332" "333" "353" "477"))))
 
-(provide 'cb-web)
+(provide 'cb-net)
 
 ;; Local Variables:
 ;; lexical-binding: t
 ;; End:
 
-;;; cb-web.el ends here
+;;; cb-net.el ends here

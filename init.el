@@ -93,7 +93,7 @@
 (require 'cb-cosmetic)
 (if (or (daemonp) (display-graphic-p)) (require 'cb-colour))
 (require 'cb-smartparens)
-(require 'cb-web)
+(require 'cb-net)
 (require 'cb-gnus)
 (require 'cb-shell)
 (require 'cb-yasnippet)
