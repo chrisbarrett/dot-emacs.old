@@ -278,8 +278,8 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
           org-todo-keywords
           '((sequence
-             "NEXT(n@/!)" "TODO(t)" "WAITING(w@/!)" "SOMEDAY(s)"
-             "|" "DONE(d!)" "DEFERRED" "CANCELLED(c@)"))
+             "TODO(t)" "NEXT(n!)" "OUTSTANDING(o)" "WAITING(w@/!)"
+             "|" "DONE(d@/!)" "DEFERRED(D@/@)" "PAID(p!)" "VOID(v@)" "CANCELLED(c@)"))
 
           org-todo-keyword-faces
           '(("NEXT" . org-todo-next)))
