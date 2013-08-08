@@ -196,6 +196,13 @@ Non-nil if modifications where made."
       (--each cb:org-minor-modes
         (ignore-errors (diminish it))))
 
+    ;; Tidy org buffer before save.
+    (hook-fn 'org-mode-hook
+      (hook-fn 'before-save-hook
+        :local t
+        ;; Realign tags.
+        (org-set-tags 4 t)))
+
 ;;;; Auto-save notes file
 
     (defvar cb-org:notes-save-idle-delay 40)
