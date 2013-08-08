@@ -77,9 +77,16 @@
   (setq send-mail-function 'async-smtpmail-send-it
         message-send-mail-function 'async-smtpmail-send-it)
   :config
-  (when (equal system-type 'darwin)
-    (setq starttls-gnutls-program (executable-find "gnutls-cli")
-          starttls-use-gnutls t)))
+  (progn
+
+    (defun mail-add-attachment-ido (file)
+      (interactive (list (ido-read-file-name "Attach file: " )))
+      (mail-add-attachment file))
+    (define-key message-mode-map (kbd "C-c C-a") 'mail-add-attachment-ido)
+
+    (when (equal system-type 'darwin)
+      (setq starttls-gnutls-program (executable-find "gnutls-cli")
+            starttls-use-gnutls t))))
 
 (use-package bbdb
   :ensure t
