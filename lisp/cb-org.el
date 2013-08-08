@@ -176,6 +176,15 @@ Non-nil if modifications where made."
           org-reverse-note-order nil
           org-return-follows-link t)
 
+    (setq org-tag-persistent-alist
+          '(
+            ;; Financial tags
+            (:startgroup . nil)
+            ("debt" . ?d)
+            ("reimbursement" . ?r)
+            (:endgroup . nil)
+            ("bill" . ?b)))
+
     (evil-define-keys 'normal org-mode-map
       "<return>" 'org-return
       "M-P" 'outline-previous-visible-heading
