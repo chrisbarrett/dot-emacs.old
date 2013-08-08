@@ -165,7 +165,9 @@ Non-nil if modifications where made."
                                             org-last-project-task-file
                                             (user-error "Not in a project")))
                          (cb-org:format-project-task-file)))
-      "C-o t" 'cb-org:show-todo-list))
+      "C-o t" 'cb-org:show-todo-list
+      "C-o v" (command (org-tags-view t))
+      "C-o V" (command (org-tags-view nil))))
 
   :config
   (progn
