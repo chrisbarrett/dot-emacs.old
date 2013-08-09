@@ -322,7 +322,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
           org-todo-keyword-faces
           '(("NEXT" . org-todo-next)))
 
-    (--each '("NOTES" "COMMENTS")
+    (--each '("NOTES" "COMMENTS" "PROPERTIES" "LOGBOOK")
       (add-to-list 'org-drawers it))
 
     (add-hook 'org-mode-hook 'auto-revert-mode)
