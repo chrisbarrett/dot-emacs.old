@@ -519,8 +519,10 @@ With prefix argument ARG, show the file and move to the tasks tree."
           org-clock-in-resume t
           org-clock-into-drawer t
           org-clock-remove-zero-time-clocks t
+          org-clock-out-when-done t
           org-clock-persist t
           org-clock-persist-query-resume nil
+          org-clock-auto-clock-resolution 'when-no-clock-is-running
           org-clock-report-include-clocking-task t)
 
     (add-to-list 'org-global-properties
