@@ -105,9 +105,16 @@ Non-nil if the field was inserted."
       (insert (concat kvp "\n"))
       'inserted)))
 
-(defun cb-org:format-project-task-file ()
+(defun cb-org:prepare-project-task-file ()
   "Ensure the current project tasks file has its metadata fields set.
 Non-nil if modifications where made."
+  ;; Make this task file show up in org buffers.
+  (if (f-exists? (buffer-file-name))
+      (add-to-list 'org-agenda-files (buffer-file-name))
+    (eval `(hook-fn 'after-save-hook
+             :local t
+             (add-to-list 'org-agenda-files ,(buffer-file-name)))))
+  ;; Set metadata fields.
   (save-excursion
     (goto-char (point-min))
     ;; Skip file variables.
@@ -169,7 +176,7 @@ Non-nil if modifications where made."
       "C-o p" (command (when (find-file (or (cb-org:project-task-file)
                                             org-last-project-task-file
                                             (user-error "Not in a project")))
-                         (cb-org:format-project-task-file)))
+                         (cb-org:prepare-project-task-file)))
       "C-o t" 'cb-org:show-todo-list
       "C-o v" (command (org-tags-view t))
       "C-o V" (command (org-tags-view nil))))
@@ -249,7 +256,7 @@ Non-nil if modifications where made."
       (prog1 (switch-to-buffer
               (or (--first-buffer (equal (buffer-file-name) (cb-org:project-task-file)))
                   (find-file-noselect (cb-org:project-task-file))))
-        (cb-org:format-project-task-file)
+        (cb-org:prepare-project-task-file)
         (cb-org:skip-headers)))
 
     (defun cb-org:task-file-contents ()
@@ -466,7 +473,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
     (hook-fn 'org-capture-after-finalize-hook
       (when org-last-project-task-file
         (with-current-buffer (find-file-noselect org-last-project-task-file)
-          (cb-org:format-project-task-file)
+          (cb-org:prepare-project-task-file)
           (cb-org:skip-headers))))
 
     ;; Enter insertion mode in capture buffer.
