@@ -255,10 +255,11 @@ With prefix argument ARG, show the file and move to the tasks tree."
       (interactive "P")
       (if arg
           (cb-org:show-task-file)
-        (let ((str (cb-org:task-file-contents)))
-          (if (emr-blank? str)
-              (user-error "No current tasks")
-            (message (s-trim str))))))
+        (save-window-excursion
+          (let ((str (cb-org:task-file-contents)))
+            (if (emr-blank? str)
+                (user-error "No current tasks")
+              (message (s-trim str)))))))
 
     (bind-key* "M-?" 'cb-org:show-tasks)
 
