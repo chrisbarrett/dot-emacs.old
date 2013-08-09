@@ -61,7 +61,13 @@
 
 (defun cb-org:project-file ()
   "Get the path to the project file for the current project."
-  (f-join org-directory (concat (s-alnum-only (projectile-project-name)) ".project.org")))
+  (let ((name (cond
+               ((projectile-project-p) (projectile-project-name))
+               ((projectile-project-buffer-names) (car (projectile-project-buffer-names)))
+               (org-last-project-file (f-filename org-last-project-file))
+               (t (error "Not in a project")))))
+    (f-join org-directory
+            (concat (s-alnum-only name) ".project.org"))))
 
 (defun cb-org:show-todo-list ()
   "Show the todo list.
