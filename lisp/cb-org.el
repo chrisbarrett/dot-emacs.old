@@ -114,13 +114,18 @@ Non-nil if modifications where made."
     (when (emr-line-matches? (rx "-*-" (* nonl) "-*-"))
       (forward-line))
     (beginning-of-line)
-    (let ((changed? (list
-                     (cb-org:ensure-field "#+TITLE: Tasks")
-                     (cb-org:ensure-field (concat "#+AUTHOR: " user-full-name))
-                     (cb-org:ensure-field "#+STARTUP: lognotestate" t)
-                     (cb-org:ensure-field "#+STARTUP: lognotedone" t)
-                     (cb-org:ensure-field "#+DESCRIPTION: Project-level notes and todos"))))
-      (-any? 'identity changed?))))
+    ;; Set fields
+    (cb-org:ensure-field "#+TITLE: Tasks")
+    (cb-org:ensure-field (concat "#+AUTHOR: " user-full-name))
+    (cb-org:ensure-field "#+STARTUP: lognotestate" t)
+    (cb-org:ensure-field "#+STARTUP: lognotedone" t)
+    (cb-org:ensure-field "#+DESCRIPTION: Project-level notes and todos")))
+
+(defun cb-org:skip-headers ()
+  "Move point past the header lines of an org document."
+  (while (and (or (emr-line-matches? (rx bol (or "#+" "-*-"))) (emr-blank-line?))
+              (not (save-excursion (forward-line) (eobp))))
+    (forward-line)))
 
 (after 'smartparens
   (sp-with-modes '(org-mode)
@@ -235,9 +240,11 @@ Non-nil if modifications where made."
 ;;;; Tasks
 
     (defun cb-org:show-task-file ()
-      (switch-to-buffer
-       (or (--first-buffer (equal (buffer-file-name) (cb-org:project-task-file)))
-           (find-file-noselect (cb-org:project-task-file)))))
+      (prog1 (switch-to-buffer
+              (or (--first-buffer (equal (buffer-file-name) (cb-org:project-task-file)))
+                  (find-file-noselect (cb-org:project-task-file))))
+        (cb-org:format-project-task-file)
+        (cb-org:skip-headers)))
 
     (defun cb-org:task-file-contents ()
       (save-excursion
@@ -449,19 +456,12 @@ With prefix argument ARG, show the file and move to the tasks tree."
 
 ;;;; Capture templates
 
-    (defun org-forward-move-past-headers ()
-      "Move point past the header lines of an org document."
-      (while (or (emr-line-matches? (rx bol (or "#+" "-*-")))
-                 (emr-blank-line?))
-        (unless (eobp)
-          (forward-line))))
-
     ;; Insert task file headers.
     (hook-fn 'org-capture-after-finalize-hook
       (when org-last-project-task-file
         (with-current-buffer (find-file-noselect org-last-project-task-file)
-          (when (cb-org:format-project-task-file)
-            (org-forward-move-past-headers)))))
+          (cb-org:format-project-task-file)
+          (cb-org:skip-headers))))
 
     ;; Enter insertion mode in capture buffer.
     (hook-fn 'org-capture-mode-hook
