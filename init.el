@@ -50,6 +50,7 @@
 ;;;; Basic paths.
 
 (setq user-emacs-directory (expand-file-name user-emacs-directory))
+(setq custom-file (concat user-emacs-directory "custom.el"))
 (add-to-list 'load-path (concat (getenv "HOME") "/Dropbox/"))
 (add-to-list 'load-path (concat user-emacs-directory "lisp"))
 
@@ -119,6 +120,7 @@
 (require 'cb-org)
 (require 'cb-productivity)
 (require 'cb-fortune)
+(require 'custom)
 
 ;; Local Variables:
 ;; byte-compile-warnings: (not cl-functions)
