@@ -230,11 +230,7 @@ Non-nil if modifications where made."
 
 ;;;; Editing commands
 
-    (defun org-insert-inactive-timestamp (&optional arg)
-      (interactive "P")
-      (org-time-stamp arg t))
-
-    (define-key org-mode-map (kbd "C-c C-.") 'org-insert-inactive-timestamp)
+    (define-key org-mode-map (kbd "C-c C-.") 'org-time-stamp-inactive)
 
 ;;;; Tasks
 
