@@ -123,8 +123,8 @@ The original state can be restored by calling (restore) in BODY."
     `(progn
        (window-configuration-to-register ',register)
        ,@(tree-replace '(restore)
-                          `(jump-to-register ',register)
-                          body))))
+                       `(jump-to-register ',register)
+                       body))))
 
 (defmacro* declare-modal-view (command &optional (quit-key "q"))
   "Advise a given command to restore window state when finished."
