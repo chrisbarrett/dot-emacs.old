@@ -260,14 +260,17 @@ Non-nil if modifications where made."
         (cb-org:skip-headers)))
 
     (defun cb-org:task-file-contents ()
-      (save-excursion
-        (-if-let (buf (--first-buffer (equal (buffer-file-name) (cb-org:project-task-file))))
-          (with-current-buffer buf
-            (font-lock-fontify-buffer)
-            (buffer-string))
-          (with-current-buffer (find-file-noselect (cb-org:project-task-file) t)
-            (prog1 (buffer-string)
-              (kill-buffer))))))
+      (cl-flet ((todos ()
+                       (font-lock-fontify-buffer)
+                       (cb-org:skip-headers)
+                       (buffer-substring (point) (point-max))))
+        (save-excursion
+          (-if-let (buf (--first-buffer (equal (buffer-file-name) (cb-org:project-task-file))))
+            (with-current-buffer buf
+              (todos))
+            (with-current-buffer (find-file-noselect (cb-org:project-task-file) t)
+              (prog1 (todos)
+                (kill-buffer)))))))
 
     (defun cb-org:show-tasks (&optional arg)
       "Display the Tasks tree in the `cb-org:project-task-file'.
