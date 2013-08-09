@@ -732,8 +732,7 @@ This can be 0 for immediate, or a floating point value.")
   :config
   (progn
 
-    (--each (list org-default-notes-file org-agenda-diary-file)
-      (add-to-list 'org-agenda-files it))
+    (add-to-list 'org-agenda-files org-directory)
 
     (setq org-agenda-insert-diary-extract-time t
           org-agenda-span 'week
