@@ -85,7 +85,7 @@
                          :unread-count (gnus-group-unread group))
                    do (forward-line))))))
 
-  (hook-fns (filter-atoms (lambda (x) (s-matches? "^gnus-.*-hook$" (symbol-name x))))
+  (hook-fns (--filter-atoms (s-matches? "^gnus-.*-hook$" (symbol-name it)))
     (-when-let (sum (ignore-errors
                       (cb-gnus:sum-unread (cb-gnus:scrape-group-buffer-for-news))))
       (cb-gnus:update-modeline-unread sum)))

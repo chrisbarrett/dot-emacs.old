@@ -75,7 +75,7 @@
   :config
   (progn
 
-    ;;;; Evil keys for magit diff.
+;;;; Evil keys for magit diff.
 
     (define-keys magit-diff-mode-map
       "C-f" 'evil-scroll-page-down
@@ -84,7 +84,7 @@
       "k"   'evil-previous-line
       "/"   'evil-search-forward)
 
-    ;;;; View behaviour
+;;;; View behaviour
 
     (declare-ido-wrapper magit-read-top-dir)
     (declare-modal-view magit-status)
@@ -98,14 +98,7 @@
       (add-hook 'kill-buffer-hook 'delete-window nil t))
 
     (define-combined-hook cb:magit-command-hook
-      ;; Search through interned symbols for magit hooks.
-      (let (hooks)
-        (mapatoms (lambda (sym)
-                    (let ((str (symbol-name sym)))
-                      (when (and (s-starts-with? "magit-" str)
-                                 (s-ends-with? "-command-hook" str))
-                        (setq hooks (cons sym hooks))))))
-        hooks))
+      (--filter-atoms (s-matches? "^magit-.*-command-hook$" (symbol-name it))))
 
     (hook-fn 'cb:magit-command-hook
       "Update modelines to ensure vc status is up-to-date."

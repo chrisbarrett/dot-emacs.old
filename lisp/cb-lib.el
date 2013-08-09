@@ -307,6 +307,10 @@ Find the first window where PRED-FORM is not nil."
                   (push atom acc))))
     acc))
 
+(defmacro --filter-atoms (predicate)
+  "Anaphoric form of `filter-atoms'."
+  `(filter-atoms (lambda (it) ,predicate)))
+
 (defun current-region ()
   "Return the current active region, or nil if there is no region active."
   (when (region-active-p)
