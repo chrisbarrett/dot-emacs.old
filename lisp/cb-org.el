@@ -491,7 +491,9 @@ With prefix argument ARG, show the file and move to the tasks tree."
              (file+headline (cb-org:project-task-file) "Todos")
              (function cb-org:read-project-task)
              :immediate-finish t
-             :empty-lines 1)
+             :kill-buffer t
+             :empty-lines 1
+             :clock-in t)
 
             ("t" "Todo" entry
              (file+headline org-default-notes-file "Tasks")
