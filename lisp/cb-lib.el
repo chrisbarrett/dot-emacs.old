@@ -260,6 +260,15 @@ Find the first window where PRED-FORM is not nil."
 
 ;; -----------------------------------------------------------------------------
 
+(defun s-alnum-only (s)
+  "Remove non-alphanumeric characters from S."
+  (with-temp-buffer
+    (insert s)
+    (goto-char (point-min))
+    (while (search-forward-regexp (rx (not alnum)) nil t)
+      (replace-match ""))
+    (buffer-string)))
+
 (defun sum (&rest values)
   "Sum VALUES.  The input may be a list of values of any level of nesting."
   (-reduce '+ (-flatten values)))

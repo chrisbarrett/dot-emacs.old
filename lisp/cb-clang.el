@@ -209,15 +209,6 @@ Remove horizontal whitespace if the insertion results in a ++."
   (defvar clang-custom-include-paths '("/usr/include/python2.7"))
   (defvar-local clang-c-version "c11")
 
-  (defun s-alnum-only (s)
-    "Remove non-alphanumeric characters from S."
-    (with-temp-buffer
-      (insert s)
-      (goto-char (point-min))
-      (while (search-forward-regexp (rx (not alnum)) nil t)
-        (replace-match ""))
-      (buffer-string)))
-
   (defun clang-parse-line-for-err (line)
     (ignore-errors
       (destructuring-bind (_ file line col level message)

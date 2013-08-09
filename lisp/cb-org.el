@@ -31,7 +31,6 @@
 (require 'cb-mode-groups)
 (require 'noflet)
 (require 'f)
-(require 's)
 (autoload 'projectile-project-root "projectile")
 (autoload 'projectile-project-p "projectile")
 
