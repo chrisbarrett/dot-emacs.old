@@ -149,6 +149,9 @@
     (bind-key* "M-Y" 'show-gnus))
   :config
   (progn
+
+    (setq gnus-always-read-dribble-file t)
+
     ;;;; Custom faces
 
     (hook-fn 'gnus-article-mode-hook
