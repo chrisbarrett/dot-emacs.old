@@ -525,10 +525,23 @@ With prefix argument ARG, show the file and move to the tasks tree."
 (use-package org-clock
   :defer t
   :init
-  (progn
-    (after 'org (require 'org-clock))
+  (after 'org (require 'org-clock))
 
-    (defvar cb-org:keep-clock-running nil)
+  :config
+  (progn
+    (org-clock-persistence-insinuate)
+    (setq org-clock-history-length 20
+          org-clock-in-resume t
+          org-clock-into-drawer t
+          org-clock-remove-zero-time-clocks t
+          org-clock-out-when-done t
+          org-clock-persist t
+          org-clock-persist-query-resume nil
+          org-clock-auto-clock-resolution 'when-no-clock-is-running
+          org-clock-report-include-clocking-task t)
+
+    (defvar cb-org:keep-clock-running nil
+      "Used to enforce clocking to default task when clocking out.")
 
     (defun cb-org:project? ()
       "Any task with a todo keyword subtask"
@@ -611,14 +624,16 @@ as the default task."
                    (not (org-before-first-heading-p))
                    (eq arg 4))
               (org-clock-in '(16))
-            (cb-org:clock-in-organization-task-as-default)))))
+            (cb-org:clock-in-organization-task-as-default))))
+      (message "Punched in to [%s]." org-clock-current-task))
 
     (defun cb-org:punch-out ()
       (interactive)
       (setq cb-org:keep-clock-running nil)
       (when (org-clock-is-active)
         (org-clock-out))
-      (org-agenda-remove-restriction-lock))
+      (org-agenda-remove-restriction-lock)
+      (message "Punched out."))
 
     (defun cb-org:clock-in-default-task ()
       (save-excursion
@@ -660,20 +675,7 @@ as the default task."
       :overriding? t
       "C-o C-c" (command (org-clock-in '(4)))
       "C-o C-i" 'cb-org:punch-in
-      "C-o C-o" 'cb-org:punch-out))
-
-  :config
-  (progn
-    (org-clock-persistence-insinuate)
-    (setq org-clock-history-length 20
-          org-clock-in-resume t
-          org-clock-into-drawer t
-          org-clock-remove-zero-time-clocks t
-          org-clock-out-when-done t
-          org-clock-persist t
-          org-clock-persist-query-resume nil
-          org-clock-auto-clock-resolution 'when-no-clock-is-running
-          org-clock-report-include-clocking-task t)
+      "C-o C-o" 'cb-org:punch-out)
 
     ;; Remove empty LOGBOOK drawers when clocking out.
     (hook-fn 'org-clock-out-hook
