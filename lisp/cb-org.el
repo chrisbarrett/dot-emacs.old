@@ -66,6 +66,13 @@
                          (projectile-project-root))))
     (f-join proj "Tasks.org")))
 
+(defun cb-org:project-tag-name ()
+  "Return the tag name for the current project."
+  (-when-let (proj (or (ignore-errors (projectile-project-root))
+                       (with-current-buffer (--first-buffer (projectile-project-p))
+                         (projectile-project-root))))
+    (s-alnum-only (f-filename proj))))
+
 (defun cb-org:show-todo-list ()
   "Show the todo list.
 Make the 'q' key restore the previous window configuration."
@@ -126,7 +133,8 @@ Non-nil if modifications where made."
     (cb-org:ensure-field (concat "#+AUTHOR: " user-full-name))
     (cb-org:ensure-field "#+STARTUP: lognotestate" t)
     (cb-org:ensure-field "#+STARTUP: lognotedone" t)
-    (cb-org:ensure-field "#+DESCRIPTION: Project-level notes and todos")))
+    (cb-org:ensure-field "#+DESCRIPTION: Project-level notes and todos")
+    (cb-org:ensure-field (format "#+FILETAGS: :%s:" (cb-org:project-tag-name)))))
 
 (defun cb-org:skip-headers ()
   "Move point past the header lines of an org document."
@@ -363,10 +371,10 @@ With prefix argument ARG, show the file and move to the tasks tree."
           (s-prepend ":")
           (s-append ":"))))
 
-    (defun* cb-org:read-todo (&optional (prompt "TODO: "))
+    (defun cb-org:read-todo ()
       "Read a todo item for org-capture."
       (save-window-excursion
-        (let ((desc (let ((input (s-trim (read-string prompt nil t))))
+        (let ((desc (let ((input (s-trim (read-string "TODO: " nil t))))
                       (if (emr-blank? input)
                           (error "Description must not be blank")
                         input)))
@@ -379,7 +387,14 @@ With prefix argument ARG, show the file and move to the tasks tree."
       "Read info from the user to construct a task for the current project."
       (save-window-excursion
         (-if-let (f (cb-org:project-task-file))
-          (prog1 (cb-org:read-todo (format "TODO [%s]: " (f-short f)))
+          (prog1
+              (save-window-excursion
+                (let ((desc (let ((input (read-string (format "TODO [%s]: " (f-short f)) nil t)))
+                              (if (emr-blank? input)
+                                  (error "Description must not be blank")
+                                (s-trim input))))
+                      (tags (call-interactively 'cb-org:read-tags)))
+                  (concat "* TODO " desc "    " tags "\n")))
             (setq org-last-project-task-file f))
           (user-error "Not in a project"))))
 
