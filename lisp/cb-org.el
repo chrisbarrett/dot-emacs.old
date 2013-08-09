@@ -169,7 +169,6 @@ Non-nil if modifications where made."
       "C-o" 'cb-org-map
       "C-o a" 'cb-org:show-agenda-list
       "C-o d" (command (find-file org-agenda-diary-file))
-      "C-o c" 'org-capture
       "C-o K" (command (org-capture nil "T"))
       "C-o k" 'cb-org:capture-dwim
       "C-o n" (command (find-file org-default-notes-file))
@@ -179,7 +178,8 @@ Non-nil if modifications where made."
                          (cb-org:prepare-project-task-file)))
       "C-o t" 'cb-org:show-todo-list
       "C-o v" (command (org-tags-view t))
-      "C-o V" (command (org-tags-view nil))))
+      "C-o V" (command (org-tags-view nil))
+      "C-o C-k" 'org-capture))
 
   :config
   (progn
