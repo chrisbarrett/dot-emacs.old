@@ -68,7 +68,7 @@
 
 (defun cb-org:project-file ()
   "Get the path to the project file for the current project."
-  (f-join org-directory (concat (s-alnum-only (cb-org:project-name)) " tasks.org")))
+  (f-join org-directory (concat (s-alnum-only (cb-org:project-name)) ".project.org")))
 
 (defun cb-org:show-todo-list ()
   "Show the todo list.
