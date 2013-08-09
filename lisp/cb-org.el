@@ -194,9 +194,12 @@ Non-nil if modifications where made."
   (progn
     (setq org-modules '(org-bbdb org-crypt org-w3m org-habit)
           org-startup-indented t
+          org-enforce-todo-dependencies t
+          org-cycle-separator-lines 0
           org-log-into-drawer t
           org-log-done 'time
           org-reverse-note-order nil
+          org-link-mailto-program (quote (compose-mail "%a" "%s"))
           org-return-follows-link t)
 
     (setq org-tag-persistent-alist
