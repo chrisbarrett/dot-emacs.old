@@ -346,7 +346,10 @@ With prefix argument ARG, show the file and move to the tasks tree."
     (defun* cb-org:read-todo (&optional (prompt "TODO: "))
       "Read a todo item for org-capture."
       (save-window-excursion
-        (let ((desc (s-trim (read-string prompt nil t)))
+        (let ((desc (let ((input (s-trim (read-string prompt nil t))))
+                      (if (emr-blank? input)
+                          (error "Description must not be blank")
+                        input)))
               (start (org-read-date))
               (tags (call-interactively 'cb-org:read-tags)))
           (concat "* TODO " desc "    " tags "\n"
