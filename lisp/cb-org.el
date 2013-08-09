@@ -321,7 +321,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
   :config
   (progn
 
- ;;;; Diary
+;;;; Diary
 
     (defun cb-org:read-diary-entry ()
       "Read info from the user to construct a new diary entry."
@@ -331,14 +331,25 @@ With prefix argument ARG, show the file and move to the tasks tree."
           (concat "* " desc "\n"
                   "  <" date ">"))))
 
- ;;;; TODOS
+;;;; TODOS
+
+    (defun cb-org:read-tags (input-str)
+      "Read a list of tags from the user."
+      (interactive "sTags: ")
+      (unless (emr-blank? input-str)
+        (->> input-str
+          (s-split (rx (any space ":")))
+          (s-join ":")
+          (s-prepend ":")
+          (s-append ":"))))
 
     (defun* cb-org:read-todo (&optional (prompt "TODO: "))
       "Read a todo item for org-capture."
       (save-window-excursion
         (let ((desc (s-trim (read-string prompt nil t)))
-              (start (org-read-date)))
-          (concat "* TODO " desc "\n"
+              (start (org-read-date))
+              (tags (call-interactively 'cb-org:read-tags)))
+          (concat "* TODO " desc "    " tags "\n"
                   "  SCHEDULED: <" start "> \n"))))
 
     (defun cb-org:read-project-task ()
