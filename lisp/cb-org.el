@@ -536,7 +536,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
     (setq org-clock-history-length 20
           org-clock-in-resume t
           org-clock-into-drawer t
-          org-clock-remove-zero-time-clocks t
+          org-clock-out-remove-zero-time-clocks t
           org-clock-out-when-done t
           org-clock-persist t
           org-clock-persist-query-resume nil
