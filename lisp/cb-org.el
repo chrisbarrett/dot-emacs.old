@@ -31,8 +31,9 @@
 (require 'cb-mode-groups)
 (require 'noflet)
 (require 'f)
-(autoload 'projectile-project-root "projectile")
 (autoload 'projectile-project-p "projectile")
+(autoload 'projectile-project-name "projectile")
+(autoload 'projectile-project-buffer-names "projectile")
 
 (defvar org-directory (f-join user-home-directory "org"))
 (defvar org-mobile-inbox-for-pull (f-join org-directory "mobile.org"))
