@@ -777,16 +777,26 @@ This can be 0 for immediate, or a floating point value.")
             (org-agenda-redo t)))))
 
     (hook-fn 'org-mode-hook
-      (add-hook 'after-save-hook 'cb-org:refresh-agenda nil 'local))
+      (add-hook 'after-save-hook 'cb-org:refresh-agenda nil 'local))))
 
-    ;;;; Archiving
+(use-package org-archive
+  :defer t
+  :init (after 'org (require 'org-archive))
+  :config
+  (progn
 
-    (defun org-archive-done-tasks ()
+    (defun cb-org:archive-done-tasks ()
       (interactive)
       (atomic-change-group
-        (org-map-entries 'org-archive-subtree "/DONE" 'file)))
+        (org-map-entries (lambda ()
+                           ;; Ensure point does not move past the next item to
+                           ;; archive.
+                           (setq org-map-continue-from (point))
+                           (org-archive-subtree))
+                         "/DONE|PAID|VOID|CANCELLED" 'tree)))
 
-    (defalias 'archive-done-tasks 'org-archive-done-tasks)))
+    (defalias 'archive-done-tasks 'cb-org:archive-done-tasks)
+    (setq org-archive-default-command 'cb-org:archive-done-tasks)))
 
 (use-package org-crypt
   :defer t
