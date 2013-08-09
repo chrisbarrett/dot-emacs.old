@@ -179,13 +179,11 @@ Non-nil if modifications where made."
       "C-o n" (command (find-file org-default-notes-file))
 
       "C-o p" (command
-               (-if-let (name (projectile-project-name))
-                 (progn
-                   (find-file (or (cb-org:project-file) org-last-project-file))
-                   (cb-org:prepare-project-file name)
-                   (when (bobp)
-                     (cb-org:skip-headers)))
-                 (user-error "Not in a project")))
+               (let ((name (projectile-project-name)))
+                 (find-file (cb-org:project-file))
+                 (cb-org:prepare-project-file name)
+                 (when (bobp)
+                   (cb-org:skip-headers))))
 
       "C-o t" 'cb-org:show-todo-list
       "C-o v" (command (org-tags-view t))
@@ -460,7 +458,6 @@ Non-nil if modifications where made."
       (when org-last-project-file
         (let ((name (projectile-project-name)))
           (with-current-buffer (find-file-noselect org-last-project-file)
-
             (save-excursion
               (cb-org:prepare-project-file name)
               (cb-org:skip-headers))))))
