@@ -116,7 +116,8 @@ Non-nil if the field was inserted."
   "Ensure the current project tasks file has its metadata fields set.
 Non-nil if modifications where made."
   ;; Make this task file show up in org buffers.
-  (if (f-exists? (buffer-file-name))
+  (if (and (f-exists? (buffer-file-name))
+           (boundp 'org-agenda-files))
       (add-to-list 'org-agenda-files (buffer-file-name))
     (eval `(hook-fn 'after-save-hook
              :local t
