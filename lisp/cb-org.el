@@ -246,6 +246,7 @@ Non-nil if modifications where made."
     (hook-fn 'org-mode-hook
       (hook-fn 'before-save-hook
         :local t
+        (org-table-map-tables 'org-table-align 'quiet)
         ;; Realign tags.
         (org-set-tags 4 t)))
 
