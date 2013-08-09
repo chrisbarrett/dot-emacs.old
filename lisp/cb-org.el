@@ -211,7 +211,8 @@ Non-nil if modifications where made."
             ("debt" . ?d)
             ("reimbursement" . ?r)
             (:endgroup . nil)
-            ("bill" . ?b)))
+            ("bill" . ?b)
+            ("hold" . ?h)))
 
     ;; Set some default effort times.
     (add-to-list 'org-global-properties
@@ -293,7 +294,7 @@ Non-nil if modifications where made."
           org-todo-keywords
           '((sequence
              "TODO(t)" "NEXT(n!)" "OUTSTANDING(o)" "WAITING(w@/!)"
-             "|" "DONE(d@/!)" "DEFERRED(D@/@)" "PAID(p!)" "VOID(v@)" "CANCELLED(c@)"))
+             "|" "DONE(d@/!)" "PAID(p!)" "VOID(v@)" "CANCELLED(c@)"))
 
           org-todo-keyword-faces
           '(("NEXT" . org-todo-next)))
@@ -757,6 +758,13 @@ This can be 0 for immediate, or a floating point value.")
     (after 'smartparens
       (hook-fn 'org-agenda-mode-hook
         (smartparens-mode -1)))
+
+    ;;;; Exclude tasks with HOLD state
+
+    (defun cb-org:exclude-tasks-on-hold (tag)
+      (and (equal tag "hold") (concat "-" tag)))
+
+    (setq org-agenda-auto-exclude-function 'cb-org:exclude-tasks-on-hold)
 
     ;;;; Agenda refresh
 
