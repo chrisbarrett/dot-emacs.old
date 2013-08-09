@@ -580,7 +580,7 @@ With prefix argument ARG, show the file and move to the tasks tree."
                 (setq has-subtask t))))
           (and is-a-task (not has-subtask)))))
 
-    ;;; Clocking state changes
+    ;;; Clocking in changes TODO state to NEXT.
 
     (defun cb-org:clock-in-to-next-state (_kw)
       "Move a task from TODO to NEXT when clocking in.
@@ -595,16 +595,7 @@ Switch projects and subprojects from NEXT back to TODO."
                (cb-org:project?))
           "TODO"))))
 
-    (defun cb-org:find-project-task ()
-      "Move point to the parent (project) task if any"
-      (save-restriction
-        (widen)
-        (let ((parent-task (save-excursion (org-back-to-heading 'invisible-ok) (point))))
-          (while (org-up-heading-safe)
-            (when (member (nth 2 (org-heading-components)) org-todo-keywords-1)
-              (setq parent-task (point))))
-          (goto-char parent-task)
-          parent-task)))
+    (setq org-clock-in-switch-to-state 'cb-org:clock-in-to-next-state)
 
     ;;; Clocking commands
 
