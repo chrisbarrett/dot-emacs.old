@@ -193,6 +193,7 @@ Non-nil if modifications where made."
   :config
   (progn
     (setq org-modules '(org-bbdb org-crypt org-w3m org-habit)
+          org-completion-use-ido t
           org-startup-indented t
           org-enforce-todo-dependencies t
           org-cycle-separator-lines 0
