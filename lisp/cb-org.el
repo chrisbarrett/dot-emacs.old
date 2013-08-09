@@ -766,6 +766,9 @@ This can be 0 for immediate, or a floating point value.")
     (save-window-excursion
       (appt-activate +1))
 
+    ;; Rebuild reminders when displaying agenda.
+    (add-hook 'org-finalize-agenda-hook 'org-agenda-to-appt)
+
     ;; Update the appointments ledger when saving the diary file.
     (hook-fn 'org-mode-hook
       (when (equal (buffer-file-name) org-agenda-diary-file)
