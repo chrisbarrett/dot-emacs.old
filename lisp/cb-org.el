@@ -59,16 +59,9 @@
        (with-current-buffer ,buf
          ,@body))))
 
-(defun cb-org:project-name ()
-  "Return the name for the current project."
-  (-when-let (proj (or (ignore-errors (projectile-project-root))
-                       (with-current-buffer (--first-buffer (projectile-project-p))
-                         (projectile-project-root))))
-    (f-filename proj)))
-
 (defun cb-org:project-file ()
   "Get the path to the project file for the current project."
-  (f-join org-directory (concat (s-alnum-only (cb-org:project-name)) ".project.org")))
+  (f-join org-directory (concat (s-alnum-only (projectile-project-name)) ".project.org")))
 
 (defun cb-org:show-todo-list ()
   "Show the todo list.
