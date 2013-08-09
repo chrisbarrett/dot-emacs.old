@@ -452,6 +452,21 @@ Non-nil if modifications where made."
             (url (cb-org:get-link-url)))
         (concat  "* " title "\n" url)))
 
+;;;; Bills
+
+    (defun cb-org:read-bill ()
+      (save-window-excursion
+        (let ((desc (let ((input (s-trim (read-string "Bill: " nil t))))
+                      (if (emr-blank? input)
+                          (error "Description must not be blank")
+                        input)))
+              (start (and (y-or-n-p "Schedule? ") (org-read-date)))
+              (due (and (y-or-n-p "Set deadline? ") (org-read-date)))
+              (tags (call-interactively 'cb-org:read-tags)))
+          (s-join "\n" (list (concat "* TODO " desc "    " tags)
+                             (when start (format "  SCHEDULED: <%s>" start))
+                             (when due   (format "  DEADLINE:  <%s>" due)))))))
+
 ;;;; Capture templates
 
     ;; Insert project file headers.
@@ -471,7 +486,51 @@ Non-nil if modifications where made."
     (add-hook 'org-capture-before-finalize-hook 'indent-buffer 'append)
 
     (setq org-capture-templates
-          `(("T" "Task" entry
+          `(("t" "Todo" entry
+             (file+headline org-default-notes-file "Tasks")
+             (function cb-org:read-todo)
+             :immediate-finish t
+             :empty-lines 1
+             :clock-keep t)
+
+            ("d" "Diary" entry
+             (file+datetree org-agenda-diary-file)
+             (function cb-org:read-diary-entry)
+             :clock-resume t
+             :immediate-finish t)
+
+            ("b" "Bill" entry
+             (file+headline org-default-notes-file "Bills")
+             (function cb-org:read-bill)
+             :immediate-finish t
+             :clock-keep t)
+
+            ("h" "Habit" entry
+             (file+headline org-default-notes-file "Habits")
+             (function cb-org:read-habit)
+             :immediate-finish t
+             :clock-keep t
+             :empty-lines 1)
+
+            ("r" "Reading" entry
+             (file+headline org-default-notes-file "Readings")
+             "* %^{Title}"
+             :clock-keep t
+             :immediate-finish t)
+
+            ("l" "Link" entry
+             (file+headline org-default-notes-file "Links")
+             (function cb-org:read-link)
+             :clock-keep t
+             :immediate-finish t)
+
+            ("n" "Note" item
+             (file+headline org-default-notes-file "Notes")
+             "- %i%?\n"
+             :clock-keep t
+             :prepend t)
+
+            ("T" "Project Task" entry
              (file+headline (cb-org:project-file) "Todos")
              (function cb-org:read-project-task)
              :immediate-finish t
@@ -479,36 +538,10 @@ Non-nil if modifications where made."
              :empty-lines 1
              :clock-in t)
 
-            ("t" "Todo" entry
-             (file+headline org-default-notes-file "Tasks")
-             (function cb-org:read-todo)
-             :immediate-finish t
-             :empty-lines 1)
-
-            ("d" "Diary" entry
-             (file+datetree org-agenda-diary-file)
-             (function cb-org:read-diary-entry)
-             :immediate-finish t)
-
-            ("h" "Habit" entry
-             (file+headline org-default-notes-file "Habits")
-             (function cb-org:read-habit)
-             :immediate-finish t
-             :empty-lines 1)
-
-            ("r" "Reading" entry
-             (file+headline org-default-notes-file "Readings")
-             "* %^{Title}"
-             :immediate-finish t)
-
-            ("l" "Link" entry
-             (file+headline org-default-notes-file "Links")
-             (function cb-org:read-link)
-             :immediate-finish t)
-
-            ("n" "Note" item
-             (file+headline org-default-notes-file "Notes")
+            ("N" "Project Note" item
+             (file+headline (cb-org:project-file) "Notes")
              "- %i%?\n"
+             :clock-keep t
              :prepend t)))))
 
 (use-package org-clock
