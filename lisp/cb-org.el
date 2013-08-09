@@ -221,6 +221,8 @@ Non-nil if modifications where made."
       "z m" (command (org-global-cycle 1))
       "z r" (command (org-global-cycle 0)))
 
+    (define-key org-mode-map (kbd "C-c C-.") 'org-time-stamp-inactive)
+
 ;;;; Hooks
 
     ;; Enter insert state for popup notes.
@@ -253,46 +255,6 @@ Non-nil if modifications where made."
       (with-org-default-notes-buffer
         (when (buffer-modified-p)
           (save-buffer))))
-
-;;;; Editing commands
-
-    (define-key org-mode-map (kbd "C-c C-.") 'org-time-stamp-inactive)
-
-;;;; Tasks
-
-    (defun cb-org:show-task-file ()
-      (prog1 (switch-to-buffer
-              (or (--first-buffer (equal (buffer-file-name) (cb-org:project-task-file)))
-                  (find-file-noselect (cb-org:project-task-file))))
-        (cb-org:prepare-project-task-file)
-        (cb-org:skip-headers)))
-
-    (defun cb-org:task-file-contents ()
-      (cl-flet ((todos ()
-                       (font-lock-fontify-buffer)
-                       (cb-org:skip-headers)
-                       (buffer-substring (point) (point-max))))
-        (save-excursion
-          (-if-let (buf (--first-buffer (equal (buffer-file-name) (cb-org:project-task-file))))
-            (with-current-buffer buf
-              (todos))
-            (with-current-buffer (find-file-noselect (cb-org:project-task-file) t)
-              (prog1 (todos)
-                (kill-buffer)))))))
-
-    (defun cb-org:show-tasks (&optional arg)
-      "Display the Tasks tree in the `cb-org:project-task-file'.
-With prefix argument ARG, show the file and move to the tasks tree."
-      (interactive "P")
-      (if arg
-          (cb-org:show-task-file)
-        (save-window-excursion
-          (let ((str (cb-org:task-file-contents)))
-            (if (emr-blank? str)
-                (user-error "No current tasks")
-              (message (s-trim str)))))))
-
-    (bind-key* "M-?" 'cb-org:show-tasks)
 
 ;;;; Org babel
 
