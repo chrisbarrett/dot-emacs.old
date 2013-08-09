@@ -460,8 +460,10 @@ Non-nil if modifications where made."
       (when org-last-project-file
         (let ((name (projectile-project-name)))
           (with-current-buffer (find-file-noselect org-last-project-file)
-            (cb-org:prepare-project-file name)
-            (cb-org:skip-headers)))))
+
+            (save-excursion
+              (cb-org:prepare-project-file name)
+              (cb-org:skip-headers))))))
 
     ;; Enter insertion mode in capture buffer.
     (hook-fn 'org-capture-mode-hook
