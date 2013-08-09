@@ -43,7 +43,7 @@
 (defvar org-export-publishing-directory (f-join user-home-directory "Desktop"))
 (defvar org-agenda-diary-file (f-join org-directory "diary.org"))
 (defvar org-export-exclude-tags '("noexport" "crypt"))
-(defvar org-last-project-task-file nil)
+(defvar org-last-project-file nil)
 (defvar calendar-date-style 'european)
 
 (declare-modal-executor org-agenda-fullscreen
@@ -59,19 +59,16 @@
        (with-current-buffer ,buf
          ,@body))))
 
-(defun cb-org:project-task-file ()
-  "Get the path to a task file at the root directory of the current project."
+(defun cb-org:project-name ()
+  "Return the name for the current project."
   (-when-let (proj (or (ignore-errors (projectile-project-root))
                        (with-current-buffer (--first-buffer (projectile-project-p))
                          (projectile-project-root))))
-    (f-join proj "Tasks.org")))
+    (f-filename proj)))
 
-(defun cb-org:project-tag-name ()
-  "Return the tag name for the current project."
-  (-when-let (proj (or (ignore-errors (projectile-project-root))
-                       (with-current-buffer (--first-buffer (projectile-project-p))
-                         (projectile-project-root))))
-    (s-alnum-only (f-filename proj))))
+(defun cb-org:project-file ()
+  "Get the path to the project file for the current project."
+  (f-join org-directory (concat (s-alnum-only (cb-org:project-name)) " tasks.org")))
 
 (defun cb-org:show-todo-list ()
   "Show the todo list.
@@ -112,8 +109,8 @@ Non-nil if the field was inserted."
       (insert (concat kvp "\n"))
       'inserted)))
 
-(defun cb-org:prepare-project-task-file ()
-  "Ensure the current project tasks file has its metadata fields set.
+(defun cb-org:prepare-project-file (project-name)
+  "Ensure the current project file has its metadata fields set.
 Non-nil if modifications where made."
   ;; Make this task file show up in org buffers.
   (if (and (f-exists? (buffer-file-name))
@@ -130,12 +127,12 @@ Non-nil if modifications where made."
       (forward-line))
     (beginning-of-line)
     ;; Set fields
-    (cb-org:ensure-field "#+TITLE: Tasks")
+    (cb-org:ensure-field (concat "#+TITLE: " project-name))
     (cb-org:ensure-field (concat "#+AUTHOR: " user-full-name))
     (cb-org:ensure-field "#+STARTUP: lognotestate" t)
     (cb-org:ensure-field "#+STARTUP: lognotedone" t)
     (cb-org:ensure-field "#+DESCRIPTION: Project-level notes and todos")
-    (cb-org:ensure-field (format "#+FILETAGS: :%s:" (cb-org:project-tag-name)))))
+    (cb-org:ensure-field (format "#+FILETAGS: :%s:" (s-alnum-only project-name)))))
 
 (defun cb-org:skip-headers ()
   "Move point past the header lines of an org document."
@@ -181,10 +178,16 @@ Non-nil if modifications where made."
       "C-o K" (command (org-capture nil "T"))
       "C-o k" 'cb-org:capture-dwim
       "C-o n" (command (find-file org-default-notes-file))
-      "C-o p" (command (when (find-file (or (cb-org:project-task-file)
-                                            org-last-project-task-file
-                                            (user-error "Not in a project")))
-                         (cb-org:prepare-project-task-file)))
+
+      "C-o p" (command
+               (-if-let (name (projectile-project-name))
+                 (progn
+                   (find-file (or (cb-org:project-file) org-last-project-file))
+                   (cb-org:prepare-project-file name)
+                   (when (bobp)
+                     (cb-org:skip-headers)))
+                 (user-error "Not in a project")))
+
       "C-o t" 'cb-org:show-todo-list
       "C-o v" (command (org-tags-view t))
       "C-o V" (command (org-tags-view nil))
@@ -352,7 +355,7 @@ Non-nil if modifications where made."
     (defun cb-org:read-project-task ()
       "Read info from the user to construct a task for the current project."
       (save-window-excursion
-        (-if-let (f (cb-org:project-task-file))
+        (-if-let (f (cb-org:project-file))
           (prog1
               (save-window-excursion
                 (let ((desc (let ((input (read-string (format "TODO [%s]: " (f-short f)) nil t)))
@@ -361,7 +364,7 @@ Non-nil if modifications where made."
                                 (s-trim input))))
                       (tags (call-interactively 'cb-org:read-tags)))
                   (concat "* TODO " desc "    " tags "\n")))
-            (setq org-last-project-task-file f))
+            (setq org-last-project-file f))
           (user-error "Not in a project"))))
 
 ;;;; Org Habits
@@ -453,12 +456,13 @@ Non-nil if modifications where made."
 
 ;;;; Capture templates
 
-    ;; Insert task file headers.
+    ;; Insert project file headers.
     (hook-fn 'org-capture-after-finalize-hook
-      (when org-last-project-task-file
-        (with-current-buffer (find-file-noselect org-last-project-task-file)
-          (cb-org:prepare-project-task-file)
-          (cb-org:skip-headers))))
+      (when org-last-project-file
+        (let ((name (projectile-project-name)))
+          (with-current-buffer (find-file-noselect org-last-project-file)
+            (cb-org:prepare-project-file name)
+            (cb-org:skip-headers)))))
 
     ;; Enter insertion mode in capture buffer.
     (hook-fn 'org-capture-mode-hook
@@ -469,7 +473,7 @@ Non-nil if modifications where made."
 
     (setq org-capture-templates
           `(("T" "Task" entry
-             (file+headline (cb-org:project-task-file) "Todos")
+             (file+headline (cb-org:project-file) "Todos")
              (function cb-org:read-project-task)
              :immediate-finish t
              :kill-buffer t
