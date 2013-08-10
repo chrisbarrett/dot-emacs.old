@@ -295,7 +295,7 @@ Non-nil if modifications where made."
           org-todo-keywords
           '((sequence
              "TODO(t)" "NEXT(n!)" "OUTSTANDING(o)" "WAITING(w@/!)"
-             "|" "DONE(d@/!)" "PAID(p!)" "VOID(v@)" "CANCELLED(c@)"))
+             "|" "DONE(d!)" "PAID(p!)" "VOID(v@)" "CANCELLED(c@)"))
 
           org-todo-keyword-faces
           '(("NEXT" . org-todo-next)))
