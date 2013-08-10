@@ -174,6 +174,7 @@ Non-nil if modifications where made."
       :map cb-org-map
       "C-o" 'cb-org-map
       "C-o a" 'cb-org:show-agenda-list
+      "C-o C-a" 'org-agenda
       "C-o d" (command (find-file org-agenda-diary-file))
       "C-o K" (command (org-capture nil "T"))
       "C-o k" 'cb-org:capture-dwim
@@ -731,9 +732,6 @@ as the default task."
     (defvar org-my-archive-expiry-days 2
       "The number of days after which a completed task should be auto-archived.
 This can be 0 for immediate, or a floating point value.")
-
-    (when (true? cb:use-vim-keybindings?)
-      (bind-key "M-C" 'org-agenda))
 
     (when (or (daemonp) (display-graphic-p))
       (hook-fn 'after-init-hook
