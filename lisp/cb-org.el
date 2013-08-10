@@ -218,6 +218,7 @@ Non-nil if modifications where made."
             ("@work" . ?w)
             ("@project" . ?p)
             ("@errand" . ?e)
+            ("@funtimes" . ?f)
             (:endgroup . nil)))
 
     ;; Set some default effort times.
