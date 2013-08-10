@@ -342,7 +342,7 @@ Non-nil if modifications where made."
       (interactive "sTags: ")
       (unless (emr-blank? input-str)
         (->> input-str
-          (s-split (rx (any space ":")))
+          (s-split (rx (any space ":" "," ".")))
           (s-join ":")
           (s-prepend ":")
           (s-append ":"))))
