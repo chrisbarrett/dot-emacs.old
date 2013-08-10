@@ -205,14 +205,20 @@ Non-nil if modifications where made."
           org-return-follows-link t)
 
     (setq org-tag-persistent-alist
-          '(
+          '(("bill" . ?b)
+            ("hold" . ?H)
             ;; Financial tags
             (:startgroup . nil)
             ("debt" . ?d)
             ("reimbursement" . ?r)
             (:endgroup . nil)
-            ("bill" . ?b)
-            ("hold" . ?h)))
+            ;; Context tags
+            (:startgroup . nil)
+            ("@home" . ?h)
+            ("@work" . ?w)
+            ("@project" . ?p)
+            ("@errand" . ?e)
+            (:endgroup . nil)))
 
     ;; Set some default effort times.
     (add-to-list 'org-global-properties
