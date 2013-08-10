@@ -214,11 +214,11 @@ Non-nil if modifications where made."
             (:endgroup . nil)
             ;; Context tags
             (:startgroup . nil)
-            ("@home" . ?h)
-            ("@work" . ?w)
-            ("@project" . ?p)
             ("@errand" . ?e)
             ("@funtimes" . ?f)
+            ("@home" . ?h)
+            ("@project" . ?p)
+            ("@work" . ?w)
             (:endgroup . nil)))
 
     ;; Set some default effort times.
