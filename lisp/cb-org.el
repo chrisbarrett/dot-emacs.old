@@ -742,6 +742,20 @@ This can be 0 for immediate, or a floating point value.")
 
     (add-to-list 'org-agenda-files org-directory)
 
+
+    (--each '(("d" "Daily Action List"
+               ((agenda "" ((org-agenda-ndays 1)
+                            (org-agenda-sorting-strategy
+                             '((agenda time-up priority-down tag-up)))
+                            (org-deadline-warning-days 0)))))
+              ("w" "Weekly Action List"
+               ((agenda "" ((org-agenda-ndays 7)
+                            (org-agenda-sorting-strategy
+                             '((agenda time-up priority-down tag-up)))
+                            (org-deadline-warning-days 0))))))
+
+      (add-to-list 'org-agenda-custom-commands it))
+
     (setq org-agenda-insert-diary-extract-time t
           org-agenda-span 'week
           org-agenda-skip-deadline-if-done t
