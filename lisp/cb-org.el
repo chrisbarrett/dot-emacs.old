@@ -368,7 +368,7 @@ Non-nil if modifications where made."
 
             ("d" "Diary" entry
              (file+datetree org-agenda-diary-file)
-             "* %?\n%^T"
+             "* %?\n%^t"
              :clock-resume t)
 
             ("b" "Bill" entry
