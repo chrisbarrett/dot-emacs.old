@@ -166,6 +166,10 @@
         (require 'magit)
         (git-gutter+-mode +1)))
 
+    (hook-fn 'after-save-hook
+      (when (true? git-gutter+-mode)
+        (git-gutter+-refresh)))
+
     (defvar cb-git:gutter-refresh-idle-timer
       (run-with-idle-timer 3 t (lambda ()
                                  (when (true? git-gutter+-mode)
