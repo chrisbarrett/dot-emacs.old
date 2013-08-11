@@ -52,6 +52,11 @@
     (global-set-key [mouse-4] (command (scroll-down 1)))
     (global-set-key [mouse-5] (command (scroll-up 1)))))
 
+;; Keep bbdb in sync with Contacts.app
+(use-package osx-contacts-sync
+  :config
+  (run-with-timer (* 60 5) t 'osx-contacts-sync))
+
 ;; Set terminfo so ansi-term displays shells correctly.
 
 (let ((terminfo (expand-file-name "~/.terminfo")))
