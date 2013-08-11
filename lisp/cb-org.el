@@ -194,35 +194,51 @@ Non-nil if modifications where made."
 
   :config
   (progn
-    (setq org-modules '(org-bbdb org-crypt org-w3m org-habit)
-          org-completion-use-ido t
-          org-startup-indented t
-          org-enforce-todo-dependencies t
-          org-cycle-separator-lines 0
-          org-log-into-drawer t
-          org-log-done 'time
-          org-reverse-note-order nil
-          org-link-mailto-program (quote (compose-mail "%a" "%s"))
-          org-return-follows-link t
-          org-indirect-buffer-display 'current-window)
+    (setq
+     ;; General config
 
-    (setq org-tag-persistent-alist
-          '(("bill" . ?b)
-            ("hold" . ?H)
-            ;; Financial tags
-            (:startgroup . nil)
-            ("debt" . ?d)
-            ("reimbursement" . ?r)
-            (:endgroup . nil)
-            ;; Context tags
-            (:startgroup . nil)
-            ("@anywhere" . ?a)
-            ("@errand" . ?e)
-            ("@funtimes" . ?f)
-            ("@home" . ?h)
-            ("@project" . ?p)
-            ("@work" . ?w)
-            (:endgroup . nil)))
+     org-modules '(org-bbdb org-crypt org-w3m org-habit)
+     org-completion-use-ido t
+     org-startup-indented t
+     org-enforce-todo-dependencies t
+     org-cycle-separator-lines 0
+     org-log-into-drawer t
+     org-log-done 'time
+     org-reverse-note-order nil
+     org-link-mailto-program (quote (compose-mail "%a" "%s"))
+     org-return-follows-link t
+     org-indirect-buffer-display 'current-window
+
+     ;; Refiling
+
+     org-refile-targets '((nil :maxlevel . 9)
+                          (org-agenda-files :maxlevel . 9))
+     org-refile-use-outline-path t
+     org-outline-path-complete-in-steps nil
+     org-refile-allow-creating-parent-nodes 'confirm
+     ;; Exclude todo keywords with a done state from refile targets.
+     org-refile-target-verify-function
+     (lambda () (not (member (nth 2 (org-heading-components)) org-done-keywords)))
+
+     ;; Tags
+
+     org-tag-persistent-alist
+     '(("bill" . ?b)
+       ("hold" . ?H)
+       ;; Financial tags
+       (:startgroup . nil)
+       ("debt" . ?d)
+       ("reimbursement" . ?r)
+       (:endgroup . nil)
+       ;; Context tags
+       (:startgroup . nil)
+       ("@anywhere" . ?a)
+       ("@errand" . ?e)
+       ("@funtimes" . ?f)
+       ("@home" . ?h)
+       ("@project" . ?p)
+       ("@work" . ?w)
+       (:endgroup . nil)))
 
     ;; Set some default effort times.
     (add-to-list 'org-global-properties
@@ -457,19 +473,6 @@ Non-nil if modifications where made."
                ":END:")
              :clock-keep t
              :kill-buffer t)))))
-
-(use-package org-refile
-  :defer t
-  :config
-  (setq org-refile-targets '((nil :maxlevel . 9)
-                             (org-agenda-files :maxlevel . 9))
-        org-refile-use-outline-path t
-        org-outline-path-complete-in-steps nil
-        org-refile-allow-creating-parent-nodes 'confirm
-
-        ;; Exclude todo keywords with a done state from refile targets.
-        org-refile-target-verify-function
-        (lambda () (not (member (nth 2 (org-heading-components)) org-done-keywords)))))
 
 (use-package org-clock
   :defer t
