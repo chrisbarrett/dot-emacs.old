@@ -30,7 +30,7 @@
   :type 'string)
 
 (defcustom osx-contacts-base
-  "~/Library/Application Support/AddressBook/AddressBook-v22.abcddb"
+  (file-exists-p(expand-file-name "~/Library/Application Support/AddressBook/AddressBook-v22.abcddb"))
   "Location of Contacts.app database."
   :group 'osx-contacts
   :type 'string)
@@ -51,8 +51,7 @@
 (defun osx-contacts-parse-buffer ()
   "Parse the result of `osx-contacts-sync' and save result to
 `bbdb-file'."
-  (let* ((str (buffer-substring-no-properties
-               (point-min) (point-max))))
+  (let ((str (buffer-substring-no-properties (point-min) (point-max))))
     (with-temp-file (if (boundp 'bbdb-file) bbdb-file "~/.bbdb")
       (insert ";; -*- mode: Emacs-Lisp; coding: utf-8; -*-\n"
               ";;; file-format: 7\n")
@@ -62,20 +61,9 @@
                  (insert
                   (format
                    "%S\n"
-                   (vector first-name
-                           name
-                           nil ;; middle
-                           (when (> (length nick) 0) (list nick)) ;; aka (list)
-                           nil ;; Organization (list)
-                           nil ;; phone (list of vector ["type" 0 0 0 num])
-                           nil ;; address (list of vector [ "type" ("line 1"
-                           ;; "line 2") "city" "State" "postcode"
-                           ;; "Country"]
-                           (split-string email "," t) ;; email (list)
-                           nil ;; Last change
-                           nil ;; ?
-                           ))))))))
-
+                   (vector
+                    first-name name nil (when (> (length nick) 0) (list nick))
+                    nil nil nil (split-string email "," t) nil nil))))))))
 
 (defun osx-contacts-run-sentinel (proc change)
   "`osx-contacts-run' process sentinel."
@@ -93,10 +81,7 @@
 
 ;;;###autoload
 (defun osx-contacts-sync ()
-  "Synchronize contacts from Contacts.app to `bbdb'.
-
-Warning, this is a destructive operation. All your existing
-contacts would be destroyed."
+  "Replace contents of bbdb file with OSX contacts."
   (interactive)
   (let* ((cmd-line (list osx-contacts-sqlite-bin
                          (expand-file-name osx-contacts-base)
