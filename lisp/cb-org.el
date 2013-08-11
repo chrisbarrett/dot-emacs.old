@@ -188,9 +188,19 @@ Non-nil if modifications where made."
                    (cb-org:skip-headers))))
 
       "C-o t" 'cb-org:show-todo-list
-      "C-o v" (command (org-tags-view t))
-      "C-o V" (command (org-tags-view nil))
-      "C-o C-k" 'org-capture))
+      "C-o C-k" 'org-capture)
+
+    (declare-modal-executor org-show-todo-list
+      :bind "C-o t"
+      :command (cb-org:show-todo-list))
+
+    (declare-modal-executor org-tags-view-fullscreen
+      :bind "C-o v"
+      :command (org-tags-view t))
+
+    (declare-modal-executor org-tags-view-all-fullscreen
+      :bind "C-o C-v"
+      :command (org-tags-view nil)))
 
   :config
   (progn
