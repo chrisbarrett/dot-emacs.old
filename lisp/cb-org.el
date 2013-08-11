@@ -215,6 +215,7 @@ Non-nil if modifications where made."
             (:endgroup . nil)
             ;; Context tags
             (:startgroup . nil)
+            ("@anywhere" . ?a)
             ("@errand" . ?e)
             ("@funtimes" . ?f)
             ("@home" . ?h)
