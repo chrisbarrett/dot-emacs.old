@@ -103,7 +103,7 @@
      bbdb-offer-save 1
      bbdb-use-popup t
      bbdb-electric t
-     bbdb-pop-up-window-size 9
+     bbdb-pop-up-window-size 4
      bddb-popup-target-lines 1
      bbdb-dwim-net-address-allow-redundancy t
      bbdb-quiet-about-name-mismatches 2
@@ -115,7 +115,9 @@
      bbdb-use-alternate-names t
      bbdb-elided-display t
      bbdb/mail-auto-create-p 'bbdb-ignore-some-messages-hook
-     )
+     ;; don't ask about fake addresses
+     bbdb-ignore-some-messages-alist
+     '(( "From" . "no.?reply\\|DAEMON\\|daemon\\|facebookmail\\|twitter")))
     (bbdb-initialize 'gnus 'message)))
 
 (use-package bbdb-vcard
