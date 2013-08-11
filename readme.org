@@ -76,6 +76,8 @@ org-capture commands with support for project-specific todo files.
 - =C-o k= - capture todo
 - =C-o n= - go to notes file
 - =C-o p= - go to project task file
+- =C-o t= - show todos
+- =C-o v= - tag search
 
 ** Language Support
 I have sane configurations for several languages and environments:
