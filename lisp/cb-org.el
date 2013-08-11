@@ -327,8 +327,6 @@ Non-nil if modifications where made."
   :config
   (progn
 
-;;;; TODOS
-
     (defun cb-org:read-tags (input-str)
       "Read a list of tags from the user."
       (interactive "sTags: ")
@@ -339,20 +337,10 @@ Non-nil if modifications where made."
           (s-prepend ":")
           (s-append ":"))))
 
-    (defun cb-org:read-project-task ()
-      "Read info from the user to construct a task for the current project."
-      (save-window-excursion
-        (-if-let (f (cb-org:project-file))
-          (prog1
-              (save-window-excursion
-                (let ((desc (let ((input (read-string (format "TODO [%s]: " (f-short f)) nil t)))
-                              (if (emr-blank? input)
-                                  (error "Description must not be blank")
-                                (s-trim input))))
-                      (tags (call-interactively 'cb-org:read-tags)))
-                  (concat "* TODO " desc "    " tags "\n")))
-            (setq org-last-project-file f))
-          (user-error "Not in a project"))))
+    (defun cb-org:read-string-with-file-ref (prompt file)
+      "Prompt the user for string, with reference to a file."
+      (read-string (format "%s [%s]: " prompt (f-short f))
+                   nil t))
 
 ;;;; Bills
 
@@ -391,11 +379,11 @@ Non-nil if modifications where made."
           `(("t" "Todo" entry
              (file+headline org-default-notes-file "Tasks")
              ,(s-unlines
-               (concat "TODO %^{Description}%?    "
+               (concat "* TODO %^{Description}%?    "
                        "%^{Context|@anywhere|@errand|@funtimes|@home|@project|@work}"
                        "%^G")
                "SCHEDULED: %^{Schedule}t"
-               ":PROPERTIES:"
+               ":LOGBOOK:"
                ":CAPTURED: %U"
                ":END:")
              :empty-lines 1
@@ -403,24 +391,28 @@ Non-nil if modifications where made."
 
             ("d" "Diary" entry
              (file+datetree org-agenda-diary-file)
-             "%?\n%^T"
+             "* %?\n%^T"
              :clock-resume t)
 
             ("b" "Bill" entry
              (file+headline org-default-notes-file "Bills")
              (function cb-org:read-bill)
              :immediate-finish t
+             :empty-lines 1
              :clock-keep t)
 
             ("h" "Habit" entry
              (file+headline org-default-notes-file "Habits")
              ,(s-unlines
-               (concat "TODO %^{Description}%?    "
+               (concat "* TODO %^{Description}%?    "
                        "%^{Context|@anywhere|@errand|@funtimes|@home|@project|@work}"
                        "%^G")
                "SCHEDULED: %^{Schedule}t"
                ":PROPERTIES:"
                ":STYLE: habit"
+               ":END:"
+               ":LOGBOOK:"
+               ":CAPTURED: %U"
                ":END:")
              :clock-keep t
              :empty-lines 1)
@@ -428,18 +420,17 @@ Non-nil if modifications where made."
             ("r" "Reading" entry
              (file+headline org-default-notes-file "Readings")
              ,(s-unlines
-               "%^{Title}"
-               ":PROPERTIES:"
+               "* %^{Title}"
+               ":LOGBOOK:"
                ":CAPTURED: %U"
                ":END:")
-             :clock-keep t
-             :immediate-finish t)
+             :clock-keep t)
 
             ("n" "Note" entry
              (file+headline org-default-notes-file "Notes")
              ,(s-unlines
-               "%i%?"
-               ":PROPERTIES:"
+               "* %i%?"
+               ":LOGBOOK:"
                ":CAPTURED: %U"
                ":END:")
              :clock-keep t)
@@ -447,8 +438,8 @@ Non-nil if modifications where made."
             ("z" "Task Note" entry
              (clock)
              ,(s-unlines
-               "%i%?"
-               ":PROPERTIES:"
+               "* %i%?"
+               ":LOGBOOK:"
                ":CAPTURED: %U"
                ":END:")
              :clock-keep t
@@ -457,17 +448,21 @@ Non-nil if modifications where made."
             ("l" "Task Link" entry
              (clock)
              ,(s-unlines
-               "%a%?"
-               ":PROPERTIES:"
+               "* %a%?"
+               ":LOGBOOK:"
                ":CAPTURED: %U"
                ":END:")
              :clock-keep t
              :kill-buffer t)
 
             ("T" "Project Task" entry
-             (file+headline (cb-org:project-file) "Todos")
-             (function cb-org:read-project-task)
-             :immediate-finish t
+             (file+headline (cb-org:project-file) "Tasks")
+             ,(s-unlines
+               "* TODO %^{Description}%? %^G"
+               "SCHEDULED: %^{Schedule}t"
+               ":LOGBOOK:"
+               ":CAPTURED: %U"
+               ":END:")
              :kill-buffer t
              :empty-lines 1
              :clock-in t)
@@ -475,8 +470,8 @@ Non-nil if modifications where made."
             ("N" "Project Note" entry
              (file+headline (cb-org:project-file) "Notes")
              ,(s-unlines
-               "%i%?"
-               ":PROPERTIES:"
+               "* %i%?"
+               ":LOGBOOK:"
                ":CAPTURED: %U"
                ":END:")
              :clock-keep t
