@@ -286,6 +286,12 @@ Non-nil if modifications where made."
         ;; Realign tags.
         (org-set-tags 4 t)))
 
+    ;; Sub-task completion triggers parent completion.
+    (hook-fn 'org-after-todo-statistics-hook
+      :arglist (n-done n-not-done)
+      (let (org-log-done org-log-states) ; turn off logging
+        (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
+
 ;;;; Auto-save notes file
 
     (defvar cb-org:notes-save-idle-delay 40)
