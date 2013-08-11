@@ -106,7 +106,7 @@ as terminals, w3m, gnus and dired.
 - =M-R= - rename symbol at point  (in whole buffer)
 - =M-r= - rename symbol at point (in defun)
 - =M-s= - Google search
-- =M-T= - ansi-term
+- =M-T= - eshell
 - =M-W= - w3m
 - =M-w= - w3m bookmarks
 - =M-Y= - gnus
