@@ -435,7 +435,7 @@ Non-nil if modifications where made."
              :clock-keep t
              :immediate-finish t)
 
-            ("n" "Note" item
+            ("n" "Note" entry
              (file+headline org-default-notes-file "Notes")
              ,(s-unlines
                "%i%?"
@@ -444,7 +444,7 @@ Non-nil if modifications where made."
                ":END:")
              :clock-keep t)
 
-            ("z" "Task Note" item
+            ("z" "Task Note" entry
              (clock)
              ,(s-unlines
                "%i%?"
@@ -454,7 +454,7 @@ Non-nil if modifications where made."
              :clock-keep t
              :kill-buffer t)
 
-            ("l" "Task Link" item
+            ("l" "Task Link" entry
              (clock)
              ,(s-unlines
                "%a%?"
@@ -472,7 +472,7 @@ Non-nil if modifications where made."
              :empty-lines 1
              :clock-in t)
 
-            ("N" "Project Note" item
+            ("N" "Project Note" entry
              (file+headline (cb-org:project-file) "Notes")
              ,(s-unlines
                "%i%?"
