@@ -327,16 +327,6 @@ Non-nil if modifications where made."
   :config
   (progn
 
-;;;; Diary
-
-    (defun cb-org:read-diary-entry ()
-      "Read info from the user to construct a new diary entry."
-      (save-window-excursion
-        (let ((desc (s-trim (read-string "Description: " nil t)))
-              (date (org-read-date)))
-          (concat "* " desc "\n"
-                  "  <" date ">"))))
-
 ;;;; TODOS
 
     (defun cb-org:read-tags (input-str)
@@ -348,18 +338,6 @@ Non-nil if modifications where made."
           (s-join ":")
           (s-prepend ":")
           (s-append ":"))))
-
-    (defun cb-org:read-todo ()
-      "Read a todo item for org-capture."
-      (save-window-excursion
-        (let ((desc (let ((input (s-trim (read-string "TODO: " nil t))))
-                      (if (emr-blank? input)
-                          (error "Description must not be blank")
-                        input)))
-              (start (org-read-date))
-              (tags (call-interactively 'cb-org:read-tags)))
-          (concat "* TODO " desc "    " tags "\n"
-                  "  SCHEDULED: <" start "> \n"))))
 
     (defun cb-org:read-project-task ()
       "Read info from the user to construct a task for the current project."
@@ -375,93 +353,6 @@ Non-nil if modifications where made."
                   (concat "* TODO " desc "    " tags "\n")))
             (setq org-last-project-file f))
           (user-error "Not in a project"))))
-
-;;;; Org Habits
-
-    (defun cb-org:time-freq->range-fmt (str)
-      "Turn an English representation of a habit string into a habit time format."
-      ;; Normalise ranges in string.
-      (let ((str (->> str
-                   (s-trim)
-                   (s-downcase)
-                   (s-replace "every" "")
-                   (s-replace "or" "-")
-                   (s-replace "to" "-")
-                   (s-replace "/"  "-"))))
-        (or (and (s-matches? (rx bol (* space) (or "daily" "day") (* space) eol)
-                             str)
-                 "+1d")
-            (ignore-errors
-              (destructuring-bind (_input range-min range-max freq)
-                  (s-match (rx (group-n 1 (+ num))
-                               (* space)
-                               (? "-" (* space) (group-n 2 (+ num)))
-                               (* space)
-                               (group-n 3 bow (or "s" "h" "d" "w" "m" "y")))
-                           str)
-                (concat ".+"
-                        range-min freq
-                        (when range-max (concat "/" range-max freq))))))))
-
-    (defun cb-org:read-habit-frequency ()
-      "Prompt for a frequency for org-habit."
-      (let ((str (read-string "Repeat every: " nil t)))
-        (concat (format-time-string "%Y-%m-%d %a ")
-                (or (cb-org:time-freq->range-fmt str)
-                    (user-error
-                     (s-join "\n"
-                             '("Unrecognised time specification: %s\n"
-                               "Examples:"
-                               "  daily"
-                               "  every 2 days"
-                               "  every 3-4 months"))
-                     str)))))
-
-    (defun cb-org:validate-habit (habit)
-      (with-temp-buffer
-        (org-mode)
-        (save-excursion (insert habit))
-        (org-habit-parse-todo)))
-
-    (defun cb-org:read-habit ()
-      "Read info from the user to construct a new habit."
-      (save-window-excursion
-        (let* ((desc (s-trim (read-string "Description: " nil t)))
-               (freq (cb-org:read-habit-frequency))
-               (end (and (yes-or-no-p "Set an end time? ")
-                         (org-read-date)))
-               (habit (concat
-                       "* TODO " desc "\n"
-                       "  SCHEDULED: <" freq ">\n"
-                       "  :PROPERTIES:\n"
-                       "  :STYLE: habit\n"
-                       (when end
-                         (format "  :LAST_REPEAT: [%s]\n" end))
-                       "  :END:")))
-          (when (cb-org:validate-habit habit)
-            habit))))
-
-;;;; Links
-
-    (defun cb-org:get-link-title ()
-      (or (ignore-errors
-            (with-current-buffer (--first-buffer (derived-mode-p 'w3m-mode))
-              w3m-current-url))
-          (read-string "LINK TITLE: " nil t)))
-
-    (defun cb-org:get-link-url ()
-      "Get a url in a context-sensitive manner."
-      (or (thing-at-point-url-at-point)
-          (ignore-errors
-            (with-current-buffer (--first-buffer (derived-mode-p 'w3m-mode))
-              w3m-current-url))
-          (read-string "URL: " nil t)))
-
-    (defun cb-org:read-link ()
-      "Capture a link in a context-sensitive way."
-      (let ((title (cb-org:get-link-title))
-            (url (cb-org:get-link-url)))
-        (concat  "* " title "\n" url)))
 
 ;;;; Bills
 
@@ -499,16 +390,21 @@ Non-nil if modifications where made."
     (setq org-capture-templates
           `(("t" "Todo" entry
              (file+headline org-default-notes-file "Tasks")
-             (function cb-org:read-todo)
-             :immediate-finish t
+             ,(s-unlines
+               (concat "TODO %^{Description}%?    "
+                       "%^{Context|@anywhere|@errand|@funtimes|@home|@project|@work}"
+                       "%^G")
+               "SCHEDULED: %^{Schedule}t"
+               ":PROPERTIES:"
+               ":CAPTURED: %U"
+               ":END:")
              :empty-lines 1
              :clock-keep t)
 
             ("d" "Diary" entry
              (file+datetree org-agenda-diary-file)
-             (function cb-org:read-diary-entry)
-             :clock-resume t
-             :immediate-finish t)
+             "%?\n%^T"
+             :clock-resume t)
 
             ("b" "Bill" entry
              (file+headline org-default-notes-file "Bills")
@@ -518,28 +414,55 @@ Non-nil if modifications where made."
 
             ("h" "Habit" entry
              (file+headline org-default-notes-file "Habits")
-             (function cb-org:read-habit)
-             :immediate-finish t
+             ,(s-unlines
+               (concat "TODO %^{Description}%?    "
+                       "%^{Context|@anywhere|@errand|@funtimes|@home|@project|@work}"
+                       "%^G")
+               "SCHEDULED: %^{Schedule}t"
+               ":PROPERTIES:"
+               ":STYLE: habit"
+               ":END:")
              :clock-keep t
              :empty-lines 1)
 
             ("r" "Reading" entry
              (file+headline org-default-notes-file "Readings")
-             "* %^{Title}"
-             :clock-keep t
-             :immediate-finish t)
-
-            ("l" "Link" entry
-             (file+headline org-default-notes-file "Links")
-             (function cb-org:read-link)
+             ,(s-unlines
+               "%^{Title}"
+               ":PROPERTIES:"
+               ":CAPTURED: %U"
+               ":END:")
              :clock-keep t
              :immediate-finish t)
 
             ("n" "Note" item
              (file+headline org-default-notes-file "Notes")
-             "- %i%?\n"
+             ,(s-unlines
+               "%i%?"
+               ":PROPERTIES:"
+               ":CAPTURED: %U"
+               ":END:")
+             :clock-keep t)
+
+            ("z" "Task Note" item
+             (clock)
+             ,(s-unlines
+               "%i%?"
+               ":PROPERTIES:"
+               ":CAPTURED: %U"
+               ":END:")
              :clock-keep t
-             :prepend t)
+             :kill-buffer t)
+
+            ("l" "Task Link" item
+             (clock)
+             ,(s-unlines
+               "%a%?"
+               ":PROPERTIES:"
+               ":CAPTURED: %U"
+               ":END:")
+             :clock-keep t
+             :kill-buffer t)
 
             ("T" "Project Task" entry
              (file+headline (cb-org:project-file) "Todos")
@@ -551,9 +474,13 @@ Non-nil if modifications where made."
 
             ("N" "Project Note" item
              (file+headline (cb-org:project-file) "Notes")
-             "- %i%?\n"
+             ,(s-unlines
+               "%i%?"
+               ":PROPERTIES:"
+               ":CAPTURED: %U"
+               ":END:")
              :clock-keep t
-             :prepend t)))))
+             :kill-buffer t)))))
 
 (use-package org-clock
   :defer t
