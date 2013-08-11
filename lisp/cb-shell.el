@@ -30,53 +30,69 @@
 
 (use-package eshell
   :commands eshell
+  :bind ("M-T" . cb:term-cycle)
   :config
-  (setq eshell-prompt-function
-        (lambda ()
-          (format "%s\n%s"
-                  (abbreviate-file-name (eshell/pwd))
-                  (if (= (user-uid) 0) " # " " % ")))))
+
+  (progn
+    ;; Configure the eshell prompt.
+    ;;
+    ;; Displays the current working directory only when it changes.
+    (defvar cb-eshell:prev-dir nil)
+    (setq eshell-prompt-function
+          (lambda ()
+            (prog1
+                (concat
+                 (unless (equal (eshell/pwd) cb-eshell:prev-dir)
+
+                   (format "----- %s -----\n" (abbreviate-file-name (eshell/pwd))))
+                 (if (= (user-uid) 0) " # " " % "))
+              (setq cb-eshell:prev-dir (eshell/pwd)))))
+
+    (defun eshell/clear ()
+      "Clear the eshell buffer."
+      (interactive)
+      (let ((inhibit-read-only t))
+        ;; Delete all but the last line of prompt.
+        (delete-region (point-min)
+                       (save-excursion
+                         (goto-char (point-max))
+                         (search-backward-regexp (rx bol space (or "#" "%") space) nil t)
+                         (point)))))
+
+    (bind-key "C-l" 'eshell/clear eshell-mode-map)
+
+
+    (defun cb:term-cycle (&optional arg)
+      "Cycle through various terminal window states."
+      (interactive)
+      (cond
+
+       ;; If terminal is maximized, restore previous window config.
+       ((and (derived-mode-p 'eshell-mode)
+             (equal 1 (length (window-list)))
+             (equal (buffer-name) "*eshell*"))
+        (or (ignore-errors (jump-to-register :term-fullscreen) t)
+            (bury-buffer)))
+
+       ;; If we're looking at the terminal, maximise it.
+       ((derived-mode-p 'eshell-mode)
+        (delete-other-windows))
+
+       ;; Otherwise show the terminal.
+       (t
+        ;; Hide the term window if it's visible.
+        (-when-let (win (--first (equal (buffer-name (window-buffer it))
+                                        "*eshell*")
+                                 (window-list)))
+          (delete-window win))
+        ;; Save this configuration to a register so that it can be restored
+        ;; for later positions in the cycle.
+        (window-configuration-to-register :term-fullscreen)
+        ;; Show terminal.
+        (eshell arg))))))
 
 (use-package term
-  :bind ("M-T" . cb:term-cycle)
   :defer t
-
-  :init
-  (defun cb:term-cycle ()
-    "Cycle through various terminal window states."
-    (interactive)
-    (cond
-     ;; If terminal is maximized, restore previous window config.
-     ((and (derived-mode-p 'term-mode)
-           (equal 1 (length (window-list)))
-           (equal (buffer-name) "*ansi-term*"))
-      (or (ignore-errors (jump-to-register :term-fullscreen) t)
-          (bury-buffer)))
-
-     ;; If we're looking at the terminal, maximize it.
-     ((derived-mode-p 'term-mode)
-      (delete-other-windows))
-
-     ;; Otherwise show the terminal.
-     (t
-      ;; Hide the term window if it's visible.
-      (-when-let (win (--first (equal (buffer-name (window-buffer it))
-                                      "*ansi-term*")
-                               (window-list)))
-        (delete-window win))
-      ;; Save this configuration to a register so that it can be restored
-      ;; for later positions in the cycle.
-      (window-configuration-to-register :term-fullscreen)
-      ;; Show terminal.
-      (let ((buf (get-buffer "*ansi-term*")))
-        (if (get-buffer-process buf)
-            ;; Switch to existing term.
-            (switch-to-buffer-other-window buf)
-          ;; Start a new shell, cleaning up after shell sessions that have
-          ;; finished.
-          (when buf (kill-buffer buf))
-          (ansi-term (executable-find "zsh")))))))
-
   :config
   (progn
     (add-to-list 'ac-modes 'term-mode)
