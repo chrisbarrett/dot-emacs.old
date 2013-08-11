@@ -32,34 +32,7 @@
   :commands eshell
   :bind ("M-T" . cb:term-cycle)
   :config
-
   (progn
-    ;; Configure the eshell prompt.
-    ;;
-    ;; Displays the current working directory only when it changes.
-    (defvar cb-eshell:prev-dir nil)
-    (setq eshell-prompt-function
-          (lambda ()
-            (prog1
-                (concat
-                 (unless (equal (eshell/pwd) cb-eshell:prev-dir)
-                   (format "\n   → %s\n" (abbreviate-file-name (eshell/pwd))))
-                 (if (= (user-uid) 0) " # " " % "))
-              (setq cb-eshell:prev-dir (eshell/pwd)))))
-
-    (defun eshell/clear ()
-      "Clear the eshell buffer."
-      (interactive)
-      (let ((inhibit-read-only t))
-        ;; Delete all but the last line of prompt.
-        (delete-region (point-min)
-                       (save-excursion
-                         (goto-char (point-max))
-                         (search-backward-regexp (rx bol space (or "#" "%") space) nil t)
-                         (point)))))
-
-    (bind-key "C-l" 'eshell/clear eshell-mode-map)
-
 
     (defun cb:term-cycle (&optional arg)
       "Cycle through various terminal window states."
@@ -88,7 +61,38 @@
         ;; for later positions in the cycle.
         (window-configuration-to-register :term-fullscreen)
         ;; Show terminal.
-        (eshell arg))))))
+        (eshell arg))))
+
+    (defun eshell/clear ()
+      "Clear the eshell buffer."
+      (interactive)
+      (let ((inhibit-read-only t))
+        ;; Delete all but the last line of prompt.
+        (delete-region (point-min)
+                       (save-excursion
+                         (goto-char (point-max))
+                         (search-backward-regexp (rx bol space (or "#" "%") space) nil t)
+                         (point)))))
+
+    (bind-key "C-l" 'eshell/clear eshell-mode-map)
+
+    ;; Configure the eshell prompt.
+    ;;
+    ;; Displays the current working directory only when it changes.
+
+    (defun cb-eshell:cwd-format ()
+      (format "\n   → %s\n" (abbreviate-file-name (eshell/pwd))))
+
+    (defvar cb-eshell:prev-dir nil)
+
+    (setq eshell-prompt-function
+          (lambda ()
+            (prog1
+                (concat
+                 (unless (equal (eshell/pwd) cb-eshell:prev-dir)
+                   (cb-eshell:cwd-format))
+                 (if (= (user-uid) 0) " # " " % "))
+              (setq cb-eshell:prev-dir (eshell/pwd)))))))
 
 (use-package term
   :defer t
