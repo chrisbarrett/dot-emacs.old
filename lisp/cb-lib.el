@@ -269,6 +269,10 @@ Find the first window where PRED-FORM is not nil."
       (replace-match ""))
     (buffer-string)))
 
+(defun s-unlines (&rest strs)
+  "Join STRS with newlines."
+  (s-join "\n" strs))
+
 (defun sum (&rest values)
   "Sum VALUES.  The input may be a list of values of any level of nesting."
   (-reduce '+ (-flatten values)))
