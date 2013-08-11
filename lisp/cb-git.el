@@ -239,6 +239,17 @@ Ensure a window is created for the commit window."
           ediff-window-setup-function 'ediff-setup-windows-plain)
     (add-hook 'ediff-startup-hook 'turn-off-evil-mode)))
 
+(use-package diff-mode
+  :defer t
+  :config
+  (progn
+    (defun cb-diff:close ()
+      (interactive)
+      (when (> (length (window-list)) 1)
+        (kill-buffer-and-window)))
+
+    (define-key diff-mode-map (kbd "q") 'cb-diff:close)
+    (after 'evil (evil-define-key 'normal diff-mode-map (kbd "q") 'cb-diff:close))))
 
 (provide 'cb-git)
 
