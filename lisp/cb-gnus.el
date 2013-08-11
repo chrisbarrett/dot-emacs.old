@@ -36,103 +36,105 @@
 (defvar gnus-current-startup-file (f-join cb:etc-dir "gnus"))
 (defvar gnus-dribble-directory (f-join cb:etc-dir "gnus-dribble"))
 
-(after 'personal-config
+
+(unless noninteractive
+  (after 'personal-config
 
   ;;;; Asynchronous gnus updates
 
-  ;; Use a timer to periodically cache gnus news in the background. Once an
-  ;; async process is launched, a timer is also started to enforce a
-  ;; timeout. This is needed because gnus will sometimes hang when fetching.
+    ;; Use a timer to periodically cache gnus news in the background. Once an
+    ;; async process is launched, a timer is also started to enforce a
+    ;; timeout. This is needed because gnus will sometimes hang when fetching.
 
-  (defvar gnus-async-refresh-rate 60)
-  (defvar gnus-async-timeout 60)
-  (defvar gnus-async-refresh-timer
-    (run-with-timer
-     nil
-     gnus-async-refresh-rate
-     (lambda ()
-       (let ((proc (gnus-refresh-async)))
-         (eval `(run-with-timer gnus-async-timeout nil
-                                (lambda ()
-                                  (when (process-live-p ,proc)
-                                    (let (kill-buffer-query-functions)
-                                      (kill-process ,proc)
-                                      (kill-buffer (process-buffer ,proc)))))))))))
+    (defvar gnus-async-refresh-rate 60)
+    (defvar gnus-async-timeout 60)
+    (defvar gnus-async-refresh-timer
+      (run-with-timer
+       nil
+       gnus-async-refresh-rate
+       (lambda ()
+         (let ((proc (gnus-refresh-async)))
+           (eval `(run-with-timer gnus-async-timeout nil
+                                  (lambda ()
+                                    (when (process-live-p ,proc)
+                                      (let (kill-buffer-query-functions)
+                                        (kill-process ,proc)
+                                        (kill-buffer (process-buffer ,proc)))))))))))
 
-  (defun cb-gnus:sum-unread (news-plist)
-    "Return the number of unread emails in NEWS-PLIST."
-    (-when-let (imap (second (assoc 'nnimap gnus-secondary-select-methods)))
-      (->> news-plist
-        (--filter (s-contains? imap (plist-get it :name)))
-        (--map (plist-get it :unread-count))
-        (-sum))))
+    (defun cb-gnus:sum-unread (news-plist)
+      "Return the number of unread emails in NEWS-PLIST."
+      (-when-let (imap (second (assoc 'nnimap gnus-secondary-select-methods)))
+        (->> news-plist
+          (--filter (s-contains? imap (plist-get it :name)))
+          (--map (plist-get it :unread-count))
+          (-sum))))
 
-  (defun cb-gnus:update-modeline-unread (count)
-    (setq modeline-mail-indicator
-          (when (plusp count)
-            (format " %s unread" count))))
+    (defun cb-gnus:update-modeline-unread (count)
+      (setq modeline-mail-indicator
+            (when (plusp count)
+              (format " %s unread" count))))
 
-  (defun cb-gnus:scrape-group-buffer-for-news ()
-    (-when-let (buf (get-buffer "*Group*"))
-      (with-current-buffer buf
-        (save-excursion
-          (goto-char (point-min))
-          (cl-loop while (not (eobp))
-                   for group = (gnus-group-name-at-point)
-                   do (gnus-group-update-group group)
-                   when group collect
-                   (list :name group
-                         :unread-count (gnus-group-unread group))
-                   do (forward-line))))))
-
-  (hook-fns (--filter-atoms (s-matches? "^gnus-.*-hook$" (symbol-name it)))
-    (-when-let (sum (ignore-errors
-                      (cb-gnus:sum-unread (cb-gnus:scrape-group-buffer-for-news))))
-      (cb-gnus:update-modeline-unread sum)))
-
-  (defun gnus-refresh-async ()
-    "Spawn a background Emacs instance to download the latest news and emails."
-    (interactive)
-    (async-start
-
-     `(lambda ()
-        (message "Preparing environment...")
-        (require 'gnus)
-        (require 'cl-lib)
-        (setq gnus-startup-file ,gnus-startup-file
-              gnus-dribble-directory ,gnus-dribble-directory
-              gnus-expert-user t
-              gnus-current-startup-file ,gnus-current-startup-file
-              gnus-always-read-dribble-file t
-              gnus-select-method ',gnus-select-method
-              gnus-secondary-select-methods ',gnus-secondary-select-methods)
-        (message "Downloading news...")
-        (gnus)
-        (prog1
-            ;; Get the unread counts of groups with new news.
+    (defun cb-gnus:scrape-group-buffer-for-news ()
+      (-when-let (buf (get-buffer "*Group*"))
+        (with-current-buffer buf
+          (save-excursion
+            (goto-char (point-min))
             (cl-loop while (not (eobp))
-                     initially (message "Collating unread items...")
                      for group = (gnus-group-name-at-point)
+                     do (gnus-group-update-group group)
                      when group collect
                      (list :name group
                            :unread-count (gnus-group-unread group))
-                     do (forward-line))
-          (message "Saving dribble file...")
-          (gnus-dribble-save)
-          (gnus-batch-kill)
-          (gnus-group-exit)
-          (message "Finished.")))
+                     do (forward-line))))))
 
-     (lambda (news)
-       ;; Notify user of new email.
-       (when news
-         (cb-gnus:update-modeline-unread (cb-gnus:sum-unread news)))
-       ;; Update the group view.
-       (-when-let (b (get-buffer "*Group*"))
-         (when (buffer-live-p b)
-           (gnus-dribble-read-file)
-           (with-current-buffer b
-             (gnus-group-list-groups))))))))
+    (hook-fns (--filter-atoms (s-matches? "^gnus-.*-hook$" (symbol-name it)))
+      (-when-let (sum (ignore-errors
+                        (cb-gnus:sum-unread (cb-gnus:scrape-group-buffer-for-news))))
+        (cb-gnus:update-modeline-unread sum)))
+
+    (defun gnus-refresh-async ()
+      "Spawn a background Emacs instance to download the latest news and emails."
+      (interactive)
+      (async-start
+
+       `(lambda ()
+          (message "Preparing environment...")
+          (require 'gnus)
+          (require 'cl-lib)
+          (setq gnus-startup-file ,gnus-startup-file
+                gnus-dribble-directory ,gnus-dribble-directory
+                gnus-expert-user t
+                gnus-current-startup-file ,gnus-current-startup-file
+                gnus-always-read-dribble-file t
+                gnus-select-method ',gnus-select-method
+                gnus-secondary-select-methods ',gnus-secondary-select-methods)
+          (message "Downloading news...")
+          (gnus)
+          (prog1
+              ;; Get the unread counts of groups with new news.
+              (cl-loop while (not (eobp))
+                       initially (message "Collating unread items...")
+                       for group = (gnus-group-name-at-point)
+                       when group collect
+                       (list :name group
+                             :unread-count (gnus-group-unread group))
+                       do (forward-line))
+            (message "Saving dribble file...")
+            (gnus-dribble-save)
+            (gnus-batch-kill)
+            (gnus-group-exit)
+            (message "Finished.")))
+
+       (lambda (news)
+         ;; Notify user of new email.
+         (when news
+           (cb-gnus:update-modeline-unread (cb-gnus:sum-unread news)))
+         ;; Update the group view.
+         (-when-let (b (get-buffer "*Group*"))
+           (when (buffer-live-p b)
+             (gnus-dribble-read-file)
+             (with-current-buffer b
+               (gnus-group-list-groups)))))))))
 
 (defun show-gnus ()
   "Start gnus.  If gnus is already running, switch to the groups buffer."
