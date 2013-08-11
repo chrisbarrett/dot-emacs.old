@@ -51,19 +51,24 @@
 
   (assert (symbolp (eval hook)))
 
-  `(let ((hook ,hook))
-     (add-hook hook
+
+  (let ((bod
+         ;; Remove keyword args from body.
+         `(progn ,@(->> body
+                     (-partition-all-in-steps 2 2)
+                     (--drop-while (keywordp (car it)))
+                     (apply '-concat)))))
+    `(add-hook ,hook
                (lambda ,arglist
                  (if cb-lib:debug-hooks?
-                     (progn ,@body)
+                     ,bod
                    ;; Do not allow errors to propagate from the hook.
                    (condition-case err
-                       (progn ,@body)
+                       ,bod
                      (error (message
                              "[%s] %s" ,hook
                              (error-message-string err))))))
-               ,append ,local)
-     hook))
+               ,append ,local)))
 
 (defmacro hook-fns (hooks &rest args)
   "A sequence wrapper for `hook-fn'.
