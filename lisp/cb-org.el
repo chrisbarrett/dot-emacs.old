@@ -362,7 +362,8 @@ Non-nil if modifications where made."
                ":CAPTURED: %U"
                ":END:")
              :empty-lines 1
-             :clock-keep t)
+             :clock-in t
+             :clock-resume t)
 
             ("d" "Diary" entry
              (file+datetree org-agenda-diary-file)
@@ -393,7 +394,7 @@ Non-nil if modifications where made."
                ":LOGBOOK:"
                ":CAPTURED: %U"
                ":END:")
-             :clock-keep t
+             :clock-resume t
              :empty-lines 1)
 
             ("r" "Reading" entry
@@ -403,7 +404,7 @@ Non-nil if modifications where made."
                ":LOGBOOK:"
                ":CAPTURED: %U"
                ":END:")
-             :clock-keep t)
+             :clock-resume t)
 
             ("n" "Note" entry
              (file+headline org-default-notes-file "Notes")
@@ -412,7 +413,7 @@ Non-nil if modifications where made."
                ":LOGBOOK:"
                ":CAPTURED: %U"
                ":END:")
-             :clock-keep t)
+             :clock-resume t)
 
             ("z" "Task Note" entry
              (clock)
