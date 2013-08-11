@@ -327,39 +327,14 @@ Non-nil if modifications where made."
   :config
   (progn
 
-    (defun cb-org:read-tags (input-str)
-      "Read a list of tags from the user."
-      (interactive "sTags: ")
-      (unless (emr-blank? input-str)
-        (->> input-str
-          (s-split (rx (any space ":" "," ".")))
-          (s-join ":")
-          (s-prepend ":")
-          (s-append ":"))))
-
-    (defun cb-org:read-string-with-file-ref (prompt file)
+    (defun* cb-org:read-string-with-file-ref
+        (&optional (prompt "TODO")
+                   (file (cb-org:project-file)))
       "Prompt the user for string, with reference to a file."
-      (read-string (format "%s [%s]: " prompt (f-short f))
+      (read-string (format "%s [%s]: " prompt (f-short file))
                    nil t))
 
-;;;; Bills
-
-    (defun cb-org:read-bill ()
-      (save-window-excursion
-        (let ((desc (let ((input (s-trim (read-string "Bill: " nil t))))
-                      (if (emr-blank? input)
-                          (error "Description must not be blank")
-                        input)))
-              (start (and (y-or-n-p "Schedule? ") (org-read-date)))
-              (due (and (y-or-n-p "Set deadline? ") (org-read-date)))
-              (tags (call-interactively 'cb-org:read-tags)))
-          (s-join "\n" (list (concat "* TODO " desc "    " tags)
-                             (when start (format "  SCHEDULED: <%s>" start))
-                             (when due   (format "  DEADLINE:  <%s>" due)))))))
-
-;;;; Capture templates
-
-    ;; Insert project file headers.
+    ;; Insert project file headers when navigating to the project file.
     (hook-fn 'org-capture-after-finalize-hook
       (when org-last-project-file
         (let ((name (projectile-project-name)))
@@ -380,8 +355,7 @@ Non-nil if modifications where made."
              (file+headline org-default-notes-file "Tasks")
              ,(s-unlines
                (concat "* TODO %^{Description}%?    "
-                       "%^{Context|@anywhere|@errand|@funtimes|@home|@project|@work}"
-                       "%^G")
+                       "%^{Context|@anywhere|@errand|@funtimes|@home|@project|@work}")
                "SCHEDULED: %^{Schedule}t"
                ":LOGBOOK:"
                ":CAPTURED: %U"
@@ -396,7 +370,12 @@ Non-nil if modifications where made."
 
             ("b" "Bill" entry
              (file+headline org-default-notes-file "Bills")
-             (function cb-org:read-bill)
+             ,(s-unlines
+               "* TODO %^{Description}"
+               "DEADLINE: %^{Deadline}t"
+               ":LOGBOOK:"
+               ":CAPTURED: %U"
+               ":END:")
              :immediate-finish t
              :empty-lines 1
              :clock-keep t)
@@ -405,8 +384,7 @@ Non-nil if modifications where made."
              (file+headline org-default-notes-file "Habits")
              ,(s-unlines
                (concat "* TODO %^{Description}%?    "
-                       "%^{Context|@anywhere|@errand|@funtimes|@home|@project|@work}"
-                       "%^G")
+                       "%^{Context|@anywhere|@errand|@funtimes|@home|@project|@work}")
                "SCHEDULED: %^{Schedule}t"
                ":PROPERTIES:"
                ":STYLE: habit"
@@ -458,7 +436,7 @@ Non-nil if modifications where made."
             ("T" "Project Task" entry
              (file+headline (cb-org:project-file) "Tasks")
              ,(s-unlines
-               "* TODO %^{Description}%? %^G"
+               "* TODO %(cb-org:read-string-with-file-ref)%?"
                "SCHEDULED: %^{Schedule}t"
                ":LOGBOOK:"
                ":CAPTURED: %U"
