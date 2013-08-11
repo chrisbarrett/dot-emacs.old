@@ -457,6 +457,19 @@ Non-nil if modifications where made."
              :clock-keep t
              :kill-buffer t)))))
 
+(use-package org-refile
+  :defer t
+  :config
+  (setq org-refile-targets '((nil :maxlevel . 9)
+                             (org-agenda-files :maxlevel . 9))
+        org-refile-use-outline-path t
+        org-outline-path-complete-in-steps nil
+        org-refile-allow-creating-parent-nodes 'confirm
+
+        ;; Exclude todo keywords with a done state from refile targets.
+        org-refile-target-verify-function
+        (lambda () (not (member (nth 2 (org-heading-components)) org-done-keywords)))))
+
 (use-package org-clock
   :defer t
   :init
