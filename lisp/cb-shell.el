@@ -43,8 +43,7 @@
             (prog1
                 (concat
                  (unless (equal (eshell/pwd) cb-eshell:prev-dir)
-
-                   (format "----- %s -----\n" (abbreviate-file-name (eshell/pwd))))
+                   (format "\n   → %s\n" (abbreviate-file-name (eshell/pwd))))
                  (if (= (user-uid) 0) " # " " % "))
               (setq cb-eshell:prev-dir (eshell/pwd)))))
 
