@@ -223,7 +223,7 @@ Non-nil if modifications where made."
      ;; Tags
 
      org-tag-persistent-alist
-     '(("bill" . ?b)
+     '(("finance" . ?f)
        ("hold" . ?H)
        ;; Financial tags
        (:startgroup . nil)
@@ -234,7 +234,7 @@ Non-nil if modifications where made."
        (:startgroup . nil)
        ("@anywhere" . ?a)
        ("@errand" . ?e)
-       ("@funtimes" . ?f)
+       ("@leisure" . ?l)
        ("@home" . ?h)
        ("@project" . ?p)
        ("@work" . ?w)
