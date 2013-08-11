@@ -158,9 +158,9 @@ restore key."
          (interactive)
          (with-window-restore
            ;; Evaluate the command.
-           (cond ((interactive-form ',command) (call-interactively ',command))
-                 ((functionp ',command)        (funcall #',command))
-                 (t                            (eval ',command)))
+           ,(cond ((interactive-form command) `(call-interactively ',command))
+                  ((functionp command)        `(funcall #',command))
+                  (t                           command))
            (delete-other-windows)
            ;; Configure restore bindings.
            (--each (or ,restore-bindings (list ,bind))
