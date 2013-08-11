@@ -203,7 +203,8 @@ Non-nil if modifications where made."
           org-log-done 'time
           org-reverse-note-order nil
           org-link-mailto-program (quote (compose-mail "%a" "%s"))
-          org-return-follows-link t)
+          org-return-follows-link t
+          org-indirect-buffer-display 'current-window)
 
     (setq org-tag-persistent-alist
           '(("bill" . ?b)
