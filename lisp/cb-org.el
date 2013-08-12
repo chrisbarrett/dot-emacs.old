@@ -443,7 +443,7 @@ Non-nil if modifications where made."
              :clock-resume t)
 
             ("l" "Link" entry
-             (file+olp org-default-notes-file "Someday" "Links")
+             (file+headline org-default-notes-file "Links")
              ,(s-unlines
                "* %a%?"
                ":LOGBOOK:"
