@@ -389,7 +389,7 @@ Non-nil if modifications where made."
              (file+headline org-default-notes-file "Tasks")
              ,(s-unlines
                (concat "* TODO %^{Description}%?    "
-                       "%^{Context|@anywhere|@errand|@funtimes|@home|@project|@work}")
+                       ":%^{Context|@anywhere|@errand|@funtimes|@home|@project|@work}:")
                "SCHEDULED: %^{Schedule}t"
                ":LOGBOOK:"
                ":CAPTURED: %U"
@@ -419,7 +419,7 @@ Non-nil if modifications where made."
              (file+headline org-default-notes-file "Habits")
              ,(s-unlines
                (concat "* TODO %^{Description}%?    "
-                       "%^{Context|@anywhere|@errand|@funtimes|@home|@project|@work}")
+                       ":%^{Context|@anywhere|@errand|@funtimes|@home|@project|@work}:")
                "SCHEDULED: %^{Schedule}t"
                ":PROPERTIES:"
                ":STYLE: habit"
