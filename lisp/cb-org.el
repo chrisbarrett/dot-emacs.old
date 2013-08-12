@@ -218,6 +218,7 @@ Non-nil if modifications where made."
      org-link-mailto-program (quote (compose-mail "%a" "%s"))
      org-return-follows-link t
      org-indirect-buffer-display 'current-window
+     org-put-time-stamp-overlays t
 
      ;; Refiling
 
@@ -432,12 +433,13 @@ Non-nil if modifications where made."
              :empty-lines 1)
 
             ("r" "Reading" entry
-             (file+headline org-default-notes-file "Readings")
+             (file+olp org-default-notes-file "Someday" "Readings")
              ,(s-unlines
-               "* %^{Title}"
+               "* TODO %^{Title}"
                ":LOGBOOK:"
                ":CAPTURED: %U"
                ":END:")
+             :immediate-finish t
              :clock-resume t)
 
             ("n" "Note" entry
