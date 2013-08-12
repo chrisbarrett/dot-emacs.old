@@ -400,6 +400,17 @@ Non-nil if modifications where made."
              :clock-in t
              :clock-resume t)
 
+            ("s" "Todo Someday" entry
+             (file+olp org-default-notes-file "Someday" "Tasks")
+             ,(s-unlines
+               "* TODO %^{Description}%?"
+               ":LOGBOOK:"
+               ":CAPTURED: %U"
+               ":END:")
+             :empty-lines 1
+             :clock-in t
+             :clock-resume t)
+
             ("d" "Diary" entry
              (file+datetree org-agenda-diary-file)
              "* %?\n%^t"
@@ -481,7 +492,7 @@ Non-nil if modifications where made."
              :clock-keep t
              :kill-buffer t)
 
-            ("l" "Task Link" entry
+            ("L" "Task Link" entry
              (clock)
              ,(s-unlines
                "* %a%?"
