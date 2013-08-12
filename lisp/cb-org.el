@@ -442,6 +442,16 @@ Non-nil if modifications where made."
              :immediate-finish t
              :clock-resume t)
 
+            ("m" "Listening" entry
+             (file+olp org-default-notes-file "Someday" "Listening")
+             ,(s-unlines
+               "* TODO %^{Title}"
+               ":LOGBOOK:"
+               ":CAPTURED: %U"
+               ":END:")
+             :immediate-finish t
+             :clock-resume t)
+
             ("n" "Note" entry
              (file+headline org-default-notes-file "Notes")
              ,(s-unlines
