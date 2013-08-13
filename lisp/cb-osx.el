@@ -52,11 +52,8 @@
     (global-set-key [mouse-4] (command (scroll-down 1)))
     (global-set-key [mouse-5] (command (scroll-up 1)))))
 
-;; Keep bbdb in sync with Contacts.app
-(use-package osx-contacts
-  :config
-  (defvar osx-contacts-refresh-timer
-    (run-with-timer (* 60 5) (* 60 5) 'import-osx-contacts-to-bbdb)))
+(use-package osx-bbdb
+  :if (not noninteractive))
 
 ;; Set terminfo so ansi-term displays shells correctly.
 
