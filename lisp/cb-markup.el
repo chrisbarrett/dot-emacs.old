@@ -175,6 +175,10 @@ Puts each XML node on a separate line, except for one-liners."
               ("h6"   "^###### \\(.*\\)$" 1)
               ("fn"   "^\\[\\^\\(.*\\)\\]" 1))))))
 
+(use-package creole-mode
+  :commands creole-mode
+  :ensure t)
+
 (provide 'cb-markup)
 
 ;; Local Variables:
