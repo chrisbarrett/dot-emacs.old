@@ -325,6 +325,10 @@ Find the first window where PRED-FORM is not nil."
   (when (region-active-p)
     (buffer-substring (region-beginning) (region-end))))
 
+(defun current-line ()
+  "Return the line at point."
+  (buffer-substring (line-beginning-position) (line-end-position)))
+
 (provide 'cb-lib)
 
 ;; Local Variables:
