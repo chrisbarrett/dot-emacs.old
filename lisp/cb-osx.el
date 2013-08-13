@@ -56,7 +56,7 @@
 (use-package osx-contacts
   :config
   (defvar osx-contacts-refresh-timer
-    (run-with-timer (* 60 5) (* 60 5) 'osx-contacts-sync)))
+    (run-with-timer (* 60 5) (* 60 5) 'import-osx-contacts-to-bbdb)))
 
 ;; Set terminfo so ansi-term displays shells correctly.
 

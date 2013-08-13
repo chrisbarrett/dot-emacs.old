@@ -29,8 +29,10 @@
 (require 'cl-lib)
 (require 's)
 (require 'dash)
-(autoload 'bbdb-create-internal "bbdb-com")
 (autoload 'bbdb-records "bbdb")
+(autoload 'bbdb-record-mail "bbdb")
+(autoload 'bbdb-create-internal "bbdb-com")
+(autoload 'bbdb-record-name "bbdb")
 
 (defun osxc/contacts-to-string ()
   "Call the contacts program.  Return a formatted string representing the user's contacts."
@@ -59,6 +61,9 @@
       home-email work-email other-email
       home-phone mobile-phone main-phone work-phone))
   "Parse an individual card fields list into the format expected `bbdb-create-internal'."
+
+  ;; BBDB will bork if it sees empty strings, so define some helper methods that
+  ;; translate empty strings to null values.
   (cl-flet ((maybe (s) (unless (s-blank? s) s))
             (maybe-vec (label s) (unless (s-blank? s) (vector label s)))
             (non-null (&rest xs) (-remove 'null xs)))
@@ -99,9 +104,20 @@ CONTACTS-SHELL-OUTPUT is the result from `osxc/contacts-to-string'."
   "Import contacts from the OS X address book to BBDB."
   (interactive)
   (require 'bbdb)
-  (--each (osxc/parse-contacts (osxc/contacts-to-string))
-    (unless (osxc/bbdb-contains-record? it)
-      (apply 'bbdb-create-internal it))))
+  (let ((counter 0))
+
+    ;; Import contacts.
+    (--each (osxc/parse-contacts (osxc/contacts-to-string))
+      (unless (osxc/bbdb-contains-record? it)
+        (apply 'bbdb-create-internal it)
+        (incf counter)))
+
+    ;; Save bbdb file.
+    (with-current-buffer (get-buffer ".bbdb")
+      (save-buffer))
+
+    (message "%s %s added to BBDB" counter
+             (if (= 1 counter) "contact" "contacts"))))
 
 (provide 'osx-contacts)
 
