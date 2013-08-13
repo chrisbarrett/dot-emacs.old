@@ -62,13 +62,20 @@
 
 (defun cb-org:project-file ()
   "Get the path to the project file for the current project."
-  (let ((name (cond
-               ((projectile-project-p) (projectile-project-name))
-               ((projectile-project-buffer-names) (car (projectile-project-buffer-names)))
-               (org-last-project-file (f-filename org-last-project-file))
-               (t (error "Not in a project")))))
-    (f-join org-directory
-            (concat (s-alnum-only name) ".project.org"))))
+  (or
+   ;; If we're capturing, check if we were looking at a project when the capture
+   ;; was started. Return that file if so.
+   (let ((prev-buf (nth 1 (buffer-list))))
+     (and (equal "*Capture*" (buffer-name))
+          (s-ends-with? ".project.org" (buffer-name prev-buf))
+          (buffer-file-name prev-buf)))
+   ;; Otherwise, compute the path to a project file based on the current path.
+   (let ((name (cond
+                ((projectile-project-p) (projectile-project-name))
+                ((projectile-project-buffer-names) (car (projectile-project-buffer-names)))
+                (t (error "Not in a project")))))
+     (f-join org-directory
+             (concat (s-alnum-only name) ".project.org")))))
 
 (defun cb-org:show-todo-list ()
   "Show the todo list.
