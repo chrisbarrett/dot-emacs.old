@@ -29,10 +29,11 @@
 (require 'cl-lib)
 (require 's)
 (require 'dash)
-(autoload 'bbdb-records "bbdb")
+(autoload 'bbdb-record-name "bbdb")
 (autoload 'bbdb-record-mail "bbdb")
 (autoload 'bbdb-create-internal "bbdb-com")
-(autoload 'bbdb-record-name "bbdb")
+(autoload 'bbdb-records "bbdb")
+(autoload 'bbdb-save "bbdb")
 
 (defun osxc/contacts-to-string ()
   "Call the contacts program.  Return a formatted string representing the user's contacts."
@@ -100,24 +101,22 @@ CONTACTS-SHELL-OUTPUT is the result from `osxc/contacts-to-string'."
                 (-intersection (bbdb-record-mail it) mails))
             (bbdb-records))))
 
-(defun import-osx-contacts-to-bbdb ()
-  "Import contacts from the OS X address book to BBDB."
-  (interactive)
+(defun import-osx-contacts-to-bbdb (&optional quiet)
+  "Import contacts from the OS X address book to BBDB.
+When QUIET is non-nil, do not print summary of added items."
+  (interactive "P")
   (require 'bbdb)
   (let ((counter 0))
-
     ;; Import contacts.
     (--each (osxc/parse-contacts (osxc/contacts-to-string))
       (unless (osxc/bbdb-contains-record? it)
         (apply 'bbdb-create-internal it)
         (incf counter)))
-
-    ;; Save bbdb file.
-    (with-current-buffer (get-buffer ".bbdb")
-      (save-buffer))
-
-    (message "%s %s added to BBDB" counter
-             (if (= 1 counter) "contact" "contacts"))))
+    ;; Clean up.
+    (bbdb-save)
+    (unless quiet
+      (message "%s %s added to BBDB" counter
+               (if (= 1 counter) "contact" "contacts")))))
 
 (provide 'osx-contacts)
 
