@@ -83,6 +83,7 @@
         (eshell-send-input)))
 
     (hook-fn 'eshell-mode-hook
+      (local-set-key (kbd "M->") 'cb:append-buffer)
       (local-set-key (kbd "C-l") 'eshell/clear)
       (local-set-key (kbd "C-<return>") 'eshell-subshelling-ret))
 
