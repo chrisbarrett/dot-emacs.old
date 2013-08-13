@@ -393,7 +393,6 @@ Non-nil if modifications where made."
                ":LOGBOOK:"
                ":CAPTURED: %U"
                ":END:")
-             :empty-lines 1
              :clock-in t
              :clock-resume t)
 
@@ -404,7 +403,6 @@ Non-nil if modifications where made."
                ":LOGBOOK:"
                ":CAPTURED: %U"
                ":END:")
-             :empty-lines 1
              :clock-in t
              :clock-resume t)
 
@@ -422,7 +420,6 @@ Non-nil if modifications where made."
                ":CAPTURED: %U"
                ":END:")
              :immediate-finish t
-             :empty-lines 1
              :clock-resume t)
 
             ("h" "Habit" entry
@@ -437,8 +434,7 @@ Non-nil if modifications where made."
                ":LOGBOOK:"
                ":CAPTURED: %U"
                ":END:")
-             :clock-resume t
-             :empty-lines 1)
+             :clock-resume t)
 
             ("r" "Reading" entry
              (file+olp org-default-notes-file "Someday" "Readings")
@@ -508,7 +504,6 @@ Non-nil if modifications where made."
                ":CAPTURED: %U"
                ":END:")
              :kill-buffer t
-             :empty-lines 1
              :clock-resume t
              :clock-in t)
 
