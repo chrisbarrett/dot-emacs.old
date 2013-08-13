@@ -426,7 +426,7 @@ Non-nil if modifications where made."
                ":END:")
              :immediate-finish t
              :empty-lines 1
-             :clock-keep t)
+             :clock-resume t)
 
             ("h" "Habit" entry
              (file+headline org-default-notes-file "Habits")
@@ -512,6 +512,7 @@ Non-nil if modifications where made."
                ":END:")
              :kill-buffer t
              :empty-lines 1
+             :clock-resume t
              :clock-in t)
 
             ("N" "Project Note" entry
