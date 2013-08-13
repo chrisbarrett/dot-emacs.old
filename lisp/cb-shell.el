@@ -91,19 +91,31 @@
     ;;
     ;; Displays the current working directory only when it changes.
 
-    (defun cb-eshell:cwd-format ()
-      (format "\n   → %s\n" (abbreviate-file-name (eshell/pwd))))
+    (defun cb-eshell:cwd-info ()
+      (concat
+       "\n"
+       "------------------------- "
+       (abbreviate-file-name (eshell/pwd))
+       "\n"))
 
     (defvar cb-eshell:prev-dir nil)
 
-    (setq eshell-prompt-function
-          (lambda ()
-            (prog1
-                (concat
-                 (unless (equal (eshell/pwd) cb-eshell:prev-dir)
-                   (cb-eshell:cwd-format))
-                 (if (= (user-uid) 0) " # " " % "))
-              (setq cb-eshell:prev-dir (eshell/pwd)))))))
+    (setq
+
+     eshell-prompt-regexp
+     (rx bol
+         (* (not (any "#" "%")))
+         (or "#" "%")
+         space)
+
+     eshell-prompt-function
+     (lambda ()
+       (prog1
+           (concat
+            (unless (equal (eshell/pwd) cb-eshell:prev-dir)
+              (cb-eshell:cwd-info))
+            (if (= (user-uid) 0) " # " " % "))
+         (setq cb-eshell:prev-dir (eshell/pwd)))))))
 
 (use-package term
   :defer t
