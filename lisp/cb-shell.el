@@ -74,7 +74,8 @@
                          (search-backward-regexp (rx bol space (or "#" "%") space) nil t)
                          (point)))))
 
-    (bind-key "C-l" 'eshell/clear eshell-mode-map)
+    (hook-fn 'eshell-mode-hook
+      (local-set-key (kbd "C-l") 'eshell/clear))
 
     ;; Configure the eshell prompt.
     ;;
