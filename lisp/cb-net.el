@@ -104,6 +104,7 @@
      bbdb-use-popup t
      bbdb-electric t
      bbdb-pop-up-window-size 4
+     bbdb-mua-popup-window-size 4
      bddb-popup-target-lines 1
      bbdb-dwim-net-address-allow-redundancy t
      bbdb-quiet-about-name-mismatches 2
@@ -118,6 +119,7 @@
      ;; don't ask about fake addresses
      bbdb-ignore-some-messages-alist
      '(( "From" . "no.?reply\\|DAEMON\\|daemon\\|facebookmail\\|twitter")))
+    (autoload 'bbdb-message-clean-name-default "bbdb-mua")
     (bbdb-initialize 'gnus 'message)))
 
 (use-package bbdb-vcard
