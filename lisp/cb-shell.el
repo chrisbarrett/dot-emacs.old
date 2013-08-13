@@ -74,8 +74,17 @@
                          (search-backward-regexp (rx bol space (or "#" "%") space) nil t)
                          (point)))))
 
+    (defun eshell-subshelling-ret ()
+      (interactive)
+      (end-of-line)
+      (unless (s-matches? (rx "&" (* space)) (current-line))
+        (just-one-space)
+        (insert "&")
+        (eshell-send-input)))
+
     (hook-fn 'eshell-mode-hook
-      (local-set-key (kbd "C-l") 'eshell/clear))
+      (local-set-key (kbd "C-l") 'eshell/clear)
+      (local-set-key (kbd "C-<return>") 'eshell-subshelling-ret))
 
     ;; Configure the eshell prompt.
     ;;
