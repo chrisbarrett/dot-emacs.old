@@ -44,7 +44,6 @@
 (defvar org-export-publishing-directory (f-join user-home-directory "Desktop"))
 (defvar org-agenda-diary-file (f-join org-directory "diary.org"))
 (defvar org-export-exclude-tags '("noexport" "crypt"))
-(defvar org-last-project-file nil)
 (defvar calendar-date-style 'european)
 
 (declare-modal-executor org-agenda-fullscreen
@@ -376,15 +375,6 @@ Non-nil if modifications where made."
       "Prompt the user for string, with reference to a file."
       (read-string (format "%s [%s]: " prompt (f-short file))
                    nil t))
-
-    ;; Insert project file headers when navigating to the project file.
-    (hook-fn 'org-capture-after-finalize-hook
-      (when org-last-project-file
-        (let ((name (projectile-project-name)))
-          (with-current-buffer (find-file-noselect org-last-project-file)
-            (save-excursion
-              (cb-org:prepare-project-file name)
-              (cb-org:skip-headers))))))
 
     ;; Enter insertion mode in capture buffer.
     (hook-fn 'org-capture-mode-hook
