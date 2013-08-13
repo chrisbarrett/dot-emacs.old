@@ -1,97 +1,112 @@
-;;; osx-contacts.el --- Read contact address from Contacts.app
+;;; osx-contacts.el --- Import OS X Address Book to bbdb.
 
-;; Copyright © 2013 Sébastien Gross <seb•ɑƬ•chezwam•ɖɵʈ•org>
+;; Copyright (C) 2013 Chris Barrett
 
-;; Author: Sébastien Gross <seb•ɑƬ•chezwam•ɖɵʈ•org>
-;; Keywords: emacs,
-;; Created: 2013-04-07
-;; Last changed: 2013-04-08 18:25:12
-;; Licence: WTFPL, grab your copy here: http://sam.zoy.org/wtfpl/
+;; Author: Chris Barrett <chris.d.barrett@me.com>
+;; Version: 20130813.0007
 
-;; This file is NOT part of GNU Emacs.
+;; This file is not part of GNU Emacs.
+
+;; This program is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;;
 
+;; Import OS X Address Book into BBDB. Requires the `contacts' program.
 
 ;;; Code:
 
-(eval-when-compile
-  (require 'cl)
-  (require 'bbdb nil t))
+(require 'cl-lib)
+(require 's)
+(require 'dash)
+(autoload 'bbdb-create-internal "bbdb-com")
+(autoload 'bbdb-records "bbdb")
 
-(defgroup osx-contacts nil
-  "Configuration group for `osx-contacts'."
-  :group 'osx-contacts)
+(defun osxc/contacts-to-string ()
+  "Call the contacts program.  Return a formatted string representing the user's contacts."
+  (shell-command-to-string
+   (format "contacts -H -l -f '%s'"
+           (s-join "\t"
+                   '(
+                     ;; Names
+                     "%n"                  ; last name
+                     "%c"                   ; company
+                     "%nn"                  ; nickname
+                     ;; email
+                     "%he"                  ; home
+                     "%we"                  ; work
+                     "%oe"                  ; other
+                     ;; phone
+                     "%hp"                  ; home
+                     "%mp"                  ; mobile
+                     "%Mp"                  ; main
+                     "%wp"                  ; work
+                     )))))
 
-(defcustom osx-contacts-sqlite-bin (executable-find "sqlite3")
-  "Path to `sqlite3' binary file."
-  :group 'osx-contacts
-  :type 'string)
+(defun* osxc/parse-card
+    ((&optional
+      name company aka
+      home-email work-email other-email
+      home-phone mobile-phone main-phone work-phone))
+  "Parse an individual card fields list into the format expected `bbdb-create-internal'."
+  (cl-flet ((maybe (s) (unless (s-blank? s) s))
+            (maybe-vec (label s) (unless (s-blank? s) (vector label s)))
+            (non-null (&rest xs) (-remove 'null xs)))
+    (list
+     name
+     nil ; no affix
+     (non-null (maybe aka))
+     (non-null (maybe company))
+     (non-null (maybe home-email) (maybe work-email) (maybe other-email))
+     (non-null (maybe-vec "home" home-phone)
+               (maybe-vec "mobile" mobile-phone)
+               (maybe-vec "main" main-phone)
+               (maybe-vec "work" work-phone)))))
 
-(defcustom osx-contacts-base
-  (file-exists-p(expand-file-name "~/Library/Application Support/AddressBook/AddressBook-v22.abcddb"))
-  "Location of Contacts.app database."
-  :group 'osx-contacts
-  :type 'string)
+(defun osxc/parse-contacts (contacts-shell-output)
+  "Parse the output from contacts into a form usable by `bbdb-create-internal'.
+CONTACTS-SHELL-OUTPUT is the result from `osxc/contacts-to-string'."
+  (->> contacts-shell-output
+    ;; Each line represents a card.
+    (s-split "\n")
+    ;; Split each line into fields
+    (--map (-map 's-trim (s-split "\t" it)))
+    ;; BBDB requires that names can be split into first+last. Filter degenerate
+    ;; cards that don't conform to this.
+    (--filter (let ((name (car it)))
+                (equal 2 (length (s-split-words name)))))
+    ;; Parse individual cards.
+    (-map 'osxc/parse-card)))
 
-(defvar osx-contacts-query
-  "SELECT ZABCDRECORD.ZFIRSTNAME,
-          ZABCDRECORD.ZLASTNAME,
-          ZABCDRECORD.ZNICKNAME,
-          (SELECT GROUP_CONCAT(ZABCDEMAILADDRESS.ZADDRESS)
-                  FROM ZABCDEMAILADDRESS
-                  WHERE ZABCDEMAILADDRESS.ZOWNER = ZABCDRECORD.Z_PK)
-           AS EMAIL
-    FROM ZABCDRECORD
-    WHERE NOT(EMAIL IS NULL);"
-  "Query to run")
+(defun osxc/bbdb-contains-record? (record)
+  "Check whether BBDB contains an entry with the name name or email address as RECORD."
+  (destructuring-bind (&optional name _affix _company _aka mails &rest rest) record
+    (--any? (or (equal (bbdb-record-name it) name)
+                (-intersection (bbdb-record-mail it) mails))
+            (bbdb-records))))
 
-
-(defun osx-contacts-parse-buffer ()
-  "Parse the result of `osx-contacts-sync' and save result to
-`bbdb-file'."
-  (let ((str (buffer-substring-no-properties (point-min) (point-max))))
-    (with-temp-file (if (boundp 'bbdb-file) bbdb-file "~/.bbdb")
-      (insert ";; -*- mode: Emacs-Lisp; coding: utf-8; -*-\n"
-              ";;; file-format: 7\n")
-      (loop for l in (split-string str "\n" t)
-            do (destructuring-bind
-                   (first-name name nick email) (split-string l "|")
-                 (insert
-                  (format
-                   "%S\n"
-                   (vector
-                    first-name name nil (when (> (length nick) 0) (list nick))
-                    nil nil nil (split-string email "," t) nil nil))))))))
-
-(defun osx-contacts-run-sentinel (proc change)
-  "`osx-contacts-run' process sentinel."
-  (when (eq (process-status proc) 'exit)
-    (let ((status  (process-exit-status proc))
-          (cmd-buf (process-get proc :cmd-buf)))
-      (if (not (eq 0 status))
-          (progn
-            (when (process-buffer proc)
-              (set-window-buffer (selected-window) cmd-buf))
-            (error "OSX Contacts ERROR"))
-        (with-current-buffer cmd-buf
-          (osx-contacts-parse-buffer))
-        (kill-buffer cmd-buf)))))
-
-;;;###autoload
-(defun osx-contacts-sync ()
-  "Replace contents of bbdb file with OSX contacts."
+(defun import-osx-contacts-to-bbdb ()
+  "Import contacts from the OS X address book to BBDB."
   (interactive)
-  (let* ((cmd-line (list osx-contacts-sqlite-bin
-                         (expand-file-name osx-contacts-base)
-                         osx-contacts-query))
-         (cmd-buf (get-buffer-create " *OSX Contacts*"))
-         (proc (apply 'start-process (car cmd-line)
-                      cmd-buf (car cmd-line) (cdr cmd-line))))
-    (process-put proc :cmd-buf cmd-buf)
-    (set-process-sentinel proc 'osx-contacts-run-sentinel)))
+  (require 'bbdb)
+  (--each (osxc/parse-contacts (osxc/contacts-to-string))
+    (unless (osxc/bbdb-contains-record? it)
+      (apply 'bbdb-create-internal it))))
 
 (provide 'osx-contacts)
+
+;; Local Variables:
+;; lexical-binding: t
+;; End:
 
 ;;; osx-contacts.el ends here
