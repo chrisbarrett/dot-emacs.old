@@ -201,6 +201,9 @@ If this is the trailing colon for a hash key, insert padding."
   :diminish robe-mode
   :defer t
   :commands robe-mode
+  :config
+  ;; Undefine keys conflicting with org src mode.
+  (define-key robe-mode-map (kbd "C-c C-k") nil)
   :init
   (hook-fn 'ruby-mode-hook
     (robe-mode +1)
@@ -216,7 +219,12 @@ If this is the trailing colon for a hash key, insert padding."
   :diminish rinari-minor-mode
   :commands rinari-minor-mode
   :init
-  (add-hook 'cb:rails-modes-hook 'rinari-minor-mode)
+  (hook-fn 'cb:rails-modes-hook
+    (rinari-minor-mode
+     (if (or (true? org-src-mode)
+             (s-starts-with? "*Org Src " (buffer-name)))
+         -1
+       +1)))
   :config
   (progn
     ;; Rebind rinari keys.
@@ -252,10 +260,9 @@ If this is the trailing colon for a hash key, insert padding."
       "z" 'rinari-find-rspec-fixture)
 
     (hook-fn 'rinari-minor-mode-hook
-      (setq
-       rinari-tags-file-name "TAGS"
-       rng-nxml-auto-validate-flag nil
-       nxml-degraded t))))
+      (setq rinari-tags-file-name "TAGS"
+            rng-nxml-auto-validate-flag nil
+            nxml-degraded t))))
 
 ;; (use-package rsense
 ;;   :ensure t
