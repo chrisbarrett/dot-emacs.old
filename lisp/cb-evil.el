@@ -127,7 +127,7 @@ Creates STATE bindings for DEFS. DEFS are comprised of alternating string-symbol
       "^" 'evil-first-non-blank-of-visual-line
       "0" 'evil-beginning-of-visual-line)
 
-    (evil-define-text-object evil-line (count)
+    (evil-define-text-object evil-line (count &rest _)
       "Move COUNT - 1 lines down."
       (list (save-excursion
               (beginning-of-visual-line)
