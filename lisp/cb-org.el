@@ -272,7 +272,10 @@ Non-nil if modifications where made."
       "z m" (command (org-global-cycle 1))
       "z r" (command (org-global-cycle 0)))
 
-    (define-key org-mode-map (kbd "C-c C-.") 'org-time-stamp-inactive)
+    (define-keys org-mode-map
+      "C-c C-." 'org-time-stamp-inactive
+      ;; disable annoying comment toggle key
+      "C-c ;" nil)
 
 ;;;; Hooks
 
