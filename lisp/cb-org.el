@@ -181,6 +181,7 @@ Non-nil if modifications where made."
       "C-o" 'cb-org-map
       "C-o a" 'cb-org:show-agenda-list
       "C-o C-a" 'org-agenda
+      "C-o C-f" 'org-search-view
       "C-o d" (command (find-file org-agenda-diary-file))
       "C-o K" (command (org-capture nil "T"))
       "C-o k" 'cb-org:capture-dwim
