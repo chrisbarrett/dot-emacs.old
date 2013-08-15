@@ -203,8 +203,8 @@ $(scion_server) :
 
 # ----------------------------------------------------------------------------
 
-org_url  = http://orgmode.org/org-latest.tar.gz
-org_gz   = $(tmp)/org-latest.tar.gz
+org_url = http://orgmode.org/org-latest.tar.gz
+org_gz  = $(tmp)/org-latest.tar.gz
 org_src = $(etc)/org-mode
 
 .PHONY: org
