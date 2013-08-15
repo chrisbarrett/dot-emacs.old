@@ -320,6 +320,7 @@ Non-nil if modifications where made."
 
     (org-babel-do-load-languages
      'org-babel-load-languages '((python . t)
+                                 (C . t)
                                  (calc . t)
                                  (emacs-lisp . t)
                                  (ruby . t)
