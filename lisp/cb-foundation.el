@@ -97,6 +97,7 @@
 
 ;; Enable alt latin input method
 ;; (setq-default default-input-method 'latin-alt-postfix)
+(global-set-key (kbd "C-x C-\\") 'set-input-method)
 (setq default-input-method 'latin-alt-postfix)
 (hook-fn 'prog-mode-hook
   (set-input-method nil))
