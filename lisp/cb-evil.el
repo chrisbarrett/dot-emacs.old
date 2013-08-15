@@ -99,6 +99,7 @@ Creates STATE bindings for DEFS. DEFS are comprised of alternating string-symbol
                   (-partition-all 2 defs)))))
   :config
   (progn
+
     (defun evil-undefine ()
       (interactive)
       (let (evil-mode-map-alist)
@@ -113,6 +114,60 @@ Creates STATE bindings for DEFS. DEFS are comprised of alternating string-symbol
     (define-key evil-insert-state-map (kbd "C-z") 'evil-undefine)
     (define-key evil-emacs-state-map  (kbd "M-z") 'evil-normal-state)
     (define-key evil-visual-state-map (kbd "C-z") 'evil-undefine)
+
+    ;;;; Visual line fixes
+
+    ;; Evil commands should respect visual-line mode and operate on the visible
+    ;; line endings rather than logical lines.
+
+    (define-keys evil-motion-state-map
+      "j" 'evil-next-visual-line
+      "k" 'evil-previous-visual-line
+      "$" 'evil-end-of-visual-line
+      "^" 'evil-first-non-blank-of-visual-line
+      "0" 'evil-beginning-of-visual-line)
+
+    (evil-define-text-object evil-line (count)
+      "Move COUNT - 1 lines down."
+      (list (save-excursion
+              (beginning-of-visual-line)
+              (point))
+            (save-excursion
+              (beginning-of-visual-line (1+ (or count 1)))
+              (point))))
+
+    (defun evil-insert-line (count &optional vcount)
+      "Switch to Insert state just before the first non-blank character
+on the current line. The insertion will be repeated COUNT times."
+      (interactive "p")
+      (if evil-auto-indent
+          (goto-char (max (save-excursion (back-to-indentation) (point))
+                          (save-excursion (beginning-of-visual-line) (point))))
+        (beginning-of-visual-line))
+      (setq evil-insert-count count
+            evil-insert-lines nil
+            evil-insert-vcount (and vcount
+                                    (> vcount 1)
+                                    (list (line-number-at-pos)
+                                          #'evil-first-non-blank
+                                          vcount)))
+      (evil-insert-state 1))
+
+    (defun evil-append-line (count &optional vcount)
+      "Switch to Insert state at the end of the current line.
+The insertion will be repeated COUNT times."
+      (interactive "p")
+      (end-of-visual-line)
+      (setq evil-insert-count count
+            evil-insert-lines nil
+            evil-insert-vcount (and vcount
+                                    (> vcount 1)
+                                    (list (line-number-at-pos)
+                                          #'end-of-line
+                                          vcount)))
+      (evil-insert-state 1))
+
+    ;;; General config
 
     (after 'man
       (evil-declare-key 'normal Man-mode-map (kbd "q") 'Man-kill))
