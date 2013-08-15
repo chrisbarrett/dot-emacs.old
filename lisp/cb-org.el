@@ -30,7 +30,8 @@
 (require 'cb-foundation)
 (require 'cb-mode-groups)
 (require 'noflet)
-(require 'f)
+(require 'cb-lib)
+(require 'cb-evil)
 (autoload 'projectile-project-p "projectile")
 (autoload 'projectile-project-name "projectile")
 (autoload 'projectile-project-buffer-names "projectile")
@@ -50,14 +51,9 @@
   :bind "M-O"
   :command (org-agenda-list prefix-arg nil 1))
 
-(defmacro with-org-default-notes-buffer (&rest body)
-  "Perform BODY with the `org-defaut-notes-buffer' set to current."
-  (declare (indent 0))
-  (let ((buf (cl-gensym)))
-    `(-when-let (,buf (--first-buffer (equal (buffer-file-name it)
-                                             org-default-notes-file)))
-       (with-current-buffer ,buf
-         ,@body))))
+(when (or (daemonp) (display-graphic-p))
+  (hook-fn 'after-init-hook
+    (executor:org-agenda-fullscreen)))
 
 (defun cb-org:project-file ()
   "Get the path to the project file for the current project."
@@ -132,14 +128,6 @@ Non-nil if modifications where made."
   (add-hook 'message-mode-hook 'orgtbl-mode)
   (define-key message-mode-map (kbd "C-c RET RET") 'org-ctrl-c-ret))
 
-(defun cb-org:capture-dwim ()
-  (interactive)
-  (cond
-   ((region-active-p)
-    (org-capture nil "n"))
-   (t
-    (org-capture nil "t"))))
-
 (use-package org
   :defer t
   :init
@@ -161,7 +149,7 @@ Non-nil if modifications where made."
       "C-o C-f" 'org-search-view
       "C-o d" (command (find-file org-agenda-diary-file))
       "C-o K" (command (org-capture nil "T"))
-      "C-o k" 'cb-org:capture-dwim
+      "C-o k" (command (org-capture nil "t"))
       "C-o n" (command (find-file org-default-notes-file))
 
       "C-o p" (command
@@ -293,9 +281,11 @@ Non-nil if modifications where made."
 
     (defun cb-org:save-notes ()
       "Save the notes file."
-      (with-org-default-notes-buffer
-        (when (buffer-modified-p)
-          (save-buffer))))
+      (-when-let (buf (--first-buffer (equal (buffer-file-name it)
+                                             org-default-notes-file)))
+        (with-current-buffer buf
+          (when (buffer-modified-p)
+            (save-buffer)))))
 
 ;;;; Org babel
 
@@ -349,476 +339,457 @@ Non-nil if modifications where made."
       (when (minibufferp (window-buffer (selected-window)))
         (other-window 1)))))
 
-(use-package org-capture
-  :commands (org-capture)
-  :config
-  (progn
+(after 'org
 
-    (defun* cb-org:read-string-with-file-ref
-        (&optional (prompt "TODO")
-                   (file (cb-org:project-file)))
-      "Prompt the user for string, with reference to a file."
-      (read-string (format "%s [%s]: " prompt (f-short file))
-                   nil t))
+  (use-package org-capture
+    :config
+    (progn
 
-    ;; Enter insertion mode in capture buffer.
-    (hook-fn 'org-capture-mode-hook
-      (when (fboundp 'evil-append-line)
-        (evil-append-line 1)))
+      (defun* cb-org:read-string-with-file-ref
+          (&optional (prompt "TODO")
+                     (file (cb-org:project-file)))
+        "Prompt the user for string, with reference to a file."
+        (read-string (format "%s [%s]: " prompt (f-short file))
+                     nil t))
 
-    (add-hook 'org-capture-before-finalize-hook 'indent-buffer 'append)
+      ;; Enter insertion mode in capture buffer.
+      (hook-fn 'org-capture-mode-hook
+        (when (fboundp 'evil-append-line)
+          (evil-append-line 1)))
 
-    (setq org-capture-templates
-          `(("t" "Todo" entry
-             (file+headline org-default-notes-file "Tasks")
-             ,(s-unlines
-               (concat "* TODO %^{Description}%?    "
-                       ":%^{Context|@anywhere|@errand|@funtimes|@home|@project|@work}:")
-               "SCHEDULED: %^{Schedule}t"
-               ":LOGBOOK:"
-               ":CAPTURED: %U"
-               ":END:")
-             :clock-in t
-             :clock-resume t)
+      (add-hook 'org-capture-before-finalize-hook 'indent-buffer 'append)
 
-            ("s" "Todo Someday" entry
-             (file+olp org-default-notes-file "Someday" "Tasks")
-             ,(s-unlines
-               "* TODO %^{Description}%?"
-               ":LOGBOOK:"
-               ":CAPTURED: %U"
-               ":END:")
-             :clock-in t
-             :clock-resume t)
+      (setq org-capture-templates
+            `(("t" "Todo" entry
+               (file+headline org-default-notes-file "Tasks")
+               ,(s-unlines
+                 (concat "* TODO %^{Description}%?    "
+                         ":%^{Context|@anywhere|@errand|@funtimes|@home|@project|@work}:")
+                 "SCHEDULED: %^{Schedule}t"
+                 ":LOGBOOK:"
+                 ":CAPTURED: %U"
+                 ":END:")
+               :clock-in t
+               :clock-resume t)
 
-            ("d" "Diary" entry
-             (file+datetree org-agenda-diary-file)
-             "* %?\n%^t"
-             :clock-resume t)
+              ("s" "Todo Someday" entry
+               (file+olp org-default-notes-file "Someday" "Tasks")
+               ,(s-unlines
+                 "* TODO %^{Description}%?"
+                 ":LOGBOOK:"
+                 ":CAPTURED: %U"
+                 ":END:")
+               :clock-in t
+               :clock-resume t)
 
-            ("b" "Bill" entry
-             (file+headline org-default-notes-file "Bills")
-             ,(s-unlines
-               "* TODO %^{Description}"
-               "DEADLINE: %^{Deadline}t"
-               ":LOGBOOK:"
-               ":CAPTURED: %U"
-               ":END:")
-             :immediate-finish t
-             :clock-resume t)
+              ("d" "Diary" entry
+               (file+datetree org-agenda-diary-file)
+               "* %?\n%^t"
+               :clock-resume t)
 
-            ("h" "Habit" entry
-             (file+headline org-default-notes-file "Habits")
-             ,(s-unlines
-               (concat "* TODO %^{Description}%?    "
-                       ":%^{Context|@anywhere|@errand|@funtimes|@home|@project|@work}:")
-               "SCHEDULED: %^{Schedule}t"
-               ":PROPERTIES:"
-               ":STYLE: habit"
-               ":END:"
-               ":LOGBOOK:"
-               ":CAPTURED: %U"
-               ":END:")
-             :clock-resume t)
+              ("b" "Bill" entry
+               (file+headline org-default-notes-file "Bills")
+               ,(s-unlines
+                 "* TODO %^{Description}"
+                 "DEADLINE: %^{Deadline}t"
+                 ":LOGBOOK:"
+                 ":CAPTURED: %U"
+                 ":END:")
+               :immediate-finish t
+               :clock-resume t)
 
-            ("r" "Reading" entry
-             (file+olp org-default-notes-file "Someday" "Readings")
-             ,(s-unlines
-               "* TODO %^{Title}"
-               ":LOGBOOK:"
-               ":CAPTURED: %U"
-               ":END:")
-             :immediate-finish t
-             :clock-resume t)
+              ("h" "Habit" entry
+               (file+headline org-default-notes-file "Habits")
+               ,(s-unlines
+                 (concat "* TODO %^{Description}%?    "
+                         ":%^{Context|@anywhere|@errand|@funtimes|@home|@project|@work}:")
+                 "SCHEDULED: %^{Schedule}t"
+                 ":PROPERTIES:"
+                 ":STYLE: habit"
+                 ":END:"
+                 ":LOGBOOK:"
+                 ":CAPTURED: %U"
+                 ":END:")
+               :clock-resume t)
 
-            ("l" "Link" entry
-             (file+headline org-default-notes-file "Links")
-             ,(s-unlines
-               "* %a%?"
-               ":LOGBOOK:"
-               ":CAPTURED: %U"
-               ":END:")
-             :immediate-finish t
-             :clock-resume t)
+              ("r" "Reading" entry
+               (file+olp org-default-notes-file "Someday" "Readings")
+               ,(s-unlines
+                 "* TODO %^{Title}"
+                 ":LOGBOOK:"
+                 ":CAPTURED: %U"
+                 ":END:")
+               :immediate-finish t
+               :clock-resume t)
 
-            ("m" "Listening" entry
-             (file+olp org-default-notes-file "Someday" "Listening")
-             ,(s-unlines
-               "* TODO %^{Title}"
-               ":LOGBOOK:"
-               ":CAPTURED: %U"
-               ":END:")
-             :immediate-finish t
-             :clock-resume t)
+              ("l" "Link" entry
+               (file+headline org-default-notes-file "Links")
+               ,(s-unlines
+                 "* %a%?"
+                 ":LOGBOOK:"
+                 ":CAPTURED: %U"
+                 ":END:")
+               :immediate-finish t
+               :clock-resume t)
 
-            ("n" "Note" entry
-             (file+headline org-default-notes-file "Notes")
-             ,(s-unlines
-               "* %i%?"
-               ":LOGBOOK:"
-               ":CAPTURED: %U"
-               ":END:")
-             :clock-resume t)
+              ("m" "Listening" entry
+               (file+olp org-default-notes-file "Someday" "Listening")
+               ,(s-unlines
+                 "* TODO %^{Title}"
+                 ":LOGBOOK:"
+                 ":CAPTURED: %U"
+                 ":END:")
+               :immediate-finish t
+               :clock-resume t)
 
-            ("z" "Task Note" entry
-             (clock)
-             ,(s-unlines
-               "* %i%?"
-               ":LOGBOOK:"
-               ":CAPTURED: %U"
-               ":END:")
-             :clock-keep t
-             :kill-buffer t)
+              ("n" "Note" entry
+               (file+headline org-default-notes-file "Notes")
+               ,(s-unlines
+                 "* %i%?"
+                 ":LOGBOOK:"
+                 ":CAPTURED: %U"
+                 ":END:")
+               :clock-resume t)
 
-            ("L" "Task Link" entry
-             (clock)
-             ,(s-unlines
-               "* %a%?"
-               ":LOGBOOK:"
-               ":CAPTURED: %U"
-               ":END:")
-             :clock-keep t
-             :kill-buffer t)
+              ("z" "Task Note" entry
+               (clock)
+               ,(s-unlines
+                 "* %i%?"
+                 ":LOGBOOK:"
+                 ":CAPTURED: %U"
+                 ":END:")
+               :clock-keep t
+               :kill-buffer t)
 
-            ("T" "Project Task" entry
-             (file+headline (cb-org:project-file) "Tasks")
-             ,(s-unlines
-               "* TODO %(cb-org:read-string-with-file-ref)%?"
-               "SCHEDULED: %^{Schedule}t"
-               ":LOGBOOK:"
-               ":CAPTURED: %U"
-               ":END:")
-             :kill-buffer t
-             :clock-resume t
-             :clock-in t)
+              ("L" "Task Link" entry
+               (clock)
+               ,(s-unlines
+                 "* %a%?"
+                 ":LOGBOOK:"
+                 ":CAPTURED: %U"
+                 ":END:")
+               :clock-keep t
+               :kill-buffer t)
 
-            ("N" "Project Note" entry
-             (file+headline (cb-org:project-file) "Notes")
-             ,(s-unlines
-               "* %i%?"
-               ":LOGBOOK:"
-               ":CAPTURED: %U"
-               ":END:")
-             :clock-keep t
-             :kill-buffer t)))))
+              ("T" "Project Task" entry
+               (file+headline (cb-org:project-file) "Tasks")
+               ,(s-unlines
+                 "* TODO %(cb-org:read-string-with-file-ref)%?"
+                 "SCHEDULED: %^{Schedule}t"
+                 ":LOGBOOK:"
+                 ":CAPTURED: %U"
+                 ":END:")
+               :kill-buffer t
+               :clock-resume t
+               :clock-in t)
 
-(use-package org-clock
-  :defer t
-  :init
-  (after 'org (require 'org-clock))
-
-  :config
-  (progn
-    (org-clock-persistence-insinuate)
-    (setq org-clock-history-length 20
-          org-clock-in-resume t
-          org-clock-into-drawer t
-          org-clock-out-remove-zero-time-clocks t
-          org-clock-out-when-done t
-          org-clock-persist t
-          org-clock-persist-query-resume nil
-          org-clock-auto-clock-resolution 'when-no-clock-is-running
-          org-clock-report-include-clocking-task t)
-
-    (defvar cb-org:keep-clock-running nil
-      "Used to enforce clocking to default task when clocking out.")
-
-    (defun cb-org:project? ()
-      "Any task with a todo keyword subtask"
-      (save-restriction
-        (widen)
-        (let ((has-subtask)
-              (subtree-end (save-excursion (org-end-of-subtree t)))
-              (is-a-task (member (nth 2 (org-heading-components)) org-todo-keywords-1)))
-          (save-excursion
-            (forward-line 1)
-            (while (and (not has-subtask)
-                        (< (point) subtree-end)
-                        (re-search-forward "^\*+ " subtree-end t))
-              (when (member (org-get-todo-state) org-todo-keywords-1)
-                (setq has-subtask t))))
-          (and is-a-task has-subtask))))
-
-    (defun cb-org:task? ()
-      "Any task with a todo keyword and no subtask"
-      (save-restriction
-        (widen)
-        (let ((has-subtask)
-              (subtree-end (save-excursion (org-end-of-subtree t)))
-              (is-a-task (member (nth 2 (org-heading-components)) org-todo-keywords-1)))
-          (save-excursion
-            (forward-line 1)
-            (while (and (not has-subtask)
-                        (< (point) subtree-end)
-                        (re-search-forward "^\*+ " subtree-end t))
-              (when (member (org-get-todo-state) org-todo-keywords-1)
-                (setq has-subtask t))))
-          (and is-a-task (not has-subtask)))))
-
-    ;;; Clocking in changes TODO state to NEXT.
-
-    (defun cb-org:clock-in-to-next-state (_kw)
-      "Move a task from TODO to NEXT when clocking in.
-Skips capture tasks, projects, and subprojects.
-Switch projects and subprojects from NEXT back to TODO."
-      (unless (true? org-capture-mode)
-        (cond
-         ((and (-contains? '("TODO") (org-get-todo-state))
-               (cb-org:task?))
-          "NEXT")
-         ((and (-contains? '("NEXT") (org-get-todo-state))
-               (cb-org:project?))
-          "TODO"))))
-
-    (setq org-clock-in-switch-to-state 'cb-org:clock-in-to-next-state)
-
-    ;;; Clocking commands
-
-    (defun cb-org:punch-in (arg)
-      "Start continuous clocking and set the default task to the
-selected task.  If no task is selected set the Organization task
-as the default task."
-      (interactive "p")
-      (setq cb-org:keep-clock-running t)
-      (if (equal major-mode 'org-agenda-mode)
-          ;; We're in the agenda
-          (let* ((marker (org-get-at-bol 'org-hd-marker))
-                 (tags (org-with-point-at marker (org-get-tags-at))))
-            (if (and (eq arg 4) tags)
-                (org-agenda-clock-in '(16))
-              (cb-org:clock-in-organization-task-as-default)))
-        ;; We are not in the agenda
-        (save-restriction
-          (widen)
-          ;; Find the tags on the current task
-          (if (and (equal major-mode 'org-mode)
-                   (not (org-before-first-heading-p))
-                   (eq arg 4))
-              (org-clock-in '(16))
-            (cb-org:clock-in-organization-task-as-default))))
-      (message "Punched in to [%s]." org-clock-current-task))
-
-    (defun cb-org:punch-out ()
-      (interactive)
-      (setq cb-org:keep-clock-running nil)
-      (when (org-clock-is-active)
-        (org-clock-out))
-      (org-agenda-remove-restriction-lock)
-      (message "Punched out."))
-
-    (defun cb-org:clock-in-default-task ()
-      (save-excursion
-        (org-with-point-at org-clock-default-task
-          (org-clock-in))))
-
-    (defun cb-org:clock-in-parent-task ()
-      "Move point to the parent (project) task if any and clock in"
-      (let ((parent-task))
-        (save-excursion
-          (save-restriction
-            (widen)
-            (while (and (not parent-task) (org-up-heading-safe))
-              (when (member (nth 2 (org-heading-components)) org-todo-keywords-1)
-                (setq parent-task (point))))
-            (if parent-task
-                (org-with-point-at parent-task
-                  (org-clock-in))
-              (when cb-org:keep-clock-running
-                (cb-org:clock-in-default-task)))))))
-
-    (defvar cb-org:organization-task-id "EB155A82-92B2-4F25-A3C6-0304591AF2F9")
-
-    (defun cb-org:clock-in-organization-task-as-default ()
-      (interactive)
-      (org-with-point-at (org-id-find cb-org:organization-task-id 'marker)
-        (org-clock-in '(16))))
-
-    (defun cb-org:clock-out-maybe ()
-      (when (and cb-org:keep-clock-running
-                 (not org-clock-clocking-in)
-                 (marker-buffer org-clock-default-task)
-                 (not org-clock-resolving-clocks-due-to-idleness))
-        (cb-org:clock-in-parent-task)))
-
-    (add-hook 'org-clock-out-hook 'cb-org:clock-out-maybe 'append)
-
-    (bind-keys
-      :overriding? t
-      "C-o C-c" (command (org-clock-in '(4)))
-      "C-o C-i" 'cb-org:punch-in
-      "C-o C-o" 'cb-org:punch-out)
-
-    ;; Remove empty LOGBOOK drawers when clocking out.
-    (hook-fn 'org-clock-out-hook
-      :append t
-      (save-excursion
-        (beginning-of-line 0)
-        (org-remove-empty-drawer-at "LOGBOOK" (point))))
-
-    ;;; Automatically change projects from NEXT to TODO
-
-    (defun cb-org:mark-next-parent-tasks-todo ()
-      "Visit each parent task and change NEXT states to TODO"
-      (let ((mystate (or (and (fboundp 'org-state)
-                              state)
-                         (nth 2 (org-heading-components)))))
-        (when mystate
-          (save-excursion
-            (while (org-up-heading-safe)
-              (when (member (nth 2 (org-heading-components)) (list "NEXT"))
-                (org-todo "TODO")))))))
-
-    (hook-fns '(org-after-todo-state-change-hook org-clock-in-hook)
-      :append t
-      (cb-org:mark-next-parent-tasks-todo))))
-
-(use-package org-agenda
-  :commands (org-agenda org-agenda-list org-agenda-redo)
-  :init
-  (progn
-    (defvar org-my-archive-expiry-days 2
-      "The number of days after which a completed task should be auto-archived.
-This can be 0 for immediate, or a floating point value.")
-
-    (when (or (daemonp) (display-graphic-p))
-      (hook-fn 'after-init-hook
-        (executor:org-agenda-fullscreen))))
-
-  :config
-  (progn
-
-    (add-to-list 'org-agenda-files org-directory)
+              ("N" "Project Note" entry
+               (file+headline (cb-org:project-file) "Notes")
+               ,(s-unlines
+                 "* %i%?"
+                 ":LOGBOOK:"
+                 ":CAPTURED: %U"
+                 ":END:")
+               :clock-keep t
+               :kill-buffer t)))))
 
 
-    (--each '(("d" "Daily Action List"
-               ((agenda "" ((org-agenda-ndays 1)
-                            (org-agenda-sorting-strategy
-                             '((agenda time-up priority-down tag-up)))
-                            (org-deadline-warning-days 0)))))
-              ("w" "Weekly Action List"
-               ((agenda "" ((org-agenda-ndays 7)
-                            (org-agenda-sorting-strategy
-                             '((agenda time-up priority-down tag-up)))
-                            (org-deadline-warning-days 0))))))
+  (use-package org-agenda
+    :config
+    (progn
 
-      (add-to-list 'org-agenda-custom-commands it))
+      (add-to-list 'org-agenda-files org-directory)
 
-    (setq org-agenda-insert-diary-extract-time t
-          org-agenda-span 'week
-          org-agenda-skip-deadline-if-done t
-          org-agenda-skip-scheduled-if-done t
-          org-agenda-skip-deadline-prewarning-if-scheduled t
-          ;; Ensure the agenda shows the whole coming week.
-          org-agenda-start-on-weekday nil
-          org-agenda-ndays 7)
 
-    (after 'org-agenda
-      (org-agenda-to-appt))
+      (--each '(("d" "Daily Action List"
+                 ((agenda "" ((org-agenda-ndays 1)
+                              (org-agenda-sorting-strategy
+                               '((agenda time-up priority-down tag-up)))
+                              (org-deadline-warning-days 0)))))
+                ("w" "Weekly Action List"
+                 ((agenda "" ((org-agenda-ndays 7)
+                              (org-agenda-sorting-strategy
+                               '((agenda time-up priority-down tag-up)))
+                              (org-deadline-warning-days 0))))))
+
+        (add-to-list 'org-agenda-custom-commands it))
+
+      (setq org-agenda-insert-diary-extract-time t
+            org-agenda-span 'week
+            org-agenda-skip-deadline-if-done t
+            org-agenda-skip-scheduled-if-done t
+            org-agenda-skip-deadline-prewarning-if-scheduled t
+            ;; Ensure the agenda shows the whole coming week.
+            org-agenda-start-on-weekday nil
+            org-agenda-ndays 7)
+
+      (after 'org-agenda
+        (org-agenda-to-appt))
 
     ;;;; Keys
 
-    (define-keys org-agenda-mode-map
-      "g" 'org-agenda-goto-date
-      "j" 'org-agenda-next-item
-      "k" 'org-agenda-previous-item)
+      (define-keys org-agenda-mode-map
+        "g" 'org-agenda-goto-date
+        "j" 'org-agenda-next-item
+        "k" 'org-agenda-previous-item)
 
-    (after 'smartparens
-      (hook-fn 'org-agenda-mode-hook
-        (smartparens-mode -1)))
+      (after 'smartparens
+        (hook-fn 'org-agenda-mode-hook
+          (smartparens-mode -1)))
 
     ;;;; Exclude tasks with HOLD state
 
-    (defun cb-org:exclude-tasks-on-hold (tag)
-      (and (equal tag "hold") (concat "-" tag)))
+      (defun cb-org:exclude-tasks-on-hold (tag)
+        (and (equal tag "hold") (concat "-" tag)))
 
-    (setq org-agenda-auto-exclude-function 'cb-org:exclude-tasks-on-hold)
+      (setq org-agenda-auto-exclude-function 'cb-org:exclude-tasks-on-hold)
 
     ;;;; Agenda refresh
 
-    (defun cb-org:refresh-agenda ()
-      "Refresh all org agenda buffers."
-      (save-excursion
-        (--each (--filter-buffers (derived-mode-p 'org-agenda-mode))
-          (with-current-buffer it
-            (ignore-errors
-              (org-agenda-redo t))))))
+      (defun cb-org:refresh-agenda ()
+        "Refresh all org agenda buffers."
+        (save-excursion
+          (--each (--filter-buffers (derived-mode-p 'org-agenda-mode))
+            (with-current-buffer it
+              (ignore-errors
+                (org-agenda-redo t))))))
 
-    (hook-fn 'org-mode-hook
-      (add-hook 'after-save-hook 'cb-org:refresh-agenda nil 'local))))
+      (hook-fn 'org-mode-hook
+        (add-hook 'after-save-hook 'cb-org:refresh-agenda nil 'local))))
 
-(use-package org-archive
-  :defer t
-  :init (after 'org (require 'org-archive))
-  :config
-  (progn
 
-    (defun cb-org:archive-done-tasks ()
-      (interactive)
-      (atomic-change-group
-        (org-map-entries (lambda ()
-                           ;; Ensure point does not move past the next item to
-                           ;; archive.
-                           (setq org-map-continue-from (point))
-                           (org-archive-subtree))
-                         "/DONE|PAID|VOID|CANCELLED" 'tree)))
+  (use-package appt
+    :config
+    (progn
+      (setq appt-message-warning-time 60
+            appt-display-interval 15)
 
-    (defalias 'archive-done-tasks 'cb-org:archive-done-tasks)
-    (setq org-archive-default-command 'cb-org:archive-done-tasks)))
+      (save-window-excursion
+        (appt-activate +1))
 
-(use-package org-crypt
-  :defer t
-  :init
-  (after 'org
-    (require 'org-crypt)
-    (org-crypt-use-before-save-magic))
-  :config
-  (progn
-    (setq org-crypt-disable-auto-save nil)
-    (add-to-list 'org-tags-exclude-from-inheritance "crypt")
+      ;; Rebuild reminders when displaying agenda.
+      (add-hook 'org-finalize-agenda-hook 'org-agenda-to-appt)
 
-    (define-key org-mode-map (kbd "C-c c") 'org-encrypt-entry)
+      ;; Update the appointments ledger when saving the diary file.
+      (hook-fn 'org-mode-hook
+        (when (equal (buffer-file-name) org-agenda-diary-file)
+          (hook-fn 'after-save-hook
+            :local t
+            (save-window-excursion
+              (org-agenda-to-appt t)
+              (appt-check 'force)))))))
+
+
+  (use-package org-clock
+    :config
+    (progn
+      (org-clock-persistence-insinuate)
+      (setq org-clock-history-length 20
+            org-clock-in-resume t
+            org-clock-into-drawer t
+            org-clock-out-remove-zero-time-clocks t
+            org-clock-out-when-done t
+            org-clock-persist t
+            org-clock-persist-query-resume nil
+            org-clock-auto-clock-resolution 'when-no-clock-is-running
+            org-clock-report-include-clocking-task t)
+
+      (defvar cb-org:keep-clock-running nil
+        "Used to enforce clocking to default task when clocking out.")
+
+      (defun cb-org:project? ()
+        "Any task with a todo keyword subtask"
+        (save-restriction
+          (widen)
+          (let ((has-subtask)
+                (subtree-end (save-excursion (org-end-of-subtree t)))
+                (is-a-task (member (nth 2 (org-heading-components)) org-todo-keywords-1)))
+            (save-excursion
+              (forward-line 1)
+              (while (and (not has-subtask)
+                          (< (point) subtree-end)
+                          (re-search-forward "^\*+ " subtree-end t))
+                (when (member (org-get-todo-state) org-todo-keywords-1)
+                  (setq has-subtask t))))
+            (and is-a-task has-subtask))))
+
+      (defun cb-org:task? ()
+        "Any task with a todo keyword and no subtask"
+        (save-restriction
+          (widen)
+          (let ((has-subtask)
+                (subtree-end (save-excursion (org-end-of-subtree t)))
+                (is-a-task (member (nth 2 (org-heading-components)) org-todo-keywords-1)))
+            (save-excursion
+              (forward-line 1)
+              (while (and (not has-subtask)
+                          (< (point) subtree-end)
+                          (re-search-forward "^\*+ " subtree-end t))
+                (when (member (org-get-todo-state) org-todo-keywords-1)
+                  (setq has-subtask t))))
+            (and is-a-task (not has-subtask)))))
+
+    ;;; Clocking in changes TODO state to NEXT.
+
+      (defun cb-org:clock-in-to-next-state (_kw)
+        "Move a task from TODO to NEXT when clocking in.
+Skips capture tasks, projects, and subprojects.
+Switch projects and subprojects from NEXT back to TODO."
+        (unless (true? org-capture-mode)
+          (cond
+           ((and (-contains? '("TODO") (org-get-todo-state))
+                 (cb-org:task?))
+            "NEXT")
+           ((and (-contains? '("NEXT") (org-get-todo-state))
+                 (cb-org:project?))
+            "TODO"))))
+
+      (setq org-clock-in-switch-to-state 'cb-org:clock-in-to-next-state)
+
+    ;;; Clocking commands
+
+      (defun cb-org:punch-in (arg)
+        "Start continuous clocking and set the default task to the
+selected task.  If no task is selected set the Organization task
+as the default task."
+        (interactive "p")
+        (setq cb-org:keep-clock-running t)
+        (if (equal major-mode 'org-agenda-mode)
+            ;; We're in the agenda
+            (let* ((marker (org-get-at-bol 'org-hd-marker))
+                   (tags (org-with-point-at marker (org-get-tags-at))))
+              (if (and (eq arg 4) tags)
+                  (org-agenda-clock-in '(16))
+                (cb-org:clock-in-organization-task-as-default)))
+          ;; We are not in the agenda
+          (save-restriction
+            (widen)
+            ;; Find the tags on the current task
+            (if (and (equal major-mode 'org-mode)
+                     (not (org-before-first-heading-p))
+                     (eq arg 4))
+                (org-clock-in '(16))
+              (cb-org:clock-in-organization-task-as-default))))
+        (message "Punched in to [%s]." org-clock-current-task))
+
+      (defun cb-org:punch-out ()
+        (interactive)
+        (setq cb-org:keep-clock-running nil)
+        (when (org-clock-is-active)
+          (org-clock-out))
+        (org-agenda-remove-restriction-lock)
+        (message "Punched out."))
+
+      (defun cb-org:clock-in-default-task ()
+        (save-excursion
+          (org-with-point-at org-clock-default-task
+            (org-clock-in))))
+
+      (defun cb-org:clock-in-parent-task ()
+        "Move point to the parent (project) task if any and clock in"
+        (let ((parent-task))
+          (save-excursion
+            (save-restriction
+              (widen)
+              (while (and (not parent-task) (org-up-heading-safe))
+                (when (member (nth 2 (org-heading-components)) org-todo-keywords-1)
+                  (setq parent-task (point))))
+              (if parent-task
+                  (org-with-point-at parent-task
+                    (org-clock-in))
+                (when cb-org:keep-clock-running
+                  (cb-org:clock-in-default-task)))))))
+
+      (defvar cb-org:organization-task-id "EB155A82-92B2-4F25-A3C6-0304591AF2F9")
+
+      (defun cb-org:clock-in-organization-task-as-default ()
+        (interactive)
+        (org-with-point-at (org-id-find cb-org:organization-task-id 'marker)
+          (org-clock-in '(16))))
+
+      (defun cb-org:clock-out-maybe ()
+        (when (and cb-org:keep-clock-running
+                   (not org-clock-clocking-in)
+                   (marker-buffer org-clock-default-task)
+                   (not org-clock-resolving-clocks-due-to-idleness))
+          (cb-org:clock-in-parent-task)))
+
+      (add-hook 'org-clock-out-hook 'cb-org:clock-out-maybe 'append)
+
+      (bind-keys
+        :overriding? t
+        "C-o C-c" (command (org-clock-in '(4)))
+        "C-o C-i" 'cb-org:punch-in
+        "C-o C-o" 'cb-org:punch-out)
+
+      ;; Remove empty LOGBOOK drawers when clocking out.
+      (hook-fn 'org-clock-out-hook
+        :append t
+        (save-excursion
+          (beginning-of-line 0)
+          (org-remove-empty-drawer-at "LOGBOOK" (point))))
+
+    ;;; Automatically change projects from NEXT to TODO
+
+      (defun cb-org:mark-next-parent-tasks-todo ()
+        "Visit each parent task and change NEXT states to TODO"
+        (let ((mystate (or (and (fboundp 'org-state)
+                                state)
+                           (nth 2 (org-heading-components)))))
+          (when mystate
+            (save-excursion
+              (while (org-up-heading-safe)
+                (when (member (nth 2 (org-heading-components)) (list "NEXT"))
+                  (org-todo "TODO")))))))
+
+      (hook-fns '(org-after-todo-state-change-hook org-clock-in-hook)
+        :append t
+        (cb-org:mark-next-parent-tasks-todo))))
+
+  (use-package org-archive
+    :config
+    (progn
+
+      (defun cb-org:archive-done-tasks ()
+        (interactive)
+        (atomic-change-group
+          (org-map-entries (lambda ()
+                             ;; Ensure point does not move past the next item to
+                             ;; archive.
+                             (setq org-map-continue-from (point))
+                             (org-archive-subtree))
+                           "/DONE|PAID|VOID|CANCELLED" 'tree)))
+
+      (defalias 'archive-done-tasks 'cb-org:archive-done-tasks)
+      (setq org-archive-default-command 'cb-org:archive-done-tasks)))
+
+  (use-package org-crypt
+    :config
+    (progn
+      (org-crypt-use-before-save-magic)
+      (setq org-crypt-disable-auto-save nil)
+      (add-to-list 'org-tags-exclude-from-inheritance "crypt")
+
+      (define-key org-mode-map (kbd "C-c c") 'org-encrypt-entry)
 
     ;;;; Decrypt with C-c C-c
 
-    (defun cb-org:looking-at-pgp-section? ()
-      (unless (org-before-first-heading-p)
-        (save-excursion
-          (org-back-to-heading t)
-          (let ((heading-point (point))
-                (heading-was-invisible-p
-                 (save-excursion
-                   (outline-end-of-heading)
-                   (outline-invisible-p))))
-            (forward-line)
-            (looking-at "-----BEGIN PGP MESSAGE-----")))))
+      (defun cb-org:looking-at-pgp-section? ()
+        (unless (org-before-first-heading-p)
+          (save-excursion
+            (org-back-to-heading t)
+            (let ((heading-point (point))
+                  (heading-was-invisible-p
+                   (save-excursion
+                     (outline-end-of-heading)
+                     (outline-invisible-p))))
+              (forward-line)
+              (looking-at "-----BEGIN PGP MESSAGE-----")))))
 
-    (hook-fn 'org-ctrl-c-ctrl-c-hook
-      (when (cb-org:looking-at-pgp-section?)
-        (org-decrypt-entry)
-        t))))
-
-(use-package appt
-  :defer t
-  :init (after 'org (require 'appt))
-  :config
-  (progn
-    (setq appt-message-warning-time 60
-          appt-display-interval 15)
-
-    (save-window-excursion
-      (appt-activate +1))
-
-    ;; Rebuild reminders when displaying agenda.
-    (add-hook 'org-finalize-agenda-hook 'org-agenda-to-appt)
-
-    ;; Update the appointments ledger when saving the diary file.
-    (hook-fn 'org-mode-hook
-      (when (equal (buffer-file-name) org-agenda-diary-file)
-        (hook-fn 'after-save-hook
-          :local t
-          (save-window-excursion
-            (org-agenda-to-appt t)
-            (appt-check 'force)))))))
+      (hook-fn 'org-ctrl-c-ctrl-c-hook
+        (when (cb-org:looking-at-pgp-section?)
+          (org-decrypt-entry)
+          t)))))
 
 (provide 'cb-org)
 
