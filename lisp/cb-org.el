@@ -519,6 +519,8 @@ Non-nil if modifications where made."
             org-agenda-skip-deadline-if-done t
             org-agenda-skip-scheduled-if-done t
             org-agenda-skip-deadline-prewarning-if-scheduled t
+            ;; Searches include archives
+            org-agenda-text-search-extra-files '(agenda-archives)
             ;; Ensure the agenda shows the whole coming week.
             org-agenda-start-on-weekday nil
             org-agenda-ndays 7)
