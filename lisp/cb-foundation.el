@@ -266,10 +266,6 @@
   "Buffer menu only shows files on disk."
   (Buffer-menu-toggle-files-only +1))
 
-(hook-fn 'text-mode-hook
-  (unless (derived-mode-p 'sgml-mode 'nxhtml-mode)
-    (turn-on-auto-fill)))
-
 (hook-fn 'after-init-hook
   "Ensure the user-home-directory is used as the default path,
 rather than the app bundle."
