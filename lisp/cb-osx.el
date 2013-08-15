@@ -116,19 +116,28 @@
           (re-search-backward "^[0-9]+:[0-9]+-[0-9]+:[0-9]+ " nil t))
         (insert (match-string 0))))))
 
-(defun mac-open-dwim (str)
-  "Pass STR to OS X's open command.
+(defun visual-url-at-point ()
+  "Find a URL at point."
+  (or
+   ;; Find urls at point.
+   (thing-at-point-url-at-point)
+   (get-text-property (point) 'shr-url)
+   ;; Extract org-mode links.
+   (when (and (fboundp 'org-in-regexp)
+              (boundp 'org-bracket-link-regexp)
+              (org-in-regexp org-bracket-link-regexp 1))
+     (org-link-unescape (org-match-string-no-properties 1)))))
+
+(defun mac-open-dwim (open-arg)
+  "Pass OPEN-ARG to OS X's open command.
 When used interactively, makes a guess at what to pass."
   (interactive
-   (list
-    (let ((default (or (thing-at-point-url-at-point)
-                       (get-text-property (point) 'shr-url)
-                       (when (boundp 'w3m-current-url) w3m-current-url)
-                       (buffer-file-name))))
-      (if default
-          (read-string (format "Open (%s): " default) nil t default)
-        (read-string "Open: " nil t)))))
-  (shell-command (format "open '%s'" str)))
+   (list (-if-let (url (or (visual-url-at-point)
+                           (when (boundp 'w3m-current-url) w3m-current-url)
+                           (buffer-file-name)))
+           (read-string (format "Open (%s): " url) nil t url)
+           (read-string "Open: " nil t))))
+  (shell-command (format "open '%s'" open-arg)))
 
 (bind-key* "S-s-<return>" 'mac-open-dwim)
 
