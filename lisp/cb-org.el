@@ -203,6 +203,10 @@ Non-nil if modifications where made."
       :bind "C-o t"
       :command (cb-org:show-todo-list))
 
+    (declare-modal-executor org-show-filtered-todo-list
+      :bind "C-o T"
+      :command (org-agenda prefix-arg "T"))
+
     (declare-modal-executor org-tags-view-fullscreen
       :bind "C-o v"
       :command (org-tags-view t))
