@@ -181,6 +181,9 @@ The insertion will be repeated COUNT times."
     (after 'message
       (hook-fn 'message-mode-hook (evil-append-line 1)))
 
+    (after 'replace
+      (evil-add-hjkl-bindings occur-mode-map))
+
     (after 'undo-tree
       ;; Ensure undo-tree commands are remapped. The referenced keymap in
       ;; evil-integration is incorrect.
