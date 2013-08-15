@@ -179,6 +179,8 @@ Non-nil if modifications where made."
       :overriding? t
       :map cb-org-map
       "C-o" 'cb-org-map
+      "C-o C-l" 'org-store-link
+      "C-o C-b" 'org-iswitchb
       "C-o a" 'cb-org:show-agenda-list
       "C-o C-a" 'org-agenda
       "C-o C-f" 'org-search-view
