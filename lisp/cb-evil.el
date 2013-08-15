@@ -169,20 +169,15 @@ The insertion will be repeated COUNT times."
 
     ;;; General config
 
+    (evil-add-hjkl-bindings tar-mode-map)
+    (evil-add-hjkl-bindings occur-mode-map)
+    (evil-add-hjkl-bindings archive-mode-map)
+
     (after 'man
       (evil-declare-key 'normal Man-mode-map (kbd "q") 'Man-kill))
 
-    (after 'tar-mode
-      (evil-add-hjkl-bindings tar-mode-map))
-
-    (after 'arc-mode
-      (evil-add-hjkl-bindings archive-mode-map))
-
     (after 'message
       (hook-fn 'message-mode-hook (evil-append-line 1)))
-
-    (after 'replace
-      (evil-add-hjkl-bindings occur-mode-map))
 
     (after 'undo-tree
       ;; Ensure undo-tree commands are remapped. The referenced keymap in
