@@ -48,7 +48,7 @@
 
 (declare-modal-executor org-agenda-fullscreen
   :bind "M-O"
-  :command cb-org:show-agenda-list)
+  :command (org-agenda-list prefix-arg nil 1))
 
 (defmacro with-org-default-notes-buffer (&rest body)
   "Perform BODY with the `org-defaut-notes-buffer' set to current."
@@ -75,30 +75,6 @@
                 (t (error "Not in a project")))))
      (f-join org-directory
              (concat (s-alnum-only name) ".project.org")))))
-
-(defun cb-org:show-todo-list ()
-  "Show the todo list.
-Make the 'q' key restore the previous window configuration."
-  (interactive)
-  (with-window-restore
-    (org-todo-list)
-    (with-current-buffer
-        (window-buffer (--first-window
-                        (with-current-buffer (window-buffer it)
-                          (derived-mode-p 'org-agenda-mode))))
-      (buffer-local-set-key (kbd "q") (command (restore))))))
-
-(defun cb-org:show-agenda-list ()
-  "Show the todo list.
-Make the 'q' key restore the previous window configuration."
-  (interactive)
-  (with-window-restore
-    (org-agenda-list nil nil 1)
-    (with-current-buffer
-        (window-buffer (--first-window
-                        (with-current-buffer (window-buffer it)
-                          (derived-mode-p 'org-agenda-mode))))
-      (buffer-local-set-key (kbd "q") (command (restore))))))
 
 (defun cb-org:ensure-field (kvp &optional permissive?)
   "Insert metadata key-value pair KVP at point.
@@ -181,7 +157,6 @@ Non-nil if modifications where made."
       "C-o" 'cb-org-map
       "C-o C-l" 'org-store-link
       "C-o C-b" 'org-iswitchb
-      "C-o a" 'cb-org:show-agenda-list
       "C-o C-a" 'org-agenda
       "C-o C-f" 'org-search-view
       "C-o d" (command (find-file org-agenda-diary-file))
@@ -196,12 +171,11 @@ Non-nil if modifications where made."
                  (when (bobp)
                    (cb-org:skip-headers))))
 
-      "C-o t" 'cb-org:show-todo-list
       "C-o C-k" 'org-capture)
 
     (declare-modal-executor org-show-todo-list
       :bind "C-o t"
-      :command (cb-org:show-todo-list))
+      :command (org-agenda prefix-arg "t"))
 
     (declare-modal-executor org-show-filtered-todo-list
       :bind "C-o T"
