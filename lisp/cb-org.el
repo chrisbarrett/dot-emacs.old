@@ -793,6 +793,10 @@ as the default task."
           (org-decrypt-entry)
           t)))))
 
+(after 'auto-complete
+  (hook-fn 'org-mode-hook
+    (setq-local ac-sources nil)))
+
 (provide 'cb-org)
 
 ;; Local Variables:
