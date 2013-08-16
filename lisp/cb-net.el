@@ -124,6 +124,12 @@
 
     (bbdb-initialize 'gnus 'message)
 
+    (hook-fn 'bbdb-mode-hook
+      (local-set-key (kbd "j") 'bbdb-next-record)
+      (local-set-key (kbd "k") 'bbdb-prev-record)
+      (local-set-key (kbd "l") 'bbdb-next-field)
+      (local-set-key (kbd "h") 'bbdb-prev-field))
+
     (defun compose-mail-with-prompts (to subject)
       "Start composing a new message.
 TO is either the email address at point or an address read by from the user.
