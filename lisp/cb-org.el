@@ -521,6 +521,8 @@ Non-nil if modifications where made."
             org-agenda-skip-deadline-if-done t
             org-agenda-skip-scheduled-if-done t
             org-agenda-skip-deadline-prewarning-if-scheduled t
+            ;; For all you night owls.
+            org-extend-today-until 4
             ;; Searches include archives
             org-agenda-text-search-extra-files '(agenda-archives)
             ;; Ensure the agenda shows the whole coming week.
