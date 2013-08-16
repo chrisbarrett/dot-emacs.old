@@ -162,8 +162,10 @@ Non-nil if modifications where made."
       "C-o C-k" 'org-capture)
 
     (declare-modal-executor org-show-todo-list
-      :bind "C-o t"
-      :command (org-agenda prefix-arg "t"))
+      :bind "C-o <RET>"
+      :command (progn
+                 (org-agenda prefix-arg "t")
+                 (org-agenda-filter-apply '("-someday") 'tag)))
 
     (declare-modal-executor org-show-filtered-todo-list
       :bind "C-o T"
