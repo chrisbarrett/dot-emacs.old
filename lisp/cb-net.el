@@ -30,7 +30,7 @@
 (require 'use-package)
 (require 's)
 (require 'async)
-(autoload 'bbdb-message-clean-name-default "bbdb-mua") (bbdb-initialize 'gnus 'message)
+(autoload 'bbdb-message-clean-name-default "bbdb-mua")
 (autoload 'message-field-value "message")
 (autoload 'thing-at-point-url-at-point "thingatpt")
 (autoload 'goto-address-find-address-at-point "goto-addr.el")
@@ -121,6 +121,8 @@
      ;; don't ask about fake addresses
      bbdb-ignore-some-messages-alist
      '(( "From" . "no.?reply\\|DAEMON\\|daemon\\|facebookmail\\|twitter")))
+
+    (bbdb-initialize 'gnus 'message)
 
     (defun compose-mail-with-prompts (to subject)
       "Start composing a new message.
