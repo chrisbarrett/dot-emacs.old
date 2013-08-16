@@ -26,6 +26,7 @@
 ;;; Code:
 
 (require 'dash)
+(require 'dash-functional)
 (require 'cl-lib)
 (require 'f)
 (require 'bind-key)
