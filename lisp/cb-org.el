@@ -193,6 +193,7 @@ Non-nil if modifications where made."
      org-link-mailto-program (quote (compose-mail "%a" "%s"))
      org-return-follows-link t
      org-indirect-buffer-display 'current-window
+     org-blank-before-new-entry nil
      org-put-time-stamp-overlays t
 
      ;; Refiling
