@@ -500,6 +500,7 @@ Non-nil if modifications where made."
     :config
     (progn
 
+      (add-hook 'org-agenda-mode-hook 'org-agenda-to-appt)
       (add-to-list 'org-agenda-files org-directory)
 
 
@@ -528,9 +529,6 @@ Non-nil if modifications where made."
             ;; Ensure the agenda shows the whole coming week.
             org-agenda-start-on-weekday nil
             org-agenda-ndays 7)
-
-      (after 'org-agenda
-        (org-agenda-to-appt))
 
     ;;;; Keys
 
@@ -572,9 +570,6 @@ Non-nil if modifications where made."
 
       (save-window-excursion
         (appt-activate +1))
-
-      ;; Rebuild reminders when displaying agenda.
-      (add-hook 'org-finalize-agenda-hook 'org-agenda-to-appt)
 
       ;; Update the appointments ledger when saving the diary file.
       (hook-fn 'org-mode-hook
