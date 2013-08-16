@@ -132,7 +132,6 @@ Non-nil if modifications where made."
   :defer t
   :init
   (progn
-    ;; Override the default M-o bindings with org commands.
     (define-prefix-command 'cb-org-map)
 
     (after 'evil
