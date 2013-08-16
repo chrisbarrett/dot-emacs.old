@@ -98,7 +98,7 @@ $(emacs_src) :| $(emacs_gz)
 # Python
 
 .PHONY: python
-python : jedi elpy
+python : jedi elpy pylint
 
 .PHONY: jedi
 jedi :
@@ -107,6 +107,10 @@ jedi :
 .PHONY: elpy
 elpy :
 	pip install elpy rope pyflakes pep8
+
+.PHONY: pylint
+pylint :
+	pip install pylint
 
 # ----------------------------------------------------------------------------
 # SuperCollider
