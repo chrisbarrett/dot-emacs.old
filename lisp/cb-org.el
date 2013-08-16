@@ -194,6 +194,7 @@ Non-nil if modifications where made."
      org-return-follows-link t
      org-indirect-buffer-display 'current-window
      org-blank-before-new-entry nil
+     org-footnote-auto-adjust t
      org-put-time-stamp-overlays t
 
      ;; Refiling
