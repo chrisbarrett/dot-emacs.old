@@ -58,17 +58,19 @@
                      (-partition-all-in-steps 2 2)
                      (--drop-while (keywordp (car it)))
                      (apply '-concat)))))
-    `(add-hook ,hook
-               (lambda ,arglist
-                 (if cb-lib:debug-hooks?
-                     ,bod
-                   ;; Do not allow errors to propagate from the hook.
-                   (condition-case err
+    `(progn
+       (add-hook ,hook
+                 (lambda ,arglist
+                   (if cb-lib:debug-hooks?
                        ,bod
-                     (error (message
-                             "[%s] %s" ,hook
-                             (error-message-string err))))))
-               ,append ,local)))
+                     ;; Do not allow errors to propagate from the hook.
+                     (condition-case err
+                         ,bod
+                       (error (message
+                               "[%s] %s" ,hook
+                               (error-message-string err))))))
+                 ,append ,local)
+       ,hook)))
 
 (defmacro hook-fns (hooks &rest args)
   "A sequence wrapper for `hook-fn'.
