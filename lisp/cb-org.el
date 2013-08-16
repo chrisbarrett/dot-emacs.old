@@ -208,6 +208,11 @@ Non-nil if modifications where made."
      org-refile-target-verify-function
      (lambda () (not (member (nth 2 (org-heading-components)) org-done-keywords)))
 
+     ;; Projects
+
+     org-stuck-projects '("+project&TODO={.+}/-DONE-CANCELLED"
+                          ("NEXT" "TODO") nil "\\<IGNORE\\>")
+
      ;; Tags
 
      org-tag-persistent-alist
@@ -224,7 +229,6 @@ Non-nil if modifications where made."
        ("@errand" . ?e)
        ("@leisure" . ?l)
        ("@home" . ?h)
-       ("@project" . ?p)
        ("@work" . ?w)
        (:endgroup . nil)))
 
@@ -320,12 +324,12 @@ Non-nil if modifications where made."
 
           org-todo-keywords
           '((sequence
-             "TODO(t)" "NEXT(n!)" "OUTSTANDING(o)" "WAITING(w@/!)" "APPT(a!)"
+             "TODO(t)" "NEXT(n!)" "MAYBE(m)"
+             "OUTSTANDING(o)" "WAITING(w@/!)" "APPT(a!)"
              "|"
              "DONE(d!)" "PAID(p!)" "VOID(v@)" "CANCELLED(c@)" "DELEGATED(D!)"))
 
-          org-todo-keyword-faces
-          '(("NEXT" . org-todo-next)))
+          org-todo-keyword-faces '(("NEXT" . org-todo-next)))
 
     (--each '("NOTES" "COMMENTS" "PROPERTIES" "LOGBOOK")
       (add-to-list 'org-drawers it))
