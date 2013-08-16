@@ -133,8 +133,7 @@ If this is the trailing colon for a hash key, insert padding."
                    :post-handlers '(:add sp-generic-leading-space))
 
     (sp-local-pair "[" "]"
-                   :pre-handlers '(sp-ruby-pre-handler)
-                   :post-handlers '(:add sp-generic-leading-space))
+                   :pre-handlers '(sp-ruby-pre-handler))
 
     (sp-local-pair "%q{" "}" :when '(sp-in-code-p))
     (sp-local-pair "%Q{" "}" :when '(sp-in-code-p))
