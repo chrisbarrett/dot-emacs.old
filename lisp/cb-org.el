@@ -508,11 +508,12 @@ Non-nil if modifications where made."
       (add-to-list 'org-agenda-files org-directory)
 
       ;; Add GTD agenda views.
-      (--each '(("r" "Weekly Review"
+      (--each '(("w" "Weekly Review"
                  ((agenda "" ((org-agenda-ndays 7)))
                   (stuck "")
                   (todo "PROJECT")
                   (todo "MAYBE")
+                  (tags "someday")
                   (todo "WAITING")))
                 ("g" . "GTD contexts")
                 ("ga" "Anywhere" tags-todo "@anywhere")
