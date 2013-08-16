@@ -503,18 +503,26 @@ Non-nil if modifications where made."
       (add-hook 'org-agenda-mode-hook 'org-agenda-to-appt)
       (add-to-list 'org-agenda-files org-directory)
 
-
-      (--each '(("d" "Daily Action List"
-                 ((agenda "" ((org-agenda-ndays 1)
-                              (org-agenda-sorting-strategy
-                               '((agenda time-up priority-down tag-up)))
-                              (org-deadline-warning-days 0)))))
-                ("w" "Weekly Action List"
-                 ((agenda "" ((org-agenda-ndays 7)
-                              (org-agenda-sorting-strategy
-                               '((agenda time-up priority-down tag-up)))
-                              (org-deadline-warning-days 0))))))
-
+      ;; Add GTD agenda views.
+      (--each '(("r" "Weekly Review"
+                 ((agenda "" ((org-agenda-ndays 7)))
+                  (stuck "")
+                  (todo "PROJECT")
+                  (todo "MAYBE")
+                  (todo "WAITING")))
+                ("g" . "GTD contexts")
+                ("ga" "Anywhere" tags-todo "@anywhere")
+                ("ge" "Errands"  tags-todo "@errand")
+                ("gh" "Home"     tags-todo "@home")
+                ("gl" "Leisure"  tags-todo "@leisure")
+                ("gw" "Work"     tags-todo "@work")
+                ("G" "GTD Block Agenda"
+                 ((tags-todo "@home")
+                  (tags-todo "@anywhere")
+                  (tags-todo "@errand"))
+                 ;; no local settings
+                 nil)
+                )
         (add-to-list 'org-agenda-custom-commands it))
 
       (setq org-agenda-insert-diary-extract-time t
