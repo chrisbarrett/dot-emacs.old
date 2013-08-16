@@ -544,10 +544,10 @@ Non-nil if modifications where made."
 
     ;;;; Keys
 
-      (define-keys org-agenda-mode-map
-        "g" 'org-agenda-goto-date
-        "j" 'org-agenda-next-item
-        "k" 'org-agenda-previous-item)
+      (hook-fn 'org-agenda-mode-hook
+        (local-set-key (kbd "g") 'org-agenda-goto-date)
+        (local-set-key (kbd "j") 'org-agenda-next-item)
+        (local-set-key (kbd "k") 'org-agenda-previous-item))
 
       (after 'smartparens
         (hook-fn 'org-agenda-mode-hook
