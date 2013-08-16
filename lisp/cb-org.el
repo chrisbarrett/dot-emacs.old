@@ -168,10 +168,10 @@ Non-nil if modifications where made."
                  (org-agenda-filter-apply '("-someday") 'tag)))
 
     (declare-modal-executor org-show-filtered-todo-list
-      :bind "C-o T"
+      :bind "C-o t"
       :command (org-agenda prefix-arg "T"))
 
-    (declare-modal-executor org-tags-view-fullscreen
+    (declare-modal-executor org-tags-view-todos-fullscreen
       :bind "C-o v"
       :command (org-tags-view t))
 
