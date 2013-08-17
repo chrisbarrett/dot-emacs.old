@@ -253,7 +253,7 @@ Non-nil if modifications where made."
       ;; disable annoying comment toggle key
       "C-c ;" nil)
 
-;;;; Hooks
+    ;; Hooks
 
     ;; Enter insert state for popup notes.
     (hook-fn 'org-mode-hook
@@ -279,7 +279,7 @@ Non-nil if modifications where made."
       (let (org-log-done org-log-states) ; turn off logging
         (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
 
-;;;; Auto-save notes file
+    ;; Auto-save notes file
 
     (defvar cb-org:notes-save-idle-delay 40)
 
@@ -295,7 +295,7 @@ Non-nil if modifications where made."
           (when (buffer-modified-p)
             (save-buffer)))))
 
-;;;; Org babel
+    ;; Org babel
 
     (setq org-src-fontify-natively t
           org-confirm-babel-evaluate nil)
@@ -309,7 +309,7 @@ Non-nil if modifications where made."
                                  (clojure . t)
                                  (haskell . t)))
 
-;;;; Org config
+    ;; Org config
 
     (defface org-todo-next
       '((((background dark))
@@ -543,7 +543,9 @@ Non-nil if modifications where made."
             org-agenda-start-on-weekday nil
             org-agenda-ndays 7)
 
-    ;;;; Keys
+      ;; Sorting
+
+      ;; Key bindings
 
       (hook-fn 'org-agenda-mode-hook
         (local-set-key (kbd "g") 'org-agenda-goto-date)
@@ -554,14 +556,14 @@ Non-nil if modifications where made."
         (hook-fn 'org-agenda-mode-hook
           (smartparens-mode -1)))
 
-    ;;;; Exclude tasks with HOLD state
+      ;; Exclude tasks with HOLD state
 
       (defun cb-org:exclude-tasks-on-hold (tag)
         (and (equal tag "hold") (concat "-" tag)))
 
       (setq org-agenda-auto-exclude-function 'cb-org:exclude-tasks-on-hold)
 
-    ;;;; Agenda refresh
+      ;; Agenda refresh
 
       (defun cb-org:refresh-agenda ()
         "Refresh all org agenda buffers."
@@ -643,7 +645,7 @@ Non-nil if modifications where made."
                   (setq has-subtask t))))
             (and is-a-task (not has-subtask)))))
 
-    ;;; Clocking in changes TODO state to NEXT.
+      ;; Clocking in changes TODO state to NEXT.
 
       (defun cb-org:clock-in-to-next-state (_kw)
         "Move a task from TODO to NEXT when clocking in.
@@ -660,7 +662,7 @@ Switch projects and subprojects from NEXT back to TODO."
 
       (setq org-clock-in-switch-to-state 'cb-org:clock-in-to-next-state)
 
-    ;;; Clocking commands
+      ;; Clocking commands
 
       (defun cb-org:punch-in (arg)
         "Start continuous clocking and set the default task to the
@@ -743,7 +745,7 @@ as the default task."
           (beginning-of-line 0)
           (org-remove-empty-drawer-at "LOGBOOK" (point))))
 
-    ;;; Automatically change projects from NEXT to TODO
+      ;; Automatically change projects from NEXT to TODO
 
       (defun cb-org:mark-next-parent-tasks-todo ()
         "Visit each parent task and change NEXT states to TODO"
@@ -786,7 +788,7 @@ as the default task."
 
       (define-key org-mode-map (kbd "C-c c") 'org-encrypt-entry)
 
-    ;;;; Decrypt with C-c C-c
+      ;; Decrypt with C-c C-c
 
       (defun cb-org:looking-at-pgp-section? ()
         (unless (org-before-first-heading-p)
