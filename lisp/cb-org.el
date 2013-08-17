@@ -380,10 +380,10 @@ Non-nil if modifications where made."
                :clock-in t
                :clock-resume t)
 
-              ("s" "Todo Someday" entry
+              ("s" "Someday" entry
                (file+olp org-default-notes-file "Someday" "Tasks")
                ,(s-unlines
-                 "* TODO %^{Description}%?"
+                 "* MAYBE %^{Description}%?"
                  ":LOGBOOK:"
                  ":CAPTURED: %U"
                  ":END:")
