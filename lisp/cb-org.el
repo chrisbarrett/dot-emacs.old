@@ -248,6 +248,7 @@ Non-nil if modifications where made."
       "z r" (command (org-global-cycle 0)))
 
     (define-keys org-mode-map
+      "C-c C-k" 'org-cut-subtree
       "C-c C-." 'org-time-stamp-inactive
       ;; disable annoying comment toggle key
       "C-c ;" nil)
