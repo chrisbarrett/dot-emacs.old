@@ -172,7 +172,7 @@ restore key."
            (delete-other-windows)
            ;; Configure restore bindings.
            (--each (or ,restore-bindings (list ,bind))
-             (local-set-key (kbd it) (command (bury-buffer) (restore))))))
+             (buffer-local-set-key (kbd it) (command (bury-buffer) (restore))))))
 
        (bind-key* ,bind ',fname))))
 
