@@ -118,6 +118,24 @@ Non-nil if modifications where made."
               (not (save-excursion (forward-line) (eobp))))
     (forward-line)))
 
+(defun cb-org:mail-todays-agenda ()
+  "Email today's agenda to yourself."
+  (interactive)
+  (require 'org-agenda)
+  (save-window-excursion
+    (let ((org-agenda-show-all-dates nil))
+      (org-agenda-list nil nil 1)
+      (with-current-buffer org-agenda-buffer-name
+        (let ((agenda (buffer-substring-no-properties (point-min) (point-max))))
+          ;; Do not send anything if there's no agenda.
+          (if (eobp)
+              (message "No agenda items for today. Email not sent.")
+            (mail 'new user-mail-address "[org] Today's tasks")
+            (insert agenda)
+            (mail-send-and-exit nil)))))))
+
+(defalias 'mail-todays-agenda 'cb-org:mail-todays-agenda)
+
 (after 'smartparens
   (sp-with-modes '(org-mode)
     (sp-local-pair "#+BEGIN_SRC" "#+END_SRC")
