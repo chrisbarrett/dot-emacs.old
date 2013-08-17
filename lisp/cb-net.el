@@ -74,8 +74,8 @@
         (message "Delivering message to %s...done" ,to)
         (run-hooks 'async-smtpmail-sent-hook)))))
 
-(defvar message-send-mail-function 'async-smtpmail-send-it)
-(defvar send-mail-function 'async-smtpmail-send-it)
+(setq message-send-mail-function 'async-smtpmail-send-it
+      send-mail-function 'async-smtpmail-send-it)
 
 (use-package smtpmail
   :commands smtpmail-send-it
