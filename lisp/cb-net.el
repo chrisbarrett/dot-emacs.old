@@ -156,7 +156,7 @@ SUBJECT is a string read from the user."
       (with-window-restore
         (save-window-excursion
           (compose-mail to subject)
-          (hook-fns '(message-send-hook message-cancel-hook)
+          (hook-fns '(message-send-hook message-cancel-hook kill-buffer-hook)
             :local t
             (restore))
           ;; Narrow to message body.
