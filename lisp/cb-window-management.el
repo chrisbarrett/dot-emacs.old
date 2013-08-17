@@ -66,11 +66,6 @@
       (unless (true? popwin-mode)
         (popwin-mode +1)))
 
-    (hook-fn 'popwin:after-popup-hook
-      "Quit popups with Q"
-      (when (fboundp 'evil-define-key)
-        (evil-local-set-key 'normal "q" (command (quit-window t)))))
-
     (setq display-buffer-function 'popwin:display-buffer
           popwin:special-display-config
           '(("*Help*"  :height 30 :stick t)
