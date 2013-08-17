@@ -545,6 +545,12 @@ Non-nil if modifications where made."
 
       ;; Sorting
 
+      (setq org-agenda-sorting-strategy
+            '((agenda habit-down time-up priority-down category-keep)
+              (todo priority-down category-keep scheduled-up)
+              (tags priority-down category-keep)
+              (search category-keep)))
+
       ;; Key bindings
 
       (hook-fn 'org-agenda-mode-hook
