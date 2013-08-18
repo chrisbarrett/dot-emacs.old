@@ -35,27 +35,6 @@
 (autoload 'thing-at-point-url-at-point "thingatpt")
 (autoload 'goto-address-find-address-at-point "goto-addr.el")
 
-(after 'message
-
-  (defun cb-mail:next-field ()
-    (interactive)
-    (or (and (search-forward-regexp (rx bol (+ alnum) ":") nil t)
-             (progn (just-one-space) t))
-        (progn (and (search-forward "--text follows this line--" nil t) (forward-line)))))
-
-  (defun cb-mail:prev-field ()
-    (interactive)
-    (cl-flet ((find-field ()
-                          (beginning-of-line)
-                          (search-backward-regexp (rx bol (+ alnum) ":") nil t)
-                          (search-forward ":")))
-      (or (and (save-excursion (find-field))
-               (progn (find-field) (just-one-space) t))
-          (progn (and (search-backward "--text follows this line--" nil t) (forward-line))))))
-
-  (define-key message-mode-map (kbd "M-N") 'cb-mail:next-field)
-  (define-key message-mode-map (kbd "M-P") 'cb-mail:prev-field))
-
 (defvar async-smtpmail-sent-hook nil)
 
 (defun async-smtpmail-send-it (&rest _)
