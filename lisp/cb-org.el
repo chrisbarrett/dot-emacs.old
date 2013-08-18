@@ -145,8 +145,8 @@
 (defun cb-org:message-send ()
   "Export the org message compose buffer to HTML and send as an email.
 Kill the buffer when finished."
-  ;; Creates a new message, extracting header values
-  ;; from the compose buffer's headers.
+  ;; Create a new message, extracting header values from the compose buffer's
+  ;; headers.
   (let ((str (buffer-string))
         (headers (cb-org:header->alist)))
     (compose-mail (cdr (assoc "TO" headers))
