@@ -147,19 +147,21 @@
 Kill the buffer when finished."
   ;; Create a new message, extracting header values from the compose buffer's
   ;; headers.
-  (let ((str (buffer-string))
-        (headers (cb-org:header->alist)))
-    (compose-mail (cdr (assoc "TO" headers))
-                  (cdr (assoc "SUBJECT" headers))
-                  (->> (list (assoc "CC" headers)
-                             (assoc "BCC" headers))
-                    (-remove 'null)))
-    ;; Prepare message body.
-    (message-goto-body)
-    (insert str)
-    (let ((org-export-with-toc nil))
-      (org-mime-htmlize nil))
-    (message-send-and-exit))
+  (interactive)
+  (let* ((str (buffer-string))
+         (headers (cb-org:header->alist str)))
+    (save-window-excursion
+      (compose-mail (cdr (assoc "TO" headers))
+                    (cdr (assoc "SUBJECT" headers))
+                    (->> (list (assoc "CC" headers)
+                               (assoc "BCC" headers))
+                      (-remove 'null)))
+      ;; Prepare message body.
+      (message-goto-body)
+      (insert str)
+      (let ((org-export-with-toc nil))
+        (org-mime-htmlize nil))
+      (message-send-and-exit)))
   ;; Restore previous window state.
   (kill-this-buffer))
 
@@ -183,11 +185,12 @@ Kill the buffer when finished."
               (replace-match ", ")))))
     (call-interactively 'org-cycle)))
 
-(defun* cb-org:header->alist (&optional (str (buffer-string)))
-  "Extract the header values from the contents of the current org buffer."
+(defun* cb-org:header->alist (str)
+  "Extract the header values from the contents of the given buffer string STR."
   (->> (s-lines str)
     ;; Get header lines
-    (--take-while (or (s-starts-with? "#+" it) (s-blank? it)))
+    (--take-while (or (s-matches? (rx bol "#+" (* nonl) ":") it)
+                      (s-blank? it)))
     (-remove 's-blank?)
     ;; Create alist of keywords -> values
     (--map (destructuring-bind (_ key val &rest rest)
@@ -1060,6 +1063,8 @@ as the default task."
 
       (hook-fn 'org-mime-html-hook
         ;; Offset block quotes and source code.
+        (org-mime-change-element-style
+         "blockquote" "border-left: 2px solid #B0B0B0; padding-left: 4px;")
         (org-mime-change-element-style
          "pre" "border-left: 2px solid #B0B0B0; padding-left: 4px;")))))
 
