@@ -109,11 +109,12 @@
 (use-package gnus-agent
   :defer t
   :config
-  (setq gnus-agent-fetch-selected-article t
-        gnus-agent-directory (f-join cb:etc-dir "gnus-agent")
-        ;; Send mail immediately, rather than queuing.
-        gnus-agent-queue-mail nil
-        gnus-agent-auto-agentize-methods '(nntp nnimap)))
+  (progn
+    (add-hook 'gnus-select-article-hook 'gnus-agent-fetch-selected-article)
+    (setq gnus-agent-directory (f-join cb:etc-dir "gnus-agent")
+          ;; Send mail immediately, rather than queuing.
+          gnus-agent-queue-mail nil
+          gnus-agent-auto-agentize-methods '(nntp nnimap))))
 
 ;; Configure gnus.
 
