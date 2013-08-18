@@ -35,6 +35,9 @@
 (autoload 'thing-at-point-url-at-point "thingatpt")
 (autoload 'goto-address-find-address-at-point "goto-addr.el")
 
+;; Use the `async' library to send mail messages asynchronously, ie. without
+;; blocking emacs!
+
 (defvar async-smtpmail-sent-hook nil)
 
 (defun async-smtpmail-send-it (&rest _)
@@ -56,6 +59,7 @@
 (setq message-send-mail-function 'async-smtpmail-send-it
       send-mail-function 'async-smtpmail-send-it)
 
+;; `smtpmail' provides email functionality.
 (use-package smtpmail
   :commands smtpmail-send-it
   :config
@@ -70,6 +74,7 @@
       (setq starttls-gnutls-program (executable-find "gnutls-cli")
             starttls-use-gnutls t))))
 
+;; `bbdb' provides an address book for emacs and integrates with many modes.
 (use-package bbdb
   :ensure t
   :defer  t
@@ -154,6 +159,7 @@ SUBJECT is a string read from the user."
 
     (bind-key* "C-x m" 'compose-mail-with-prompts)))
 
+;; `google-this' provides a few simple commands for performing google searches.
 (use-package google-this
   :ensure   t
   :commands google-this
@@ -161,6 +167,7 @@ SUBJECT is a string read from the user."
   :init     (bind-key* "M-s" 'google-this)
   :config   (google-this-mode +1))
 
+;; `w3m' bindings for Emacs. w3m is a command-line web browser.
 (use-package w3m
   :ensure   t
   :commands
@@ -228,6 +235,7 @@ SUBJECT is a string read from the user."
       (buffer-face-set
        `(:family ,(serif-font) :height 130)))))
 
+;; `erc' is an Emacs IRC client.
 (use-package erc
   :defer t
   :config
