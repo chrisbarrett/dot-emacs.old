@@ -69,6 +69,41 @@
                                       (kill-process p)))
                     proc)))
 
+;; Find number of unread emails and update the mode-line.
+
+(defun cb-gnus:sum-unread (news-plist)
+  "Return the number of unread emails in NEWS-PLIST."
+  (-when-let (imap (second (assoc 'nnimap gnus-secondary-select-methods)))
+    (->> news-plist
+      (--filter (s-contains? imap (plist-get it :name)))
+      (--map (plist-get it :unread-count))
+      (-sum))))
+
+(defun cb-gnus:update-modeline-unread (count)
+  (setq modeline-mail-indicator
+        (when (plusp count)
+          (format " %s unread" count))))
+
+(defun cb-gnus:scrape-group-buffer-for-news ()
+  (-when-let (buf (get-buffer "*Group*"))
+    (with-current-buffer buf
+      (save-excursion
+        (goto-char (point-min))
+        (cl-loop while (not (eobp))
+                 for group = (gnus-group-name-at-point)
+                 do (gnus-group-update-group group)
+                 when group collect
+                 (list :name group
+                       :unread-count (gnus-group-unread group))
+                 do (forward-line))))))
+
+;; Update the unread mail count for all gnus hooks.
+(after 'gnus
+  (hook-fns (--filter-atoms (s-matches? "^gnus-.*-hook$" (symbol-name it)))
+    (-when-let (sum (ignore-errors
+                      (cb-gnus:sum-unread (cb-gnus:scrape-group-buffer-for-news))))
+      (cb-gnus:update-modeline-unread sum))))
+
 ;; `gnus-agent' provides offline syncing functionality for gnus.  Configure the
 ;; agent to provide fast IMAP access.
 (use-package gnus-agent
