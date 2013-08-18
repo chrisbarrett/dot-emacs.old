@@ -99,10 +99,16 @@
 
 ;; Update the unread mail count for all gnus hooks.
 (after 'gnus
-  (hook-fns (--filter-atoms (s-matches? "^gnus-.*-hook$" (symbol-name it)))
-    (-when-let (sum (ignore-errors
-                      (cb-gnus:sum-unread (cb-gnus:scrape-group-buffer-for-news))))
-      (cb-gnus:update-modeline-unread sum))))
+  (let ((hooks (--filter-atoms (s-matches? "^gnus-.*-hook$" (symbol-name it)))))
+    (eval
+     `(hook-fns ',hooks
+        ;; Rebind hooks to prevent infinite loops.
+        (let ,hooks
+          (-when-let
+              (sum (ignore-errors
+                     (cb-gnus:sum-unread
+                      (cb-gnus:scrape-group-buffer-for-news))))
+            (cb-gnus:update-modeline-unread sum)))))))
 
 ;; `gnus-agent' provides offline syncing functionality for gnus.  Configure the
 ;; agent to provide fast IMAP access.
