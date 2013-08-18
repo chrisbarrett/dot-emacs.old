@@ -131,7 +131,8 @@ The original state can be restored by calling (restore) in BODY."
     `(progn
        (window-configuration-to-register ',register)
        ,@(tree-replace '(restore)
-                       `(jump-to-register ',register)
+                       `(ignore-errors
+                          (jump-to-register ',register))
                        body))))
 
 (defmacro* declare-modal-view (command &optional (quit-key "q"))
