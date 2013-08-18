@@ -180,13 +180,6 @@
   (hook-fn 'emacs-lisp-mode-hook
     (local-set-key (kbd "C-x X d") 'edebug-defun)))
 
-(use-package ert-modeline
-  :defer    t
-  ;; The status is added to the mode-line format directly.
-  :diminish ert-modeline-mode
-  :commands ert-modeline-mode
-  :init     (add-hook 'emacs-lisp-mode-hook 'ert-modeline-mode))
-
 (use-package redshank
   :ensure   t
   :commands turn-on-redshank-mode

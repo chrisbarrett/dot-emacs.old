@@ -262,14 +262,6 @@
                 face mode-line-mode)
    "%] "
 
-   ;; ERT status.
-   (:eval (when (true? ert-modeline-mode)
-            (set-face-bold 'ertml-failing-face t)
-            (let ((s (s-trim ertml--status-text)))
-              (if (s-matches? (rx digit) s)
-                  (propertize s 'face 'ertml-failing-face)
-                (propertize s 'face 'bold)))))
-
    ;; Minor modes.
    (:eval (propertize (format-mode-line minor-mode-alist)
                       'face 'mode-line-minor-mode))
