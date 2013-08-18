@@ -22,7 +22,12 @@
 
 ;;; Commentary:
 
-;; Configuration for org
+;; Configuration for `org-mode'.  Org mode is for keeping notes, maintaining
+;; TODO lists, planning projects, and authoring documents with a fast and
+;; effective plain-text system.  See:
+;;
+;;    http://orgmode.org/
+;;
 
 ;;; Code:
 
@@ -36,6 +41,8 @@
 (autoload 'projectile-project-name "projectile")
 (autoload 'projectile-project-buffer-names "projectile")
 
+;; Declare org-related values before org-mode is loaded.
+;; This is mainly to reduce compiler warnings.
 (defvar org-directory (f-join user-home-directory "org"))
 (defvar org-mobile-inbox-for-pull (f-join org-directory "mobile.org"))
 (defvar org-mobile-directory (f-join user-dropbox-directory "Apps" "MobileOrg"))
@@ -50,87 +57,18 @@
 ;; Add contrib directory to load-path.
 (add-to-list 'load-path (f-join cb:etc-dir "org-mode" "contrib" "lisp"))
 
+;; Show org agenda with M-O.
 (declare-modal-executor org-agenda-fullscreen
   :bind "M-O"
   :command (org-agenda-list prefix-arg nil 1))
 
+;; If we're running in a graphical context, show the agenda on startup.
 (when (or (daemonp) (display-graphic-p))
   (hook-fn 'after-init-hook
     (executor:org-agenda-fullscreen)))
 
-(defun cb-org:project-file ()
-  "Get the path to the project file for the current project."
-  (or
-   ;; If we're capturing, check if we were looking at a project when the capture
-   ;; was started. Return that file if so.
-   (let ((prev-buf (nth 1 (buffer-list))))
-     (and (equal "*Capture*" (buffer-name))
-          (s-ends-with? ".project.org" (buffer-name prev-buf))
-          (buffer-file-name prev-buf)))
-   ;; Otherwise, compute the path to a project file based on the current path.
-   (let ((name (cond
-                ((projectile-project-p) (projectile-project-name))
-                ((projectile-project-buffer-names) (car (projectile-project-buffer-names)))
-                (t (error "Not in a project")))))
-     (f-join org-directory
-             (concat (s-alnum-only name) ".project.org")))))
-
-(defun cb-org:ensure-field (kvp &optional permissive?)
-  "Insert metadata key-value pair KVP at point.
-No insertion is done if the field is already set in the current
-buffer.  When PERMISSIVE is set, allow duplicate instances of the
-given key.
-Non-nil if the field was inserted."
-  (destructuring-bind (key . val) (s-split (rx space) kvp)
-    (unless (s-matches? (rx-to-string
-                         (if permissive?
-                             `(and bol ,key (* space) ,(or (car val) ""))
-                           `(and bol ,key (* space))))
-                        (buffer-string))
-      (insert (concat kvp "\n"))
-      'inserted)))
-
-(defun cb-org:prepare-project-file (project-name)
-  "Ensure the current project file has its metadata fields set.
-Non-nil if modifications where made."
-  ;; Make this task file show up in org buffers.
-  (if (and (f-exists? (buffer-file-name))
-           (boundp 'org-agenda-files))
-      (add-to-list 'org-agenda-files (buffer-file-name))
-    (eval `(hook-fn 'after-save-hook
-             :local t
-             (add-to-list 'org-agenda-files ,(buffer-file-name)))))
-  ;; Set metadata fields.
-  (save-excursion
-    (goto-char (point-min))
-    ;; Skip file variables.
-    (when (emr-line-matches? (rx "-*-" (* nonl) "-*-"))
-      (forward-line))
-    (beginning-of-line)
-    ;; Set fields
-    (cb-org:ensure-field (concat "#+TITLE: " project-name))
-    (cb-org:ensure-field (concat "#+AUTHOR: " user-full-name))
-    (cb-org:ensure-field "#+STARTUP: lognotestate" t)
-    (cb-org:ensure-field "#+STARTUP: lognotedone" t)
-    (cb-org:ensure-field "#+DESCRIPTION: Project-level notes and todos")
-    (cb-org:ensure-field (format "#+FILETAGS: :%s:" (s-alnum-only project-name)))))
-
-(defun cb-org:skip-headers ()
-  "Move point past the header lines of an org document."
-  (while (and (or (emr-line-matches? (rx bol (or "#+" "-*-"))) (emr-blank-line?))
-              (not (save-excursion (forward-line) (eobp))))
-    (forward-line)))
-
-(after 'smartparens
-  (sp-with-modes '(org-mode)
-    (sp-local-pair "#+BEGIN_SRC" "#+END_SRC")
-    (sp-local-pair "#+begin_src" "#+end_src")))
-
-(after 'message
-  (add-hook 'message-mode-hook 'orgstruct++-mode)
-  (add-hook 'message-mode-hook 'orgtbl-mode)
-  (define-key message-mode-map (kbd "C-c RET RET") 'org-ctrl-c-ret))
-
+;; `org-mode' is a suite of editing and management tools centred around
+;; human-readable text files.
 (use-package org
   :defer t
   :init
@@ -350,7 +288,87 @@ Non-nil if modifications where made."
       (when (minibufferp (window-buffer (selected-window)))
         (other-window 1)))))
 
+;; Define pairs for org-mode blocks.
+(after 'smartparens
+  (sp-with-modes '(org-mode)
+    (sp-local-pair "#+BEGIN_SRC" "#+END_SRC")
+    (sp-local-pair "#+begin_src" "#+end_src")
+    (sp-local-pair "#+BEGIN_EXAMPLE" "#+END_EXAMPLE")
+    (sp-local-pair "#+begin_example" "#+end_example")
+    (sp-local-pair "#+BEGIN_VERSE" "#+END_VERSE")
+    (sp-local-pair "#+begin_verse" "#+end_verse")))
+
+;; Use org-mode-style tables and structure editing in message-mode.
+(after 'message
+  (add-hook 'message-mode-hook 'orgstruct++-mode)
+  (add-hook 'message-mode-hook 'orgtbl-mode)
+  (define-key message-mode-map (kbd "C-c RET RET") 'org-ctrl-c-ret))
+
+;; Configure org's sub-features only if org-mode is actually loaded.
 (after 'org
+
+  (defun cb-org:project-file ()
+    "Get the path to the project file for the current project."
+    (or
+     ;; If we're capturing, check if we were looking at a project when the capture
+     ;; was started. Return that file if so.
+     (let ((prev-buf (nth 1 (buffer-list))))
+       (and (equal "*Capture*" (buffer-name))
+            (s-ends-with? ".project.org" (buffer-name prev-buf))
+            (buffer-file-name prev-buf)))
+     ;; Otherwise, compute the path to a project file based on the current path.
+     (let ((name (cond
+                  ((projectile-project-p) (projectile-project-name))
+                  ((projectile-project-buffer-names) (car (projectile-project-buffer-names)))
+                  (t (error "Not in a project")))))
+       (f-join org-directory
+               (concat (s-alnum-only name) ".project.org")))))
+
+  (defun cb-org:ensure-field (kvp &optional permissive?)
+    "Insert metadata key-value pair KVP at point.
+No insertion is done if the field is already set in the current
+buffer.  When PERMISSIVE is set, allow duplicate instances of the
+given key.
+Non-nil if the field was inserted."
+    (destructuring-bind (key . val) (s-split (rx space) kvp)
+      (unless (s-matches? (rx-to-string
+                           (if permissive?
+                               `(and bol ,key (* space) ,(or (car val) ""))
+                             `(and bol ,key (* space))))
+                          (buffer-string))
+        (insert (concat kvp "\n"))
+        'inserted)))
+
+  (defun cb-org:prepare-project-file (project-name)
+    "Ensure the current project file has its metadata fields set.
+Non-nil if modifications where made."
+    ;; Make this task file show up in org buffers.
+    (if (and (f-exists? (buffer-file-name))
+             (boundp 'org-agenda-files))
+        (add-to-list 'org-agenda-files (buffer-file-name))
+      (eval `(hook-fn 'after-save-hook
+               :local t
+               (add-to-list 'org-agenda-files ,(buffer-file-name)))))
+    ;; Set metadata fields.
+    (save-excursion
+      (goto-char (point-min))
+      ;; Skip file variables.
+      (when (emr-line-matches? (rx "-*-" (* nonl) "-*-"))
+        (forward-line))
+      (beginning-of-line)
+      ;; Set fields
+      (cb-org:ensure-field (concat "#+TITLE: " project-name))
+      (cb-org:ensure-field (concat "#+AUTHOR: " user-full-name))
+      (cb-org:ensure-field "#+STARTUP: lognotestate" t)
+      (cb-org:ensure-field "#+STARTUP: lognotedone" t)
+      (cb-org:ensure-field "#+DESCRIPTION: Project-level notes and todos")
+      (cb-org:ensure-field (format "#+FILETAGS: :%s:" (s-alnum-only project-name)))))
+
+  (defun cb-org:skip-headers ()
+    "Move point past the header lines of an org document."
+    (while (and (or (emr-line-matches? (rx bol (or "#+" "-*-"))) (emr-blank-line?))
+                (not (save-excursion (forward-line) (eobp))))
+      (forward-line)))
 
   ;; `org-capture' is used to interactively read items to be inserted into
   ;; org-mode buffers.
@@ -901,6 +919,7 @@ as the default task."
         (org-mime-change-element-style
          "code" "border-left: 2px solid gray; padding-left: 4px;")))))
 
+;; Disable auto-complete in org-buffers.
 (after 'auto-complete
   (hook-fn 'org-mode-hook
     (setq-local ac-sources nil)))
