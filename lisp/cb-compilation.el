@@ -72,24 +72,6 @@
     (add-to-list 'compilation-finish-functions 'cb:compile-autoclose)
     (add-hook 'compilation-filter-hook 'cb:ansi-colourise-compilation)))
 
-(use-package mode-compile
-  :ensure t
-  :bind
-  (("C-c ."   . mode-compile-kill)
-   ("C-c C-c" . mode-compile))
-  :init
-  (define-key prog-mode-map (kbd "C-c C-c") 'mode-compile)
-  :config
-  (progn
-    (when (executable-find "clang")
-      (setq
-       cc-compilers-list (list "clang")
-       cc-default-compiler "clang"
-       cc-default-compiler-options "-fno-color-diagnostics -g"))
-
-    (setq mode-compile-expert-p             t
-          mode-compile-always-save-buffer-p t)))
-
 (use-package flyspell
   :diminish flyspell-mode
   :init (unless noninteractive (require 'flyspell))

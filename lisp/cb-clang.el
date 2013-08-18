@@ -36,6 +36,13 @@
 
 (after 'cc-mode
 
+  ;; Use clang as the cc compiler.
+  (when (executable-find "clang")
+    (setq
+     cc-compilers-list (list "clang")
+     cc-default-compiler "clang"
+     cc-default-compiler-options "-fno-color-diagnostics -g"))
+
   (defun cb-c:switch-between-header-and-impl ()
     "Switch between a header file and its implementation."
     (interactive)
