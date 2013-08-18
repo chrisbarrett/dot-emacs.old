@@ -48,6 +48,37 @@
 (when (true? cb:use-vim-keybindings?)
   (bind-key* "M-Y" 'show-gnus))
 
+;; Fetch news in the background every 2 minutes.
+
+(defvar cb-gnus:fetch-interval (* 2 60)
+  "The frequency in seconds at which new articles will be fetched.")
+
+(defvar cb-gnus:agent-batch-timer
+  (run-with-timer 1 cb-gnus:fetch-interval 'cb-gnus:agent-batch-fetch)
+  "Timer to periodically fetch news using the gnus agent.")
+
+(defun cb-gnus:agent-batch-fetch ()
+  "Download news with the gnus agent."
+  (let ((proc (start-process
+               "gnus agent" nil
+               "emacs" "--batch" "-l" user-init-file "-f" "gnus-agent-batch")))
+    ;; Kill process if it's open for more than 10 minutes.  That should be
+    ;; plenty of time to fetch articles, even for first sync.
+    (run-with-timer (* 10 60) nil (lambda (p)
+                                    (when (process-live-p p)
+                                      (kill-process p)))
+                    proc)))
+
+;; `gnus-agent' provides offline syncing functionality for gnus.  Configure the
+;; agent to provide fast IMAP access.
+(use-package gnus-agent
+  :defer t
+  :config
+  (setq gnus-agent-fetch-selected-article t
+        gnus-agent-directory (f-join cb:etc-dir "gnus-agent")
+        ;; Send mail immediately, rather than queuing.
+        gnus-agent-queue-mail nil))
+
 ;; Configure gnus.
 
 (use-package gnus
