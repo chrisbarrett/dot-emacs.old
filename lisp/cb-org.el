@@ -985,6 +985,7 @@ as the default task."
       (message "<C-c c> to send message, <C-c q> to cancel."))))
 
 (bind-key* "C-x m" 'cb-org:compose-mail)
+(bind-key* "C-x M" 'compose-mail)
 
 (provide 'cb-org)
 
