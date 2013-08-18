@@ -915,14 +915,10 @@ as the default task."
       (hook-fn 'org-mode-hook
         (local-set-key (kbd "C-c M-o") 'org-mime-org-buffer-htmlize))
 
-      ;; Offset block quotes and code.
-
       (hook-fn 'org-mime-html-hook
+        ;; Offset block quotes and source code.
         (org-mime-change-element-style
-         "blockquote" "border-left: 2px solid gray; padding-left: 4px;")
-
-        (org-mime-change-element-style
-         "code" "border-left: 2px solid gray; padding-left: 4px;")))))
+         "pre" "border-left: 2px solid #B0B0B0; padding-left: 4px;")))))
 
 ;; Disable auto-complete in org-buffers.
 (after 'auto-complete
