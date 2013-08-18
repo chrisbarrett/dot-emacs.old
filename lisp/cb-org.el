@@ -118,24 +118,6 @@ Non-nil if modifications where made."
               (not (save-excursion (forward-line) (eobp))))
     (forward-line)))
 
-(defun cb-org:mail-todays-agenda ()
-  "Email today's agenda to yourself."
-  (interactive)
-  (require 'org-agenda)
-  (save-window-excursion
-    (let ((org-agenda-show-all-dates nil))
-      (org-agenda-list nil nil 1)
-      (with-current-buffer org-agenda-buffer-name
-        (let ((agenda (buffer-substring-no-properties (point-min) (point-max))))
-          ;; Do not send anything if there's no agenda.
-          (if (eobp)
-              (message "No agenda items for today. Email not sent.")
-            (mail 'new user-mail-address "[org] Today's tasks")
-            (insert agenda)
-            (mail-send-and-exit nil)))))))
-
-(defalias 'mail-todays-agenda 'cb-org:mail-todays-agenda)
-
 (after 'smartparens
   (sp-with-modes '(org-mode)
     (sp-local-pair "#+BEGIN_SRC" "#+END_SRC")
@@ -527,6 +509,49 @@ Non-nil if modifications where made."
       (add-hook 'org-agenda-mode-hook 'org-agenda-to-appt)
       (add-to-list 'org-agenda-files org-directory)
 
+
+      (defun* cb-org:printable-agenda-string (&optional (n-days 1))
+        "Return a string representing N-DAYS agenda suitable for printing or emailing.
+Return nil if there are no items to display."
+        (save-window-excursion
+          (let ((org-agenda-show-all-dates nil)
+                (org-habit-show-habits nil))
+            (with-current-buffer org-agenda-buffer-name
+              (unless (bobp)
+                (let ((agenda (buffer-string)))
+                  (with-temp-buffer
+                    ;; Remove extraneous elements.
+                    (insert (->> agenda
+                              (s-replace (rx "SCHEDULED:  ") "")
+                              (s-lines)
+                              (--remove (s-contains? "now - -" it))
+                              (s-join "\n")))
+                    (goto-char (point-min))
+                    ;; Remove tags.
+                    (while (search-forward-regexp
+                            (rx ":" (* (not space)) ":" (* space) eol)
+                            nil t)
+                      (replace-match ""))
+                    ;; Return processed agenda.
+                    (delete-trailing-whitespace)
+                    (buffer-string))))))))
+
+      (defun* cb-org:mail-agenda (&optional (n-days 1))
+        "Email N-DAYS agenda to yourself."
+        (interactive "p")
+        (save-window-excursion
+          (-if-let (agenda (cb-org:printable-agenda-string))
+            (progn
+              (mail
+               'new
+               user-mail-address
+               (format "[org] Journal for %s"
+                       (calendar-date-string (calendar-current-date) 'abbrev)))
+              (insert agenda)
+              (mail-send-and-exit nil))
+            (message "No agenda items to send in %s-day period" n-days))))
+
+
       ;; Add GTD agenda views.
       (setq org-agenda-custom-commands
             '(("w" "Weekly Review"
@@ -547,7 +572,16 @@ Non-nil if modifications where made."
                 (tags-todo "@anywhere")
                 (tags-todo "@errand"))
                ;; no local settings
-               nil)))
+               nil)
+              ("@" "Send as email" agenda ""
+               ((org-agenda-mode-hook
+                 ;; HACK: Wait on a timer for the agenda to display, then
+                 ;; manually reset the window state.
+                 (lambda ()
+                   (run-with-timer 0.1 nil (lambda ()
+                                             (cb-org:mail-agenda (or prefix-arg 1))
+                                             (-when-let (win (get-buffer-window org-agenda-buffer))
+                                               (delete-window win))))))))))
 
       (setq org-agenda-insert-diary-extract-time t
             org-agenda-span 'week
