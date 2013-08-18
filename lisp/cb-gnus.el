@@ -112,7 +112,8 @@
   (setq gnus-agent-fetch-selected-article t
         gnus-agent-directory (f-join cb:etc-dir "gnus-agent")
         ;; Send mail immediately, rather than queuing.
-        gnus-agent-queue-mail nil))
+        gnus-agent-queue-mail nil
+        gnus-agent-auto-agentize-methods '(nntp nnimap)))
 
 ;; Configure gnus.
 
