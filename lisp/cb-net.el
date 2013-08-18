@@ -154,17 +154,6 @@ SUBJECT is a string read from the user."
 
     (bind-key* "C-x m" 'compose-mail-with-prompts)))
 
-(use-package bbdb-vcard
-  :commands
-  (bbdb-vcard-import-file
-   bbdb-vcard-import-buffer
-   bbdb-vcard-export)
-  :config
-  ;; HACK: ignore calls to unbound functions.
-  (progn
-    (defalias 'bbdb-record-Notes 'ignore)
-    (defalias 'bbdb-record-set-Notes 'ignore)))
-
 (use-package google-this
   :ensure   t
   :commands google-this
