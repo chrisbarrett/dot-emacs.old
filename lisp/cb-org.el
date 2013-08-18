@@ -37,14 +37,16 @@
 (require 'noflet)
 (require 'cb-lib)
 (require 'cb-evil)
+(autoload 'bbdb-complete-mail "bbdb-com")
 (autoload 'bbdb-message-clean-name-default "bbdb-mua")
-(autoload 'message-send-and-exit "message")
+(autoload 'bbdb-record-mail "bbdb")
+(autoload 'bbdb-record-name "bbdb")
+(autoload 'bbdb-records "bbdb")
 (autoload 'goto-address-find-address-at-point "goto-addr.el")
+(autoload 'message-send-and-exit "message")
 (autoload 'projectile-project-buffer-names "projectile")
 (autoload 'projectile-project-name "projectile")
 (autoload 'projectile-project-p "projectile")
-(autoload 'bbdb-record-name "bbdb")
-(autoload 'bbdb-records "bbdb")
 
 ;; Declare org-related values before org-mode is loaded.
 ;; This is mainly to reduce compiler warnings.
