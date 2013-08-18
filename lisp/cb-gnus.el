@@ -22,7 +22,8 @@
 
 ;;; Commentary:
 
-;; Configuration for gnus
+;; Configuration for gnus. Gnus is the built-in newsreader, which also supports
+;; email.
 
 ;;; Code:
 
@@ -30,31 +31,37 @@
 (require 'cb-foundation)
 (require 'cb-typefaces)
 (require 'async)
-(autoload 'gnus-dribble-read-file "gnus-start")
 
-(defvar gnus-startup-file (f-join cb:etc-dir "gnus"))
-(defvar gnus-current-startup-file (f-join cb:etc-dir "gnus"))
-(defvar gnus-dribble-directory (f-join cb:etc-dir "gnus-dribble"))
+;; Define a global key binding for starting gnus. It will run unplugged, which
+;; should speed things up.
+;;
+;; Note that you will still need to add individual servers to be agentized - use
+;; <J a> in the server buffer to add servers to the agent list.
 
 (defun show-gnus ()
   "Start gnus.  If gnus is already running, switch to the groups buffer."
   (interactive)
   (-if-let (b (get-buffer "*Group*"))
     (switch-to-buffer b)
-    (gnus)))
+    (gnus-unplugged)))
+
+(when (true? cb:use-vim-keybindings?)
+  (bind-key* "M-Y" 'show-gnus))
+
+;; Configure gnus.
 
 (use-package gnus
   :commands gnus
   :defer t
-  :init
-  (when (true? cb:use-vim-keybindings?)
-    (bind-key* "M-Y" 'show-gnus))
   :config
   (progn
 
-    (setq gnus-always-read-dribble-file t)
+    (setq gnus-always-read-dribble-file t
+          gnus-startup-file (f-join cb:etc-dir "gnus")
+          gnus-current-startup-file (f-join cb:etc-dir "gnus")
+          gnus-dribble-directory (f-join cb:etc-dir "gnus-dribble"))
 
-    ;;;; Custom faces
+    ;; Custom faces
 
     (hook-fn 'gnus-article-mode-hook
       "Use a sans-serif font for gnus-article-mode."
@@ -73,55 +80,55 @@
         (setq-local gnus-use-adaptive-scoring nil)
         (setq-local gnus-use-scoring t)
         (setq-local gnus-score-find-score-files-function 'gnus-score-find-single)
-        (setq-local gnus-summary-line-format "%U%R%z%d %I%(%[ %s %]%)\n")))
+        (setq-local gnus-summary-line-format "%U%R%z%d %I%(%[ %s %]%)\n")))))
 
-    ;; Set evil-style motion keys.
-    (after 'evil
+;; Configure evil-style motion keys in the various gnus modes.
+(after 'evil
 
-      (after 'gnus-group
-        (bind-keys
-          :map gnus-group-mode-map
-          "j" 'gnus-group-next-group
-          "k" 'gnus-group-prev-group
-          "n" 'gnus-group-jump-to-group))
+  (after 'gnus-group
+    (bind-keys
+      :map gnus-group-mode-map
+      "j" 'gnus-group-next-group
+      "k" 'gnus-group-prev-group
+      "n" 'gnus-group-jump-to-group))
 
-      (after 'gnus-sum
-        (bind-keys
-          :map gnus-summary-mode-map
-          "j" 'gnus-summary-next-article
-          "k" 'gnus-summary-prev-article
-          "n" 'gnus-summary-next-unread-article))
+  (after 'gnus-sum
+    (bind-keys
+      :map gnus-summary-mode-map
+      "j" 'gnus-summary-next-article
+      "k" 'gnus-summary-prev-article
+      "n" 'gnus-summary-next-unread-article))
 
-      (after 'gnus-art
-        (bind-keys
-          :map gnus-article-mode-map
-          "j" 'next-line
-          "k" 'previous-line
-          "w" 'evil-forward-word-begin
-          "e" 'evil-forward-word-end
-          "b" 'evil-backward-word-begin
-          "C-n" 'gnus-summary-next-article
-          "C-p" 'gnus-summary-prev-article
-          "C-f" 'evil-scroll-page-down
-          "C-b" 'evil-scroll-page-up
-          "z z" 'evil-scroll-line-to-center
-          "z t" 'evil-scroll-line-to-top
-          "z b" 'evil-scroll-line-to-bottom))
+  (after 'gnus-art
+    (bind-keys
+      :map gnus-article-mode-map
+      "j" 'next-line
+      "k" 'previous-line
+      "w" 'evil-forward-word-begin
+      "e" 'evil-forward-word-end
+      "b" 'evil-backward-word-begin
+      "C-n" 'gnus-summary-next-article
+      "C-p" 'gnus-summary-prev-article
+      "C-f" 'evil-scroll-page-down
+      "C-b" 'evil-scroll-page-up
+      "z z" 'evil-scroll-line-to-center
+      "z t" 'evil-scroll-line-to-top
+      "z b" 'evil-scroll-line-to-bottom))
 
-      (after 'gnus-srvr
-        (bind-keys
-          :map gnus-server-mode-map
-          "j" 'evil-next-line
-          "k" 'evil-previous-line)
-        (bind-keys
-          :map gnus-browse-mode-map
-          "j" 'gnus-browse-next-group
-          "k" 'gnus-browse-prev-group
-          "C-f" 'evil-scroll-page-down
-          "C-b" 'evil-scroll-page-up
-          "/" 'evil-search-forward
-          "n" 'evil-search-next
-          "N" 'evil-search-previous)))))
+  (after 'gnus-srvr
+    (bind-keys
+      :map gnus-server-mode-map
+      "j" 'evil-next-line
+      "k" 'evil-previous-line)
+    (bind-keys
+      :map gnus-browse-mode-map
+      "j" 'gnus-browse-next-group
+      "k" 'gnus-browse-prev-group
+      "C-f" 'evil-scroll-page-down
+      "C-b" 'evil-scroll-page-up
+      "/" 'evil-search-forward
+      "n" 'evil-search-next
+      "N" 'evil-search-previous)))
 
 (provide 'cb-gnus)
 
