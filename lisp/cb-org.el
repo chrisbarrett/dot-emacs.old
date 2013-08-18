@@ -337,8 +337,15 @@ Kill the buffer when finished."
       "z m" (command (org-global-cycle 1))
       "z r" (command (org-global-cycle 0)))
 
+    (defun cb-org:ctrl-c-ctrl-k (&optional n)
+      "Kill subtrees, unless we're in a special buffer where it should cancel."
+      (interactive "p")
+      (if (s-starts-with? "*Org" (buffer-name))
+          (org-kill-note-or-show-branches)
+        (org-cut-subtree n)))
+
     (define-keys org-mode-map
-      "C-c C-k" 'org-cut-subtree
+      "C-c C-k" 'cb-org:ctrl-c-ctrl-k
       "C-c C-." 'org-time-stamp-inactive
       ;; disable annoying comment toggle key
       "C-c ;" nil)
