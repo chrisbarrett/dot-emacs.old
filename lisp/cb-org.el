@@ -139,7 +139,7 @@
 
 (defun cb-org:buffer-substring-to-quote (beg end)
   "Format the portion of the current buffer from BEG to END as a quote or code block."
-  (let ((str (buffer-substring-no-properties beg end)))
+  (let ((str (s-trim (buffer-substring-no-properties beg end))))
     ;; If the captured text is source code, wrap it in a code block. Otherwise
     ;; wrap it in a block quote.
     (if (derived-mode-p 'prog-mode)
