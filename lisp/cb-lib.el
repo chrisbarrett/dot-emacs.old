@@ -324,10 +324,13 @@ Find the first window where PRED-FORM is not nil."
   "Anaphoric form of `filter-atoms'."
   `(filter-atoms (lambda (it) ,predicate)))
 
-(defun current-region ()
-  "Return the current active region, or nil if there is no region active."
+(defun current-region (&optional no-properties)
+  "Return the current active region, or nil if there is no region active.
+If NO-PROPERTIES is non-nil, return the region without text properties."
   (when (region-active-p)
-    (buffer-substring (region-beginning) (region-end))))
+    (funcall (if no-properties 'buffer-substring-no-properties 'buffer-substring)
+             (region-beginning)
+             (region-end))))
 
 (defun current-line ()
   "Return the line at point."

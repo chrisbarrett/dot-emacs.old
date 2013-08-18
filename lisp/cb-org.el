@@ -84,20 +84,9 @@
     ;; Extract the current region as a quote.
     (when (region-active-p)
       (cb-org:buffer-substring-to-quote (region-beginning) (region-end)))
-    (or
-     ;; Use address at point.
-     (goto-address-find-address-at-point)
-     ;; Completing-read for all names and emails in bbdb.
-     (progn
-       (require 'bbdb)
-       (ido-completing-read
-        "New email to: "
-        (->> (bbdb-records)
-          (-filter 'bbdb-record-mail)
-          (-map (lambda (record)
-                  (--map (format "%s <%s>" (bbdb-record-name record) it)
-                         (bbdb-record-mail record))))
-          (-flatten)))))
+    ;; Get email address at point or read from user.
+    (or (goto-address-find-address-at-point)
+        (cb-org:read-email))
     ;; Read the message subject interactively.
     (read-string "Subject: ")))
 
@@ -106,29 +95,15 @@
     ;; the message.
     (with-window-restore
       (select-window (display-buffer-at-bottom compose-buf nil))
-      ;; Configure message compose buffer.  Restore window-state when killing
+      ;; Configure message compose buffer.  Restore window state when killing
       ;; the compose buffer.
-      ;; * <C-c q> cancels and restores previous window state.
-      ;; * <C-c c> sends message and restores window state if successful.
       (org-mode)
       (hook-fn 'kill-buffer-hook :local t (restore))
-      (buffer-local-set-key
-       (kbd "C-c q") (eval `(command (kill-buffer ,compose-buf))))
-      (buffer-local-set-key
-       (kbd "C-c c")
-       (eval `(command
-               ;; Export the buffer contents to HTML, then send.
-               ;; Prepare message body.
-               (let ((str (buffer-string)))
-                 (compose-mail ,to ,subject)
-                 (message-goto-body)
-                 (insert str)
-                 (let ((org-export-with-toc nil))
-                   (org-mime-htmlize nil))
-                 (message-send-and-exit))
-               ;; Restore previous window state.
-               (kill-buffer ,compose-buf))))
+      (buffer-local-set-key (kbd "<tab>") 'cb-org:message-tab)
+      (buffer-local-set-key (kbd "C-c q") 'kill-this-buffer)
+      (buffer-local-set-key (kbd "C-c c") 'cb-org:message-send)
       ;; Prepare for user interaction.
+      (insert (format "#+TO: %s\n#+SUBJECT: %s\n\n" to subject))
       (cb:append-buffer)
       ;; Insert current region as quote.
       (when region
@@ -136,6 +111,18 @@
           (newline)
           (insert region)))
       (message "<C-c c> to send message, <C-c q> to cancel."))))
+
+(defun cb-org:read-email ()
+  "Read an email address from BBDB using ido."
+  (require 'bbdb)
+  (ido-completing-read
+   "New email to: "
+   (->> (bbdb-records)
+     (-filter 'bbdb-record-mail)
+     (-map (lambda (record)
+             (--map (format "%s <%s>" (bbdb-record-name record) it)
+                    (bbdb-record-mail record))))
+     (-flatten))))
 
 (defun cb-org:buffer-substring-to-quote (beg end)
   "Format the portion of the current buffer from BEG to END as a quote or code block."
@@ -152,6 +139,61 @@
                    (car (s-split-words (symbol-name major-mode)))))
                 str)
       (format "#+BEGIN_QUOTE\n%s\n#+END_QUOTE\n" str))))
+
+(defun cb-org:message-send ()
+  "Export the org message compose buffer to HTML and send as an email.
+Kill the buffer when finished."
+  ;; Creates a new message, extracting header values
+  ;; from the compose buffer's headers.
+  (let ((str (buffer-string))
+        (headers (cb-org:header->alist)))
+    (compose-mail (cdr (assoc "TO" headers))
+                  (cdr (assoc "SUBJECT" headers))
+                  (->> (list (assoc "CC" headers)
+                             (assoc "BCC" headers))
+                    (-remove 'null)))
+    ;; Prepare message body.
+    (message-goto-body)
+    (insert str)
+    (let ((org-export-with-toc nil))
+      (org-mime-htmlize nil))
+    (message-send-and-exit))
+  ;; Restore previous window state.
+  (kill-this-buffer))
+
+(defun cb-org:message-tab ()
+  "Complete email addresses in the header, otherwise cycle headlines."
+  (interactive)
+  (if (s-starts-with? "#+"(current-line))
+
+      (let ((beg (line-beginning-position)))
+        (save-restriction
+          (narrow-to-region beg (line-end-position))
+          (bbdb-complete-mail)
+          ;; `bbdb-complete-mail' puts
+          ;; addresses on new lines. Rejoin
+          ;; the lines.
+          (save-excursion
+            (goto-char beg)
+            (while (search-forward-regexp
+                    (rx (* space) "," (* (any space "\n")))
+                    nil t)
+              (replace-match ", ")))))
+    (call-interactively 'org-cycle)))
+
+(defun* cb-org:header->alist (&optional (str (buffer-string)))
+  "Extract the header values from the contents of the current org buffer."
+  (->> (s-lines str)
+    ;; Get header lines
+    (--take-while (or (s-starts-with? "#+" it) (s-blank? it)))
+    (-remove 's-blank?)
+    ;; Create alist of keywords -> values
+    (--map (destructuring-bind (_ key val &rest rest)
+               (s-match (rx bol "#+" (group (+ nonl))
+                            ":" (* space)
+                            (group (+ nonl)))
+                        it)
+             (cons (s-upcase key) val)))))
 
 (bind-key* "C-x m" 'cb-org:compose-mail)
 (bind-key* "C-x M" 'compose-mail)
