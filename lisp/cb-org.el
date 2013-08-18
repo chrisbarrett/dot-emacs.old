@@ -870,7 +870,29 @@ as the default task."
       (hook-fn 'org-ctrl-c-ctrl-c-hook
         (when (cb-org:looking-at-pgp-section?)
           (org-decrypt-entry)
-          t)))))
+          t))))
+
+  ;; `org-mime' provides MIME exporting functions, allowing you to export org
+  ;; buffers to HTML emails.
+  (use-package org-mime
+    :config
+    (progn
+      ;; Key bindings
+
+      (hook-fn 'message-mode-hook
+        (local-set-key (kbd "C-c M-o") 'org-mime-htmlize))
+
+      (hook-fn 'org-mode-hook
+        (local-set-key (kbd "C-c M-o") 'org-mime-org-buffer-htmlize))
+
+      ;; Offset block quotes and code.
+
+      (hook-fn 'org-mime-html-hook
+        (org-mime-change-element-style
+         "blockquote" "border-left: 2px solid gray; padding-left: 4px;")
+
+        (org-mime-change-element-style
+         "code" "border-left: 2px solid gray; padding-left: 4px;")))))
 
 (after 'auto-complete
   (hook-fn 'org-mode-hook
