@@ -72,6 +72,103 @@
   (hook-fn 'after-init-hook
     (executor:org-agenda-fullscreen)))
 
+;; Define a command for sending HTML emails.  Uses ido to read email addresses
+;; and org-mode for message composition.
+(defun cb-org:compose-mail (region to subject)
+  "Start composing a new message.
+* REGION is inserted into the compose buffer, if a region was active.
+* TO is either the email address at point or an address read by from the user.
+* SUBJECT is a string read from the user."
+  (interactive
+   (list
+    ;; Extract the current region as a quote.
+    (when (region-active-p)
+      (cb-org:buffer-substring-to-quote (region-beginning) (region-end)))
+    (or
+     ;; Use address at point.
+     (goto-address-find-address-at-point)
+     ;; Completing-read for all names and emails in bbdb.
+     (progn
+       (require 'bbdb)
+       (ido-completing-read
+        "New email to: "
+        (->> (bbdb-records)
+          (-filter 'bbdb-record-mail)
+          (-map (lambda (record)
+                  (--map (format "%s <%s>" (bbdb-record-name record) it)
+                         (bbdb-record-mail record))))
+          (-flatten)))))
+    ;; Read the message subject interactively.
+    (read-string "Subject: ")))
+
+  (let ((compose-buf (generate-new-buffer "*new message*")))
+    ;; Split the window, restoring the previous window state after sending
+    ;; the message.
+    (with-window-restore
+      (select-window (display-buffer-at-bottom compose-buf nil))
+      ;; Configure message compose buffer.  Restore window-state when killing
+      ;; the compose buffer.
+      ;; * <C-c q> cancels and restores previous window state.
+      ;; * <C-c c> sends message and restores window state if successful.
+      (org-mode)
+      (hook-fn 'kill-buffer-hook :local t (restore))
+      (buffer-local-set-key
+       (kbd "C-c q") (eval `(command (kill-buffer ,compose-buf))))
+      (buffer-local-set-key
+       (kbd "C-c c")
+       (eval `(command
+               ;; Export the buffer contents to HTML, then send.
+               ;; Prepare message body.
+               (let ((str (buffer-string)))
+                 (compose-mail ,to ,subject)
+                 (message-goto-body)
+                 (insert str)
+                 (let ((org-export-with-toc nil))
+                   (org-mime-htmlize nil))
+                 (message-send-and-exit))
+               ;; Restore previous window state.
+               (kill-buffer ,compose-buf))))
+      ;; Prepare for user interaction.
+      (cb:append-buffer)
+      ;; Insert current region as quote.
+      (when region
+        (save-excursion
+          (newline)
+          (insert region)))
+      (message "<C-c c> to send message, <C-c q> to cancel."))))
+
+(defun cb-org:buffer-substring-to-quote (beg end)
+  "Format the portion of the current buffer from BEG to END as a quote or code block."
+  (let ((str (buffer-substring-no-properties beg end)))
+    ;; If the captured text is source code, wrap it in a code block. Otherwise
+    ;; wrap it in a block quote.
+    (if (derived-mode-p 'prog-mode)
+        (format "#+BEGIN_SRC %s\n%s\n#+END_SRC\n"
+                ;; Determine name of mode to use.
+                (case major-mode
+                  (c-mode 'C)
+                  (emacs-lisp-mode 'elisp)
+                  (otherwise
+                   (car (s-split-words (symbol-name major-mode)))))
+                str)
+      (format "#+BEGIN_QUOTE\n%s\n#+END_QUOTE\n" str))))
+
+(bind-key* "C-x m" 'cb-org:compose-mail)
+(bind-key* "C-x M" 'compose-mail)
+
+;; Add command to yank region as quote.
+
+(defun cb-org:yank-region-as-quote (beg end)
+  (interactive "r")
+  (if (region-active-p)
+      (progn
+        (kill-new (cb-org:buffer-substring-to-quote beg end))
+        (deactivate-mark)
+        (message "Region yanked as quote."))
+    (error "No region is active, so no quote could be yanked")))
+
+(global-set-key (kbd "C-c y") 'cb-org:yank-region-as-quote)
+
 ;; `org-mode' is a suite of editing and management tools centred around
 ;; human-readable text files.
 (use-package org
@@ -311,6 +408,8 @@
 
 ;; Configure org's sub-features only if org-mode is actually loaded.
 (after 'org
+
+  ;; Commands for formatting project file.
 
   (defun cb-org:project-file ()
     "Get the path to the project file for the current project."
@@ -924,65 +1023,6 @@ as the default task."
 (after 'auto-complete
   (hook-fn 'org-mode-hook
     (setq-local ac-sources nil)))
-
-;; Define a command for sending HTML emails.  Uses ido to read email addresses
-;; and org-mode for message composition.
-(defun cb-org:compose-mail (to subject)
-  "Start composing a new message.
-* TO is either the email address at point or an address read by from the user.
-* SUBJECT is a string read from the user."
-  (interactive
-   (list
-    (or
-     ;; Use address at point.
-     (goto-address-find-address-at-point)
-     ;; Completing-read for all names and emails in bbdb.
-     (progn
-       (require 'bbdb)
-       (ido-completing-read
-        "New email to: "
-        (->> (bbdb-records)
-          (-filter 'bbdb-record-mail)
-          (-map (lambda (record)
-                  (--map (format "%s <%s>" (bbdb-record-name record) it)
-                         (bbdb-record-mail record))))
-          (-flatten)))))
-
-    (read-string "Subject: ")))
-
-  (let ((compose-buf (generate-new-buffer "*new message*")))
-    ;; Split the window, restoring the previous window state after sending
-    ;; the message.
-    (with-window-restore
-      (select-window (display-buffer-at-bottom compose-buf nil))
-      ;; Configure message compose buffer.  Restore window-state when killing
-      ;; the compose buffer.
-      ;; * <C-c q> cancels and restores previous window state.
-      ;; * <C-c c> sends message and restores window state if successful.
-      (org-mode)
-      (hook-fn 'kill-buffer-hook :local t (restore))
-      (buffer-local-set-key
-       (kbd "C-c q") (eval `(command (kill-buffer ,compose-buf))))
-      (buffer-local-set-key
-       (kbd "C-c c")
-       (eval `(command
-               ;; Export the buffer contents to HTML, then send.
-               ;; Prepare message body.
-               (let ((str (buffer-string)))
-                 (compose-mail ,to ,subject)
-                 (message-goto-body)
-                 (insert str)
-                 (let ((org-export-with-toc nil))
-                   (org-mime-htmlize nil))
-                 (message-send-and-exit))
-               ;; Restore previous window state.
-               (kill-buffer ,compose-buf))))
-      ;; Prepare for user interaction.
-      (cb:append-buffer)
-      (message "<C-c c> to send message, <C-c q> to cancel."))))
-
-(bind-key* "C-x m" 'cb-org:compose-mail)
-(bind-key* "C-x M" 'compose-mail)
 
 (provide 'cb-org)
 
