@@ -941,15 +941,16 @@ as the default task."
      ;; Use address at point.
      (goto-address-find-address-at-point)
      ;; Completing-read for all names and emails in bbdb.
-     (require 'bbdb)
-     (ido-completing-read
-      "New email to: "
-      (->> (bbdb-records)
-        (-filter 'bbdb-record-mail)
-        (-map (lambda (record)
-                (--map (format "%s <%s>" (bbdb-record-name record) it)
-                       (bbdb-record-mail record))))
-        (-flatten))))
+     (progn
+       (require 'bbdb)
+       (ido-completing-read
+        "New email to: "
+        (->> (bbdb-records)
+          (-filter 'bbdb-record-mail)
+          (-map (lambda (record)
+                  (--map (format "%s <%s>" (bbdb-record-name record) it)
+                         (bbdb-record-mail record))))
+          (-flatten)))))
 
     (read-string "Subject: ")))
 
