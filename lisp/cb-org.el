@@ -352,6 +352,8 @@ Non-nil if modifications where made."
 
 (after 'org
 
+  ;; `org-capture' is used to interactively read items to be inserted into
+  ;; org-mode buffers.
   (use-package org-capture
     :config
     (progn
@@ -504,7 +506,8 @@ Non-nil if modifications where made."
                :clock-keep t
                :kill-buffer t)))))
 
-
+  ;; `org-agenda' provides an interactive journaling system, collecting
+  ;; information from org-mode buffers.
   (use-package org-agenda
     :config
     (progn
@@ -641,7 +644,8 @@ Return nil if there are no items to display."
       (hook-fn 'org-mode-hook
         (add-hook 'after-save-hook 'cb-org:refresh-agenda nil 'local))))
 
-
+  ;; `appt' is emacs' generic scheduling system for calendar. Configure it to
+  ;; hook into org-mode.
   (use-package appt
     :config
     (progn
@@ -660,7 +664,8 @@ Return nil if there are no items to display."
               (org-agenda-to-appt t)
               (appt-check 'force)))))))
 
-
+  ;; `org-clock' provides time-keeping and clocking features for tasks in
+  ;; org-mode.
   (use-package org-clock
     :config
     (progn
@@ -827,6 +832,7 @@ as the default task."
         :append t
         (cb-org:mark-next-parent-tasks-todo))))
 
+  ;; `org-archive' provides archiving features for org-mode.
   (use-package org-archive
     :config
     (progn
@@ -844,6 +850,7 @@ as the default task."
       (defalias 'archive-done-tasks 'cb-org:archive-done-tasks)
       (setq org-archive-default-command 'cb-org:archive-done-tasks)))
 
+  ;; `org-crypt' provides encryption functions for org buffers.
   (use-package org-crypt
     :config
     (progn
