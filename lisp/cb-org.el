@@ -37,9 +37,14 @@
 (require 'noflet)
 (require 'cb-lib)
 (require 'cb-evil)
-(autoload 'projectile-project-p "projectile")
-(autoload 'projectile-project-name "projectile")
+(autoload 'bbdb-message-clean-name-default "bbdb-mua")
+(autoload 'message-send-and-exit "message")
+(autoload 'goto-address-find-address-at-point "goto-addr.el")
 (autoload 'projectile-project-buffer-names "projectile")
+(autoload 'projectile-project-name "projectile")
+(autoload 'projectile-project-p "projectile")
+(autoload 'bbdb-record-name "bbdb")
+(autoload 'bbdb-records "bbdb")
 
 ;; Declare org-related values before org-mode is loaded.
 ;; This is mainly to reduce compiler warnings.
@@ -923,6 +928,63 @@ as the default task."
 (after 'auto-complete
   (hook-fn 'org-mode-hook
     (setq-local ac-sources nil)))
+
+;; Define a command for sending HTML emails.  Uses ido to read email addresses
+;; and org-mode for message composition.
+(defun cb-org:compose-mail (to subject)
+  "Start composing a new message.
+* TO is either the email address at point or an address read by from the user.
+* SUBJECT is a string read from the user."
+  (interactive
+   (list
+    (or
+     ;; Use address at point.
+     (goto-address-find-address-at-point)
+     ;; Completing-read for all names and emails in bbdb.
+     (require 'bbdb)
+     (ido-completing-read
+      "New email to: "
+      (->> (bbdb-records)
+        (-filter 'bbdb-record-mail)
+        (-map (lambda (record)
+                (--map (format "%s <%s>" (bbdb-record-name record) it)
+                       (bbdb-record-mail record))))
+        (-flatten))))
+
+    (read-string "Subject: ")))
+
+  (let ((compose-buf (generate-new-buffer "*new message*")))
+    ;; Split the window, restoring the previous window state after sending
+    ;; the message.
+    (with-window-restore
+      (select-window (display-buffer-at-bottom compose-buf nil))
+      ;; Configure message compose buffer.  Restore window-state when killing
+      ;; the compose buffer.
+      ;; * <C-c q> cancels and restores previous window state.
+      ;; * <C-c c> sends message and restores window state if successful.
+      (org-mode)
+      (hook-fn 'kill-buffer-hook :local t (restore))
+      (buffer-local-set-key
+       (kbd "C-c q") (eval `(command (kill-buffer ,compose-buf))))
+      (buffer-local-set-key
+       (kbd "C-c c")
+       (eval `(command
+               ;; Export the buffer contents to HTML, then send.
+               ;; Prepare message body.
+               (let ((str (buffer-string)))
+                 (compose-mail ,to ,subject)
+                 (message-goto-body)
+                 (insert str)
+                 (let ((org-export-with-toc nil))
+                   (org-mime-htmlize nil))
+                 (message-send-and-exit))
+               ;; Restore previous window state.
+               (kill-buffer ,compose-buf))))
+      ;; Prepare for user interaction.
+      (cb:append-buffer)
+      (message "<C-c c> to send message, <C-c q> to cancel."))))
+
+(bind-key* "C-x m" 'cb-org:compose-mail)
 
 (provide 'cb-org)
 

@@ -31,61 +31,10 @@
 (require 's)
 (require 'async)
 (require 'cb-typefaces)
-(autoload 'bbdb-message-clean-name-default "bbdb-mua")
-(autoload 'bbdb-record-name "bbdb")
-(autoload 'goto-address-find-address-at-point "goto-addr.el")
 (autoload 'mail-add-attachment "sendmail")
 (autoload 'thing-at-point-url-at-point "thingatpt")
 (autoload 'message-field-value "message")
 (autoload 'smtpmail-send-it "smtpmail")
-
-;; Define a command for sending formatted emails quickly.  Uses ido to read
-;; email addresses.
-
-(defun compose-mail-with-prompts (to subject)
-      "Start composing a new message.
-* TO is either the email address at point or an address read by from the user.
-* SUBJECT is a string read from the user."
-      (interactive
-       (list
-        (or
-         ;; Use address at point.
-         (goto-address-find-address-at-point)
-         ;; Completing-read for all names and emails in bbdb.
-         (ido-completing-read
-          "New email to: "
-          (->> (bbdb-records)
-            (-filter 'bbdb-record-mail)
-            (-map (lambda (record)
-                    (--map (format "%s <%s>" (bbdb-record-name record) it)
-                           (bbdb-record-mail record))))
-            (-flatten))))
-
-        (read-string "Subject: ")))
-
-      ;; Split the window, restoring the previous window state after sending
-      ;; the message.
-      (with-window-restore
-        (save-window-excursion
-          (compose-mail to subject)
-          (hook-fns '(message-send-hook message-cancel-hook kill-buffer-hook)
-            :local t
-            (restore))
-          ;; Narrow to message body.
-          (narrow-to-region (save-excursion
-                              (goto-char (point-min))
-                              (search-forward-regexp (rx bol "--text follows this line"))
-                              (forward-line)
-                              (point))
-                            (point-max)))
-        ;; Show the message buffer.
-        (select-window
-         (display-buffer-at-bottom
-          (--first-buffer (derived-mode-p 'message-mode))
-          nil))
-        (message "<C-c C-c> to send message, <C-c C-k> to cancel.")))
-
-(bind-key* "C-x m" 'compose-mail-with-prompts)
 
 ;; Use the `async' library to send mail messages asynchronously, ie. without
 ;; blocking emacs!
