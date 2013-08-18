@@ -142,6 +142,11 @@ When used interactively, makes a guess at what to pass."
 
 (bind-key* "S-s-<return>" 'mac-open-dwim)
 
+;; Use gnutls when sending emails.
+(when (equal system-type 'darwin)
+    (setq starttls-gnutls-program (executable-find "gnutls-cli")
+          starttls-use-gnutls t))
+
 (provide 'cb-osx)
 
 ;; Local Variables:

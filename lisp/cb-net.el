@@ -30,10 +30,14 @@
 (require 'use-package)
 (require 's)
 (require 'async)
+(require 'cb-typefaces)
 (autoload 'bbdb-message-clean-name-default "bbdb-mua")
-(autoload 'message-field-value "message")
-(autoload 'thing-at-point-url-at-point "thingatpt")
+(autoload 'bbdb-record-name "bbdb")
 (autoload 'goto-address-find-address-at-point "goto-addr.el")
+(autoload 'mail-add-attachment "sendmail")
+(autoload 'thing-at-point-url-at-point "thingatpt")
+(autoload 'message-field-value "message")
+(autoload 'smtpmail-send-it "smtpmail")
 
 ;; Use the `async' library to send mail messages asynchronously, ie. without
 ;; blocking emacs!
@@ -41,7 +45,7 @@
 (defvar async-smtpmail-sent-hook nil)
 
 (defun async-smtpmail-send-it (&rest _)
-  "Send mail asynchronously using another emacs process."
+  "Send mail asynchronously using another Emacs process."
   (let ((to (message-field-value "To")))
     (message "Delivering message to %s..." to)
     (async-start
@@ -59,20 +63,16 @@
 (setq message-send-mail-function 'async-smtpmail-send-it
       send-mail-function 'async-smtpmail-send-it)
 
-;; `smtpmail' provides email functionality.
-(use-package smtpmail
-  :commands smtpmail-send-it
+;; `message' provides emailing and messaging functions.
+(use-package message
   :config
   (progn
 
     (defun mail-add-attachment-ido (file)
       (interactive (list (ido-read-file-name "Attach file: " )))
       (mail-add-attachment file))
-    (define-key message-mode-map (kbd "C-c C-a") 'mail-add-attachment-ido)
 
-    (when (equal system-type 'darwin)
-      (setq starttls-gnutls-program (executable-find "gnutls-cli")
-            starttls-use-gnutls t))))
+    (define-key message-mode-map (kbd "C-c C-a") 'mail-add-attachment-ido)))
 
 ;; `bbdb' provides an address book for emacs and integrates with many modes.
 (use-package bbdb
@@ -85,26 +85,28 @@
     (defvar bbdb-file (concat user-dropbox-directory ".bbdb")))
   :config
   (progn
-    (setq
-     bbdb-offer-save 1
-     bbdb-use-popup t
-     bbdb-electric t
-     bbdb-pop-up-window-size 0.5
-     bbdb-mua-popup-window-size 4
-     bddb-popup-target-lines 1
-     bbdb-dwim-net-address-allow-redundancy t
-     bbdb-quiet-about-name-mismatches 2
-     bbdb-always-add-address t
-     bbdb-canonicalize-redundant-nets-p t
-     bbdb-completion-type nil
-     bbdb-complete-name-allow-cycling t
-     bbbd-message-caching-enabled t
-     bbdb-use-alternate-names t
-     bbdb-elided-display t
-     bbdb/mail-auto-create-p 'bbdb-ignore-some-messages-hook
-     ;; don't ask about fake addresses
-     bbdb-ignore-some-messages-alist
-     '(( "From" . "no.?reply\\|DAEMON\\|daemon\\|facebookmail\\|twitter")))
+    ;; Wrap config in `after' form to prevent warnings.
+    (after 'bbdb
+      (setq
+       bbdb-offer-save 1
+       bbdb-use-popup t
+       bbdb-electric t
+       bbdb-pop-up-window-size 0.5
+       bbdb-mua-popup-window-size 4
+       bddb-popup-target-lines 1
+       bbdb-dwim-net-address-allow-redundancy t
+       bbdb-quiet-about-name-mismatches 2
+       bbdb-always-add-address t
+       bbdb-canonicalize-redundant-nets-p t
+       bbdb-completion-type nil
+       bbdb-complete-name-allow-cycling t
+       bbbd-message-caching-enabled t
+       bbdb-use-alternate-names t
+       bbdb-elided-display t
+       bbdb/mail-auto-create-p 'bbdb-ignore-some-messages-hook
+       ;; don't ask about fake addresses
+       bbdb-ignore-some-messages-alist
+       '(( "From" . "no.?reply\\|DAEMON\\|daemon\\|facebookmail\\|twitter"))))
 
     (bbdb-initialize 'gnus 'message)
 
@@ -240,18 +242,21 @@ SUBJECT is a string read from the user."
   :defer t
   :config
   (progn
+
+    (after 'erc
+      (setq
+       erc-hide-list
+       '("JOIN" "PART" "QUIT" "NICK")
+
+       erc-prompt
+       (lambda () (format "%s>" (erc-current-nick)))
+
+       erc-track-exclude-types
+       '("JOIN" "NICK" "PART" "QUIT" "MODE"
+         "324" "329" "332" "333" "353" "477")))
+
     (erc-autojoin-mode +1)
-    (erc-track-mode +1)
-    (setq
-     erc-hide-list
-     '("JOIN" "PART" "QUIT" "NICK")
-
-     erc-prompt
-     (lambda () (format "%s>" (erc-current-nick)))
-
-     erc-track-exclude-types
-     '("JOIN" "NICK" "PART" "QUIT" "MODE"
-       "324" "329" "332" "333" "353" "477"))))
+    (erc-track-mode +1)))
 
 (provide 'cb-net)
 
