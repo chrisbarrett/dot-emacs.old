@@ -61,7 +61,7 @@
   "Download news with the gnus agent."
   (let ((proc (start-process
                "gnus agent" nil
-               "emacs" "--batch" "-l" user-init-file "-f" "gnus-agent-batch")))
+               "emacs" "-batch" "-l" user-init-file "-f" "gnus-agent-batch")))
     ;; Kill process if it's open for more than 10 minutes.  That should be
     ;; plenty of time to fetch articles, even for first sync.
     (run-with-timer (* 10 60) nil (lambda (p)
