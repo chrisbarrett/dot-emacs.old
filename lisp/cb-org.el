@@ -509,6 +509,43 @@ Non-nil if modifications where made."
       (add-hook 'org-agenda-mode-hook 'org-agenda-to-appt)
       (add-to-list 'org-agenda-files org-directory)
 
+      (setq org-agenda-insert-diary-extract-time t
+            org-agenda-span 'week
+            org-agenda-skip-deadline-if-done t
+            org-agenda-skip-scheduled-if-done t
+            org-agenda-skip-deadline-prewarning-if-scheduled t
+            ;; Searches include archives
+            org-agenda-text-search-extra-files '(agenda-archives)
+            ;; Ensure the agenda shows the whole coming week.
+            org-agenda-start-on-weekday nil
+            org-agenda-ndays 7)
+
+      ;; Add GTD agenda views.
+
+      (setq org-agenda-custom-commands
+            '(("w" "Weekly Review"
+               ((agenda "" ((org-agenda-ndays 7)))
+                (stuck "")
+                (todo "PROJECT")
+                (todo "MAYBE")
+                (tags "someday")
+                (todo "WAITING")))
+              ("g" . "GTD contexts")
+              ("ga" "Anywhere" tags-todo "@anywhere")
+              ("ge" "Errands"  tags-todo "@errand")
+              ("gh" "Home"     tags-todo "@home")
+              ("gl" "Leisure"  tags-todo "@leisure")
+              ("gw" "Work"     tags-todo "@work")
+              ("G" "GTD Block Agenda"
+               ((tags-todo "@home")
+                (tags-todo "@anywhere")
+                (tags-todo "@errand"))
+               nil)))
+
+      ;; Email agenda
+      ;;
+      ;; Commands for a custom agenda task that will email the current day's
+      ;; items to `user-mail-address'.
 
       (defun* cb-org:printable-agenda-string (&optional (n-days 1))
         "Return a string representing N-DAYS agenda suitable for printing or emailing.
@@ -548,52 +585,21 @@ Return nil if there are no items to display."
               (insert agenda)
               (mail-send-and-exit nil)))))
 
+      (add-to-list 'org-agenda-custom-commands
+                   '("@" "Send as email"
+                     ((agenda "" ((org-agenda-ndays 1))))
+                     ((org-agenda-mode-hook
+                       ;; HACK: Wait on a timer for the agenda to display, then
+                       ;; manually reset the window state.
+                       (lambda ()
+                         (run-with-timer 0.1 nil
+                                         (lambda ()
+                                           (cb-org:mail-agenda)
+                                           (delete-window
+                                            (get-buffer-window org-agenda-buffer))))))))
+                   'append)
 
-      ;; Add GTD agenda views.
-      (setq org-agenda-custom-commands
-            '(("w" "Weekly Review"
-               ((agenda "" ((org-agenda-ndays 7)))
-                (stuck "")
-                (todo "PROJECT")
-                (todo "MAYBE")
-                (tags "someday")
-                (todo "WAITING")))
-              ("g" . "GTD contexts")
-              ("ga" "Anywhere" tags-todo "@anywhere")
-              ("ge" "Errands"  tags-todo "@errand")
-              ("gh" "Home"     tags-todo "@home")
-              ("gl" "Leisure"  tags-todo "@leisure")
-              ("gw" "Work"     tags-todo "@work")
-              ("G" "GTD Block Agenda"
-               ((tags-todo "@home")
-                (tags-todo "@anywhere")
-                (tags-todo "@errand"))
-               ;; no local settings
-               nil)
-              ("@" "Send as email"
-               ((agenda "" ((org-agenda-ndays 1))))
-               ((org-agenda-mode-hook
-                 ;; HACK: Wait on a timer for the agenda to display, then
-                 ;; manually reset the window state.
-                 (lambda ()
-                   (run-with-timer 0.1 nil
-                                   (lambda ()
-                                     (cb-org:mail-agenda)
-                                     (delete-window
-                                      (get-buffer-window org-agenda-buffer))))))))))
-
-      (setq org-agenda-insert-diary-extract-time t
-            org-agenda-span 'week
-            org-agenda-skip-deadline-if-done t
-            org-agenda-skip-scheduled-if-done t
-            org-agenda-skip-deadline-prewarning-if-scheduled t
-            ;; Searches include archives
-            org-agenda-text-search-extra-files '(agenda-archives)
-            ;; Ensure the agenda shows the whole coming week.
-            org-agenda-start-on-weekday nil
-            org-agenda-ndays 7)
-
-      ;; Sorting
+      ;; Agenda sorting
 
       (setq org-agenda-sorting-strategy
             '((agenda habit-down time-up priority-down category-keep)
@@ -612,14 +618,14 @@ Return nil if there are no items to display."
         (hook-fn 'org-agenda-mode-hook
           (smartparens-mode -1)))
 
-      ;; Exclude tasks with HOLD state
+      ;; Exclude tasks with :hold: tag.
 
       (defun cb-org:exclude-tasks-on-hold (tag)
         (and (equal tag "hold") (concat "-" tag)))
 
       (setq org-agenda-auto-exclude-function 'cb-org:exclude-tasks-on-hold)
 
-      ;; Agenda refresh
+      ;; Refresh the agenda after saving org buffers.
 
       (defun cb-org:refresh-agenda ()
         "Refresh all org agenda buffers."
