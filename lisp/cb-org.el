@@ -47,6 +47,9 @@
 (defvar org-export-exclude-tags '("noexport" "crypt"))
 (defvar calendar-date-style 'european)
 
+;; Add contrib directory to load-path.
+(add-to-list 'load-path (f-join cb:etc-dir "org-mode" "contrib" "lisp"))
+
 (declare-modal-executor org-agenda-fullscreen
   :bind "M-O"
   :command (org-agenda-list prefix-arg nil 1))
