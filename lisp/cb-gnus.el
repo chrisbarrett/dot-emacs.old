@@ -111,6 +111,35 @@
             (cb-gnus:update-modeline-unread
              (cb-gnus:sum-unread (cb-gnus:scrape-group-buffer-for-news)))))))))
 
+;; Periodically refresh the *group* buffer and update the modeline.
+;;
+;; Every minute, wait for an idle opportunity to perform the refresh.
+
+(defvar cb-gnus:idle-checker-delay 60
+  "The rough frequency in seconds at which to check gnus for changes.")
+
+(defun cb-gnus:make-idle-checker ()
+  "Create a timer that will wait for an opportunity to refresh gnus.
+After updating the group"
+  (run-with-timer
+   cb-gnus:idle-checker-delay
+   nil
+   (lambda ()
+     ;; Update at the next opportunity.
+     (run-with-idle-timer
+      5 nil
+      (lambda ()
+        (save-window-excursion
+          (executor:show-gnus)
+          (gnus-group-get-new-news)
+          ;; Recur and update the timer var so there's a
+          ;; cancelable handle somewhere.
+          (setq cb-gnus:modeline-refresh-timer
+                (cb-gnus:make-idle-checker))))))))
+
+(defvar cb-gnus:modeline-refresh-timer nil
+  "A handle to the current gnus refresh timer.")
+
 ;; `gnus-agent' provides offline syncing functionality for gnus.  Configure the
 ;; agent to provide fast IMAP access.
 (use-package gnus-agent
@@ -131,7 +160,8 @@
   :config
   (progn
 
-    (setq gnus-always-read-dribble-file t
+    (setq cb-gnus:modeline-refresh-timer (cb-gnus:make-idle-checker)
+          gnus-always-read-dribble-file t
           gnus-startup-file (f-join cb:etc-dir "gnus")
           gnus-current-startup-file (f-join cb:etc-dir "gnus")
           gnus-dribble-directory (f-join cb:etc-dir "gnus-dribble"))
