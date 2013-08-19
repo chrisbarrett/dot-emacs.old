@@ -19,3 +19,6 @@
 [submodule "lib/gnus"]
 	path = lib/gnus
 	url = http://git.gnus.org/gnus.git
+[submodule "lib/org-mode"]
+	path = lib/org-mode
+	url = git://orgmode.org/org-mode.git
