@@ -119,6 +119,9 @@
 (defvar cb-gnus:idle-checker-delay 60
   "The rough frequency in seconds at which to check gnus for changes.")
 
+(defvar cb-gnus:modeline-refresh-timer nil
+  "A handle to the current gnus refresh timer.")
+
 (defun cb-gnus:make-idle-checker ()
   "Create a timer that will wait for an opportunity to refresh gnus.
 After updating the group"
@@ -131,15 +134,16 @@ After updating the group"
       7 nil
       (lambda ()
         (save-window-excursion
-          (executor:show-gnus)
-          (gnus-group-get-new-news)
+          (cl-flet ((message (&rest args) nil)
+                    ;; HACK: gnus will sometimes prompt for things. I don't
+                    ;; care, just YES.
+                    (y-or-n-p (&rest args) t))
+            (executor:show-gnus)
+            (gnus-group-get-new-news))
           ;; Recur and update the timer var so there's a
           ;; cancelable handle somewhere.
           (setq cb-gnus:modeline-refresh-timer
                 (cb-gnus:make-idle-checker))))))))
-
-(defvar cb-gnus:modeline-refresh-timer nil
-  "A handle to the current gnus refresh timer.")
 
 ;; `gnus-agent' provides offline syncing functionality for gnus.  Configure the
 ;; agent to provide fast IMAP access.
