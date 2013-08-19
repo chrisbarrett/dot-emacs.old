@@ -386,6 +386,9 @@ Kill the buffer when finished."
         (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
 
     ;; Auto-save notes file
+    ;;
+    ;; This has the nice side-effect that encrypted regions will be
+    ;; automatically re-encrypted after a period of inactivity.
 
     (defvar cb-org:notes-save-idle-delay 40)
 
