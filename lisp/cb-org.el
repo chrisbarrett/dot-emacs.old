@@ -1026,7 +1026,13 @@ as the default task."
                            "/DONE|PAID|VOID|CANCELLED" 'tree)))
 
       (defalias 'archive-done-tasks 'cb-org:archive-done-tasks)
-      (setq org-archive-default-command 'cb-org:archive-done-tasks)))
+      (setq org-archive-default-command 'cb-org:archive-done-tasks)
+
+      ;; Apply inherited tags to archived items.
+      (defadvice org-archive-subtree
+        (before add-inherited-tags-before-org-archive-subtree activate)
+        "Add inherited tags before org-archive-subtree."
+        (org-set-tags-to (org-get-tags-at)))))
 
   ;; `org-crypt' provides encryption functions for org buffers.
   (use-package org-crypt
