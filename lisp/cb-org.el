@@ -349,6 +349,8 @@ Kill the buffer when finished."
     (define-keys org-mode-map
       "C-c C-k" 'cb-org:ctrl-c-ctrl-k
       "C-c C-." 'org-time-stamp-inactive
+      "M-p" 'org-metaup
+      "M-n" 'org-metadown
       ;; disable annoying comment toggle key
       "C-c ;" nil)
 
@@ -447,10 +449,6 @@ Kill the buffer when finished."
       (add-to-list 'org-drawers it))
 
     (add-hook 'org-mode-hook 'auto-revert-mode)
-
-    (define-keys org-mode-map
-      "M-p" 'org-metaup
-      "M-n" 'org-metadown)
 
     (defadvice org-add-log-note (before exit-minibuffer activate)
       "Prevent attempts to expand the minibuffer."
@@ -706,10 +704,11 @@ Non-nil if modifications where made."
         "The delay in seconds after which to pop up today's agenda.")
 
       (defvar cb-org:show-agenda-idle-timer
-        (run-with-idle-timer
-         cb-org:show-agenda-idle-delay
-         cb-org:show-agenda-idle-delay
-         (lambda () (org-agenda-list nil nil 1)))
+        (unless noninteractive
+          (run-with-idle-timer
+           cb-org:show-agenda-idle-delay
+           cb-org:show-agenda-idle-delay
+           (lambda () (org-agenda-list nil nil 1))))
         "Idle timer that will display today's org agenda as a pop-up.
 See `cb-org:show-agenda-idle-delay'.")
 
