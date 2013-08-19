@@ -167,11 +167,19 @@ After updating the group"
   (progn
 
     (setq cb-gnus:modeline-refresh-timer (unless noninteractive
-                                             (cb-gnus:make-idle-checker))
+                                           (cb-gnus:make-idle-checker))
           gnus-always-read-dribble-file t
           gnus-startup-file (f-join cb:etc-dir "gnus")
           gnus-current-startup-file (f-join cb:etc-dir "gnus")
           gnus-dribble-directory (f-join cb:etc-dir "gnus-dribble"))
+
+    ;; Close gnus when exiting Emacs.
+
+    (hook-fn 'kill-emacs-query-functions
+      (when (--first-buffer (derived-mode-p 'gnus-group-mode))
+        (noflet ((y-or-n-p (&rest args) t))
+          (gnus-group-exit)))
+      t)
 
     ;; Custom faces
 
