@@ -172,7 +172,7 @@
 
     (defvar cb-git:gutter-refresh-idle-timer
       (unless noninteractive
-        (run-with-idle-timer 3 t (lambda ()
+        (run-with-idle-timer 2 t (lambda ()
                                    (when (true? git-gutter+-mode)
                                      (git-gutter+-refresh))))))
 
