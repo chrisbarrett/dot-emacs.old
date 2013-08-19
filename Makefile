@@ -207,24 +207,11 @@ $(scion_server) :
 
 # ----------------------------------------------------------------------------
 
-org_url = http://orgmode.org/org-latest.tar.gz
-org_gz  = $(tmp)/org-latest.tar.gz
-org_src = $(etc)/org-mode
+org_d = $(lib)/org-mode
 
 .PHONY: org
-org : $(org_src)
-
-.PHONY: clean_org
-clean_org :
-	rm -fr $(org_src)
-	rm -fr $(org_gz)
-
-$(org_gz)  :| $(tmp)
-	curl $(org_url) -o $(org_gz)
-
-$(org_src) :| $(org_gz)
-	tar xvfz $(org_gz) --directory=$(etc)
-	cd $(org_src) && make
+org :
+	cd $(org_d) && make all
 
 # ----------------------------------------------------------------------------
 
