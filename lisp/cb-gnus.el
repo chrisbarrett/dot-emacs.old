@@ -103,7 +103,9 @@
 
 ;; Update the unread mail count for all gnus hooks.
 (after 'gnus
-  (let ((hooks (--filter-atoms (s-matches? "^gnus-.*-hook$" (symbol-name it)))))
+  (let ((hooks (-difference
+                (--filter-atoms (s-matches? "^gnus-.*-hook$" (symbol-name it)))
+                '(gnus-exit-gnus-hook gnus-after-exiting-gnus-hook))))
     (eval
      `(hook-fns ',hooks
         ;; Rebind hooks to prevent infinite loops.
