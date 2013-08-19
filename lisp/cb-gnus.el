@@ -176,9 +176,10 @@ After updating the group"
     ;; Close gnus when exiting Emacs.
 
     (hook-fn 'kill-emacs-query-functions
-      (when (--first-buffer (derived-mode-p 'gnus-group-mode))
-        (noflet ((y-or-n-p (&rest args) t))
-          (gnus-group-exit)))
+      (ignore-errors
+        (when (--first-buffer (derived-mode-p 'gnus-group-mode))
+          (noflet ((y-or-n-p (&rest args) t))
+            (gnus-group-exit))))
       t)
 
     ;; Custom faces
