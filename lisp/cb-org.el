@@ -370,7 +370,13 @@ Kill the buffer when finished."
         :local t
         (org-table-map-tables 'org-table-align 'quiet)
         ;; Realign tags.
-        (org-set-tags 4 t)))
+        (org-set-tags 4 t)
+        ;; Remove empty properties drawers.
+        (save-excursion
+          (goto-char (point-min))
+          (while (re-search-forward ":PROPERTIES:" nil t)
+            (save-excursion
+              (org-remove-empty-drawer-at "PROPERTIES" (match-beginning 0)))))))
 
     ;; Sub-task completion triggers parent completion.
     (hook-fn 'org-after-todo-statistics-hook
