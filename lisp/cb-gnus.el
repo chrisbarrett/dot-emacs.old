@@ -128,7 +128,7 @@ After updating the group"
    (lambda ()
      ;; Update at the next opportunity.
      (run-with-idle-timer
-      5 nil
+      7 nil
       (lambda ()
         (save-window-excursion
           (executor:show-gnus)
