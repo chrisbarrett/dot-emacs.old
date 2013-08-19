@@ -181,7 +181,7 @@ After updating the group"
     (defvar cb-gnus:modeline-scraping-timer
       (unless noninteractive
         (run-with-idle-timer
-         2 3
+         3 nil
          (lambda ()
            (when (--first-buffer (derived-mode-p 'gnus-group-mode))
              (ignore-errors

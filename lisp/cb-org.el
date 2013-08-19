@@ -705,10 +705,8 @@ Non-nil if modifications where made."
 
       (defvar cb-org:show-agenda-idle-timer
         (unless noninteractive
-          (run-with-idle-timer
-           cb-org:show-agenda-idle-delay
-           cb-org:show-agenda-idle-delay
-           (lambda () (org-agenda-list nil nil 1))))
+          (run-with-idle-timer cb-org:show-agenda-idle-delay t
+                               (lambda () (org-agenda-list nil nil 1))))
         "Idle timer that will display today's org agenda as a pop-up.
 See `cb-org:show-agenda-idle-delay'.")
 
