@@ -934,6 +934,21 @@ Switch projects and subprojects from NEXT back to TODO."
       (setq org-clock-in-switch-to-state 'cb-org:clock-in-to-next-state)
 
       ;; Clocking commands
+      ;;
+      ;; Provides a pair of commands that, when used religiously, ensures that
+      ;; all your time is logged somewhere by org-mode.
+      ;;
+      ;; The idea is to 'punch in' (C-o C-i) at the start of the workday, then
+      ;; 'punch out' (C-o C-o) at the end.  If there's a task at point when you
+      ;; punch in, that becomes a default task for time logging; otherwise a
+      ;; default task in your notes file is used.  This ensures that all your
+      ;; time is being logged somewhere, even if you're not working on a
+      ;; specific task.
+      ;;
+      ;; When you clock out from a task, org-mode will search for an enclosing
+      ;; heading to clock in to or fall back to the default task.
+      ;;
+      ;; See: http://doc.norang.ca/org-mode.html#Clocking
 
       (defun cb-org:punch-in (arg)
         "Start continuous clocking and set the default task to the
