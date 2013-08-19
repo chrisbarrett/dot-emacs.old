@@ -57,7 +57,8 @@
   "The frequency in seconds at which new articles will be fetched.")
 
 (defvar cb-gnus:agent-batch-timer
-  (run-with-timer 0.5 cb-gnus:fetch-interval 'cb-gnus:agent-batch-fetch)
+  (unless noninteractive
+    (run-with-timer 0.5 cb-gnus:fetch-interval 'cb-gnus:agent-batch-fetch))
   "Timer to periodically fetch news using the gnus agent.")
 
 (defun cb-gnus:agent-batch-fetch ()
@@ -160,7 +161,8 @@ After updating the group"
   :config
   (progn
 
-    (setq cb-gnus:modeline-refresh-timer (cb-gnus:make-idle-checker)
+    (setq cb-gnus:modeline-refresh-timer (unless noninteractive
+                                             (cb-gnus:make-idle-checker))
           gnus-always-read-dribble-file t
           gnus-startup-file (f-join cb:etc-dir "gnus")
           gnus-current-startup-file (f-join cb:etc-dir "gnus")
