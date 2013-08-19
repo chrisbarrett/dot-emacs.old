@@ -798,11 +798,16 @@ Return nil if there are no items to display."
                        ;; HACK: Wait on a timer for the agenda to display, then
                        ;; manually reset the window state.
                        (lambda ()
-                         (run-with-timer 0.1 nil
-                                         (lambda ()
-                                           (cb-org:mail-agenda)
-                                           (delete-window
-                                            (get-buffer-window org-agenda-buffer))))))))
+                         (run-with-timer
+                          0.1 nil
+                          (lambda ()
+                            (cb-org:mail-agenda)
+                            (ignore-errors
+                              (delete-window (get-buffer-window org-agenda-buffer)))
+                            ;; Leaving the agenda open in this mode will cause
+                            ;; emails to be send each time it is refreshed. Kill
+                            ;; the agenda to prevent this.
+                            (kill-buffer org-agenda-buffer)))))))
                    'append)
 
       ;; Agenda sorting
