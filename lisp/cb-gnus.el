@@ -108,8 +108,8 @@
     (eval
      `(hook-fns ',hooks
         ;; Rebind hooks to prevent infinite loops.
-        (ignore-errors
-          (let ,hooks
+        (let ,hooks
+          (ignore-errors
             (cb-gnus:update-modeline-unread
              (cb-gnus:sum-unread (cb-gnus:scrape-group-buffer-for-news)))))))))
 
