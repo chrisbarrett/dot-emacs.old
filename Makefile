@@ -20,7 +20,7 @@ default : $(modules) conf tags $(emacs_src)
 
 .PHONY: all
 all : $(modules) compile tags \
-	  ruby supercollider python clang scheme haskell \
+	  ruby supercollider python clang scheme haskell gnus \
 	  $(emacs_src)
 
 .PHONY: tags
@@ -225,3 +225,14 @@ $(org_gz)  :| $(tmp)
 $(org_src) :| $(org_gz)
 	tar xvfz $(org_gz) --directory=$(etc)
 	cd $(org_src) && make
+
+# ----------------------------------------------------------------------------
+
+gnus_d = $(lib)/gnus
+gnus_load_file = $(gnus_d)/lisp/gnus-load.el
+
+.PHONY: gnus
+gnus : $(gnus_load_file)
+
+$(gnus_load_file) :
+	cd $(gnus_d) && ./configure && make
