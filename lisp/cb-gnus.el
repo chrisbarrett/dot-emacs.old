@@ -136,10 +136,10 @@ After updating the group"
         (save-window-excursion
           ;; Update gnus only if it's running (i.e. the *group* buffer exists)
           (when (--first-buffer (derived-mode-p 'gnus-group-mode))
-            (cl-flet ((message (&rest args) nil)
-                      ;; HACK: gnus will sometimes prompt for things. I don't
-                      ;; care, just YES.
-                      (Y-or-n-p (&rest args) t))
+            (noflet ((message (&rest args) nil)
+                     ;; HACK: gnus will sometimes prompt for things. I don't
+                     ;; care, just YES.
+                     (Y-or-n-p (&rest args) t))
               (gnus-group-get-new-news)))
           ;; Recur and update the timer var so there's a
           ;; cancelable handle somewhere.
