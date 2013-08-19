@@ -426,7 +426,7 @@ Kill the buffer when finished."
              "TODO(t)" "NEXT(n!)" "MAYBE(m!)"
              "OUTSTANDING(o)" "WAITING(w@/!)" "APPT(a!)"
              "|"
-             "DONE(d!)" "PAID(p!)" "VOID(v@)" "CANCELLED(c@)" "DELEGATED(D!)"))
+             "DONE(d!)" "PAID(p!)" "VOID(v@)" "CANCELLED(c@)" "DELEGATED(D@)"))
 
           org-todo-keyword-faces '(("NEXT" . org-todo-next)))
 
