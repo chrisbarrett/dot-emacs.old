@@ -699,6 +699,19 @@ Non-nil if modifications where made."
   (use-package org-agenda
     :config
     (progn
+      ;; Show today's agenda after a period of inactivity.
+
+      (defvar cb-org:show-agenda-idle-delay (* 7 60)
+        "The delay in seconds after which to pop up today's agenda.")
+
+      (defvar cb-org:show-agenda-idle-timer
+        (run-with-idle-timer
+         cb-org:show-agenda-idle-delay
+         cb-org:show-agenda-idle-delay
+         (lambda () (org-agenda-list nil nil 1)))
+        "Idle timer that will display today's org agenda as a pop-up.
+See `cb-org:show-agenda-idle-delay'.")
+
 
       (add-hook 'org-agenda-mode-hook 'org-agenda-to-appt)
       (add-to-list 'org-agenda-files org-directory)
