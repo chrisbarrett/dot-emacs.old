@@ -154,7 +154,9 @@ Kill the buffer when finished."
       (compose-mail (cdr (assoc "TO" headers))
                     (cdr (assoc "SUBJECT" headers))
                     (->> (list (assoc "CC" headers)
-                               (assoc "BCC" headers))
+                               (assoc "BCC" headers)
+                               (assoc "FCC" headers)
+                               (assoc "GCC" headers))
                       (-remove 'null)))
       ;; Prepare message body.
       (message-goto-body)
