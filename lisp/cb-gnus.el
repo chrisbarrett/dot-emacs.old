@@ -38,15 +38,18 @@
 ;; Note that you will still need to add individual servers to be agentized - use
 ;; <J a> in the server buffer to add servers to the agent list.
 
-(defun show-gnus ()
-  "Start gnus.  If gnus is already running, switch to the groups buffer."
-  (interactive)
-  (-if-let (b (get-buffer "*Group*"))
-    (switch-to-buffer b)
-    (gnus-unplugged)))
-
-(when (true? cb:use-vim-keybindings?)
-  (bind-key* "M-Y" 'show-gnus))
+(declare-modal-executor show-gnus
+  :bind "M-Y"
+  :restore-bindings '("q")
+  :command
+  (with-window-restore
+    (-if-let (b (get-buffer "*Group*"))
+      (switch-to-buffer b)
+      (gnus-unplugged))
+    ;; Rebind `gnus-group-exit' to <Q>
+    (local-set-key (kbd "Q") (command
+                              (gnus-group-exit)
+                              (restore)))))
 
 ;; Fetch news in the background every 2 minutes.
 
