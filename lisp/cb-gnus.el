@@ -179,6 +179,18 @@ After updating the group"
   :config
   (progn
 
+    (defvar cb-gnus:modeline-scraping-timer
+      (unless noninteractive
+        (run-with-idle-timer
+         2 3
+         (lambda ()
+           (when (--first-buffer (derived-mode-p 'gnus-group-mode))
+             (ignore-errors
+               (cb-gnus:update-modeline-unread
+                (cb-gnus:sum-unread
+                 (cb-gnus:scrape-group-buffer-for-news))))))))
+      "Scrape the gnus group buffer regularly for updates.")
+
     (setq cb-gnus:modeline-refresh-timer (unless noninteractive
                                            (cb-gnus:make-idle-checker))
           gnus-always-read-dribble-file t
