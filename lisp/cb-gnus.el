@@ -106,12 +106,10 @@
     (eval
      `(hook-fns ',hooks
         ;; Rebind hooks to prevent infinite loops.
-        (let ,hooks
-          (-when-let
-              (sum (ignore-errors
-                     (cb-gnus:sum-unread
-                      (cb-gnus:scrape-group-buffer-for-news))))
-            (cb-gnus:update-modeline-unread sum)))))))
+        (ignore-errors
+          (let ,hooks
+            (cb-gnus:update-modeline-unread
+             (cb-gnus:sum-unread (cb-gnus:scrape-group-buffer-for-news)))))))))
 
 ;; `gnus-agent' provides offline syncing functionality for gnus.  Configure the
 ;; agent to provide fast IMAP access.
