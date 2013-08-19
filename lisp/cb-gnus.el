@@ -134,12 +134,13 @@ After updating the group"
       7 nil
       (lambda ()
         (save-window-excursion
-          (cl-flet ((message (&rest args) nil)
-                    ;; HACK: gnus will sometimes prompt for things. I don't
-                    ;; care, just YES.
-                    (y-or-n-p (&rest args) t))
-            (executor:show-gnus)
-            (gnus-group-get-new-news))
+          ;; Update gnus only if it's running (i.e. the *group* buffer exists)
+          (when (--first-buffer (derived-mode-p 'gnus-group-mode))
+            (cl-flet ((message (&rest args) nil)
+                      ;; HACK: gnus will sometimes prompt for things. I don't
+                      ;; care, just YES.
+                      (Y-or-n-p (&rest args) t))
+              (gnus-group-get-new-news)))
           ;; Recur and update the timer var so there's a
           ;; cancelable handle somewhere.
           (setq cb-gnus:modeline-refresh-timer
