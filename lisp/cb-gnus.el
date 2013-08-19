@@ -95,7 +95,6 @@
         (goto-char (point-min))
         (cl-loop while (not (eobp))
                  for group = (gnus-group-name-at-point)
-                 do (gnus-group-update-group group)
                  when group collect
                  (list :name group
                        :unread-count (gnus-group-unread group))
