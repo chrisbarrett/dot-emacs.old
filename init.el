@@ -54,13 +54,10 @@
 (add-to-list 'load-path (concat (getenv "HOME") "/Dropbox/"))
 (add-to-list 'load-path (concat user-emacs-directory "lisp"))
 
-;; As a special case, ensure we're using the latest version of org-mode and not
-;; the version shipped with Emacs.
-(let ((org-src  (concat user-emacs-directory "etc/org-mode/lisp"))
-      (default-directory user-emacs-directory))
-  (unless (file-exists-p org-src)
-    (async-shell-command "make org" "*make org*"))
-  (add-to-list 'load-path org-src))
+;; Ensure we're using the submodule versions of gnus and org-mode.
+(add-to-list 'load-path (concat user-emacs-directory "lib/gnus/lisp"))
+(add-to-list 'load-path (concat user-emacs-directory "lib/org-mode/lisp"))
+
 
 ;;; Configure packages.
 
