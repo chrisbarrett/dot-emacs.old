@@ -531,6 +531,7 @@ Non-nil if modifications where made."
       (cb-org:ensure-field "#+STARTUP: lognotestate" t)
       (cb-org:ensure-field "#+STARTUP: lognotedone" t)
       (cb-org:ensure-field "#+DESCRIPTION: Project-level notes and todos")
+      (cb-org:ensure-field (concat "#+CATEGORY: " project-name))
       (cb-org:ensure-field (format "#+FILETAGS: :%s:" (s-alnum-only project-name)))))
 
   (defun cb-org:skip-headers ()
