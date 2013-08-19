@@ -364,19 +364,20 @@ Kill the buffer when finished."
       (--each cb:org-minor-modes
         (ignore-errors (diminish it))))
 
-    ;; Tidy org buffer before save.
+    (defun tidy-org-buffer ()
+      "Perform cosmetic fixes to the current org-mode buffer."
+      (org-table-map-tables 'org-table-align 'quiet)
+      ;; Realign tags.
+      (org-set-tags 4 t)
+      ;; Remove empty properties drawers.
+      (save-excursion
+        (goto-char (point-min))
+        (while (re-search-forward ":PROPERTIES:" nil t)
+          (save-excursion
+            (org-remove-empty-drawer-at "PROPERTIES" (match-beginning 0))))))
+
     (hook-fn 'org-mode-hook
-      (hook-fn 'before-save-hook
-        :local t
-        (org-table-map-tables 'org-table-align 'quiet)
-        ;; Realign tags.
-        (org-set-tags 4 t)
-        ;; Remove empty properties drawers.
-        (save-excursion
-          (goto-char (point-min))
-          (while (re-search-forward ":PROPERTIES:" nil t)
-            (save-excursion
-              (org-remove-empty-drawer-at "PROPERTIES" (match-beginning 0)))))))
+      (add-hook 'before-save-hook 'tidy-org-buffer nil t))
 
     ;; Sub-task completion triggers parent completion.
     (hook-fn 'org-after-todo-statistics-hook
