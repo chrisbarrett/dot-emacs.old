@@ -16,3 +16,6 @@
 [submodule "lib/osx-bbdb"]
 	path = lib/osx-bbdb
 	url = git@github.com:chrisbarrett/osx-bbdb.git
+[submodule "lib/gnus"]
+	path = lib/gnus
+	url = http://git.gnus.org/gnus.git
