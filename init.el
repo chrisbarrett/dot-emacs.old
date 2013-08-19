@@ -67,7 +67,13 @@
       do (add-to-list 'package-archives source)
       finally (package-initialize))
 
-(loop for pkg in '(bind-key use-package diminish dash s f noflet async)
+(loop for pkg in '(bind-key
+                   use-package
+                   diminish
+                   dash dash-functional
+                   s f
+                   noflet
+                   async)
       initially (unless package-archive-contents (package-refresh-contents))
       unless (package-installed-p pkg)
       do (package-install pkg))
