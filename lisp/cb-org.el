@@ -754,30 +754,55 @@ See `cb-org:show-agenda-idle-delay'.")
       ;; Commands for a custom agenda task that will email the current day's
       ;; items to `user-mail-address'.
 
-      (defun* cb-org:printable-agenda-string (&optional (n-days 1))
-        "Return a string representing N-DAYS agenda suitable for printing or emailing.
+      (defun* cb-org:printable-agenda-string ()
+        "Return a formatted string of the agenda suitable for printing or emailing.
 Return nil if there are no items to display."
         (save-window-excursion
           (let ((org-agenda-show-all-dates nil)
                 (org-habit-show-habits nil))
-            (with-current-buffer org-agenda-buffer-name
-              (let ((agenda (buffer-string)))
-                (with-temp-buffer
-                  ;; Remove extraneous elements.
-                  (insert (->> agenda
-                            (s-replace (rx "SCHEDULED:  ") "")
-                            (s-lines)
-                            (--remove (s-contains? "now - -" it))
-                            (s-join "\n")))
-                  (goto-char (point-min))
-                  ;; Remove tags.
-                  (while (search-forward-regexp
-                          (rx ":" (* (not space)) ":" (* space) eol)
-                          nil t)
-                    (replace-match ""))
-                  ;; Return processed agenda.
-                  (delete-trailing-whitespace)
-                  (buffer-string)))))))
+            (with-current-buffer org-agenda-buffer
+              (->> (buffer-substring-no-properties (point-min) (point-max))
+                ;; Remove scheduled tag.
+                (s-replace (rx "SCHEDULED:  ") "")
+                (s-trim)
+                (s-lines)
+                ;; Drop leading date info.
+                (-drop 2)
+                ;; Remove tags
+                (--map
+                 (with-temp-buffer
+                   (insert it)
+                   (goto-char (point-min))
+                   (while (search-forward-regexp
+                           (rx ":" (* (not space)) ":" (* space) eol)
+                           nil t)
+                     (replace-match ""))
+                   (buffer-string)))
+                ;; Group by category.
+                (--map (cdr (s-match (rx bol (* space)
+                                         ;; Match category, excluding dates.
+                                         (group
+                                          (not (any space digit))
+                                          (+ (not space)))
+                                         (* space)
+                                         ;; Match headline.
+                                         (group (+ nonl))
+                                         (* space))
+                                     it)))
+                (-group-by 'car)
+                ;; Remove categories from each item and format category.
+                ;; Results in a list of [category items ...]
+                (--map (cons (->> (car it)
+                               (s-chop-suffix ":")
+                               (s-titleized-words))
+                             (-map 'cadr (cdr it))))
+                ;; Create an org-formatted string where the category is the headers and its
+                ;; items are an unordered list.
+                (--map (destructuring-bind (category &rest items) it
+                         (concat "* " category "\n"
+                                 (s-join "\n" (--map (s-prepend "- " it) items)))))
+                ;; Recombine.
+                (s-join "\n"))))))
 
       (defun cb-org:mail-agenda ()
         "Email the current agenda buffer to `user-email-address'."
@@ -786,11 +811,14 @@ Return nil if there are no items to display."
           (let ((agenda (cb-org:printable-agenda-string)))
             (if (s-blank? agenda)
                 (message "No agenda items to send")
-              (mail 'new user-mail-address
-                    (format "[org] Journal for %s"
-                            (calendar-date-string (calendar-current-date) 'abbrev)))
+              (compose-mail user-mail-address
+                            (format "[org] Journal for %s"
+                                    (calendar-date-string (calendar-current-date) 'abbrev)))
+              ;; Insert agenda and apply HTML formatting.
               (insert agenda)
-              (mail-send-and-exit nil)))))
+              (let ((org-export-with-toc nil))
+                  (org-mime-htmlize nil))
+              (message-send-and-exit)))))
 
       (add-to-list 'org-agenda-custom-commands
                    '("@" "Send as email"
