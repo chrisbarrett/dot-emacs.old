@@ -337,8 +337,14 @@ Kill the buffer when finished."
       "M-P" 'outline-previous-visible-heading
       "M-N" 'outline-next-visible-heading
       "SPC" 'org-cycle
-      "z m" (command (org-global-cycle 1))
-      "z r" (command (org-global-cycle 0)))
+      "z m" (command (save-excursion
+                       (goto-char (point-min))
+                       (org-global-cycle 1)
+                       (recenter)))
+      "z r" (command (save-excursion
+                       (goto-char (point-min))
+                       (org-global-cycle 3)
+                       (recenter))))
 
     (defun cb-org:ctrl-c-ctrl-k (&optional n)
       "Kill subtrees, unless we're in a special buffer where it should cancel."
