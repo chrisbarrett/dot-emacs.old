@@ -763,54 +763,57 @@ See `cb-org:show-agenda-idle-delay'.")
       (defun* cb-org:printable-agenda-string ()
         "Return a formatted string of the agenda suitable for printing or emailing.
 Return nil if there are no items to display."
-        (save-window-excursion
-          (let ((org-agenda-show-all-dates nil)
-                (org-habit-show-habits nil))
-            (with-current-buffer org-agenda-buffer
-              (->> (buffer-substring-no-properties (point-min) (point-max))
-                ;; Remove scheduled tag.
-                (s-replace (rx "SCHEDULED:  ") "")
-                (s-trim)
-                (s-lines)
-                ;; Drop leading date info.
-                (-drop 2)
-                ;; Remove tags
-                (--map
-                 (with-temp-buffer
-                   (insert it)
-                   (goto-char (point-min))
-                   (while (search-forward-regexp
-                           (rx ":" (* (not space)) ":" (* space) eol)
-                           nil t)
-                     (replace-match ""))
-                   (buffer-string)))
-                ;; Group by category.
-                (--map (cdr (s-match (rx bol (* space)
-                                         ;; Match category, excluding dates.
-                                         (group
-                                          (not (any space digit))
-                                          (+ (not space)))
-                                         (* space)
-                                         ;; Match headline.
-                                         (group (+ nonl))
-                                         (* space))
-                                     it)))
-                (-group-by 'car)
-                ;; Remove categories from each item and format category.
-                ;; Results in a list of [category items ...]
-                (--map (cons (->> (car it)
-                               (s-chop-suffix ":")
-                               (s-titleized-words))
-                             (-map 'cadr (cdr it))))
-                ;; Create an org-formatted string where the category is the headers and its
-                ;; items are an unordered list.
-                (--map (destructuring-bind (category &rest items) it
-                         (concat "* " category "\n"
-                                 (s-join "\n" (--map (s-prepend "- " it) items)))))
-                ;; Recombine.
-                (s-join "\n"))))))
+        (let ((date (calendar-gregorian-from-absolute (org-today))))
+          (->> (org-agenda-files nil 'ifmode)
+            (--map (org-agenda-get-day-entries it date))
+            (-flatten)
+            (-keep 'substring-no-properties)
+            (--map
+             (with-temp-buffer
+               (insert (s-trim it))
+               ;; Remove tags
+               (goto-char (point-min))
+               (while (search-forward-regexp
+                       (rx ":" (* (not space)) ":" (* space) eol)
+                       nil t)
+                 (replace-match ""))
+               (buffer-string)))
+            ;; Group by category.
+            (--map (cdr (s-match (rx bol (* space)
+                                     ;; Match category, excluding dates.
+                                     (group
+                                      (not (any space digit))
+                                      (+ (not space)))
+                                     (* space)
+                                     ;; Match headline.
+                                     (group (+ nonl))
+                                     (* space))
+                                 it)))
+            ;; Group by category. While doing so, titleize the category name.
+            ;; Anything in the diary or with a hh:mm timestamp goes under 'Journal'.
+            (--group-by (let ((category (->> (car it)
+                                          (s-chop-suffix ":")
+                                          (s-titleized-words))))
+                          (cond
+                           ((ignore-errors
+                              (s-matches? (rx bol digit digit ":" digit digit) (cdr it)))
+                            "Journal")
+                           ((s-matches? (rx "diary") category) "Journal")
+                           (t
+                            category))))
+            ;; Chop categories from each item in the grouping.
+            ;; Results in a list of [category items ...]
+            (--map (cons (car it)
+                         (-sort 'string< (-map 'cadr (cdr it)))))
+            ;; Create an org-formatted string where the category is the headers and its
+            ;; items are an unordered list.
+            (--map (destructuring-bind (category &rest items) it
+                     (concat "* " category "\n"
+                             (s-join "\n" (--map (s-prepend "- " it) items)))))
+            ;; Recombine.
+            (s-join "\n"))))
 
-      (defun cb-org:mail-agenda ()
+      (defun cb-org:mail-agenda (&rest _)
         "Email the current agenda buffer to `user-email-address'."
         (interactive)
         (save-window-excursion
@@ -823,26 +826,11 @@ Return nil if there are no items to display."
               ;; Insert agenda and apply HTML formatting.
               (insert agenda)
               (let ((org-export-with-toc nil))
-                  (org-mime-htmlize nil))
+                (org-mime-htmlize nil))
               (message-send-and-exit)))))
 
       (add-to-list 'org-agenda-custom-commands
-                   '("@" "Send as email"
-                     ((agenda "" ((org-agenda-ndays 1))))
-                     ((org-agenda-mode-hook
-                       ;; HACK: Wait on a timer for the agenda to display, then
-                       ;; manually reset the window state.
-                       (lambda ()
-                         (run-with-timer
-                          0.1 nil
-                          (lambda ()
-                            (cb-org:mail-agenda)
-                            (ignore-errors
-                              (delete-window (get-buffer-window org-agenda-buffer)))
-                            ;; Leaving the agenda open in this mode will cause
-                            ;; emails to be send each time it is refreshed. Kill
-                            ;; the agenda to prevent this.
-                            (kill-buffer org-agenda-buffer)))))))
+                   '("@" "Send as email" cb-org:mail-agenda "")
                    'append)
 
       ;; Agenda sorting
