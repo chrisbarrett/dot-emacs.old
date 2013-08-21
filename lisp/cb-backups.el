@@ -72,7 +72,8 @@
                        "recentf"
                        ".ido.last"
                        "TAGS"
-                       ".gz"))))
+                       ".gz"))
+    (recentf-mode +1)))
 
 (use-package backup-dir
   :defer t
