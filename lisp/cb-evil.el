@@ -120,12 +120,16 @@ Creates STATE bindings for DEFS. DEFS are comprised of alternating string-symbol
     ;; Evil commands should respect visual-line mode and operate on the visible
     ;; line endings rather than logical lines.
 
-    (define-keys evil-motion-state-map
-      "j" 'evil-next-visual-line
-      "k" 'evil-previous-visual-line
-      "$" 'evil-end-of-visual-line
-      "^" 'evil-first-non-blank-of-visual-line
-      "0" 'evil-beginning-of-visual-line)
+    (loop for (key cmd) in
+          '(("j" evil-next-visual-line)
+            ("k" evil-previous-visual-line)
+            ("$" evil-end-of-visual-line)
+            ("^" evil-first-non-blank-of-visual-line)
+            ("0" evil-beginning-of-visual-line))
+          for state in '(motion normal)
+          for hook in  '(prog-mode-hook text-mode-hook)
+          do (eval `(hook-fn ',hook
+                      (evil-local-set-key ',state ,key ',cmd))))
 
     (evil-define-text-object evil-line (count &rest _)
       "Move COUNT - 1 lines down."
