@@ -104,7 +104,10 @@
       "Update modelines to ensure vc status is up-to-date."
       (force-mode-line-update t))
 
-    (add-hook 'magit-log-edit-mode-hook 'cb:append-buffer)
+    (hook-fn 'git-commit-mode-hook
+      (when (fboundp 'evil-append-line)
+        (evil-append-line 1)))
+
     (add-hook 'magit-mode-hook 'magit-load-config-extensions)))
 
 (use-package magit-blame
