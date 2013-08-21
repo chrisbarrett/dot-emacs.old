@@ -103,7 +103,7 @@
       "Update modelines to ensure vc status is up-to-date."
       (force-mode-line-update t))
 
-    (hook-fn 'git-commit-mode-hook
+    (hook-fns '(git-commit-mode-hook magit-log-edit-mode-hook)
       (when (fboundp 'evil-append-line)
         (evil-append-line 1)))
 
