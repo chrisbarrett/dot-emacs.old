@@ -54,10 +54,11 @@
 (add-to-list 'load-path (concat (getenv "HOME") "/Dropbox/"))
 (add-to-list 'load-path (concat user-emacs-directory "lisp"))
 
-;; Ensure we're using the submodule versions of gnus and org-mode.
-(add-to-list 'load-path (concat user-emacs-directory "lib/gnus/lisp"))
-(add-to-list 'load-path (concat user-emacs-directory "lib/org-mode/lisp"))
+;; Load submodules.
 
+(loop with lib = (concat user-emacs-directory "lib/")
+      for module in '("gnus" "org-mode" "magit")
+      do (add-to-list 'load-path (concat lib module)))
 
 ;;; Configure packages.
 
