@@ -73,7 +73,14 @@
                        ".ido.last"
                        "TAGS"
                        ".gz"))
-    (recentf-mode +1)))
+
+    ;; Sometimes recentf gets into a recursive load, so just nuke the save file
+    ;; if that happens.
+    (condition-case _
+        (recentf-mode +1)
+      (error
+       (f-delete recentf-save-file)
+       (recentf-mode +1)))))
 
 (use-package backup-dir
   :defer t
