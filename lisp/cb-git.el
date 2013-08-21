@@ -37,7 +37,6 @@
 (bind-key "C-x g" 'git-map)
 
 (use-package magit
-  :ensure t
   :defer  t
   :idle   (require 'magit)
   :commands magit-status
