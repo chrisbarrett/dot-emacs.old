@@ -62,6 +62,7 @@
 
 ;; `message' provides emailing and messaging functions.
 (use-package message
+  :defer t
   :config
   (progn
 
