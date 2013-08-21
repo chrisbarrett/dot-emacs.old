@@ -55,7 +55,7 @@
   (progn
 
     (declare-modal-executor magit-status
-      :command magit-status
+      :command (call-interactively 'magit-status)
       :bind    "M-G")
 
     (after 'dired
