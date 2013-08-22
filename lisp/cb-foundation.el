@@ -95,12 +95,9 @@
 (icomplete-mode +1)
 (global-set-key (kbd "RET") 'comment-indent-new-line)
 
-;; Enable alt latin input method
-;; (setq-default default-input-method 'latin-alt-postfix)
+;; Set TeX as default alternative input method.
+(setq-default default-input-method "TeX")
 (global-set-key (kbd "C-x C-\\") 'set-input-method)
-(setq default-input-method 'TeX)
-(hook-fn 'prog-mode-hook
-  (set-input-method nil))
 
 ;; Encodings
 
