@@ -135,6 +135,7 @@ When used interactively, makes a guess at what to pass."
   (interactive
    (list (-if-let (url (or (visual-url-at-point)
                            (when (boundp 'w3m-current-url) w3m-current-url)
+                           (when (derived-mode-p 'dired-mode) (dired-get-file-for-visit))
                            (buffer-file-name)))
            (read-string (format "Open (%s): " url) nil t url)
            (read-string "Open: " nil t))))
