@@ -6,10 +6,19 @@
 framework 'ScriptingBridge'
 require 'open-uri'
 
+def escape(str)
+  URI.escape str, /[:?\/]/
+end
+
 # Get the URL and title of the current Chrome tab.
 chrome = SBApplication.applicationWithBundleIdentifier 'com.google.Chrome'
 tab = chrome.windows[0].activeTab
-title = URI::encode tab.title
-url = URI::encode tab.URL
+url = escape tab.URL
+title = escape tab.title
+# Get the current selected text.
+tab.copySelection
+body = escape `pbpaste`
+
 # Call Emacs Client to capture.
-`emacsclient org-protocol:/store-link:/#{url}/#{title}`
+template_key = 'l'
+`emacsclient org-protocol:/capture:/#{template_key}/'#{url}'/'#{title}'/'#{body}'`
