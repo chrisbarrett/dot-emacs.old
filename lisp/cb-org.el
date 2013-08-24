@@ -872,6 +872,10 @@ Return nil if there are no items to display."
       (hook-fn 'org-mode-hook
         (add-hook 'after-save-hook 'cb-org:refresh-agenda nil 'local))))
 
+  ;; `org-protocol' allows other applications to connect to Emacs and prompt
+  ;; org-mode to perform certain actions, including saving links.
+  (use-package org-protocol)
+
   ;; `appt' is emacs' generic scheduling system for calendar. Configure it to
   ;; hook into org-mode.
   (use-package appt
