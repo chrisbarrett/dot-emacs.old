@@ -633,10 +633,11 @@ Non-nil if modifications where made."
               ("l" "Link" entry
                (file+headline org-default-notes-file "Links")
                ,(s-unlines
-                 "* %a%?"
+                 "* %c %a%?"
                  ":LOGBOOK:"
                  ":CAPTURED: %U"
-                 ":END:")
+                 ":END:"
+                 "%i")
                :immediate-finish t
                :clock-resume t)
 
