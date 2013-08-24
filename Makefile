@@ -138,11 +138,15 @@ rsense_url = http://cx4a.org/pub/rsense/rsense-$(rsense_version).tar.bz2
 rsense_bz  = $(bin)/rsense-$(rsense_version).tar.bz2
 
 .PHONY: ruby
-ruby : $(rsense) rubocop
+ruby : $(rsense) rubocop growl
 
 .PHONY: rubocop
 rubocop :
-	sudo gem install rubocop
+	gem install rubocop
+
+.PHONY: growl
+growl :
+	[[ `uname` == 'Darwin' ]] && gem install ruby-growl
 
 # RSense
 
