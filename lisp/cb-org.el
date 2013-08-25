@@ -633,7 +633,7 @@ Non-nil if modifications where made."
               ("l" "Link" entry
                (file+headline org-default-notes-file "Links")
                ,(s-unlines
-                 "* %c %a%?"
+                 "* %c"
                  ":LOGBOOK:"
                  ":CAPTURED: %U"
                  ":END:"
