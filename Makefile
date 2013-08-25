@@ -146,7 +146,7 @@ rubocop :
 
 .PHONY: growl
 growl :
-	[[ `uname` == 'Darwin' ]] && gem install ruby-growl
+	[[ `uname` == 'Darwin' ]] && gem install ruby_gntp
 
 # RSense
 
