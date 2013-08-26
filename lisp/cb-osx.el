@@ -121,23 +121,29 @@
 
 (defvar growl-program "growlnotify")
 
-(defun growl (title message)
+(defun* growl (title
+               message
+               &optional (icon "/Applications/Emacs.app/Contents/Resources/Emacs.icns"))
   "Display a growl notification on localhost.
 The notification will have the given TITLE and MESSAGE."
   (start-process "growl" " growl"
                  growl-program
                  title
-                 "-a" "Emacs")
+                 "-n" "Emacs"
+                 "-a" "Emacs"
+                 "--image" icon)
   (process-send-string " growl" message)
   (process-send-string " growl" "\n")
   (process-send-eof " growl"))
 
-(defadvice org-protocol-store-link (after show-growl-notification activate)
-  "Show Growl notification when capturing links,"
-  (ignore-errors
-    (growl "Link Stored"
-           (destructuring-bind ((url title) &rest rest) org-stored-links
-             title))))
+(after 'org-protocol
+  (defadvice org-protocol-do-capture (after show-growl-notification activate)
+    "Show Growl notification when capturing links."
+    (let* ((parts (org-protocol-split-data (ad-get-arg 0) t org-protocol-data-separator))
+           (url (org-protocol-sanitize-uri (car parts)))
+           (title (cadr parts)))
+      (growl "Link Stored" (or title url)
+             (f-join user-emacs-directory "assets" "org_unicorn.png")))))
 
 ;;; Open thing at point
 
@@ -169,8 +175,8 @@ When used interactively, makes a guess at what to pass."
 
 ;; Use gnutls when sending emails.
 (when (equal system-type 'darwin)
-    (setq starttls-gnutls-program (executable-find "gnutls-cli")
-          starttls-use-gnutls t))
+  (setq starttls-gnutls-program (executable-find "gnutls-cli")
+        starttls-use-gnutls t))
 
 (provide 'cb-osx)
 
