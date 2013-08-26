@@ -132,6 +132,13 @@ The notification will have the given TITLE and MESSAGE."
   (process-send-string " growl" "\n")
   (process-send-eof " growl"))
 
+(defadvice org-protocol-store-link (after show-growl-notification activate)
+  "Show Growl notification when capturing links,"
+  (ignore-errors
+    (growl "Link Stored"
+           (destructuring-bind ((url title) &rest rest) org-stored-links
+             title))))
+
 ;;; Open thing at point
 
 (defun visual-url-at-point ()
