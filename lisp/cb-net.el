@@ -66,6 +66,8 @@
   :config
   (progn
 
+    (setq message-kill-buffer-on-exit t)
+
     (defun mail-add-attachment-ido (file)
       (interactive (list (ido-read-file-name "Attach file: " )))
       (mail-add-attachment file))
