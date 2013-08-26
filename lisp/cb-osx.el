@@ -117,6 +117,23 @@
           (re-search-backward "^[0-9]+:[0-9]+-[0-9]+:[0-9]+ " nil t))
         (insert (match-string 0))))))
 
+;;; Show Growl Notifications
+
+(defvar growl-program "growlnotify")
+
+(defun growl (title message)
+  "Display a growl notification on localhost.
+The notification will have the given TITLE and MESSAGE."
+  (start-process "growl" " growl"
+                 growl-program
+                 title
+                 "-a" "Emacs")
+  (process-send-string " growl" message)
+  (process-send-string " growl" "\n")
+  (process-send-eof " growl"))
+
+;;; Open thing at point
+
 (defun visual-url-at-point ()
   "Find a URL at point."
   (or
