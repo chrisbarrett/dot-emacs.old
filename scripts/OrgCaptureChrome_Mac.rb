@@ -13,14 +13,6 @@ end
 # Get the current Chrome tab.
 chrome = SBApplication.applicationWithBundleIdentifier 'com.google.Chrome'
 tab = chrome.windows[0].activeTab
-
-# Display Growl notification.
-GNTP.notify({
-  app_name: 'org-protocol',
-  title: 'Link Captured',
-  text: tab.title,
-}) if (require 'rubygems') && (require 'ruby_gntp')
-
 # Get fields to capture.
 url = escape tab.URL
 title = escape tab.title
