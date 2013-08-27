@@ -567,140 +567,140 @@ Non-nil if modifications where made."
 
       (add-hook 'org-capture-before-finalize-hook 'indent-buffer 'append)
 
-      (setq org-capture-templates
-            `(("t" "Todo" entry
-               (file+headline org-default-notes-file "Tasks")
-               ,(s-unlines
-                 (concat "* TODO %^{Description}%?    "
-                         ":%^{Context|@anywhere|@errand|@leisure|@home|@project|@work}:")
-                 "SCHEDULED: %^{Schedule}t"
-                 ":LOGBOOK:"
-                 ":CAPTURED: %U"
-                 ":END:")
-               :clock-in t
-               :clock-resume t)
+      (--each `(("t" "Todo" entry
+                 (file+headline org-default-notes-file "Tasks")
+                 ,(s-unlines
+                   (concat "* TODO %^{Description}%?    "
+                           ":%^{Context|@anywhere|@errand|@leisure|@home|@project|@work}:")
+                   "SCHEDULED: %^{Schedule}t"
+                   ":LOGBOOK:"
+                   ":CAPTURED: %U"
+                   ":END:")
+                 :clock-in t
+                 :clock-resume t)
 
-              ("s" "Someday" entry
-               (file+olp org-default-notes-file "Someday" "Tasks")
-               ,(s-unlines
-                 "* MAYBE %^{Description}%?"
-                 ":LOGBOOK:"
-                 ":CAPTURED: %U"
-                 ":END:")
-               :clock-in t
-               :clock-resume t)
+                ("s" "Someday" entry
+                 (file+olp org-default-notes-file "Someday" "Tasks")
+                 ,(s-unlines
+                   "* MAYBE %^{Description}%?"
+                   ":LOGBOOK:"
+                   ":CAPTURED: %U"
+                   ":END:")
+                 :clock-in t
+                 :clock-resume t)
 
-              ("d" "Diary" entry
-               (file+datetree org-agenda-diary-file)
-               "* %?\n%^t"
-               :clock-resume t)
+                ("d" "Diary" entry
+                 (file+datetree org-agenda-diary-file)
+                 "* %?\n%^t"
+                 :clock-resume t)
 
-              ("b" "Bill" entry
-               (file+headline org-default-notes-file "Bills")
-               ,(s-unlines
-                 "* TODO %^{Description}"
-                 "DEADLINE: %^{Deadline}t"
-                 ":LOGBOOK:"
-                 ":CAPTURED: %U"
-                 ":END:")
-               :immediate-finish t
-               :clock-resume t)
+                ("b" "Bill" entry
+                 (file+headline org-default-notes-file "Bills")
+                 ,(s-unlines
+                   "* TODO %^{Description}"
+                   "DEADLINE: %^{Deadline}t"
+                   ":LOGBOOK:"
+                   ":CAPTURED: %U"
+                   ":END:")
+                 :immediate-finish t
+                 :clock-resume t)
 
-              ("h" "Habit" entry
-               (file+headline org-default-notes-file "Habits")
-               ,(s-unlines
-                 (concat "* TODO %^{Description}%?    "
-                         ":%^{Context|@anywhere|@errand|@leisure|@home|@project|@work}:")
-                 "SCHEDULED: %^{Schedule}t"
-                 ":PROPERTIES:"
-                 ":STYLE: habit"
-                 ":END:"
-                 ":LOGBOOK:"
-                 ":CAPTURED: %U"
-                 ":END:")
-               :clock-resume t)
+                ("h" "Habit" entry
+                 (file+headline org-default-notes-file "Habits")
+                 ,(s-unlines
+                   (concat "* TODO %^{Description}%?    "
+                           ":%^{Context|@anywhere|@errand|@leisure|@home|@project|@work}:")
+                   "SCHEDULED: %^{Schedule}t"
+                   ":PROPERTIES:"
+                   ":STYLE: habit"
+                   ":END:"
+                   ":LOGBOOK:"
+                   ":CAPTURED: %U"
+                   ":END:")
+                 :clock-resume t)
 
-              ("r" "Reading" entry
-               (file+olp org-default-notes-file "Someday" "Readings")
-               ,(s-unlines
-                 "* TODO %^{Title}"
-                 ":LOGBOOK:"
-                 ":CAPTURED: %U"
-                 ":END:")
-               :immediate-finish t
-               :clock-resume t)
+                ("r" "Reading" entry
+                 (file+olp org-default-notes-file "Someday" "Readings")
+                 ,(s-unlines
+                   "* TODO %^{Title}"
+                   ":LOGBOOK:"
+                   ":CAPTURED: %U"
+                   ":END:")
+                 :immediate-finish t
+                 :clock-resume t)
 
-              ("l" "Link" entry
-               (file+headline org-default-notes-file "Links")
-               ,(s-unlines
-                 "* %c"
-                 ":LOGBOOK:"
-                 ":CAPTURED: %U"
-                 ":END:"
-                 "%i")
-               :immediate-finish t
-               :clock-resume t)
+                ("l" "Link" entry
+                 (file+headline org-default-notes-file "Links")
+                 ,(s-unlines
+                   "* %c"
+                   ":LOGBOOK:"
+                   ":CAPTURED: %U"
+                   ":END:"
+                   "%i")
+                 :immediate-finish t
+                 :clock-resume t)
 
-              ("m" "Listening" entry
-               (file+olp org-default-notes-file "Someday" "Listening")
-               ,(s-unlines
-                 "* TODO %^{Title}"
-                 ":LOGBOOK:"
-                 ":CAPTURED: %U"
-                 ":END:")
-               :immediate-finish t
-               :clock-resume t)
+                ("m" "Listening" entry
+                 (file+olp org-default-notes-file "Someday" "Listening")
+                 ,(s-unlines
+                   "* TODO %^{Title}"
+                   ":LOGBOOK:"
+                   ":CAPTURED: %U"
+                   ":END:")
+                 :immediate-finish t
+                 :clock-resume t)
 
-              ("n" "Note" entry
-               (file+headline org-default-notes-file "Notes")
-               ,(s-unlines
-                 "* %i%?"
-                 ":LOGBOOK:"
-                 ":CAPTURED: %U"
-                 ":END:")
-               :clock-resume t)
+                ("n" "Note" entry
+                 (file+headline org-default-notes-file "Notes")
+                 ,(s-unlines
+                   "* %i%?"
+                   ":LOGBOOK:"
+                   ":CAPTURED: %U"
+                   ":END:")
+                 :clock-resume t)
 
-              ("z" "Task Note" entry
-               (clock)
-               ,(s-unlines
-                 "* %i%?"
-                 ":LOGBOOK:"
-                 ":CAPTURED: %U"
-                 ":END:")
-               :clock-keep t
-               :kill-buffer t)
+                ("z" "Task Note" entry
+                 (clock)
+                 ,(s-unlines
+                   "* %i%?"
+                   ":LOGBOOK:"
+                   ":CAPTURED: %U"
+                   ":END:")
+                 :clock-keep t
+                 :kill-buffer t)
 
-              ("L" "Task Link" entry
-               (clock)
-               ,(s-unlines
-                 "* %a%?"
-                 ":LOGBOOK:"
-                 ":CAPTURED: %U"
-                 ":END:")
-               :clock-keep t
-               :kill-buffer t)
+                ("L" "Task Link" entry
+                 (clock)
+                 ,(s-unlines
+                   "* %a%?"
+                   ":LOGBOOK:"
+                   ":CAPTURED: %U"
+                   ":END:")
+                 :clock-keep t
+                 :kill-buffer t)
 
-              ("T" "Project Task" entry
-               (file+headline (cb-org:project-file) "Tasks")
-               ,(s-unlines
-                 "* TODO %(cb-org:read-string-with-file-ref)%?"
-                 "SCHEDULED: %^{Schedule}t"
-                 ":LOGBOOK:"
-                 ":CAPTURED: %U"
-                 ":END:")
-               :kill-buffer t
-               :clock-resume t
-               :clock-in t)
+                ("T" "Project Task" entry
+                 (file+headline (cb-org:project-file) "Tasks")
+                 ,(s-unlines
+                   "* TODO %(cb-org:read-string-with-file-ref)%?"
+                   "SCHEDULED: %^{Schedule}t"
+                   ":LOGBOOK:"
+                   ":CAPTURED: %U"
+                   ":END:")
+                 :kill-buffer t
+                 :clock-resume t
+                 :clock-in t)
 
-              ("N" "Project Note" entry
-               (file+headline (cb-org:project-file) "Notes")
-               ,(s-unlines
-                 "* %i%?"
-                 ":LOGBOOK:"
-                 ":CAPTURED: %U"
-                 ":END:")
-               :clock-keep t
-               :kill-buffer t)))))
+                ("N" "Project Note" entry
+                 (file+headline (cb-org:project-file) "Notes")
+                 ,(s-unlines
+                   "* %i%?"
+                   ":LOGBOOK:"
+                   ":CAPTURED: %U"
+                   ":END:")
+                 :clock-keep t
+                 :kill-buffer t))
+        (add-to-list 'org-capture-templates it))))
 
   ;; `org-agenda' provides an interactive journaling system, collecting
   ;; information from org-mode buffers.
