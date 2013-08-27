@@ -140,8 +140,13 @@ The notification will have the given TITLE and MESSAGE."
   (defadvice org-protocol-do-capture (after show-growl-notification activate)
     "Show Growl notification when capturing links."
     (let* ((parts (org-protocol-split-data (ad-get-arg 0) t org-protocol-data-separator))
+           ;; Pop the template selector if present.
+           (template (or (and (>= 2 (length (car parts))) (pop parts))
+                         org-protocol-default-template-key))
            (url (org-protocol-sanitize-uri (car parts)))
-           (title (cadr parts)))
+           (type (if (string-match "^\\([a-z]+\\):" url)
+                     (match-string 1 url)))
+           (title (or (cadr parts) "")))
       (growl "Link Stored" (or title url)
              (f-join user-emacs-directory "assets" "org_unicorn.png")))))
 
