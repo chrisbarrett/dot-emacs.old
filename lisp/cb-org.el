@@ -161,8 +161,12 @@ Kill the buffer when finished."
       ;; Prepare message body.
       (message-goto-body)
       (insert str)
-      (let ((org-export-with-toc nil))
-        (org-mime-htmlize nil))
+      ;; Disable table of contents for export. Must be set dynamically with
+      ;; setq--let-binding is not sufficient.
+      (let ((temp org-export-with-toc))
+        (setq org-export-with-toc nil)
+        (org-mime-htmlize nil)
+        (setq org-export-with-toc temp))
       (message-send-and-exit)))
   ;; Restore previous window state.
   (kill-this-buffer))
