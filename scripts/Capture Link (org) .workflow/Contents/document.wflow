@@ -59,14 +59,13 @@
 				<key>ActionParameters</key>
 				<dict>
 					<key>COMMAND_STRING</key>
-					<string>source ~/.zshrc
-/usr/local/bin/macruby ~/.emacs.d/scripts/OrgCaptureChrome_Mac.rb</string>
+					<string>/usr/local/bin/macruby ~/.emacs.d/scripts/OrgCaptureChrome_Mac.rb</string>
 					<key>CheckedForUserDefaultShell</key>
 					<true/>
 					<key>inputMethod</key>
 					<integer>0</integer>
 					<key>shell</key>
-					<string>/bin/zsh</string>
+					<string>/bin/sh</string>
 					<key>source</key>
 					<string></string>
 				</dict>
