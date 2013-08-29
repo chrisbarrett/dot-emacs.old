@@ -62,24 +62,20 @@
 ;;;###autoload
 (cb:define-theme solarized-light
   (load-theme 'solarized-light 'no-confirm)
-  (set-face-underline 'hl-line nil)
+  (cb-colour:common-setup)
 
   (after 'org
-    (set-face-underline  'org-block-begin-line t)
-    (set-face-attribute  'org-block-end-line nil :overline t)
     (set-face-background 'org-block-begin-line "#f8f1dc")
     (set-face-background 'org-block-end-line "#f8f1dc")
     (set-face-background 'org-block-background "#f8f1dc"))
 
   (after 'helm
     (set-face-background  'helm-selection "white")
-    (set-face-underline   'helm-selection nil)
     (set-face-foreground  'helm-selection "black"))
 
   (after 'smartparens
     (set-face-foreground  'sp-show-pair-match-face "#fdf6e3")
-    (set-face-background  'sp-show-pair-match-face "black")
-    (set-face-bold        'sp-show-pair-match-face t))
+    (set-face-background  'sp-show-pair-match-face "black"))
 
   (after 'parenface-plus
     (set-face-foreground  'paren-face "grey80")))
@@ -89,52 +85,49 @@
 ;;;###autoload
 (cb:define-theme solarized-dark
   (load-theme 'solarized-dark 'no-confirm)
-  (set-face-underline 'hl-line nil)
-
+  (cb-colour:common-setup)
+  (cb-colour:dark-setup)
   (after 'org
-    (set-face-underline  'org-block-begin-line t)
-    (set-face-attribute  'org-block-end-line nil :overline t)
     (set-face-background 'org-block-end-line "#11303b")
     (set-face-background 'org-block-begin-line "#11303b")
-    (set-face-background 'org-block-background "#11303b"))
-
-  (after 'helm
-    (set-face-background  'helm-selection "black")
-    (set-face-underline   'helm-selection nil)
-    (set-face-foreground  'helm-selection "white"))
-
-  (after 'smartparens
-    (set-face-foreground  'sp-show-pair-match-face "#002b36")
-    (set-face-background  'sp-show-pair-match-face "white")
-    (set-face-bold        'sp-show-pair-match-face t))
-
-  (after 'parenface-plus
-    (set-face-foreground  'paren-face "#505070")))
+    (set-face-background 'org-block-background "#11303b")))
 
 (defalias 'dark 'solarized-dark)
 
 (cb:define-theme tomorrow-night
   (color-theme-sanityinc-tomorrow-night)
-
+  (cb-colour:common-setup)
+  (cb-colour:dark-setup)
   (after 'org
-    (set-face-underline  'org-block-begin-line t)
-    (set-face-attribute  'org-block-end-line nil :overline t)
     (set-face-background 'org-block-end-line "#222727")
     (set-face-background 'org-block-begin-line "#222727")
-    (set-face-background 'org-block-background "#222727"))
+    (set-face-background 'org-block-background "#222727")))
 
+(defun cb-colour:dark-setup ()
+  "Perform customisation common to dark colour themes."
   (after 'helm
     (set-face-background  'helm-selection "black")
-    (set-face-underline   'helm-selection nil)
     (set-face-foreground  'helm-selection "white"))
+  (after 'parenface-plus
+    (set-face-foreground  'paren-face "#505070")))
 
+(defun cb-colour:common-setup ()
+  "Perform customisation common to all themes."
+  (set-face-underline 'hl-line nil)
+  (after 'helm
+    (set-face-underline   'helm-selection nil))
   (after 'smartparens
     (set-face-foreground  'sp-show-pair-match-face "#002b36")
     (set-face-background  'sp-show-pair-match-face "white")
     (set-face-bold        'sp-show-pair-match-face t))
-
-  (after 'parenface-plus
-    (set-face-foreground  'paren-face "#505070")))
+  (after 'org
+    (set-face-underline  'org-block-begin-line t)
+    (set-face-attribute  'org-block-end-line nil :overline t)
+    (--each (--filter-atoms (and (s-starts-with? "org-level-" (symbol-name it))
+                                 (facep it)))
+      (unless (equal 'org-level-1 it)
+        (set-face-bold it nil))
+      (set-face-font it (monospace-font)))))
 
 (defalias 'black 'tomorrow-night)
 
