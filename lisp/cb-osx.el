@@ -117,7 +117,7 @@
           (re-search-backward "^[0-9]+:[0-9]+-[0-9]+:[0-9]+ " nil t))
         (insert (match-string 0))))))
 
-;;; Show Growl Notifications
+;;; Growl Notifications
 
 (defvar growl-program "growlnotify")
 
@@ -136,6 +136,8 @@ The notification will have the given TITLE and MESSAGE."
   (process-send-string " growl" "\n")
   (process-send-eof " growl"))
 
+;; Show Growl notification for org-protocol capture.
+
 (after 'org-protocol
   (defadvice org-protocol-do-capture (after show-growl-notification activate)
     "Show Growl notification when capturing links."
@@ -149,6 +151,28 @@ The notification will have the given TITLE and MESSAGE."
            (title (or (cadr parts) "")))
       (growl "Link Stored" (or title url)
              (f-join user-emacs-directory "assets" "org_unicorn.png")))))
+
+;; Show Growl notification for appt alerts
+
+(after 'appt
+
+  (defun cb-appt:growl (title mins)
+    (growl (cond ((zerop mins) "Appointment (now)")
+                 ((= 1 mins)   "Appointment (1 min)")
+                 (t (format "Appointment (%s mins)" mins)))
+           title))
+
+  (defadvice appt-display-message (around growl-with-sound activate)
+    "Play a sound and display a growl notification for appt alerts."
+    ;; Show notification.
+    (let ((title (-listify (ad-get-arg 0)))
+          (mins (-listify (ad-get-arg 1))))
+      (-each (-zip-with 'list title mins)
+             (-applify 'cb-appt:growl)))
+    ;; Play sound.
+    (let ((snd "/System/Library/Sounds/Blow.aiff"))
+      (when (f-exists? snd)
+        (start-process "appt alert" " appt alert" "afplay" snd)))))
 
 ;;; Open thing at point
 
