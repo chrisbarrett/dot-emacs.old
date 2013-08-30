@@ -336,6 +336,12 @@ If NO-PROPERTIES is non-nil, return the region without text properties."
   "Return the line at point."
   (buffer-substring (line-beginning-position) (line-end-position)))
 
+(defun -listify (x)
+  "Wrap X in a list if it is not a list."
+  (if (listp x)
+      x
+    (list x)))
+
 (provide 'cb-lib)
 
 ;; Local Variables:
