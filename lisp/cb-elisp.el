@@ -125,7 +125,8 @@
 
 (use-package lisp-mode
   :defer t
-  :mode  (("Carton" . emacs-lisp-mode))
+  :mode  (("Carton" . emacs-lisp-mode)
+          ("Cask" . emacs-lisp-mode))
   :config
   (progn
 
