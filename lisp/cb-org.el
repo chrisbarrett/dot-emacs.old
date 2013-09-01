@@ -541,6 +541,21 @@ the date TARGET-DAY, TARGET-MONTH each year."
       ;; we just use the start of the UNIX epoch.
       (org-anniversary 1970 target-month target-day)))
 
+  ;; Toggle inline images in org buffers.
+  (use-package iimage
+    :config
+    (progn
+      (add-to-list 'iimage-mode-image-regex-alist
+                   (cons (concat "\\[\\[file:\\(~?" iimage-mode-image-filename-regex
+                                 "\\)\\]")  1))
+
+      (defun org-toggle-iimage-in-org ()
+        "display images in your org file"
+        (interactive)
+        (if (face-underline-p 'org-link)
+            (set-face-underline-p 'org-link nil)
+          (set-face-underline-p 'org-link t))
+        (iimage-mode))))
 
   ;; Commands for formatting project file.
 
