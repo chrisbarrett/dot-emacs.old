@@ -819,31 +819,30 @@ See `cb-org:show-agenda-idle-delay'.")
             org-agenda-start-on-weekday nil
             org-agenda-ndays 7)
 
-      ;; Add GTD agenda views.
+      ;; Add GTD agenda views. They should be displayed modally.
 
       (setq org-agenda-custom-commands
-            '(("w" "Weekly Review"
-               ((agenda "" ((org-agenda-ndays 7)))
-                (stuck "")
-                (todo "PROJECT")
-                (todo "MAYBE")
-                (tags "someday")
-                (todo "WAITING"))
-               ((org-agenda-customise-window-hook
-                 (lambda ()
-                   (delete-other-windows)))))
-
-              ("g" . "GTD contexts")
-              ("ga" "Anywhere" tags-todo "@anywhere")
-              ("ge" "Errands"  tags-todo "@errand")
-              ("gh" "Home"     tags-todo "@home")
-              ("gl" "Leisure"  tags-todo "@leisure")
-              ("gw" "Work"     tags-todo "@work")
-              ("G" "GTD Block Agenda"
-               ((tags-todo "@home")
-                (tags-todo "@anywhere")
-                (tags-todo "@errand"))
-               nil)))
+            (->> '(("w" "Weekly Review"
+                    ((agenda "" ((org-agenda-ndays 7)))
+                     (stuck "")
+                     (todo "WAITING")
+                     (todo "MAYBE")
+                     (tags "someday")))
+                   ("g" . "GTD contexts")
+                   ("gg" "Anywhere"
+                    ((tags-todo "@anywhere")
+                     (tags-todo "@errand")
+                     (tags-todo "@home")
+                     (tags-todo "@leisure")
+                     (tags-todo "@work")))
+                   ("ge" "Errands"  tags-todo "@errand")
+                   ("gh" "Home"     tags-todo "@home")
+                   ("gl" "Leisure"  tags-todo "@leisure")
+                   ("gw" "Work"     tags-todo "@work"))
+              (--map-when (listp (cdr it))
+                          (append it '(((org-agenda-customise-window-hook
+                                         (lambda ()
+                                           (delete-other-windows)))))))))
 
       ;; Email agenda
       ;;
