@@ -32,12 +32,6 @@
 (require 'cb-typefaces)
 (require 'async)
 
-;; Define a global key binding for starting gnus. It will run unplugged, which
-;; should speed things up.
-;;
-;; Note that you will still need to add individual servers to be agentized - use
-;; <J a> in the server buffer to add servers to the agent list.
-
 (declare-modal-executor show-gnus
   :bind "M-Y"
   :restore-bindings '("q")
@@ -45,7 +39,7 @@
   (with-window-restore
     (-if-let (b (get-buffer "*Group*"))
       (switch-to-buffer b)
-      (gnus-unplugged))
+      (gnus))
     ;; Rebind `gnus-group-exit' to <Q>
     (local-set-key (kbd "Q") (command
                               (gnus-group-exit)
@@ -158,18 +152,6 @@ After updating the group"
         (setq cb-gnus:modeline-refresh-timer
               (cb-gnus:make-idle-checker)))))))
 
-;; `gnus-agent' provides offline syncing functionality for gnus.  Configure the
-;; agent to provide fast IMAP access.
-(use-package gnus-agent
-  :defer t
-  :config
-  (progn
-    (add-hook 'gnus-select-article-hook 'gnus-agent-fetch-selected-article)
-    (setq gnus-agent-directory (f-join cb:etc-dir "gnus-agent")
-          ;; Send mail immediately, rather than queuing.
-          gnus-agent-queue-mail nil
-          gnus-agent-auto-agentize-methods '(nntp nnimap))))
-
 ;; Configure gnus.
 
 (use-package gnus
@@ -225,7 +207,10 @@ After updating the group"
         (setq-local gnus-use-adaptive-scoring nil)
         (setq-local gnus-use-scoring t)
         (setq-local gnus-score-find-score-files-function 'gnus-score-find-single)
-        (setq-local gnus-summary-line-format "%U%R%z%d %I%(%[ %s %]%)\n")))))
+        (setq-local gnus-summary-line-format "%U%R%z%d %I%(%[ %s %]%)\n")))
+
+    (define-key gnus-group-mode-map (kbd "vo")
+      (command (async-shell-command "offlineimap" "*offlineimap*" nil)))))
 
 ;; Configure evil-style motion keys in the various gnus modes.
 (after 'evil
