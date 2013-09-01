@@ -69,7 +69,7 @@
          ((derived? 'cb:ruby-modes)
           (call-interactively 'robe-doc))
          ((derived? 'cb:python-modes)
-          (call-interactively 'jedi-show-doc))
+          (call-interactively 'jedi:show-doc))
          (t
           (get-manpage candidate)))
       (error
