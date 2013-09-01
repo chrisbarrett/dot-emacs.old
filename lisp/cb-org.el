@@ -104,8 +104,14 @@
       (buffer-local-set-key (kbd "<tab>") 'cb-org:message-tab)
       (buffer-local-set-key (kbd "C-c q") 'kill-this-buffer)
       (buffer-local-set-key (kbd "C-c c") 'cb-org:message-send)
-      ;; Prepare for user interaction.
-      (insert (format "#+TO: %s\n#+SUBJECT: %s\n\n" to subject))
+      ;; Set org buffer properties.
+      (insert (format (s-unlines
+                       "#+TO: %s"
+                       "#+SUBJECT: %s"
+                       "#+OPTIONS: toc:nil"
+                       "\n")
+                      to subject))
+      ;; Position in body.
       (cb:append-buffer)
       ;; Insert current region as quote.
       (when region
