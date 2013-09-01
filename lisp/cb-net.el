@@ -74,6 +74,14 @@
 
     (define-key message-mode-map (kbd "C-c C-a") 'mail-add-attachment-ido)))
 
+;; `notmuch' provides mail indexing and search.
+(use-package notmuch
+  :ensure t
+  :commands
+  (notmuch-search
+   notmuch
+   notmuch-cycle-notmuch-buffers))
+
 ;; `bbdb' provides an address book for emacs and integrates with many modes.
 (use-package bbdb
   :ensure t
