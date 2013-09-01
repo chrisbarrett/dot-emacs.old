@@ -536,6 +536,7 @@ the date TARGET-DAY, TARGET-MONTH each year."
     (interactive)
     ;; If the date falls on a Sat or Sun, return the coming Mon.
     (if (memq (calendar-day-of-week date) '(0 6))
+        ;; FIXME: Doesn't seem to work here.
         (calendar-nearest-to 1 target-day target-month)
       ;; Return the evaluated date.  The entry does not have a starting date so
       ;; we just use the start of the UNIX epoch.
