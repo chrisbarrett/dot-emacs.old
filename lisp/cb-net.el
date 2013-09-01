@@ -80,7 +80,19 @@
   :commands
   (notmuch-search
    notmuch
-   notmuch-cycle-notmuch-buffers))
+   notmuch-cycle-notmuch-buffers)
+  :config
+  (after 'evil
+    (define-keys notmuch-search-mode-map
+      "j" 'next-line
+      "k" 'previous-line
+      "C-f" 'evil-scroll-page-down
+      "C-b" 'evil-scroll-page-up)
+
+    (define-keys notmuch-show-mode-map
+      "C-f" 'evil-scroll-page-down
+      "C-b" 'evil-scroll-page-up)
+    (evil-add-hjkl-bindings notmuch-show-mode-map)))
 
 ;; `bbdb' provides an address book for emacs and integrates with many modes.
 (use-package bbdb
