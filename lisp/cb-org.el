@@ -108,7 +108,7 @@
       (insert (format (s-unlines
                        "#+TO: %s"
                        "#+SUBJECT: %s"
-                       "#+OPTIONS: toc:nil"
+                       "#+OPTIONS: toc:nil num:nil"
                        "\n")
                       to subject))
       ;; Position in body.
