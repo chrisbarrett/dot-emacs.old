@@ -527,6 +527,17 @@ the date TARGET-DAY, TARGET-MONTH each year."
       (and (= dayname target-dayname)
            (< days-diff 4))))
 
+  (defun calendar-mondayised-date (target-day target-month)
+    "Event that occurs on the closest Monday if it falls on a weekend."
+    (interactive)
+    ;; If the date falls on a Sat or Sun, return the coming Mon.
+    (if (memq (calendar-day-of-week date) '(0 6))
+        (calendar-nearest-to 1 target-day target-month)
+      ;; Return the evaluated date.  The entry does not have a starting date so
+      ;; we just use the start of the UNIX epoch.
+      (org-anniversary 1970 target-month target-day)))
+
+
   ;; Commands for formatting project file.
 
   (defun cb-org:project-file ()
