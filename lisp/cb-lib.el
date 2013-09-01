@@ -282,6 +282,10 @@ Find the first window where PRED-FORM is not nil."
   "Join STRS with newlines."
   (s-join "\n" strs))
 
+(defmacro s-lex-cat (&rest format-strs)
+  "Concatenate FORMAT-STRS then pass them to `s-lex-format'."
+  `(s-lex-format ,(apply 'concat format-strs)))
+
 (defun sum (&rest values)
   "Sum VALUES.  The input may be a list of values of any level of nesting."
   (-reduce '+ (-flatten values)))
