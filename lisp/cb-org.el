@@ -485,7 +485,9 @@ Kill the buffer when finished."
 ;; Configure org's sub-features only if org-mode is actually loaded.
 (after 'org
 
-  ;; Calendaring functions
+  ;;; Calendaring functions
+
+  ;; Functions for calculating Easter.
 
   (defun calendar-easter-date (year)
     "Calculate the date for Easter Sunday in YEAR. Returns the date in the
@@ -514,6 +516,8 @@ Gregorian calendar, ie (MM DD YY) format."
 are between the current date (DATE) and Easter Sunday."
     (- (calendar-absolute-from-gregorian date)
        (calendar-easter-date (calendar-extract-year date))))
+
+  ;; Functions for calculating NZ holidays.
 
   (defun calendar-nearest-to (target-dayname target-day target-month)
     "Recurring event that occurs in the nearest TARGET-DAYNAME to
