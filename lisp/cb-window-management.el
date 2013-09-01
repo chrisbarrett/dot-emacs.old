@@ -76,6 +76,7 @@
             ("*Messages*" :height 30)
             ("*Directory*")
             ("*Org Note*")
+            ("*jedi:doc*" :height 30)
             ("*bbdb*")
             ("*Occur*" :noselect t)
             ("\\*Slime Description.*" :noselect t :regexp t :height 30)
