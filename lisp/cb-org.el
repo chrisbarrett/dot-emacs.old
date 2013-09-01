@@ -485,6 +485,18 @@ Kill the buffer when finished."
 ;; Configure org's sub-features only if org-mode is actually loaded.
 (after 'org
 
+  (defun calendar-nearest-to (target-dayname target-day target-month)
+    "Recurring event that occurs in the nearest TARGET-DAYNAME to
+the date TARGET-DAY, TARGET-MONTH each year."
+    (interactive)
+    (let* ((dayname (calendar-day-of-week date))
+           (target-date (list target-month target-day (calendar-extract-year
+                                                       date)))
+           (days-diff (abs (- (calendar-day-number date)
+                              (calendar-day-number target-date)))))
+      (and (= dayname target-dayname)
+           (< days-diff 4))))
+
   ;; Commands for formatting project file.
 
   (defun cb-org:project-file ()
