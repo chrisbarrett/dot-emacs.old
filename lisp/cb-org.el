@@ -784,6 +784,14 @@ Non-nil if modifications where made."
   (use-package org-agenda
     :config
     (progn
+
+      ;; Define a hook for setting up agenda windows.
+
+      (defvar org-agenda-customise-window-hook nil
+        "Relay hook for `org-agenda-mode-hook'. Suitable for setting up the window.")
+      (hook-fn 'org-agenda-mode-hook
+        (run-hooks 'org-agenda-customise-window-hook))
+
       ;; Show today's agenda after a period of inactivity.
 
       (defvar cb-org:show-agenda-idle-delay (* 7 60)
@@ -820,7 +828,11 @@ See `cb-org:show-agenda-idle-delay'.")
                 (todo "PROJECT")
                 (todo "MAYBE")
                 (tags "someday")
-                (todo "WAITING")))
+                (todo "WAITING"))
+               ((org-agenda-customise-window-hook
+                 (lambda ()
+                   (delete-other-windows)))))
+
               ("g" . "GTD contexts")
               ("ga" "Anywhere" tags-todo "@anywhere")
               ("ge" "Errands"  tags-todo "@errand")
