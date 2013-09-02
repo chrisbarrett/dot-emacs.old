@@ -296,6 +296,14 @@ Kill the buffer when finished."
      org-footnote-auto-adjust t
      org-put-time-stamp-overlays t
 
+     ;; Statistics
+     ;;
+     ;; Perhaps confusingly, setting hierarchy vars to non-nil values makes
+     ;; statistics functions shallow.
+
+     org-hierarchical-todo-statistics nil
+     org-checkbox-hierarchical-statistics t
+
      ;; Refiling
 
      org-refile-targets '((nil :maxlevel . 9)
