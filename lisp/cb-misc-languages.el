@@ -51,10 +51,11 @@
 
 (use-package conf-mode
   :mode
-  ((".gitignore$"  . conf-mode)
-   (".gitmodules$" . conf-mode)
+  (("\\.gitignore$"  . conf-mode)
+   ("\\.gitmodules$" . conf-mode)
    ("ackrc$"       . conf-mode)
-   ("Doxyfile$"    . conf-mode))
+   ("Doxyfile$"    . conf-mode)
+   ("\\.fish$"     . conf-mode))
   :init
   (hook-fn 'cb:conf-modes-hook
     (smartparens-mode +1)))
