@@ -182,6 +182,99 @@ Kill the buffer when finished."
   :ensure t
   :mode ("muttrc$" . muttrc-mode))
 
+;; Define custom mode for mutt message composition.
+
+(defvar org-mutt-compose-mode-map
+  (let ((km (make-sparse-keymap)))
+    (define-keys km
+      "C-c c" 'org-mutt-compose-finished
+      "C-c q" 'org-mutt-compose-cancel)
+    km))
+
+(define-minor-mode org-mutt-compose-mode
+  "Configures an org buffer for editing messages for Mutt."
+  nil " OrgMutt" org-mutt-compose-mode-map)
+
+(defun org-mutt:message-buffer? ()
+  (and (-contains? (s-split "/" (buffer-file-name)) ".mutt")
+       (s-starts-with? "mutt" (f-filename (buffer-file-name)))))
+
+(defun maybe-enable-org-mutt-compose-mode ()
+  "Enable `org-mutt-mode' if this is a mutt message file."
+  (when (org-mutt:message-buffer?)
+    (org-mode)
+    (org-mutt-compose-mode +1)))
+
+(defun org-mutt-compose-cancel ()
+  "Cancel editing the message."
+  (interactive)
+  (revert-buffer t t)
+  (server-done))
+
+(defun org-mutt-compose-finished ()
+  "Convert the buffer to HTML and finish."
+  (interactive)
+  (save-excursion
+    (mark-whole-buffer)
+    (org-mime-htmlize nil))
+  (save-buffer)
+  (server-done))
+
+(defun org-mutt:ensure-header ()
+  "Insert header for setting export options."
+  (unless (--any? (s-matches? (rx bol "#+OPTIONS:") it)
+                  (s-lines (buffer-string)))
+    (save-excursion
+      (goto-char (point-min))
+      (open-line 2)
+      (insert "#+OPTIONS: toc:nil num:nil"))))
+
+(defun org-mutt:prepare-new-message ()
+  "Prepare a new message by formatting the buffer and setting modes."
+  (when (maybe-enable-org-mutt-compose-mode)
+    (org-mutt:ensure-header)
+    ;; Position point for editing the body.
+    ;; Point should go after the header but before any reply text.
+    (goto-char (point-min))
+    (if (search-forward-regexp (rx bol "On " (* nonl) " wrote:" eol) nil t)
+        (progn
+          (beginning-of-line)
+          (open-line 2))
+      (goto-char (point-max)))
+    ;; Enter insertion state
+    (when (fboundp 'evil-insert)
+      (evil-insert 1))))
+
+(defun org-mutt:edit-multipart-message ()
+  (let ((body (org-mutt:extract-plaintext-from-multipart (buffer-string))))
+    (delete-region (point-min) (point-max))
+    (insert body))
+  (org-mutt:prepare-new-message))
+
+(defun org-mutt:extract-plaintext-from-multipart (str)
+  "Return the plaintext section of a multipart message.
+This should be the body in an HTML email."
+  (with-temp-buffer
+    (insert str)
+    (goto-char (point-min))
+    (buffer-substring-no-properties
+     (progn
+       (search-forward "<#part type=text/plain>")
+       (point))
+     (let ((end-tag "<#multipart type=related>"))
+       (search-forward end-tag)
+       (search-backward end-tag)
+       (point)))))
+
+(defun org-mutt:maybe-edit ()
+  "If this is a mutt message, prepare the buffer for editing."
+  (when (org-mutt:message-buffer?)
+    (if (s-starts-with? "<#multipart type=alternative>" (buffer-string))
+        (org-mutt:edit-multipart-message)
+      (org-mutt:prepare-new-message))))
+
+(add-hook 'server-visit-hook 'org-mutt:maybe-edit)
+
 (provide 'cb-mail)
 
 ;; Local Variables:
