@@ -26,6 +26,7 @@
 
 ;;; Code:
 
+(require 'use-package)
 (require 'cb-lib)
 (autoload 'bbdb-complete-mail "bbdb-com")
 (autoload 'bbdb-message-clean-name-default "bbdb-mua")
@@ -177,6 +178,9 @@ Kill the buffer when finished."
 (bind-key* "C-x m" 'cb-org:compose-mail)
 (bind-key* "C-x M" 'compose-mail)
 
+(use-package muttrc-mode
+  :ensure t
+  :mode ("muttrc$" . muttrc-mode))
 
 (provide 'cb-mail)
 
