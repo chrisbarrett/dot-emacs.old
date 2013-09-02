@@ -122,6 +122,7 @@
 (require 'cb-misc-languages)
 (require 'cb-git)
 (require 'cb-org)
+(require 'cb-mail)
 (require 'cb-productivity)
 (require 'cb-fortune)
 (require 'custom)
