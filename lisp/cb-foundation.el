@@ -351,6 +351,16 @@ rather than the app bundle."
         try-complete-lisp-symbol-partially
         try-complete-lisp-symbol))
 
+(defun replace-smart-quotes ()
+  "Replace 'smart quotes' in buffer or region with ascii quotes."
+  (interactive)
+  (let ((beg (if (region-active-p) (region-beginning) (point-min)))
+        (end (if (region-active-p) (region-end) (point-max))))
+    (format-replace-strings '(("\x201C" . "\"")
+                              ("\x201D" . "\"")
+                              ("\x2018" . "'")
+                              ("\x2019" . "'"))
+                            nil beg end)))
 
 (provide 'cb-foundation)
 
