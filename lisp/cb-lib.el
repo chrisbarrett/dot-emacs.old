@@ -269,6 +269,28 @@ Find the first window where PRED-FORM is not nil."
 
 ;; -----------------------------------------------------------------------------
 
+(defun filter-atoms (predicate)
+  "Return the elements of the default obarray that match PREDICATE."
+  (let (acc)
+    (mapatoms (lambda (atom)
+                (when (funcall predicate atom)
+                  (push atom acc))))
+    acc))
+
+(defmacro --filter-atoms (predicate)
+  "Anaphoric form of `filter-atoms'."
+  `(filter-atoms (lambda (it) ,predicate)))
+
+(defun -listify (x)
+  "Wrap X in a list if it is not a list."
+  (if (listp x)
+      x
+    (list x)))
+
+(defun make-uuid ()
+  "Generate a UUID using the uuid utility."
+  (s-trim (shell-command-to-string "uuidgen")))
+
 (defun s-alnum-only (s)
   "Remove non-alphanumeric characters from S."
   (with-temp-buffer
@@ -290,44 +312,6 @@ Find the first window where PRED-FORM is not nil."
   "Sum VALUES.  The input may be a list of values of any level of nesting."
   (-reduce '+ (-flatten values)))
 
-(defmacro cal (&rest expression)
-  "Evaluate algebraic EXPRESSION using calc."
-  (eval-when-compile
-    (autoload 'sp-splice-sexp-killing-around "smartparens"))
-  (let*
-      ((expr (with-temp-buffer
-               (lisp-mode)
-               (insert (->> expression
-                         (-map 'pp-to-string)
-                         (apply 'concat)
-                         (s-replace (rx space) "")))
-               ;; Unpack comma forms applied by the lisp reader.
-               (goto-char (point-min))
-               (while (search-forward "(\\," nil t)
-                 (forward-char -1)
-                 (sp-splice-sexp-killing-around))
-               (buffer-string)))
-       (result (calc-eval expr)))
-    (if (listp result)
-        (destructuring-bind (pos err) result
-          (error "%s\n%s\n%s^"
-                 err
-                 expr
-                 (s-repeat pos " ")))
-      (read (s-replace "," "" result)))))
-
-(defun filter-atoms (predicate)
-  "Return the elements of the default obarray that match PREDICATE."
-  (let (acc)
-    (mapatoms (lambda (atom)
-                (when (funcall predicate atom)
-                  (push atom acc))))
-    acc))
-
-(defmacro --filter-atoms (predicate)
-  "Anaphoric form of `filter-atoms'."
-  `(filter-atoms (lambda (it) ,predicate)))
-
 (defun current-region (&optional no-properties)
   "Return the current active region, or nil if there is no region active.
 If NO-PROPERTIES is non-nil, return the region without text properties."
@@ -339,12 +323,6 @@ If NO-PROPERTIES is non-nil, return the region without text properties."
 (defun current-line ()
   "Return the line at point."
   (buffer-substring (line-beginning-position) (line-end-position)))
-
-(defun -listify (x)
-  "Wrap X in a list if it is not a list."
-  (if (listp x)
-      x
-    (list x)))
 
 (provide 'cb-lib)
 
