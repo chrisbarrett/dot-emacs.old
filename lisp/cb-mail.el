@@ -280,7 +280,9 @@ This should be the body in an HTML email."
     (if (s-starts-with? "<#multipart type=alternative>" (buffer-string))
         (org-mutt:edit-multipart-message)
       (org-mutt:prepare-new-message))
-    (message "<C-c c> to send message, <C-c q> to cancel.")))
+    (run-with-timer
+     0.15 nil
+     (lambda () (message "<C-c c> to send message, <C-c q> to cancel.")))))
 
 (add-hook 'server-visit-hook 'org-mutt:maybe-edit)
 
