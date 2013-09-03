@@ -214,9 +214,14 @@ Kill the buffer when finished."
 (defun org-mutt-compose-finished ()
   "Convert the buffer to HTML and finish."
   (interactive)
+  ;; Convert buffer to HTML.
   (save-excursion
     (mark-whole-buffer)
     (org-mime-htmlize nil))
+  ;; Clean up buffer text.
+  (let ((delete-trailing-lines t))
+    (delete-trailing-whitespace))
+  ;; Finish editing with the server.
   (save-buffer)
   (server-done))
 
@@ -226,8 +231,11 @@ Kill the buffer when finished."
                   (s-lines (buffer-string)))
     (save-excursion
       (goto-char (point-min))
-      (open-line 2)
-      (insert "#+OPTIONS: toc:nil num:nil"))))
+      (open-line 1)
+      (insert "#+OPTIONS: toc:nil num:nil latex:t"))))
+
+(defun org-mutt:move-to-quoted-message ()
+  (search-forward-regexp (rx bol "On " (* nonl) " wrote:" eol) nil t))
 
 (defun org-mutt:prepare-new-message ()
   "Prepare a new message by formatting the buffer and setting modes."
@@ -236,11 +244,11 @@ Kill the buffer when finished."
     ;; Position point for editing the body.
     ;; Point should go after the header but before any reply text.
     (goto-char (point-min))
-    (if (search-forward-regexp (rx bol "On " (* nonl) " wrote:" eol) nil t)
+    (if (org-mutt:move-to-quoted-message)
         (progn
           (beginning-of-line)
-          (open-line 2))
-      (goto-char (point-max)))
+          (open-line 1))
+        (goto-char (point-max)))
     ;; Enter insertion state
     (when (fboundp 'evil-insert)
       (evil-insert 1))))
@@ -271,7 +279,8 @@ This should be the body in an HTML email."
   (when (org-mutt:message-buffer?)
     (if (s-starts-with? "<#multipart type=alternative>" (buffer-string))
         (org-mutt:edit-multipart-message)
-      (org-mutt:prepare-new-message))))
+      (org-mutt:prepare-new-message))
+    (message "<C-c c> to send message, <C-c q> to cancel.")))
 
 (add-hook 'server-visit-hook 'org-mutt:maybe-edit)
 
