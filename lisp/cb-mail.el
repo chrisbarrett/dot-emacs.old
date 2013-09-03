@@ -224,35 +224,17 @@ Kill the buffer when finished."
 (defvar org-mutt:org-header "#+OPTIONS: toc:nil num:nil"
   "The default org header to insert into new messages.")
 
-(defun org-mutt:header-end-pos ()
-  (save-excursion
-    (goto-char (point-min))
-    (while (not (s-blank? (current-line)))
-      (forward-line))
-    (point)))
-
-(defun org-mutt:header-string ()
-  (s-trim (buffer-substring-no-properties
-           (point-min) (org-mutt:header-end-pos))))
-
-(defun org-mutt:message-body ()
-  (s-trim (buffer-substring-no-properties
-           (org-mutt:header-end-pos) (point-max))))
-
-(defvar-local org-mutt:original-header-string nil
-  "The original message headers set by mutt.")
-
 (defun org-mutt:prepare-message-buffer ()
-  "Prepare a new message by formatting the buffer and setting modes."
-  ;; Store the components of the message from mutt.
-  (setq org-mutt:original-header-string (org-mutt:header-string))
-  (let ((bod (org-mutt:message-body)))
-    ;; Reinitialise for org.
+  "Prepare a new message by reformatting the buffer."
+  (let ((bod (buffer-string)))
     (atomic-change-group
       (delete-region (point-min) (point-max))
       (insert org-mutt:org-header)
-      (newline)
-      (insert bod))))
+      (newline 2)
+      (unless (s-blank? bod)
+        (save-excursion
+          (newline 2)
+          (insert bod))))))
 
 (defun org-mutt:maybe-edit ()
   "If this is a mutt message, prepare the buffer for editing."
