@@ -211,13 +211,8 @@ Kill the buffer when finished."
 (defun org-mutt-compose-finished ()
   "Convert the buffer to HTML and finish."
   (interactive)
-  ;; Replace buffer with multipart representation.
-  (let ((bod (buffer-string)))
-    (delete-region (point-min) (point-max))
-    (insert (org-mutt:format-message
-             org-mutt:original-header-string
-             bod)))
-  ;; Clean up buffer text.
+  (mark-whole-buffer)
+  (org-html-convert-region-to-html)
   (let ((delete-trailing-lines t))
     (delete-trailing-whitespace))
   ;; Finish editing with the server.
@@ -275,44 +270,6 @@ Kill the buffer when finished."
 
 ;; Prepare any messages sent for editing by mutt.
 (add-hook 'server-visit-hook 'org-mutt:maybe-edit)
-
-;;; Multipart message formatting.
-;;;
-;;; See http://www.w3.org/Protocols/rfc1341/7_2_Multipart.html
-
-(defun org-mutt:delimiter (boundary &optional mime-type)
-  (concat "\r\n--" boundary
-          (if mime-type
-            (concat "\r\n" "Content-Type: " mime-type)
-            "\r\n")))
-
-(defun org-mutt:close-delimiter (boundary)
-  (concat "\r\n--" boundary "--"))
-
-(defun org-mutt:encapsulation (boundary mime-type body-part)
-  (concat (org-mutt:delimiter boundary mime-type) "\r\n" body-part))
-
-(defun org-mutt:headers (boundary headers)
-  (concat headers "\r\n"
-          "Mime-Version: 1.0\r\n"
-          "Content-Type: multipart/alternative; boundary=\"" boundary "\"\r\n"))
-
-(defun org-mutt:org->html (org-str)
-  "Export ORG-STR to HTML, assuming it is org format."
-  (with-temp-buffer
-    (insert org-str)
-    (mark-whole-buffer)
-    (org-html-convert-region-to-html)
-    (buffer-string)))
-
-(defun org-mutt:format-message (headers body)
-  "Prepare an HTML message, given HEADERS and an org-mode string BODY."
-  (let ((bound "=-=-="))
-    (concat
-     (org-mutt:headers bound headers)
-     (org-mutt:encapsulation bound "text/plain" body)
-     (org-mutt:encapsulation bound "text/html" (org-mutt:org->html body))
-     (org-mutt:close-delimiter bound))))
 
 (provide 'cb-mail)
 
