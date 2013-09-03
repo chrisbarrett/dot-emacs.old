@@ -1,4 +1,4 @@
-;;; cb-mail.el --- Configuration for email
+;;; cb-mail.el --- Configuration for emaiL
 
 ;; Copyright (C) 2013 Chris Barrett
 
@@ -28,12 +28,12 @@
 
 (require 'use-package)
 (require 'cb-lib)
-(autoload 'bbdb-complete-mail "bbdb-com")
+(autoload 'bbdb-record-name "bbdb")
 (autoload 'bbdb-message-clean-name-default "bbdb-mua")
 (autoload 'bbdb-record-mail "bbdb")
-(autoload 'bbdb-record-name "bbdb")
-(autoload 'bbdb-records "bbdb")
 (autoload 'goto-address-find-address-at-point "goto-addr.el")
+(autoload 'bbdb-records "bbdb")
+(autoload 'bbdb-complete-mail "bbdb-com")
 
 ;; Use org-mode-style tables and structure editing in message-mode.
 (after 'message
@@ -182,6 +182,7 @@ Kill the buffer when finished."
   :ensure t
   :mode ("muttrc$" . muttrc-mode))
 
+;; -----------------------------------------------------------------------------
 ;; Define custom mode for mutt message composition.
 
 (defvar org-mutt-compose-mode-map
@@ -199,11 +200,7 @@ Kill the buffer when finished."
   (and (-contains? (s-split "/" (buffer-file-name)) ".mutt")
        (s-starts-with? "mutt" (f-filename (buffer-file-name)))))
 
-(defun maybe-enable-org-mutt-compose-mode ()
-  "Enable `org-mutt-mode' if this is a mutt message file."
-  (when (org-mutt:message-buffer?)
-    (org-mode)
-    (org-mutt-compose-mode +1)))
+;;;; Interactive commands
 
 (defun org-mutt-compose-cancel ()
   "Cancel editing the message."
@@ -214,10 +211,12 @@ Kill the buffer when finished."
 (defun org-mutt-compose-finished ()
   "Convert the buffer to HTML and finish."
   (interactive)
-  ;; Convert buffer to HTML.
-  (save-excursion
-    (mark-whole-buffer)
-    (org-mime-htmlize nil))
+  ;; Replace buffer with multipart representation.
+  (let ((bod (buffer-string)))
+    (delete-region (point-min) (point-max))
+    (insert (org-mutt:format-message
+             org-mutt:original-header-string
+             bod)))
   ;; Clean up buffer text.
   (let ((delete-trailing-lines t))
     (delete-trailing-whitespace))
@@ -225,66 +224,95 @@ Kill the buffer when finished."
   (save-buffer)
   (server-done))
 
-(defun org-mutt:ensure-header ()
-  "Insert header for setting export options."
-  (unless (--any? (s-matches? (rx bol "#+OPTIONS:") it)
-                  (s-lines (buffer-string)))
-    (save-excursion
-      (goto-char (point-min))
-      (open-line 1)
-      (insert "#+OPTIONS: toc:nil num:nil latex:t"))))
+;;;; Message initialisation
 
-(defun org-mutt:move-to-quoted-message ()
-  (search-forward-regexp (rx bol "On " (* nonl) " wrote:" eol) nil t))
+(defvar org-mutt:org-header "#+OPTIONS: toc:nil num:nil"
+  "The default org header to insert into new messages.")
 
-(defun org-mutt:prepare-new-message ()
+(defun org-mutt:header-end-pos ()
+  (save-excursion
+    (goto-char (point-min))
+    (while (not (s-blank? (current-line)))
+      (forward-line))
+    (point)))
+
+(defun org-mutt:header-string ()
+  (s-trim (buffer-substring-no-properties
+           (point-min) (org-mutt:header-end-pos))))
+
+(defun org-mutt:message-body ()
+  (s-trim (buffer-substring-no-properties
+           (org-mutt:header-end-pos) (point-max))))
+
+(defvar-local org-mutt:original-header-string nil
+  "The original message headers set by mutt.")
+
+(defun org-mutt:prepare-message-buffer ()
   "Prepare a new message by formatting the buffer and setting modes."
-  (when (maybe-enable-org-mutt-compose-mode)
-    (org-mutt:ensure-header)
-    ;; Position point for editing the body.
-    ;; Point should go after the header but before any reply text.
-    (goto-char (point-min))
-    (if (org-mutt:move-to-quoted-message)
-        (progn
-          (beginning-of-line)
-          (open-line 1))
-        (goto-char (point-max)))
-    ;; Enter insertion state
-    (when (fboundp 'evil-insert)
-      (evil-insert 1))))
-
-(defun org-mutt:edit-multipart-message ()
-  (let ((body (org-mutt:extract-plaintext-from-multipart (buffer-string))))
-    (delete-region (point-min) (point-max))
-    (insert body))
-  (org-mutt:prepare-new-message))
-
-(defun org-mutt:extract-plaintext-from-multipart (str)
-  "Return the plaintext section of a multipart message.
-This should be the body in an HTML email."
-  (with-temp-buffer
-    (insert str)
-    (goto-char (point-min))
-    (buffer-substring-no-properties
-     (progn
-       (search-forward "<#part type=text/plain>")
-       (point))
-     (let ((end-tag "<#multipart type=related>"))
-       (search-forward end-tag)
-       (search-backward end-tag)
-       (point)))))
+  ;; Store the components of the message from mutt.
+  (setq org-mutt:original-header-string (org-mutt:header-string))
+  (let ((bod (org-mutt:message-body)))
+    ;; Reinitialise for org.
+    (atomic-change-group
+      (delete-region (point-min) (point-max))
+      (insert org-mutt:org-header)
+      (newline)
+      (insert bod))))
 
 (defun org-mutt:maybe-edit ()
   "If this is a mutt message, prepare the buffer for editing."
   (when (org-mutt:message-buffer?)
-    (if (s-starts-with? "<#multipart type=alternative>" (buffer-string))
-        (org-mutt:edit-multipart-message)
-      (org-mutt:prepare-new-message))
+    (org-mode)
+    (org-mutt-compose-mode +1)
+    (org-mutt:prepare-message-buffer)
+    ;; Enter insertion state
+    (when (fboundp 'evil-insert)
+      (evil-insert 1))
+    ;; Display info on key bindings.
     (run-with-timer
      0.15 nil
      (lambda () (message "<C-c c> to send message, <C-c q> to cancel.")))))
 
+;; Prepare any messages sent for editing by mutt.
 (add-hook 'server-visit-hook 'org-mutt:maybe-edit)
+
+;;; Multipart message formatting.
+;;;
+;;; See http://www.w3.org/Protocols/rfc1341/7_2_Multipart.html
+
+(defun org-mutt:delimiter (boundary &optional mime-type)
+  (concat "\r\n--" boundary
+          (if mime-type
+            (concat "\r\n" "Content-Type: " mime-type)
+            "\r\n")))
+
+(defun org-mutt:close-delimiter (boundary)
+  (concat "\r\n--" boundary "--"))
+
+(defun org-mutt:encapsulation (boundary mime-type body-part)
+  (concat (org-mutt:delimiter boundary mime-type) "\r\n" body-part))
+
+(defun org-mutt:headers (boundary headers)
+  (concat headers "\r\n"
+          "Mime-Version: 1.0\r\n"
+          "Content-Type: multipart/alternative; boundary=\"" boundary "\"\r\n"))
+
+(defun org-mutt:org->html (org-str)
+  "Export ORG-STR to HTML, assuming it is org format."
+  (with-temp-buffer
+    (insert org-str)
+    (mark-whole-buffer)
+    (org-html-convert-region-to-html)
+    (buffer-string)))
+
+(defun org-mutt:format-message (headers body)
+  "Prepare an HTML message, given HEADERS and an org-mode string BODY."
+  (let ((bound "=-=-="))
+    (concat
+     (org-mutt:headers bound headers)
+     (org-mutt:encapsulation bound "text/plain" body)
+     (org-mutt:encapsulation bound "text/html" (org-mutt:org->html body))
+     (org-mutt:close-delimiter bound))))
 
 (provide 'cb-mail)
 
