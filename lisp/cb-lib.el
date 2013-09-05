@@ -32,8 +32,11 @@
 (require 'bind-key)
 (autoload 'sp-splice-sexp-killing-around "smartparens")
 
-(defvar cb-lib:debug-hooks? t
+(defvar cb-lib:debug-hooks? nil
   "Set to non-nil to prevent `hook-fn' from catching errors.")
+
+(defun cb-lib:format-message (category desc body)
+  (format "* * * * * *\n[%s]: %s\n%s\n* * * * * *" category desc body))
 
 (defmacro* hook-fn (hook &rest body
                          &key local append (arglist '(&rest _args))
@@ -63,13 +66,19 @@
        (add-hook ,hook
                  (lambda ,arglist
                    (if cb-lib:debug-hooks?
-                       ,bod
+                       (let ((debug-on-error t))
+                         ,bod)
                      ;; Do not allow errors to propagate from the hook.
                      (condition-case err
                          ,bod
-                       (error (message
-                               "[%s] %s" ,hook
-                               (error-message-string err))))))
+                       (error
+                        (message
+                         (cb-lib:format-message
+                          ,(if load-file-name
+                               (format "%s in %s" (eval hook) load-file-name)
+                             hook)
+                          "Error raised in hook"
+                          (error-message-string err)))))))
                  ,append ,local)
        ,hook)))
 
