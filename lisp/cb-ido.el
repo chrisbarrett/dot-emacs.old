@@ -111,6 +111,7 @@
 
 (use-package ido-ubiquitous
   :ensure t
+  :disabled t
   :commands ido-ubiquitous-mode
   :init
   (after 'ido
