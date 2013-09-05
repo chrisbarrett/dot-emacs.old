@@ -30,16 +30,15 @@
 (require 'cb-lib)
 (autoload 'thing-at-point-url-at-point "thingatpt")
 
-(use-package exec-path-from-shell
-  :ensure t
-  :defer  t
-  :if     (or (daemonp) (window-system))
-  :init   (hook-fn 'after-init-hook (require 'exec-path-from-shell))
-  :config
-  (progn
-    (exec-path-from-shell-initialize)
-    (exec-path-from-shell-copy-env "PKG_CONFIG_PATH")
-    (exec-path-from-shell-copy-env "CFLAGS")))
+(cond
+ ((s-ends-with? "fish" (getenv "SHELL"))
+  (let ((path (s-split " " (shell-command-to-string "echo $PATH"))))
+    (setq exec-path (-union path exec-path))
+    (setenv "PATH" (s-join ":" exec-path))))
+ (t
+  (let ((path (s-split ":" (shell-command-to-string "echo $PATH"))))
+    (setq exec-path (-union path exec-path))
+    (setenv "PATH" (s-join ":" exec-path)))))
 
 ;; Enable mouse support in terminal.
 (use-package mouse
