@@ -38,6 +38,7 @@
 
 (use-package magit
   :defer  t
+  :ensure t
   :idle   (require 'magit)
   :commands magit-status
   :bind
