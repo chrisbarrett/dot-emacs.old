@@ -36,6 +36,11 @@
 (define-prefix-command 'git-map)
 (bind-key "C-x g" 'git-map)
 
+(use-package vc
+  :defer t
+  :init
+  (setq vc-follow-symlinks t))
+
 (use-package magit
   :defer  t
   :ensure t
