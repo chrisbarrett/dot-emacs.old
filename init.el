@@ -57,7 +57,7 @@
 ;; Load submodules.
 
 (loop with lib = (concat user-emacs-directory "lib/")
-      for module in '("org-mode")
+      for module in '("org-mode" "apel")
       do (add-to-list 'load-path (concat lib module)))
 
 ;;; Configure packages.
