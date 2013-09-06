@@ -82,6 +82,40 @@
 (require 'use-package)
 (setq use-package-verbose nil)
 
+;; Configure el-get
+
+(defvar cb:el-get-dir (concat user-emacs-directory "el-get/"))
+(unless (file-exists-p cb:el-get-dir)
+  (with-current-buffer
+      (url-retrieve-synchronously
+       "https://raw.github.com/dimitri/el-get/master/el-get-install.el")
+    (let (el-get-master-branch)
+      (goto-char (point-max))
+      (eval-print-last-sexp))))
+
+(add-to-list 'load-path (concat cb:el-get-dir "el-get"))
+(defvar el-get-sources '(wanderlust))
+
+(use-package el-get
+  :disabled t
+  :commands (el-get
+             el-get-install
+             el-get-update
+             el-get-list-packages)
+  :init
+  (defvar el-get-sources nil)
+
+  :config
+  (progn
+    (defun el-get-read-status-file ()
+      (mapcar #'(lambda (entry)
+                  (cons (plist-get entry :symbol)
+                        `(status "installed" recipe ,entry)))
+              el-get-sources))
+
+    (defalias 'el-get-init 'ignore
+      "Don't use el-get for making packages available for use.")))
+
 (require 'cb-lib)
 (require 'cb-foundation)
 (require 'personal-config)
