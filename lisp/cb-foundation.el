@@ -47,12 +47,7 @@
 
 (defalias 'yes-or-no-p 'y-or-n-p)
 (autoload 'edebug-step-mode "edebug")
-(autoload 'server-running-p "server")
 (autoload 'thing-at-point-looking-at "thingatpt")
-
-(hook-fn 'after-init-hook
-  (unless (server-running-p)
-    (server-start)))
 
 (use-package simple
   :diminish

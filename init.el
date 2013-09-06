@@ -118,6 +118,7 @@
 
 (require 'cb-lib)
 (require 'cb-foundation)
+(require 'cb-server)
 (require 'personal-config)
 (require 'cb-mode-groups)
 (if cb:use-vim-keybindings?  (require 'cb-evil))
