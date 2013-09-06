@@ -177,25 +177,7 @@
       (unless noninteractive
         (run-with-idle-timer 1 t (lambda ()
                                    (when (true? git-gutter+-mode)
-                                     (git-gutter+-refresh))))))
-
-    (defadvice git-gutter+-commit (before save-windows activate)
-      "Save window state before and after git gutter commits."
-      (setq magit-pre-log-edit-window-configuration (current-window-configuration)))
-
-    (defadvice git-gutter+-stage-and-commit (before save-windows activate)
-      "Save window state before and after git gutter commits."
-      (setq magit-pre-log-edit-window-configuration (current-window-configuration)))
-
-    (defadvice git-gutter+-commit (after select-log activate)
-      "Select the log window when committing.
-Ensure a window is created for the commit window."
-      (let* ((buf (--first-buffer (derived-mode-p 'magit-log-edit-mode)))
-             (win (--first-window (equal buf (window-buffer it)))))
-        (if win
-            (select-window win)
-          (select-window (split-window-below -5))
-          (switch-to-buffer buf))))))
+                                     (git-gutter+-refresh))))))))
 
 (use-package git-gutter-fringe+
   :ensure t
