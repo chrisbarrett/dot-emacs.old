@@ -77,9 +77,9 @@
                    async)
       initially (unless package-archive-contents (package-refresh-contents))
       unless (package-installed-p pkg)
-      do (package-install pkg))
+      do (package-install pkg)
+      do (require pkg))
 
-(require 'use-package)
 (setq use-package-verbose nil)
 
 ;; Configure el-get
