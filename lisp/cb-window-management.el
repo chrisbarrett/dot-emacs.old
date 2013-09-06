@@ -30,8 +30,11 @@
 (require 'cb-foundation)
 (require 'cb-evil)
 
+;; Bury the compilation log once Emacs has started.
 (hook-fn 'after-init-hook
-  (bury-buffer "*Compile-Log*"))
+  (let ((bufname "*Compile-Log*"))
+    (when (get-buffer bufname)
+      (bury-buffer bufname))))
 
 (use-package workgroups
   :ensure t
