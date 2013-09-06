@@ -225,6 +225,7 @@ Kill the buffer when finished."
     (defun configure-wanderlust ()
       "Configure wanderlust for your email setup."
       (interactive)
+      (el-get-install 'wanderlust)
       (url-retrieve
        "https://raw.github.com/gist/1207807/wl-auto-config.el"
        (lambda (_)
