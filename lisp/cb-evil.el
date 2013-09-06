@@ -115,6 +115,25 @@ Creates STATE bindings for DEFS. DEFS are comprised of alternating string-symbol
     (define-key evil-emacs-state-map  (kbd "M-z") 'evil-normal-state)
     (define-key evil-visual-state-map (kbd "C-z") 'evil-undefine)
 
+    ;;;; Emacs-state window management
+
+    ;; Make window-management the same as evil in emacs state.
+
+    (define-prefix-command 'cb:evil-window-emu)
+    (bind-keys
+      :global t
+      "C-w" 'cb:evil-window-emu
+      "C-w C-w" 'evil-window-prev
+      "C-w C-s" 'split-window-vertically
+      "C-w C-v" 'split-window-horizontally
+      "C-w C-o" 'delete-other-windows
+      "C-w C-c" 'delete-window
+      "C-w w" 'evil-window-prev
+      "C-w s" 'split-window-vertically
+      "C-w v" 'split-window-horizontally
+      "C-w o" 'delete-other-windows
+      "C-w c" 'delete-window)
+
     ;;;; Visual line fixes
 
     ;; Evil commands should respect visual-line mode and operate on the visible
