@@ -182,6 +182,17 @@ Kill the buffer when finished."
   :ensure t
   :mode ("muttrc$" . muttrc-mode))
 
+;; `wanderlust' email client.
+(use-package wl
+  :defer t
+  :commands (wl wl-other-frame)
+  :init
+  (defvar wl-icon-directory (f-join cb:el-get-dir "wanderlust" "icons")))
+
+(declare-modal-executor wanderlust
+  :bind "M-M"
+  :command wl)
+
 ;; -----------------------------------------------------------------------------
 ;; Define custom mode for mutt message composition.
 
