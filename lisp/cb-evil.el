@@ -120,9 +120,9 @@ Creates STATE bindings for DEFS. DEFS are comprised of alternating string-symbol
     ;; Make window-management the same as evil in emacs state.
 
     (define-prefix-command 'cb:evil-window-emu)
+    (global-set-key (kbd "C-w") 'cb:evil-window-emu)
     (bind-keys
       :global t
-      "C-w" 'cb:evil-window-emu
       "C-w C-w" 'evil-window-prev
       "C-w C-s" 'split-window-vertically
       "C-w C-v" 'split-window-horizontally
