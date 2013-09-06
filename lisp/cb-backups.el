@@ -27,6 +27,7 @@
 ;;; Code:
 
 (require 'use-package)
+(require 'noflet)
 
 (use-package saveplace
   :defer t
@@ -56,7 +57,7 @@
   (progn
 
     (defadvice recentf-cleanup (around hide-messages activate)
-      (flet ((message (&rest args)))
+      (noflet ((message (&rest args)))
         ad-do-it))
 
     (setq

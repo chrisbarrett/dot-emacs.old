@@ -28,11 +28,12 @@
 
 (require 'use-package)
 (require 'cb-foundation)
+(require 'noflet)
 
 (defmacro declare-ido-wrapper (command)
   "Make COMMAND use ido for file and directory completions."
   `(defadvice ,command (around read-with-ido activate)
-     (flet
+     (noflet
          ((read-directory-name
            (&rest args) (apply 'ido-read-directory-name args))
           (read-file-name
