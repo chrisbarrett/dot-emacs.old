@@ -48,6 +48,7 @@
 
 (use-package recentf
   :defer t
+  :if (not noninteractive)
   :idle  (require 'recentf)
   :init
   (hook-fn 'find-file-hook (require 'recentf))
