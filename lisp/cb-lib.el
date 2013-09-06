@@ -61,7 +61,8 @@
          `(progn ,@(->> body
                      (-partition-all-in-steps 2 2)
                      (--drop-while (keywordp (car it)))
-                     (apply '-concat)))))
+                     (apply '-concat))))
+        (file (or byte-compile-current-file load-file-name)))
     `(progn
        (add-hook ,hook
                  (lambda ,arglist
@@ -74,8 +75,8 @@
                        (error
                         (message
                          (cb-lib:format-message
-                          ,(if load-file-name
-                               (format "%s in %s" (eval hook) load-file-name)
+                          ,(if file
+                               (format "%s in %s" (eval hook) file)
                              hook)
                           "Error raised in hook"
                           (error-message-string err)))))))
