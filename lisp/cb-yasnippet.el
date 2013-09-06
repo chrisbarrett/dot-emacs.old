@@ -33,6 +33,7 @@
 (use-package yasnippet
   :ensure t
   :if (not noninteractive)
+  :mode ("/\\.emacs\\.d/snippets/" . snippet-mode)
   :diminish yas-minor-mode
   :commands
   (yas-global-mode
@@ -41,12 +42,7 @@
   :init
   (progn
     (add-hook 'prog-mode-hook 'yas-minor-mode)
-    (add-hook 'sgml-mode-hook 'yas-minor-mode)
-    (hook-fn 'find-file-hook
-      "Use yasnippet mode for files in the snippet directory."
-      (when (and (fboundp 'snippet-mode)
-                 (s-contains? cb:yasnippet-dir (buffer-file-name)))
-        (snippet-mode))))
+    (add-hook 'sgml-mode-hook 'yas-minor-mode))
   :config
   (progn
     (setq
