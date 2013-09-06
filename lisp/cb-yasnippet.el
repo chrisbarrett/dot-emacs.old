@@ -51,7 +51,16 @@
     (add-to-list 'yas-snippet-dirs cb:yasnippet-dir)
     (yas-global-mode t)
     (hook-fn 'snippet-mode-hook
-      (setq require-final-newline nil))))
+      (setq require-final-newline nil))
+
+    (define-prefix-command 'cb:yas-map)
+    (bind-keys
+      "C-c y" 'cb:yas-map
+      "C-c y TAB" 'yas-expand
+      "C-c y n" 'yas-new-snippet
+      "C-c y f" 'yas-find-snippets
+      "C-c y r" 'yas-reload-all
+      "C-c y v" 'yas-visit-snippet)))
 
 (provide 'cb-yasnippet)
 
