@@ -238,6 +238,10 @@
   (whitespace-cleanup)
   (delete-trailing-whitespace))
 
+(defadvice indent-sexp (around ignore-errors activate)
+  "Suppress errors in indent-sexp."
+  (ignore-errors ad-do-it))
+
 ;;; Basic hooks
 
 (defun cb:next-dwim ()
