@@ -67,14 +67,17 @@
      recentf-max-saved-items 100
      recentf-max-menu-items  25
      recentf-exclude '(".newsrc"
-                       "tmp"
+                       "\\.elc$"
+                       "/tmp/"
+                       "/temp/"
+                       "/\\.git/"
                        "^/?sudo"
                        "Emacs.app"
                        "-autoloads.el"
                        "recentf"
-                       ".ido.last"
+                       "\\.ido\\.last"
                        "TAGS"
-                       ".gz"))
+                       "\\.gz$"))
 
     ;; Sometimes recentf gets into a recursive load, so just nuke the save file
     ;; if that happens.
