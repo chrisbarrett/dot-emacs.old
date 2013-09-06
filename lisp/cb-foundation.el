@@ -43,6 +43,7 @@
 (define-path cb:yasnippet-dir "snippets/")
 (define-path cb:backups-dir   "backups/")
 (define-path cb:autosaves-dir "tmp/autosaves/")
+(define-path cb:el-get-dir    "el-get")
 
 (defalias 'yes-or-no-p 'y-or-n-p)
 (autoload 'edebug-step-mode "edebug")
