@@ -240,11 +240,11 @@ Kill the buffer when finished."
      elmo-maildir-folder-path (f-join user-home-directory "Maildir")
      wl-fcc ".sent"                       ;; sent msgs go to the "sent"-folder
      wl-fcc-force-as-read t               ;; mark sent messages as read
-     wl-default-folder ".INBOX"           ;; my main inbox
-     wl-draft-folder ".Drafts"            ;; store drafts in 'postponed'
-     wl-trash-folder ".Trash"             ;; put trash in 'trash'
-     wl-spam-folder ".Trash"              ;; ...spam as well
-     wl-queue-folder ".queue"             ;; we don't use this
+     wl-default-folder ".inbox"
+     wl-draft-folder ".drafts"
+     wl-trash-folder ".archive"
+     wl-spam-folder ".trash"
+     wl-queue-folder ".queue"
      ;; Hide fields from message buffers
      wl-message-ignored-field-list '("^.*:")
      wl-message-visible-field-list
