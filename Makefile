@@ -16,12 +16,12 @@ emacs_version = $(shell $(emacs) -Q --batch --exec \
 # ----------------------------------------------------------------------------
 
 .PHONY: default
-default : $(modules) conf tags $(emacs_src)
+default : $(modules) el-get conf tags $(emacs_src)
 
 .PHONY: all
-all : $(modules) compile tags \
+all : $(modules) el-get compile tags \
 	  ruby supercollider python clang scheme haskell gnus \
-	  $(emacs_src)
+	  $(emacs_src) conf
 
 .PHONY: tags
 tags :
@@ -35,6 +35,10 @@ $(tmp) :; mkdir $(tmp)
 
 $(modules) :
 	git submodule update --init
+
+el-get :
+	git clone 'https://github.com/dimitri/el-get' el-get/el-get
+	$(emacs) --batch -nw -l 'el-get/el-get/el-get-install.el' --exec '(eval-buffer)'
 
 # ----------------------------------------------------------------------------
 # Byte-compilation
