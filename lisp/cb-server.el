@@ -40,12 +40,25 @@
     (defun cb-server:configure-frame (&rest frame)
       "Disable themeing for console emacsclient."
       (unless (display-graphic-p)
-        (let ((fm (or (car frame) (selected-frame))))
-          (set-face-foreground 'default "#FFFFFF" fm)
-          (set-face-background 'fringe  "#000000" fm)
+        (let ((fm (or (car frame) (selected-frame)))
+              (tranparent "ARGBBB000000")
+              (blue "#168DCC")
+              )
+          (set-face-foreground 'default "black" fm)
+          (set-face-background 'default tranparent fm)
+          (set-face-background 'menu blue fm)
+          (set-face-foreground 'menu "white" fm)
+          (set-face-background 'hl-line tranparent fm)
+          (set-face-background 'fringe tranparent fm)
           (set-face-background 'cursor "#2F4F4F" fm)
-          (set-face-background 'mode-line "#2F4F4F" fm)
-          (set-face-foreground 'mode-line "#BCBf91" fm))))
+          ;; Modeline
+          (set-face-foreground 'mode-line-filename "white" fm)
+          (set-face-foreground 'mode-line-position "white" fm)
+          (set-face-background 'mode-line blue fm)
+          (set-face-background 'mode-line blue fm)
+          ;; Org
+          (when (boundp 'org-block-background)
+            (set-face-background 'org-block-background tranparent fm)))))
 
     (defadvice server-create-window-system-frame (after configure-frame activate)
       "Set custom frame colours when creating the first frame on a display"
