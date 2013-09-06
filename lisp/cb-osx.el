@@ -32,9 +32,14 @@
 
 (cond
  ((s-ends-with? "fish" (getenv "SHELL"))
+  ;; Get the path from fish, then set the default shell to something
+  ;; POSIX-compliant or anything that shells out will bork.
   (let ((path (s-split " " (shell-command-to-string "echo $PATH"))))
     (setq exec-path (-union path exec-path))
-    (setenv "PATH" (s-join ":" exec-path))))
+    (setenv "PATH" (s-join ":" exec-path))
+    (setq shell-file-name "/bin/bash"
+          explicit-shell-file-name shell-file-name)
+    (setenv "SHELL"  shell-file-name)))
  (t
   (let ((path (s-split ":" (shell-command-to-string "echo $PATH"))))
     (setq exec-path (-union path exec-path))
