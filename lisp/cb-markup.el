@@ -38,52 +38,12 @@
     (sp-local-tag  "<" "<_>" "</_>"
                    :transform 'sp-match-sgml-tags)))
 
-(defun cb:xml-one-liner? (str)
-  (save-match-data
-    (-when-let (match (->> str (s-match
-                                (rx bol (* (any space "\t"))
-                                    "<" (group (+ word)) (* nonl) ">"
-                                    (group (+ nonl))
-                                    "</" (group (* word)) ">"
-                                    (* (any space "\t")) eol))))
-      (and (equal (nth 1 match)
-                  (nth 3 match))
-           (not (s-contains? "<" (nth 2 match)))))))
-
-(defun cb:pp-xml (xml)
-  "Return a reformatted version of an XML string.
-Puts each XML node on a separate line, except for one-liners."
-  (with-temp-buffer
-    (insert xml)
-    (nxml-mode)
-    (goto-char (point-min))
-    (while (search-forward-regexp
-            (rx (not (any "%")) ">"
-                (group-n 1 (* (any space "	")))
-                "<" (not (any "%")))
-            nil t)
-      (unless (cb:xml-one-liner? (thing-at-point 'line))
-        (replace-match "\n" nil nil nil 1)))
-    (buffer-string)))
-
-(defun cb:reformat-xml ()
-  "Insert newlines and indent XML.
-  Operates on region, or the whole buffer if no region is defined."
+(defun tidy-xml-buffer ()
+  "Reformat the current XML buffer using Tidy."
   (interactive)
-  (let* ((line (line-number-at-pos))
-         (col  (current-column))
-         (reg (if (region-active-p)
-                  (list (region-beginning) (region-end))
-                (list (point-min) (point-max))))
-         (str (apply 'buffer-substring reg)))
-    (atomic-change-group
-      (apply 'delete-region reg)
-      (insert (cb:pp-xml str))
-      (apply 'indent-region reg))
-    ;; Return to original position.
-    (goto-char (point-min))
-    (forward-line (1- line))
-    (move-to-column col)))
+  (save-excursion
+    (call-process-region (point-min) (point-max) "tidy" t t nil
+                         "-xml" "-i" "-wrap" "0" "-omit" "-q")))
 
 (use-package nxml-mode
   :commands nxml-mode
@@ -92,7 +52,7 @@ Puts each XML node on a separate line, except for one-liners."
   :init
   (progn
     (hook-fn 'nxml-mode-hook
-      (local-set-key (kbd "M-q") 'cb:reformat-xml))
+      (local-set-key (kbd "M-q") 'tidy-xml-buffer))
 
     (hook-fn 'find-file-hook
       "Enable nxml-mode if when visiting a file with a DTD."
@@ -104,7 +64,7 @@ Puts each XML node on a separate line, except for one-liners."
   :init
   (hook-fn 'sgml-mode-hook
     (setq-default sgml-xml-mode t)
-    (local-set-key (kbd "M-q") 'cb:reformat-xml)))
+    (local-set-key (kbd "M-q") 'tidy-xml-buffer)))
 
 (use-package html-mode
   :defer t
