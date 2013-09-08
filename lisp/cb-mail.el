@@ -201,13 +201,17 @@ Kill the buffer when finished."
   :config
   (progn
 
-    (define-keys wl-folder-mode-map
-      "j" 'wl-folder-next-entity
-      "k" 'wl-folder-prev-entity)
 
-    (define-keys wl-summary-mode-map
-      "j" 'wl-summary-next
-      "k" 'wl-summary-prev)
+    (hook-fn 'wl-folder-mode
+      (define-keys wl-folder-mode-map
+        "j" 'wl-folder-next-entity
+        "k" 'wl-folder-prev-entity))
+
+
+    (hook-fn 'wl-summary-mode
+      (define-keys wl-summary-mode-map
+        "j" 'wl-summary-next
+        "k" 'wl-summary-prev))
 
     (define-mode-group cb:wl-modes
       '(wl-draft-editor-mode
@@ -231,7 +235,7 @@ Kill the buffer when finished."
 
     ;; Disable smartparens
     (hook-fn 'cb:wl-modes-hook
-      (when (true? 'smartparens-mode)
+      (when (true? smartparens-mode)
         (smartparens-mode -1)))
 
 
@@ -293,6 +297,10 @@ Kill the buffer when finished."
        ("From" ("From") ("To" "Cc") ("Newsgroups")))
      ;; mutt-style buffer behaviour
      wl-summary-always-sticky-folder-list t)
+
+    (add-to-list 'wl-summary-sort-specs 'rdate)
+
+    ;; Validate mails when sending.
 
     (defun cb-wl:check-subject ()
       "Prompt to continue sending a message with no subject."
