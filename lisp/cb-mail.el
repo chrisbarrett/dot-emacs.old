@@ -244,7 +244,6 @@ Kill the buffer when finished."
      wl-draft-folder ".drafts"
      wl-trash-folder ".archive"
      wl-spam-folder ".trash"
-     wl-queue-folder ".queue"
      ;; Hide fields from message buffers
      wl-message-ignored-field-list '("^.*:")
      wl-message-visible-field-list
