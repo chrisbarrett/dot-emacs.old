@@ -238,12 +238,14 @@ The insertion will be repeated COUNT times."
   :config
   (progn
     (global-surround-mode +1)
-    (hook-fn 'prog-mode-hook
-      (push '(?\( . ("(" . ")")) surround-pairs-alist)
-      (push '(?\[ . ("[" . "]")) surround-pairs-alist)
-      (push '(?<  . ("<" . ">")) surround-pairs-alist))
+    (setq-default surround-pairs-alist
+                  (-union surround-pairs-alist
+                          '((?\( . ("(" . ")"))
+                            (?\[ . ("[" . "]"))
+                            (?<  . ("<" . ">"))
+                            (?\{ . ("{" . "}")))))
+
     (hook-fn 'cb:lisp-modes-hook
-      (push '(?\{ . ("{" . "}")) surround-pairs-alist)
       (push '(?\` . ("`" . "'")) surround-pairs-alist))))
 
 (use-package evil-numbers
