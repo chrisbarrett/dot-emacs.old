@@ -97,7 +97,7 @@
 (defvar el-get-sources '(wanderlust))
 
 (use-package el-get
-  :disabled t
+  :defer t
   :commands (el-get
              el-get-install
              el-get-update
