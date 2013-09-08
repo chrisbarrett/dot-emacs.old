@@ -221,6 +221,11 @@ Kill the buffer when finished."
     (hook-fn 'cb:wl-modes-hook
       (local-set-key (kbd "w") 'cb-org:compose-mail))
 
+    ;; Disable smartparens
+    (hook-fn 'cb:wl-modes-hook
+      (when (true? 'smartparens-mode)
+        (smartparens-mode -1)))
+
 
     (defun configure-wanderlust ()
       "Configure wanderlust for your email setup."
