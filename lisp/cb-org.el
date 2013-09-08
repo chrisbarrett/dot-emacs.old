@@ -153,6 +153,7 @@
      org-blank-before-new-entry nil
      org-footnote-auto-adjust t
      org-put-time-stamp-overlays t
+     org-startup-with-inline-images t
 
      ;; Statistics
      ;;
