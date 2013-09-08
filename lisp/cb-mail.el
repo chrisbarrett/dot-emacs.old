@@ -362,6 +362,25 @@ Kill the buffer when finished."
 (defvar org-mutt:org-header "#+OPTIONS: toc:nil num:nil"
   "The default org header to insert into new messages.")
 
+(defconst org-mutt:reply-quote-preamble
+  (rx bol "On " (+ nonl) "wrote:" (* space) eol))
+
+(defun org-mutt:rewrap-quoted-message (str)
+  (-if-let (preamble (car (s-match org-mutt:reply-quote-preamble str)))
+    (destructuring-bind (bod quote) (s-split (regexp-quote preamble) str)
+      (s-unlines bod
+                 preamble
+                 "#+BEGIN_QUOTE"
+                 ;; Reformat quote. Remove any inner quotes.
+                 (->> quote
+                   (s-lines)
+                   (--map (s-chop-prefix "> " it))
+                   (-remove 's-blank?)
+                   (--remove (s-starts-with? ">>" it))
+                   (s-join "\n"))
+                 "#+END_QUOTE"))
+    str))
+
 (defun org-mutt:prepare-message-buffer ()
   "Prepare a new message by reformatting the buffer."
   (let ((bod (buffer-string)))
@@ -372,7 +391,7 @@ Kill the buffer when finished."
       (unless (s-blank? bod)
         (save-excursion
           (newline 2)
-          (insert bod))))))
+          (insert (org-mutt:rewrap-quoted-message bod)))))))
 
 (defun org-mutt:maybe-edit ()
   "If this is a mutt message, prepare the buffer for editing."
