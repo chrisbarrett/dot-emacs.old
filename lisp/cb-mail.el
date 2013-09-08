@@ -201,6 +201,14 @@ Kill the buffer when finished."
   :config
   (progn
 
+    (define-keys wl-folder-mode-map
+      "j" 'wl-folder-next-entity
+      "k" 'wl-folder-prev-entity)
+
+    (define-keys wl-summary-mode-map
+      "j" 'wl-summary-next
+      "k" 'wl-summary-prev)
+
     (define-mode-group cb:wl-modes
       '(wl-draft-editor-mode
         wl-original-message-mode
