@@ -59,7 +59,7 @@
           ;; Org
           (when (featurep 'org)
             (set-face-background 'org-block-begin-line tranparent fm)
-            (set-face-background 'org-block-end-line-line tranparent fm)
+            (set-face-background 'org-block-end-line tranparent fm)
             (set-face-background 'org-block-background tranparent fm)))))
 
     (defadvice server-create-window-system-frame (after configure-frame activate)
