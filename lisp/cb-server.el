@@ -56,7 +56,9 @@
           (set-face-foreground 'mode-line-position "white" fm)
           (set-face-background 'mode-line blue fm)
           (set-face-background 'mode-line blue fm)
-          ;; Org
+
+          (when (featurep 'smartparens)
+            (set-face-background 'sp-pair-overlay-face "green" fm))
           (when (featurep 'org)
             (set-face-background 'org-block-begin-line tranparent fm)
             (set-face-background 'org-block-end-line tranparent fm)
