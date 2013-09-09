@@ -136,14 +136,6 @@
       (local-set-key (kbd "l") 'bbdb-next-field)
       (local-set-key (kbd "h") 'bbdb-prev-field))))
 
-;; `google-this' provides a few simple commands for performing google searches.
-(use-package google-this
-  :ensure   t
-  :commands google-this
-  :diminish google-this-mode
-  :init     (bind-key* "M-s" 'google-this)
-  :config   (google-this-mode +1))
-
 ;; `w3m' bindings for Emacs. w3m is a command-line web browser.
 (use-package w3m
   :ensure   t
