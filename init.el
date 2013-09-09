@@ -159,6 +159,7 @@
 (require 'cb-org)
 (require 'cb-mail)
 (require 'cb-productivity)
+(require 'cb-search)
 (require 'cb-fortune)
 (require 'custom)
 
