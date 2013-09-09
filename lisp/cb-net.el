@@ -153,7 +153,6 @@
    w3m-browse-url)
   :init
   (progn
-    (setq browse-url-browser-function 'w3m-browse-url)
 
     (declare-modal-executor w3m
       :command w3m
