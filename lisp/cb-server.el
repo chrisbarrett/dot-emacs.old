@@ -54,6 +54,8 @@
           ;; Modeline
           (set-face-foreground 'mode-line-filename "white" fm)
           (set-face-foreground 'mode-line-position "white" fm)
+          (set-face-foreground 'mode-line-mode "black" fm)
+          (set-face-bold 'mode-line-mode t fm)
           (set-face-background 'mode-line blue fm)
           (set-face-background 'mode-line blue fm)
 
