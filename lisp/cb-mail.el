@@ -29,11 +29,12 @@
 (require 'use-package)
 (require 'cb-lib)
 (autoload 'bbdb-record-name "bbdb")
+(autoload 'std11-field-body "std11")
+(autoload 'bbdb-complete-mail "bbdb-com")
 (autoload 'bbdb-message-clean-name-default "bbdb-mua")
 (autoload 'bbdb-record-mail "bbdb")
 (autoload 'goto-address-find-address-at-point "goto-addr.el")
 (autoload 'bbdb-records "bbdb")
-(autoload 'bbdb-complete-mail "bbdb-com")
 
 ;; Use org-mode-style tables and structure editing in message-mode.
 (after 'message
@@ -201,18 +202,6 @@ Kill the buffer when finished."
   :config
   (progn
 
-
-    (hook-fn 'wl-folder-mode
-      (define-keys wl-folder-mode-map
-        "j" 'wl-folder-next-entity
-        "k" 'wl-folder-prev-entity))
-
-
-    (hook-fn 'wl-summary-mode
-      (define-keys wl-summary-mode-map
-        "j" 'wl-summary-next
-        "k" 'wl-summary-prev))
-
     (define-mode-group cb:wl-modes
       '(wl-draft-editor-mode
         wl-original-message-mode
@@ -238,6 +227,14 @@ Kill the buffer when finished."
       (when (true? smartparens-mode)
         (smartparens-mode -1)))
 
+    (hook-fn 'wl-folder-mode
+      (local-set-key (kbd "j") 'wl-folder-next-entity)
+      (local-set-key (kbd "k") 'wl-folder-prev-entity))
+
+
+    (hook-fn 'wl-summary-mode
+      (local-set-key (kbd "j") 'wl-summary-next)
+      (local-set-key (kbd "k") 'wl-summary-prev))
 
     (defun configure-wanderlust ()
       "Configure wanderlust for your email setup."
@@ -400,8 +397,15 @@ Kill the buffer when finished."
                  (->> quote
                    (s-lines)
                    (--map (s-chop-prefix "> " it))
-                   (-remove 's-blank?)
-                   (--remove (s-starts-with? ">>" it))
+                   (--remove
+                    (s-matches? (rx (or
+                                     ;; Blank?
+                                     (group bol (* space) eol)
+                                     ;; Quote?
+                                     (group bol (+ ">"))
+                                     ;; Quote header?
+                                     (group " wrote:" (* space) eol)))
+                                it))
                    (s-join "\n"))
                  "#+END_QUOTE"))
     str))
