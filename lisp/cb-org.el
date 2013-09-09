@@ -1085,6 +1085,12 @@ as the default task."
           (org-decrypt-entry)
           t))))
 
+  ;; `org-attach' adds support for attachments to subtrees as an alternative to
+  ;; plain links.
+  (use-package org-attach
+    :config
+    (setq org-link-abbrev-alist '(("att" . org-attach-expand-link))))
+
   ;; `org-mime' provides MIME exporting functions, allowing you to export org
   ;; buffers to HTML emails.
   (use-package org-mime
