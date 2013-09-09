@@ -307,16 +307,6 @@ Kill the buffer when finished."
 
     (add-hook 'wl-mail-send-pre-hook 'cb-wl:check-subject)
 
-    ;; Ensure the summary stays sorted.
-    (hook-fn 'wl-summary-prepared-hook
-      (wl-summary-rescan "date"))
-
-    ;; Add to mode string.
-    (add-to-list 'global-mode-string
-                 '(wl-modeline-biff-status
-                   wl-modeline-biff-state-on
-                   wl-modeline-biff-state-off))
-
     (after 'evil
       ;; Disable evil for wanderlust modes.
       (hook-fn 'wl-folder-mode-hook
