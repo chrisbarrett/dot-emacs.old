@@ -399,14 +399,13 @@ Kill the buffer when finished."
                    (--map (s-chop-prefix "> " it))
                    (--remove
                     (s-matches? (rx (or
-                                     ;; Blank?
-                                     (group bol (* space) eol)
                                      ;; Quote?
                                      (group bol (+ ">"))
                                      ;; Quote header?
                                      (group " wrote:" (* space) eol)))
                                 it))
-                   (s-join "\n"))
+                   (s-join "\n")
+                   (s-trim))
                  "#+END_QUOTE"))
     str))
 
