@@ -221,6 +221,11 @@
                   'mode-line-position)))
    " "
    ;; --------------------------------------------------------------------------
+   ;; Mail status.
+   (:eval (or (and (true? cbm:mode-line-indicator)
+                   (concat " " cbm:mode-line-indicator " "))
+              ""))
+   ;; --------------------------------------------------------------------------
    ;; File status.
    (:eval
     (let ((blank "    "))
@@ -272,11 +277,7 @@
                 (propertize modeline-mail-indicator 'face 'mode-line-emphasis))
               ""))
    " "
-   (global-mode-string global-mode-string)
-   " "
-   (:eval (or (and (true? cbm:mode-line-indicator)
-                   cbm:mode-line-indicator)
-              ""))))
+   (global-mode-string global-mode-string)))
 
 
 (provide 'cb-modeline)
