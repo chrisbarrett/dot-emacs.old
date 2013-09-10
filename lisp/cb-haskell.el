@@ -249,10 +249,10 @@
   :commands (haskell-find-type-signature
              haskell-reformat-type-signature))
 
-(use-package haskell-indentation
-  :diminish haskell-indentation-mode
-  :commands haskell-indentation-mode
-  :init     (add-hook 'haskell-mode-hook 'haskell-indentation-mode))
+(use-package hi2
+  :ensure t
+  :defer t
+  :init (add-hook 'haskell-mode-hook 'turn-on-hi2))
 
 (use-package haskell-doc
   :diminish haskell-doc-mode
