@@ -45,6 +45,10 @@
   :config
   (progn
 
+    (defadvice ac-quick-help (around ignore-errors activate)
+      "Ignore errors when showing help popups."
+      (ignore-errors ad-do-it))
+
     (use-package auto-complete-config
       :config (ac-config-default))
 
