@@ -272,7 +272,11 @@
                 (propertize modeline-mail-indicator 'face 'mode-line-emphasis))
               ""))
    " "
-   (global-mode-string global-mode-string)))
+   (global-mode-string global-mode-string)
+   " "
+   (:eval (or (and (true? cbm:mode-line-indicator)
+                   cbm:mode-line-indicator)
+              ""))))
 
 
 (provide 'cb-modeline)

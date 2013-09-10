@@ -428,6 +428,41 @@ Kill the buffer when finished."
 ;; Prepare any messages sent for editing by mutt.
 (add-hook 'server-visit-hook 'org-mutt:maybe-edit)
 
+;; -----------------------------------------------------------------------------
+;; Display unread mail count in mode-line.
+
+(defvar cbm:mail-directory (f-join user-home-directory "Maildir")
+  "The maildir to scan for new messages.")
+
+(defvar cbm:mail-icon (create-image (f-join cb:assets-dir "letter.xpm")))
+
+(defvar cbm:mode-line-indicator nil
+  "The entry to display in the modeline.")
+
+(defun cbm:unread-mail-count ()
+  "Return the number of unread messages in all folders in your maildir."
+  (->> (f-directories cbm:mail-directory)
+    (-mapcat 'f-directories)
+    (--remove (s-matches? (rx (or "low" "archive" "draft"
+                                  "deleted" "trash" "sent")) it))
+    (-mapcat 'f-directories)
+    (--filter (s-ends-with? "new" it))
+    (-map (-compose 'length 'f-files))
+    (-sum)))
+
+(defun cbm:make-indicator (n)
+  (when (plusp n)
+    (concat
+     (propertize "@" 'display cbm:mail-icon)
+     (int-to-string n))))
+
+(defun cbm:update-unread-count ()
+  "Find the number of unread messages and update the modeline."
+  (setq cbm:mode-line-indicator (cbm:make-indicator (cbm:unread-mail-count))))
+
+(defvar cbm:unread-count-timer
+  (run-with-idle-timer 0.5 t 'cbm:update-unread-count))
+
 (provide 'cb-mail)
 
 ;; Local Variables:
