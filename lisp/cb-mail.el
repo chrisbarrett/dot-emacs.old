@@ -434,7 +434,8 @@ Kill the buffer when finished."
 (defvar cbm:mail-directory (f-join user-home-directory "Maildir")
   "The maildir to scan for new messages.")
 
-(defvar cbm:mail-icon (create-image (f-join cb:assets-dir "letter.xpm")))
+(defvar cbm:mail-icon (create-image (f-join cb:assets-dir "letter.xpm")
+                                    'xpm nil :ascent 'center))
 
 (defvar cbm:mode-line-indicator nil
   "The entry to display in the modeline.")
