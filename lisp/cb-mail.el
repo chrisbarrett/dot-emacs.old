@@ -377,7 +377,21 @@ Kill the buffer when finished."
 (defconst org-mutt:reply-quote-preamble
   (rx bol "On " (+ nonl) "wrote:" (* space) eol))
 
+(defun org-mutt:quote-line? (ln)
+  (s-matches?
+   (rx (or
+        ;; Quote?
+        (group bol (+ ">"))
+        ;; Quote header?
+        ;;
+        ;; HACK: Occasionally the sender address loses the
+        ;; trialing space, so accept that in the regex.
+        (group (or space ">") "wrote:" (* space) eol)))
+   ln))
+
 (defun org-mutt:rewrap-quoted-message (str)
+  "Take the first quote level and discard nested quotes in STR.
+Rewrap in an org-style quote block."
   (-if-let (preamble (car (s-match org-mutt:reply-quote-preamble str)))
     (destructuring-bind (bod quote) (s-split (regexp-quote preamble) str)
       (s-unlines bod
@@ -387,13 +401,7 @@ Kill the buffer when finished."
                  (->> quote
                    (s-lines)
                    (--map (s-chop-prefix "> " it))
-                   (--remove
-                    (s-matches? (rx (or
-                                     ;; Quote?
-                                     (group bol (+ ">"))
-                                     ;; Quote header?
-                                     (group " wrote:" (* space) eol)))
-                                it))
+                   (-remove 'org-mutt:quote-line?)
                    (s-join "\n")
                    (s-trim))
                  "#+END_QUOTE"))
