@@ -232,7 +232,12 @@
        tab-width            4
        haskell-tags-on-save t
        haskell-stylish-on-save t)
-      (local-set-key (kbd "C-c C-c") 'haskell-process-cabal-build))))
+      (local-set-key (kbd "C-c C-c") 'haskell-process-cabal-build))
+
+    (defadvice haskell-mode-after-save-handler (around ignore-warnings activate)
+      "Prevent subprocess warnings from changing window state."
+      (save-window-excursion
+        ad-do-it))))
 
 ;; `haskell-c' provides a major-mode for haskell-c code.
 (use-package haskell-c
