@@ -461,8 +461,13 @@ Kill the buffer when finished."
   "Find the number of unread messages and update the modeline."
   (setq cbm:mode-line-indicator (cbm:make-indicator (cbm:unread-mail-count))))
 
+;; Use a combination of timers to update the modeline unread count.
+
+(defvar cbm:unread-count-idle-timer
+  (run-with-idle-timer 1 t 'cbm:update-unread-count))
+
 (defvar cbm:unread-count-timer
-  (run-with-idle-timer 0.5 t 'cbm:update-unread-count))
+  (run-with-timer 0 10 'cbm:update-unread-count))
 
 (provide 'cb-mail)
 
