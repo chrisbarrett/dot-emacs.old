@@ -35,9 +35,8 @@
 (autoload 'smart-insert-operator "smart-operator")
 (autoload 'smart-insert-operator-hook "smart-operator")
 
+;; <C-c j> switches between src code and test file.
 (after 'haskell-mode
-
-;;;; Buffer switching
 
   (defun cb:hs-project-root ()
     (or (ignore-errors
@@ -64,9 +63,10 @@
          (src-p (error "No corresponding unit test file found"))
          (t     (error "No corresponding source file found"))))))
 
-  (define-key haskell-mode-map (kbd "C-c j") 'haskell-test<->code)
+  (define-key haskell-mode-map (kbd "C-c j") 'haskell-test<->code))
 
-;;;; Unicode display
+;; Use font lock to display unicode symbols in haskell buffers.
+(after 'haskell-mode
 
   (defun cb-hs:apply-font-lock (pat rep)
     "Call SUBSTITUTE-PATTERN-WITH-UNICODE repeatedly."
@@ -109,14 +109,17 @@
 
   (add-hook 'cb:haskell-modes-hook 'cb-hs:apply-unicode))
 
+;; Use ghc flymake checker because the cabal checker doesn't work for standalone files.
 (after 'flycheck
   (hook-fn 'haskell-mode-hook
     (flycheck-select-checker 'haskell-ghc)))
 
+;; Enable auto-complete in haskell buffers.
 (after 'auto-complete
   (--map (add-to-list 'ac-modes it)
          cb:haskell-modes))
 
+;; Define custom smart operators for haskell.
 (after 'smart-operator
 
   (defun cb-hs:smart-pipe ()
@@ -164,6 +167,7 @@
     (local-set-key (kbd "|") 'cb-hs:smart-pipe)
     (local-set-key (kbd "$") (command (smart-insert-operator "$")))))
 
+;; Configure hideshow to collapse regions such as functions, imports and datatypes.
 (after 'hideshow
 
   (defun cb-hs:forward-fold (&rest _)
@@ -194,6 +198,7 @@
                  ;; Forward-sexp function
                  cb-hs:forward-fold)))
 
+;; `haskell-mode' provides a major-mode for editing haskell code.
 (use-package haskell-mode
   :ensure t
   :defer t
@@ -229,12 +234,15 @@
        haskell-stylish-on-save t)
       (local-set-key (kbd "C-c C-c") 'haskell-process-cabal-build))))
 
+;; `haskell-c' provides a major-mode for haskell-c code.
 (use-package haskell-c
   :mode ("\\.hsc$" . haskell-c-mode))
 
+;; `haskell-cabal' provides a major-mode for cabal files.
 (use-package haskell-cabal
   :mode  ("\\.cabal$" . haskell-cabal-mode))
 
+;; `haskell-ac' provides auto-complete sources for haskell.
 (use-package haskell-ac
   :defer t
   :init
@@ -245,24 +253,24 @@
       (add-to-list 'ac-sources 'ac-source-words-in-same-mode-buffers)
       (add-to-list 'ac-sources 'ac-source-haskell))))
 
+;; `haskell-edit' contains a few custom refactoring commands.
 (use-package haskell-edit
   :commands (haskell-find-type-signature
              haskell-reformat-type-signature))
 
+;; `hi2' is an improved inhentation mode for haskell.
 (use-package hi2
   :ensure t
   :defer t
   :init (add-hook 'haskell-mode-hook 'turn-on-hi2))
 
+;; `haskell-doc' provides el-doc-style minibuffer typesignatures.
 (use-package haskell-doc
   :diminish haskell-doc-mode
   :commands haskell-doc-mode
   :init     (add-hook 'cb:haskell-modes-hook 'haskell-doc-mode))
 
-(use-package haskell-decl-scan
-  :commands turn-on-haskell-decl-scan
-  :init     (add-hook 'haskell-mode-hook 'turn-on-haskell-decl-scan))
-
+;; `hs-lint' provides an emacs interface to HLint, the haskell linting tool.
 (use-package hs-lint
   :commands hs-lint
   :init
@@ -271,6 +279,7 @@
   :config
   (setq hs-lint-command (executable-find "hlint")))
 
+;; `scion' provides IDE-style services for haskell.
 (use-package scion
   :ensure t
   :commands (scion-mode)
