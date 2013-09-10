@@ -267,6 +267,7 @@
 (use-package hi2
   :ensure t
   :defer t
+  :diminish hi2-mode
   :init (add-hook 'haskell-mode-hook 'turn-on-hi2))
 
 ;; `haskell-doc' provides el-doc-style minibuffer typesignatures.
