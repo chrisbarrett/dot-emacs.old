@@ -44,7 +44,7 @@
               (tranparent "ARGBBB000000")
               (blue "#168DCC")
               )
-          (set-face-foreground 'default "black" fm)
+          (set-face-foreground 'default nil fm)
           (set-face-background 'default tranparent fm)
           (set-face-background 'menu blue fm)
           (set-face-foreground 'menu "white" fm)
