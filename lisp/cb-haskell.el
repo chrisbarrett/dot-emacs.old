@@ -214,6 +214,7 @@
     (add-to-list 'completion-ignored-extensions ".hi")
 
     (hook-fn 'cb:haskell-modes-hook
+      (eldoc-mode +1)
       (subword-mode +1)
       (local-set-key (kbd "C-c h") 'hoogle))
 
