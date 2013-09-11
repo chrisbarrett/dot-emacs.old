@@ -170,15 +170,34 @@
 ;; Configure hideshow to collapse regions such as functions, imports and datatypes.
 (after 'hideshow
 
+  (defun cb-hs:next-separator-pos ()
+    (save-excursion
+      (when (search-forward-regexp (rx bol "---") nil t)
+        (ignore-errors (forward-line -1))
+        (while (and (emr-blank-line?)
+                    (not (bobp)))
+          (forward-line -1))
+        (end-of-line)
+        (point))))
+
+  (defun cb-hs:next-decl-pos ()
+    (save-excursion
+      (haskell-ds-forward-decl)
+      ;; Skip infix and import groups.
+      (while (emr-line-matches? (rx bol (or "import" "infix") (+ space)))
+        (haskell-ds-forward-decl))
+      (unless (eobp)
+        (ignore-errors (forward-line -1))
+        (while (and (emr-line-matches? (rx bol (* space) "--" space))
+                    (not (bobp)))
+          (forward-line -1)))
+      (point)))
+
   (defun cb-hs:forward-fold (&rest _)
-    (haskell-ds-forward-decl)
-    ;; Skip infix and import groups.
-    (while (emr-line-matches? (rx bol (or "import" "infix") (+ space)))
-      (haskell-ds-forward-decl))
-    (unless (eobp)
-      (ignore-errors (forward-line -1))
-      (while (emr-line-matches? (rx bol (* space) "--"))
-        (forward-line -1))))
+    (let ((sep (cb-hs:next-separator-pos))
+          (decl (cb-hs:next-decl-pos)))
+      (goto-char (min (or sep (point-max))
+                      (or decl (point-max))))))
 
   (add-to-list 'hs-special-modes-alist
                `(haskell-mode
