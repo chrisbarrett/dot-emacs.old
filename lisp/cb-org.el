@@ -523,7 +523,7 @@ Non-nil if modifications where made."
                 ("s" "Someday" entry
                  (file+olp org-default-notes-file "Someday" "Tasks")
                  ,(s-unlines
-                   "* MAYBE %^{Description}%?"
+                   "* MAYBE %?"
                    ":LOGBOOK:"
                    ":CAPTURED: %U"
                    ":END:")
@@ -538,12 +538,11 @@ Non-nil if modifications where made."
                 ("b" "Bill" entry
                  (file+headline org-default-notes-file "Bills")
                  ,(s-unlines
-                   "* TODO %^{Description}"
+                   "* TODO %?"
                    "DEADLINE: %^{Deadline}t"
                    ":LOGBOOK:"
                    ":CAPTURED: %U"
                    ":END:")
-                 :immediate-finish t
                  :clock-resume t)
 
                 ("h" "Habit" entry
@@ -563,11 +562,10 @@ Non-nil if modifications where made."
                 ("r" "Reading" entry
                  (file+olp org-default-notes-file "Someday" "Readings")
                  ,(s-unlines
-                   "* TODO %^{Title}"
+                   "* TODO %i%?"
                    ":LOGBOOK:"
                    ":CAPTURED: %U"
                    ":END:")
-                 :immediate-finish t
                  :clock-resume t)
 
                 ("l" "Link" entry
@@ -584,11 +582,10 @@ Non-nil if modifications where made."
                 ("m" "Listening" entry
                  (file+olp org-default-notes-file "Someday" "Listening")
                  ,(s-unlines
-                   "* TODO %^{Title}"
+                   "* TODO %i%?"
                    ":LOGBOOK:"
                    ":CAPTURED: %U"
                    ":END:")
-                 :immediate-finish t
                  :clock-resume t)
 
                 ("n" "Note" entry
