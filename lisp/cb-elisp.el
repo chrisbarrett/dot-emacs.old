@@ -80,9 +80,7 @@
                           "noflet"
                           "ac-define-source"
                           "evil-global-set-keys"
-                          "flycheck-declare-checker"
-                          "cl-destructuring-bind"
-                          "cl-defstruct")
+                          "flycheck-declare-checker")
                       symbol-end)
            word-end)
       (1 font-lock-keyword-face))
@@ -108,15 +106,7 @@
            (group-n 2 (+ (regex "\[^ )\n\]"))
                     symbol-end))
       (1 font-lock-keyword-face)
-      (2 font-lock-function-name-face))
-
-     ;; cl-struct.
-     (,(rx "(cl-defstruct"
-           (+ space)
-           (group (+ (regex "\[^ )\n\]"))
-                  symbol-end))
-
-      (1 font-lock-type-face)))))
+      (2 font-lock-function-name-face)))))
 
 (hook-fn 'minibuffer-setup-hook
   "Enable Paredit during eval-expression."
