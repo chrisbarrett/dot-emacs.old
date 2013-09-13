@@ -655,7 +655,7 @@ Non-nil if modifications where made."
 
       ;; Show today's agenda after a period of inactivity.
 
-      (defvar cb-org:show-agenda-idle-delay (* 7 60)
+      (defvar cb-org:show-agenda-idle-delay (* 10 60)
         "The delay in seconds after which to pop up today's agenda.")
 
       (defvar cb-org:show-agenda-idle-timer
