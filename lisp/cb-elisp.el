@@ -174,6 +174,12 @@
       (when (buffer-file-name)
         (message "Buffer evaluated.")))))
 
+(use-package cl-lib-highlight
+  :ensure t
+  :init (after 'lisp-mode
+          (cl-lib-highlight-initialize)
+          (cl-lib-highlight-warn-cl-initialize)))
+
 (use-package edebug
   :defer t
   :commands edebug-next-mode
