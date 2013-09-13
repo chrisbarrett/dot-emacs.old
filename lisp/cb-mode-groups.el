@@ -123,6 +123,11 @@
       inferior-haskell-mode
       sclang-post-buffer-mode)))
 
+(defvar cb:whitespace-sensitive-languages
+  '(python-mode
+    haskell-mode
+    fsharp-mode))
+
 (provide 'cb-mode-groups)
 
 ;; Local Variables:
