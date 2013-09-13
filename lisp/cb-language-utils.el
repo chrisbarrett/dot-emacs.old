@@ -45,8 +45,9 @@
     (defadvice smart-insert-operator (after indent-after-insert-equals activate)
       "Reindent the current line after inserting an equals."
       (when (equal (ad-get-arg 0) "=")
-        (save-excursion
-          (indent-according-to-mode))))
+        (unless (apply 'derived-mode-p cb:whitespace-sensitive-languages)
+          (save-excursion
+            (indent-according-to-mode)))))
 
     (defadvice smart-insert-operator (around normal-insertion-for-string activate)
       "Use self-insert rather than smart operator when looking at string or comment."
