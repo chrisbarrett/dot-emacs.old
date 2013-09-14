@@ -152,12 +152,18 @@ Creates STATE bindings for DEFS. DEFS are comprised of alternating string-symbol
 
     (evil-define-text-object evil-line (count &rest _)
       "Move COUNT - 1 lines down."
-      (list (save-excursion
-              (beginning-of-visual-line)
-              (point))
-            (save-excursion
-              (beginning-of-visual-line (1+ (or count 1)))
-              (point))))
+      (list
+       (save-excursion
+         (beginning-of-visual-line)
+         (point))
+
+       (save-excursion
+         ;; Move to the next line. If on the last line, take end of line instead.
+         (if (equal (line-number-at-pos) (buffer-length-lines))
+             (goto-char (point-max))
+           (beginning-of-visual-line (1+ (or count 1))))
+
+         (point))))
 
     (defun evil-insert-line (count &optional vcount)
       "Switch to Insert state just before the first non-blank character
