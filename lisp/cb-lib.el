@@ -279,6 +279,25 @@ Find the first window where PRED-FORM is not nil."
 
 ;; -----------------------------------------------------------------------------
 
+(defun s-alnum-only (s)
+  "Remove non-alphanumeric characters from S."
+  (with-temp-buffer
+    (insert s)
+    (goto-char (point-min))
+    (while (search-forward-regexp (rx (not alnum)) nil t)
+      (replace-match ""))
+    (buffer-string)))
+
+(defun s-unlines (&rest strs)
+  "Join STRS with newlines."
+  (s-join "\n" strs))
+
+(defmacro s-lex-cat (&rest format-strs)
+  "Concatenate FORMAT-STRS then pass them to `s-lex-format'."
+  `(s-lex-format ,(apply 'concat format-strs)))
+
+;; -----------------------------------------------------------------------------
+
 (defun filter-atoms (predicate)
   "Return the elements of the default obarray that match PREDICATE."
   (let (acc)
@@ -297,30 +316,11 @@ Find the first window where PRED-FORM is not nil."
       x
     (list x)))
 
+;; -----------------------------------------------------------------------------
+
 (defun make-uuid ()
   "Generate a UUID using the uuid utility."
   (s-trim (shell-command-to-string "uuidgen")))
-
-(defun s-alnum-only (s)
-  "Remove non-alphanumeric characters from S."
-  (with-temp-buffer
-    (insert s)
-    (goto-char (point-min))
-    (while (search-forward-regexp (rx (not alnum)) nil t)
-      (replace-match ""))
-    (buffer-string)))
-
-(defun s-unlines (&rest strs)
-  "Join STRS with newlines."
-  (s-join "\n" strs))
-
-(defmacro s-lex-cat (&rest format-strs)
-  "Concatenate FORMAT-STRS then pass them to `s-lex-format'."
-  `(s-lex-format ,(apply 'concat format-strs)))
-
-(defun sum (&rest values)
-  "Sum VALUES.  The input may be a list of values of any level of nesting."
-  (-reduce '+ (-flatten values)))
 
 (defun current-region (&optional no-properties)
   "Return the current active region, or nil if there is no region active.
@@ -330,9 +330,12 @@ If NO-PROPERTIES is non-nil, return the region without text properties."
              (region-beginning)
              (region-end))))
 
-(defun current-line ()
+(defun current-line (&optional no-properties)
   "Return the line at point."
-  (buffer-substring (line-beginning-position) (line-end-position)))
+  (funcall (if no-properties 'buffer-substring-no-properties 'buffer-substring)
+           (line-beginning-position)
+           (line-end-position)))
+
 (defun buffer-length-lines ()
   "Return the number of lines in the current buffer."
   (save-excursion
