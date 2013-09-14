@@ -130,6 +130,7 @@
 (require 'cb-commands)
 (require 'cb-window-management)
 (require 'cb-backups)
+(require 'cb-recentf)
 (require 'cb-cosmetic)
 (if (or (daemonp) (display-graphic-p)) (require 'cb-colour))
 (require 'cb-smartparens)

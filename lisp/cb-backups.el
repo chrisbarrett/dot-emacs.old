@@ -47,46 +47,6 @@
     (setq save-place-file (concat cb:tmp-dir "saved-places"))
     (setq-default save-place t)))
 
-(use-package recentf
-  :defer t
-  :if (not noninteractive)
-  :idle  (require 'recentf)
-  :init
-  (hook-fn 'find-file-hook (require 'recentf))
-  :config
-  (progn
-
-    (defadvice recentf-cleanup (around hide-messages activate)
-      (noflet ((message (&rest args)))
-        ad-do-it))
-
-    (setq
-     recentf-save-file       (concat cb:tmp-dir "recentf")
-     recentf-auto-cleanup    5
-     recentf-keep            '(file-remote-p file-readable-p)
-     recentf-max-saved-items 100
-     recentf-max-menu-items  25
-     recentf-exclude '(".newsrc"
-                       "\\.elc$"
-                       "/tmp/"
-                       "/temp/"
-                       "/\\.git/"
-                       "^/?sudo"
-                       "Emacs.app"
-                       "-autoloads.el"
-                       "recentf"
-                       "\\.ido\\.last"
-                       "TAGS"
-                       "\\.gz$"))
-
-    ;; Sometimes recentf gets into a recursive load, so just nuke the save file
-    ;; if that happens.
-    (condition-case _
-        (recentf-mode +1)
-      (error
-       (f-delete recentf-save-file)
-       (recentf-mode +1)))))
-
 (use-package backup-dir
   :defer t
   :idle  (require 'backup-dir)
