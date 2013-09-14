@@ -227,12 +227,11 @@ Kill the buffer when finished."
       (when (true? smartparens-mode)
         (smartparens-mode -1)))
 
-    (hook-fn 'wl-folder-mode
+    (hook-fn 'wl-folder-mode-hook
       (local-set-key (kbd "j") 'wl-folder-next-entity)
       (local-set-key (kbd "k") 'wl-folder-prev-entity))
 
-
-    (hook-fn 'wl-summary-mode
+    (hook-fn 'wl-summary-mode-hook
       (local-set-key (kbd "j") 'wl-summary-next)
       (local-set-key (kbd "k") 'wl-summary-prev))
 
