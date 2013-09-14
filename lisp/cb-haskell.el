@@ -130,10 +130,14 @@
         (insert "|")
       (smart-insert-operator "|")))
 
+  (defun cb-hs:looking-at-module-or-constructor? ()
+    (-when-let (sym (thing-at-point 'symbol))
+      (s-uppercase? (substring sym 0 1))))
+
   (defun cb-hs:smart-dot ()
     "Insert a period. Add padding, unless this line is an import statement."
     (interactive)
-    (if (emr-line-matches? (rx bol (or "import" "module")))
+    (if (cb-hs:looking-at-module-or-constructor?)
         (insert ".")
       (smart-insert-operator ".")))
 
