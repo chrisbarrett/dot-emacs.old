@@ -192,7 +192,7 @@ Otherwise insert an arrow at the end of the line."
   (sp-with-modes '(haskell-mode
                    inf-haskell-mode
                    haskell-cabal-mode)
-      (sp-local-pair "'" "'" :actions '(:rem insert))))
+    (sp-local-pair "'" "'" :actions '(:rem insert))))
 
 ;; Configure hideshow to collapse regions such as functions, imports and datatypes.
 (after 'hideshow
