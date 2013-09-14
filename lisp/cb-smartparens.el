@@ -102,21 +102,25 @@
     (defun sp-insert-or-up (delim &optional arg)
       "Insert a delimiter DELIM if inside a string, else move up."
       (interactive "sDelimiter:\nP")
-      (if (or (emr-looking-at-string?)
-              (emr-looking-at-comment?))
-          (insert delim)
-        ;; HACK: use internal calling convention for `sp-up-sexp'. This is
-        ;; needed for some functionality, e.g. re-indentation, to behave
-        ;; correctly.
-        (sp-up-sexp arg 'interactive)))
+      (cond ((or (emr-looking-at-string?) (emr-looking-at-comment?))
+             (insert delim))
+            (smartparens-mode
+             (sp-up-sexp arg 'interactive))
+            (t
+             (insert delim))))
 
     (setq sp-autoinsert-if-followed-by-word t)
+
+    ;; Do not use smartparens in minibuffer unless the last command was
+    ;; `eval-expression'.
+    (hook-fns '(minibuffer-setup-hook minibuffer-inactive-mode-hook)
+      :append t
+      (smartparens-mode (if (equal this-command 'eval-expression) +1 -1)))
 
     ;; Close paren keys move up sexp.
     (setq sp-navigate-close-if-unbalanced t)
     (cl-loop for key in '(")" "]" "}")
-             for cmd = (eval `(command (sp-insert-or-up ,key _arg)))
-             do (eval `(bind-key ,key ,cmd smartparens-mode-map)))
+             do (eval `(bind-key* ,key (command (sp-insert-or-up ,key _arg)))))
 
     ;; Bind Paredit-style wrapping commands.
     (sp-pair "(" ")" :bind "M-(")
@@ -152,13 +156,7 @@
 
     ;; Use bind-key for keys that tend to be overridden.
     (bind-key "C-M-," 'sp-backward-down-sexp sp-keymap)
-    (bind-key "C-M-." 'sp-next-sexp sp-keymap)
-
-    ;; Do not use smartparens in minibuffer unless the last command was
-    ;; `eval-expression'.
-    (hook-fns '(minibuffer-setup-hook minibuffer-inactive-mode-hook)
-      :append t
-      (smartparens-mode (if (equal last-command 'eval-expression) +1 -1)))))
+    (bind-key "C-M-." 'sp-next-sexp sp-keymap)))
 
 (provide 'cb-smartparens)
 
