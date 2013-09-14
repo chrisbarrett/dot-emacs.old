@@ -114,9 +114,11 @@
 
     ;; Close paren keys move up sexp.
     (setq sp-navigate-close-if-unbalanced t)
-    (--each '(")" "]" "}")
-      (global-set-key (kbd it) (eval `(command (sp-insert-or-up ,it _arg)))))
-
+    (cl-loop for key in '(")" "]" "}")
+             for map in '(text-mode-map prog-mode-map comint-mode-map)
+             do (eval `(bind-key ,key
+                                 (command (sp-insert-or-up ,key _arg))
+                                 ,map)))
 
     ;; Bind Paredit-style wrapping commands.
     (sp-pair "(" ")" :bind "M-(")
@@ -152,7 +154,13 @@
 
     ;; Use bind-key for keys that tend to be overridden.
     (bind-key "C-M-," 'sp-backward-down-sexp sp-keymap)
-    (bind-key "C-M-." 'sp-next-sexp sp-keymap)))
+    (bind-key "C-M-." 'sp-next-sexp sp-keymap)
+
+    ;; Do not use smartparens in minibuffer unless the last command was
+    ;; `eval-expression'.
+    (hook-fns '(minibuffer-setup-hook minibuffer-inactive-mode-hook)
+      :append t
+      (smartparens-mode (if (equal last-command 'eval-expression) +1 -1)))))
 
 (provide 'cb-smartparens)
 
