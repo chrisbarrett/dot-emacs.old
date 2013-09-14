@@ -115,10 +115,8 @@
     ;; Close paren keys move up sexp.
     (setq sp-navigate-close-if-unbalanced t)
     (cl-loop for key in '(")" "]" "}")
-             for map in '(text-mode-map prog-mode-map comint-mode-map)
-             do (eval `(bind-key ,key
-                                 (command (sp-insert-or-up ,key _arg))
-                                 ,map)))
+             for cmd = (eval `(command (sp-insert-or-up ,key _arg)))
+             do (eval `(bind-key ,key ,cmd smartparens-mode-map)))
 
     ;; Bind Paredit-style wrapping commands.
     (sp-pair "(" ")" :bind "M-(")
