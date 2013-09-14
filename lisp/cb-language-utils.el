@@ -90,7 +90,16 @@
   :ensure   t
   :diminish highlight-symbol-mode
   :commands highlight-symbol-mode
-  :init     (add-hook 'prog-mode-hook 'highlight-symbol-mode)
+  :init
+  (progn
+    (add-hook 'prog-mode-hook 'highlight-symbol-mode)
+    (defface highlight-symbol-face
+      '((((class color) (background dark))
+         (:bold t :foreground "wheat3"))
+        (((class color) (background light))
+         (:bold t :foreground "wheat4")))
+      "Face used by `highlight-symbol-mode'."
+      :group 'highlight-symbol))
   :config   (setq highlight-symbol-idle-delay 0.5))
 
 (use-package whitespace
