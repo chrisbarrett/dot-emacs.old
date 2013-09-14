@@ -181,7 +181,7 @@ Otherwise insert an arrow at the end of the line."
         (cb-hs:insert-arrow "->")
       (smart-insert-operator "-")))
 
-  (defun cb-hs:smart-minus ()
+  (defun cb-hs:smart-equals ()
     "Insert an arrow if we're in a typesig, otherwise perform a normal insertion."
     (interactive)
     (if (cb-hs:at-typedecl?)
@@ -190,8 +190,8 @@ Otherwise insert an arrow at the end of the line."
 
   (hook-fn 'cb:haskell-modes-hook
     (smart-insert-operator-hook)
-    (local-set-key (kbd "-") 'ch-hs:smart-minus)
-    (local-set-key (kbd "=") 'ch-hs:smart-equals)
+    (local-set-key (kbd "-") 'cb-hs:smart-minus)
+    (local-set-key (kbd "=") 'cb-hs:smart-equals)
     (local-set-key (kbd ".") 'cb-hs:smart-dot)
     (local-set-key (kbd ":") 'cb-hs:smart-colon)
     (local-set-key (kbd "|") 'cb-hs:smart-pipe)
