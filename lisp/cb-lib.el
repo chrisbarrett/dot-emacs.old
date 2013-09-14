@@ -331,7 +331,8 @@ If NO-PROPERTIES is non-nil, return the region without text properties."
              (region-end))))
 
 (defun current-line (&optional no-properties)
-  "Return the line at point."
+  "Return the line at point.
+If NO-PROPERTIES is non-nil, return the line without text properties."
   (funcall (if no-properties 'buffer-substring-no-properties 'buffer-substring)
            (line-beginning-position)
            (line-end-position)))
