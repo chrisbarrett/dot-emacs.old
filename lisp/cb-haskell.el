@@ -167,6 +167,13 @@
     (local-set-key (kbd "|") 'cb-hs:smart-pipe)
     (local-set-key (kbd "$") (command (smart-insert-operator "$")))))
 
+;; Configure Smartparens.
+(after 'smartparens
+  (sp-with-modes '(haskell-mode
+                   inf-haskell-mode
+                   haskell-cabal-mode)
+      (sp-local-pair "'" "'" :actions '(:rem insert))))
+
 ;; Configure hideshow to collapse regions such as functions, imports and datatypes.
 (after 'hideshow
 
