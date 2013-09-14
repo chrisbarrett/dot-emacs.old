@@ -27,6 +27,7 @@
 ;;; Code:
 
 (require 'use-package)
+(require 'cb-mode-groups)
 
 (use-package emr
   :ensure t
