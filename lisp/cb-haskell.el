@@ -147,22 +147,42 @@
           (just-one-space))
       (insert ":")))
 
-  (defun cb-hs:smart-gt ()
-    "Append an arrow to the end of the line if we're in a typesig."
+  (defun cb-hs:insert-arrow (arrow)
+    "If point is inside a tuple, insert an arrow inside.
+Otherwise insert an arrow at the end of the line."
+    (atomic-change-group
+      (cl-destructuring-bind (&key beg end op &allow-other-keys)
+          (sp-get-sexp t)
+        ;; Check whether point is inside a tuple.
+        (if (and (equal op "(")
+                 (> (point) beg)
+                 (< (point) end))
+            (sp-end-of-sexp)
+          (end-of-line)))
+      ;; Insert arrow.
+      (just-one-space)
+      (insert arrow)
+      (just-one-space)))
+
+  (defun cb-hs:smart-minus ()
+    "Insert an arrow if we're in a typesig, otherwise perform a normal insertion."
     (interactive)
-    (let ((lin (buffer-substring (line-beginning-position) (point))))
-      (if (and (s-matches? "::" lin)
-               (not (s-matches? (rx (any "=" "-") (* space) eol) lin)))
-          (atomic-change-group
-            (end-of-line)
-            (just-one-space)
-            (insert "-> "))
-        (smart-insert-operator ">"))))
+    (if (s-matches? "::" (buffer-substring (line-beginning-position) (point)))
+        (cb-hs:insert-arrow "->")
+      (smart-insert-operator "-")))
+
+  (defun cb-hs:smart-minus ()
+    "Insert an arrow if we're in a typesig, otherwise perform a normal insertion."
+    (interactive)
+    (if (s-matches? "::" (buffer-substring (line-beginning-position) (point)))
+        (cb-hs:insert-arrow "=>")
+      (smart-insert-operator "=")))
 
   (hook-fn 'cb:haskell-modes-hook
     (smart-insert-operator-hook)
+    (local-set-key (kbd "-") 'ch-hs:smart-minus)
+    (local-set-key (kbd "=") 'ch-hs:smart-equals)
     (local-set-key (kbd ".") 'cb-hs:smart-dot)
-    (local-set-key (kbd ">") 'cb-hs:smart-gt)
     (local-set-key (kbd ":") 'cb-hs:smart-colon)
     (local-set-key (kbd "|") 'cb-hs:smart-pipe)
     (local-set-key (kbd "$") (command (smart-insert-operator "$")))))
