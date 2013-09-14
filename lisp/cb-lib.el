@@ -333,6 +333,11 @@ If NO-PROPERTIES is non-nil, return the region without text properties."
 (defun current-line ()
   "Return the line at point."
   (buffer-substring (line-beginning-position) (line-end-position)))
+(defun buffer-length-lines ()
+  "Return the number of lines in the current buffer."
+  (save-excursion
+    (goto-char (point-max))
+    (line-number-at-pos)))
 
 (provide 'cb-lib)
 
