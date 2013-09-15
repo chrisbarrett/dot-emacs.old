@@ -138,6 +138,9 @@
   :config
   (progn
 
+    ;; HACK: Fix internal functions that call this as a variable.
+    (defvar magit-read-top-dir 'magit-read-top-dir)
+
     (defun cb-git:add ()
       "Run 'git add' on the file for the current buffer."
       (interactive)

@@ -29,6 +29,16 @@
 (require 'cb-foundation)
 (require 'cb-typefaces)
 
+(defmacro cb:define-theme (sym &rest body)
+  "Define a theme."
+  (declare (indent 1))
+  `(defun ,sym ()
+     (interactive)
+     ,@body
+     (run-hook-with-args 'cb:color-theme-changed-hook ',sym)))
+
+(configuration-group :when (or (daemonp) (display-graphic-p))
+
 (use-package solarized-theme
   :ensure t
   :defer t)
@@ -136,17 +146,17 @@
 (defun cb-colour:load-last-theme ()
   (condition-case _
       (load cb:last-theme nil t t)
-    (solarized-light)
     (error (solarized-light))))
 
 (hook-fn 'cb:color-theme-changed-hook
   (set-face-font 'default (format "%s 11" (monospace-font)))
   (with-temp-buffer
-    (insert (prin1-to-string (list (car _args))))
+    (insert (prin1-to-string _args))
     (write-file cb:last-theme))
   (message nil))
 
 (cb-colour:load-last-theme)
+)
 
 (provide 'cb-colour)
 

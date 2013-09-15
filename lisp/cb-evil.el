@@ -32,6 +32,8 @@
 (autoload 'woman-file-name-all-completions "woman")
 (autoload 'Man-getpage-in-background "man")
 
+(configuration-group :when cb:use-vim-keybindings?
+
 (defun get-manpage (candidate)
   "Show the manpage for CANDIDATE."
   (let ((wfiles (mapcar 'car (woman-file-name-all-completions candidate))))
@@ -264,6 +266,8 @@ The insertion will be repeated COUNT times."
     (define-keys evil-normal-state-map
       "C--" 'evil-numbers/dec-at-pt
       "C-+" 'evil-numbers/inc-at-pt)))
+
+)
 
 (provide 'cb-evil)
 

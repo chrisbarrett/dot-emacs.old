@@ -30,6 +30,9 @@
 (require 'cb-lib)
 (autoload 'thing-at-point-url-at-point "thingatpt")
 
+(configuration-group :when (equal system-type 'darwin)
+
+;; Set path and shell.
 (cond
  ((s-ends-with? "fish" (getenv "SHELL"))
   ;; Get the path from fish, then set the default shell to something
@@ -215,6 +218,8 @@ When used interactively, makes a guess at what to pass."
 ;; Use gnutls when sending emails.
 (setq starttls-gnutls-program (executable-find "gnutls-cli")
       starttls-use-gnutls t)
+
+)
 
 (provide 'cb-osx)
 
