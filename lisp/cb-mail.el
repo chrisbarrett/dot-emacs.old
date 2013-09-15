@@ -318,7 +318,8 @@ Rewrap in an org-style quote block."
 
 (defun cbm:update-unread-count ()
   "Find the number of unread messages and update the modeline."
-  (setq cbm:mode-line-indicator (cbm:make-indicator (cbm:unread-mail-count))))
+  (when (f-exists? cbm:mail-directory)
+    (setq cbm:mode-line-indicator (cbm:make-indicator (cbm:unread-mail-count)))))
 
 ;; Use a combination of timers to update the modeline unread count.
 
