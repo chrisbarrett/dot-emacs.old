@@ -73,6 +73,7 @@
    `(
      ;; General keywords
      (,(rx "(" (group (or "use-package"
+                          "configuration-group"
                           "cal"
                           "hook-fn"
                           "hook-fns"
