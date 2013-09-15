@@ -56,30 +56,30 @@
 
 ;; Load submodules.
 
-(loop with lib = (concat user-emacs-directory "lib/")
-      for module in '("org-mode" "apel")
-      do (add-to-list 'load-path (concat lib module)))
+(cl-loop with lib = (concat user-emacs-directory "lib/")
+         for module in '("org-mode" "apel")
+         do (add-to-list 'load-path (concat lib module)))
 
 ;;; Configure packages.
 
-(loop for source in
-      '(("melpa"     . "http://melpa.milkbox.net/packages/")
-        ("marmalade" . "http://marmalade-repo.org/packages/"))
-      do (add-to-list 'package-archives source)
-      finally (package-initialize))
+(cl-loop for source in
+         '(("melpa"     . "http://melpa.milkbox.net/packages/")
+           ("marmalade" . "http://marmalade-repo.org/packages/"))
+         do (add-to-list 'package-archives source)
+         finally (package-initialize))
 
-(loop for pkg in '(bind-key
-                   use-package
-                   diminish
-                   dash dash-functional
-                   s f
-                   noflet
-                   async
-                   auto-compile)
-      initially (unless package-archive-contents (package-refresh-contents))
-      unless (package-installed-p pkg)
-      do (package-install pkg)
-      do (require pkg))
+(cl-loop for pkg in '(bind-key
+                      use-package
+                      diminish
+                      dash dash-functional
+                      s f
+                      noflet
+                      async
+                      auto-compile)
+         initially (unless package-archive-contents (package-refresh-contents))
+         unless (package-installed-p pkg)
+         do (package-install pkg)
+         do (require pkg))
 
 (auto-compile-on-save-mode +1)
 (auto-compile-on-load-mode +1)
