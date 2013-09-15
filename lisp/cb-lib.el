@@ -393,17 +393,19 @@ If NO-PROPERTIES is non-nil, return the line without text properties."
        ad-do-it)))
 
 (defun* format-progress-bar (title pos length)
-  "Draw a progress bar with pips up to POS along its LENGTH.
-MAX-LEN constrains the length of the bar.
+  "Format a progress bar with TITLE and pips up to POS along its LENGTH.
 POS should be a number between 1 and LENGTH."
   (cl-assert (cl-plusp pos))
   (cl-assert (cl-plusp length))
-  (let* ((leader (concat title " "))
+  (let* (
+         ;; Format title and percentage.
+         (leader (concat title " "))
          (percentage (round (* 100 (/ (float pos) length))))
          (trailer (concat " " (number-to-string percentage) "%"))
+         ;; Compute the max length of the bar, including the leader and title.
          (max-len (- (1- (window-width))
                      (+ (length leader) (length trailer))))
-
+         ;; Constrain the progress meter to fit within MAX-LEN columns.
          (scaled-length (round (min max-len length)))
          (step-scale (/ scaled-length length))
          (scaled-pos (round (* step-scale pos))))
