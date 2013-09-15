@@ -126,22 +126,27 @@
 (require 'cb-colour)
 (require 'personal-config)
 
-;; Byte-compile lisp files.
 
 (when (boundp 'cb:lisp-dir)
-  (byte-recompile-directory cb:lisp-dir 0))
+  ;; Byte-compile lisp files.
+  (run-with-progress-bar
+   "Byte-compiling configuration"
+   (->> (f-files cb:lisp-dir)
+     (--filter (and (f-ext? it "el")
+                    (not (s-contains? "flycheck" it))))
+     (--map (eval `(lambda () (byte-recompile-file ,it))))))
 
-;; Load files in the lisp directory.
-;;
-;; Each file must declare a corresponding feature.
+  ;; Load files in the lisp directory.
+  ;;
+  ;; Each file must declare a corresponding feature.
 
-(run-with-progress-bar
- "Loading configuration"
- (->> (f-files cb:lisp-dir)
-   (--filter (f-ext? it "elc"))
-   (--remove (s-contains? "flycheck" it))
-   (-map (-compose 'f-no-ext 'f-filename))
-   (--map (eval `(lambda () (require ',(intern it))) it))))
+  (run-with-progress-bar
+   "Loading configuration"
+   (->> (f-files cb:lisp-dir)
+     (--filter (and (f-ext? it "elc")
+                    (not (s-contains? "flycheck" it))))
+     (-map (-compose 'f-no-ext 'f-filename))
+     (--map (eval `(lambda () (require ',(intern it))))))))
 
 (require 'custom)
 
