@@ -390,6 +390,40 @@ If NO-PROPERTIES is non-nil, return the line without text properties."
            (&rest args) (apply 'ido-read-buffer)))
        ad-do-it)))
 
+(defun* format-progress-bar (pos length &optional (max-len (* 0.75 (window-width))))
+  "Draw a progress bar with pips up to POS along its LENGTH.
+MAX-LEN constrains the length of the bar.
+POS should be a number between 1 and LENGTH."
+  (cl-assert (cl-plusp pos))
+  (cl-assert (cl-plusp length))
+  (cl-assert (cl-plusp max-len))
+  (let* ((scaled-length (round (min max-len length)))
+         (step-scale (/ scaled-length length))
+         (scaled-pos (round (* step-scale pos))))
+    (concat "["
+            (s-repeat scaled-pos ".")
+            (s-repeat (- scaled-length scaled-pos) " ")
+            "]")))
+
+(defun run-with-progress-bar (actions)
+  "Call ACTIONS, printing a progress bar.
+Internal calls to `message' will be suppressed.
+
+String values returned from each action will be shown beside the bar."
+  (cl-assert (sequencep actions))
+  (cl-loop
+   when actions
+   with len = (length actions)
+   ;; Get the step-number and action.
+   for (i . action) in (--map-indexed (cons (1+ it-index) it) actions)
+   ;; Run action
+   for result = (noflet ((message (&rest _) (ignore))) (funcall action))
+   ;; Print progress bar. Do not add it to the *Messages* buffer.
+   do (let ((message-log-max nil))
+        (message "%s  %s"
+                 (format-progress-bar (1+ i) len)
+                 (or (and (stringp result) result)
+                     "")))))
 
 (provide 'cb-lib)
 
