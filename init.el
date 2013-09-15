@@ -122,6 +122,8 @@
 (require 'cb-foundation)
 (require 'cb-server)
 (require 'cb-mode-groups)
+(require 'cb-typefaces)
+(require 'cb-colour)
 (require 'personal-config)
 
 ;; Byte-compile lisp files.
