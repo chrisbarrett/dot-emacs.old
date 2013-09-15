@@ -105,8 +105,9 @@ If this buffer is a member of `cb:kill-buffer-ignored-list, bury it rather than 
 (defun indent-buffer ()
   "Indent the whole buffer."
   (interactive)
-  (save-excursion
-    (indent-region (point-min) (point-max))))
+  (ignore-errors
+    (save-excursion
+     (indent-region (point-min) (point-max)))))
 
 ;;;###autoload
 (defun indent-dwim (&optional arg)
