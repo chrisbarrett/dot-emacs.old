@@ -104,9 +104,7 @@
   :group 'modeline)
 
 (defface mode-line-tramp-user
-  '((t (
-        :foreground "VioletRed3"
-                    :inherit 'mode-line)))
+  '((t (:foreground "VioletRed3" :inherit 'mode-line)))
   "Face for tramp user indicator in modeline."
   :group 'modeline)
 
@@ -121,17 +119,14 @@
   :group 'modeline)
 
 (defface mode-line-read-only
-  '((t (
-        :foreground "#4271ae"
+  '((t (:foreground "#4271ae"
                     :box '(:line-width 2 :color "#4271ae")
                     :inherit 'mode-line)))
   "Face for readonly indicator."
   :group 'modeline)
 
 (defface mode-line-modified
-  '((t (
-        :foreground "#c82829"
-                    :inherit 'mode-line)))
+  '((t (:foreground "#c82829" :inherit 'mode-line)))
   "Face for modified indicator."
   :group 'modeline)
 
@@ -189,9 +184,7 @@
   :group 'modeline)
 
 (defface mode-line-process
-  '((t (
-        :foreground "#718c00"
-                    :inherit 'mode-line)))
+  '((t (:foreground "#718c00" :inherit 'mode-line)))
   "Face for the current process."
   :group 'modeline)
 
