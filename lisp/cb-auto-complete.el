@@ -31,26 +31,17 @@
 
 (use-package auto-complete
   :ensure   t
-  :idle     (require 'auto-complete)
   :diminish auto-complete-mode
-  :commands
-  (global-auto-complete-mode
-   auto-complete-mode)
-
-  :init
-  (progn
-    (after 'auto-complete (global-auto-complete-mode +1))
-    (add-hook 'find-file-hook 'auto-complete-mode))
-
   :config
   (progn
+
+    (require 'auto-complete-config)
+    (ac-config-default)
+    (global-auto-complete-mode +1)
 
     (defadvice ac-quick-help (around ignore-errors activate)
       "Ignore errors when showing help popups."
       (ignore-errors ad-do-it))
-
-    (use-package auto-complete-config
-      :config (ac-config-default))
 
     (add-to-list 'ac-dictionary-directories
                  (concat user-emacs-directory "ac-dict"))
