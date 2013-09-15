@@ -416,18 +416,24 @@ POS should be a number between 1 and LENGTH."
 
 (defun run-with-progress-bar (title actions)
   "Call ACTIONS, printing a progress bar with TITLE.
-Internal calls to `message' will be suppressed."
+Internal calls to `message' will be suppressed.
+In batch mode, just print a summary."
   (cl-assert (sequencep actions))
   (cl-loop
    when actions
-   with len = (length actions)
+
+   initially (when noninteractive (message "%s..." title))
+   finally   (when noninteractive (message "%s...done" title))
+
    ;; Get the step-number and action.
+   with len = (length actions)
    for (i . action) in (--map-indexed (cons (1+ it-index) it) actions)
    ;; Run action
-   for result = (noflet ((message (&rest _) (ignore))) (funcall action))
+   do (noflet ((message (&rest _) (ignore))) (funcall action))
    ;; Print progress bar. Do not add it to the *Messages* buffer.
-   do (let ((message-log-max nil))
-        (message "%s" (format-progress-bar title i len)))))
+   do (unless noninteractive
+        (let ((message-log-max nil))
+          (message "%s" (format-progress-bar title i len))))))
 
 (provide 'cb-lib)
 
