@@ -29,6 +29,10 @@
 (require 'dash)
 (require 'cb-lib)
 
+(defadvice set-face-font (around ignore-in-term activate)
+  "Ignore attempts to change the font in terminals."
+  (when (display-graphic-p) ad-do-it))
+
 (defun first-font (&rest fonts)
   "Return the first available font in FONTS."
   (--first (find-font (font-spec :name it)) fonts))
