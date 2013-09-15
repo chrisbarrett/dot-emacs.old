@@ -30,7 +30,6 @@
 (require 'cl-lib)
 (require 'f)
 (require 'bind-key)
-(autoload 'sp-splice-sexp-killing-around "smartparens")
 
 (defun cb-lib:format-message (category desc body)
   (format "* * * * * *\n[%s]: %s\n%s\n* * * * * *" category desc body))
