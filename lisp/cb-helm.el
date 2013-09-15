@@ -30,9 +30,7 @@
 
 (use-package projectile
   :ensure   t
-  :defer    t
   :diminish projectile-mode
-  :init (add-hook 'after-init-hook 'projectile-global-mode)
   :config
   (progn
     (setq projectile-known-projects-file

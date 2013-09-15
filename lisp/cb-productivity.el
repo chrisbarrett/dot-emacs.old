@@ -38,9 +38,6 @@
 
 (use-package key-chord
   :ensure t
-  :defer  t
-  :init
-  (hook-fn 'after-init-hook (key-chord-mode +1))
   :config
   (progn
     (key-chord-define-global "x;" 'kill-current-buffer)
@@ -49,7 +46,8 @@
       (key-chord-define-global "qk" 'sp-forward-slurp-sexp)
       (key-chord-define-global "ql" 'sp-splice-sexp-killing-backward)
       (key-chord-define-global "qn" 'sp-backward-barf-sexp)
-      (key-chord-define-global "qm" 'sp-forward-barf-sexp))))
+      (key-chord-define-global "qm" 'sp-forward-barf-sexp))
+    (key-chord-mode +1)))
 
 (use-package scratch
   :ensure   t

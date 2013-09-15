@@ -63,8 +63,6 @@
         version-control          t))
 
 (use-package savehist
-  :init
-  (hook-fn 'after-init-hook (require 'savehist))
   :config
   (progn
     (setq
