@@ -405,8 +405,8 @@ POS should be a number between 1 and LENGTH."
             (s-repeat (- scaled-length scaled-pos) " ")
             "]")))
 
-(defun run-with-progress-bar (actions)
-  "Call ACTIONS, printing a progress bar.
+(defun run-with-progress-bar (title actions)
+  "Call ACTIONS, printing a progress bar with TITLE.
 Internal calls to `message' will be suppressed.
 
 String values returned from each action will be shown beside the bar."
@@ -420,8 +420,9 @@ String values returned from each action will be shown beside the bar."
    for result = (noflet ((message (&rest _) (ignore))) (funcall action))
    ;; Print progress bar. Do not add it to the *Messages* buffer.
    do (let ((message-log-max nil))
-        (message "%s  %s"
-                 (format-progress-bar (1+ i) len)
+        (message "%s  %s  %s"
+                 title
+                 (format-progress-bar i len)
                  (or (and (stringp result) result)
                      "")))))
 
