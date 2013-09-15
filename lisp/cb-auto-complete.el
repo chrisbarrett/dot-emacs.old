@@ -1,4 +1,4 @@
-;;; cb-autocomplete.el --- Configuration for auto-complete
+;;; cb-auto-complete.el --- Configuration for auto-complete
 
 ;; Copyright (C) 2013 Chris Barrett
 
@@ -76,10 +76,10 @@
       "\t"    'ac-complete
       "M-RET" 'ac-help)))
 
-(provide 'cb-autocomplete)
+(provide 'cb-auto-complete)
 
 ;; Local Variables:
 ;; lexical-binding: t
 ;; End:
 
-;;; cb-autocomplete.el ends here
+;;; cb-auto-complete.el ends here
