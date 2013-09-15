@@ -87,7 +87,9 @@
 
 ;; Configure el-get
 
+(defvar el-get-sources '(wanderlust))
 (defvar cb:el-get-dir (concat user-emacs-directory "el-get/"))
+(add-to-list 'load-path (concat cb:el-get-dir "el-get"))
 (unless (file-exists-p cb:el-get-dir)
   (with-current-buffer
       (url-retrieve-synchronously
@@ -95,9 +97,6 @@
     (let (el-get-master-branch)
       (goto-char (point-max))
       (eval-print-last-sexp))))
-
-(add-to-list 'load-path (concat cb:el-get-dir "el-get"))
-(defvar el-get-sources '(wanderlust))
 
 (use-package el-get
   :defer t
