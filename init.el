@@ -127,24 +127,26 @@
 (require 'personal-config)
 
 
-(when (boundp 'cb:lisp-dir)
-  ;; Byte-compile lisp files.
-  (run-with-progress-bar
-   "Byte-compiling configuration"
-   (->> (f-files cb:lisp-dir)
-     (--filter (and (f-ext? it "el")
-                    (not (s-contains? "flycheck" it))))
-     (--map (eval `(lambda () (byte-recompile-file ,it))))))
-
-  ;; Load files in the lisp directory.
-  ;;
-  ;; Each file must declare a corresponding feature.
-
+;; Load remaining config files in the lisp directory.
+;; Each file must declare a corresponding emacs feature.
+(let* ((files (f-files cb:lisp-dir))
+       (config-files (--filter (and (f-ext? it "el")
+                                    (not (s-contains? "flycheck" it)))
+                               files)))
+  ;; Byte-compile lisp files. Skip this step if all config files have a
+  ;; corresponding elc file.
+  (unless (--all? (-contains? files (concat it "c")) config-files)
+    (run-with-progress-bar
+     "Byte-compiling configuration"
+     (--map (eval `(lambda ()
+                     (let ((inhibit-redisplay t))
+                       (save-window-excursion
+                         (byte-recompile-file ,it nil 0)))))
+            config-files)))
+  ;; Load files.
   (run-with-progress-bar
    "Loading configuration"
-   (->> (f-files cb:lisp-dir)
-     (--filter (and (f-ext? it "elc")
-                    (not (s-contains? "flycheck" it))))
+   (->> config-files
      (-map (-compose 'f-no-ext 'f-filename))
      (--map (eval `(lambda () (require ',(intern it))))))))
 
