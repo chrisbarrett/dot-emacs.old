@@ -378,6 +378,19 @@ If NO-PROPERTIES is non-nil, return the line without text properties."
     (goto-char (point-max))
     (line-number-at-pos)))
 
+(defmacro declare-ido-wrapper (command)
+  "Make COMMAND use ido for file and directory completions."
+  `(defadvice ,command (around read-with-ido activate)
+     (noflet
+         ((read-directory-name
+           (&rest args) (apply 'ido-read-directory-name args))
+          (read-file-name
+           (&rest args) (apply 'ido-read-file-name args))
+          (read-buffer
+           (&rest args) (apply 'ido-read-buffer)))
+       ad-do-it)))
+
+
 (provide 'cb-lib)
 
 ;; Local Variables:
