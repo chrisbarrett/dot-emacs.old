@@ -74,12 +74,15 @@
                    dash dash-functional
                    s f
                    noflet
-                   async)
+                   async
+                   auto-compile)
       initially (unless package-archive-contents (package-refresh-contents))
       unless (package-installed-p pkg)
       do (package-install pkg)
       do (require pkg))
 
+(auto-compile-on-save-mode +1)
+(auto-compile-on-load-mode +1)
 (setq use-package-verbose nil)
 
 ;; Configure el-get
