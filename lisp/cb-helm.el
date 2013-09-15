@@ -35,9 +35,12 @@
   (progn
     (setq projectile-known-projects-file
           (concat cb:tmp-dir "projectile-bookmarks.eld"))
+
     (defadvice find-tag (before set-tags-directory activate)
       "Ensure the TAGS path is set before searching for tags."
-      (setq tags-file-name (concat (projectile-project-root) "TAGS")))))
+      (setq tags-file-name (concat (projectile-project-root) "TAGS")))
+
+    (projectile-global-mode +1)))
 
 (use-package helm
   :ensure t
