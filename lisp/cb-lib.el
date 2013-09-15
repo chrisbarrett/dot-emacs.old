@@ -30,6 +30,7 @@
 (require 'cl-lib)
 (require 'f)
 (require 'bind-key)
+(require 'noflet)
 
 (defun cb-lib:format-message (category desc body)
   (format "* * * * * *\n[%s]: %s\n%s\n* * * * * *" category desc body))
@@ -342,7 +343,8 @@ Find the first window where PRED-FORM is not nil."
     acc))
 
 (defmacro --filter-atoms (predicate)
-  "Anaphoric form of `filter-atoms'."
+  "Anaphoric form of `filter-atoms'.
+Return the elements of the default obarray that match PREDICATE."
   `(filter-atoms (lambda (it) ,predicate)))
 
 (defun -listify (x)
