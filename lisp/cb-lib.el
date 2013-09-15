@@ -120,19 +120,19 @@
                             (t
                              (list 'or when (list 'not unless))))))
 
-    ;; Arrange body to be evaluated when declared prerequisites are satisfied.
     `(condition-case-unless-debug err
+         ;; Arrange body to be evaluated when declared prerequisites are
+         ;; satisfied.
          (when ,should-load?
            ,(if after
                 `(after ,after
                    ,bod)
               bod))
-
        ;; Log error messages.
        (error
         (message
          (cb-lib:format-message
-          ,(if file file "dynamic")
+          ,(or file "dynamic")
           "Error raised in configuration"
           (error-message-string err)))))))
 
@@ -162,12 +162,12 @@ This directory tree will be added to the load path if ADD-PATH is non-nil."
 
 ;;; ----------------------------------------------------------------------------
 
-(defun tree-replace (target rep tree)
+(defun deep-replace (target rep tree)
   "Replace TARGET with REP in TREE."
   (cond ((equal target tree) rep)
         ((atom tree)         tree)
         (t
-         (--map (tree-replace target rep it) tree))))
+         (--map (deep-replace target rep it) tree))))
 
 (defmacro with-window-restore (&rest body)
   "Declare an action that will eventually restore window state.
@@ -176,7 +176,7 @@ The original state can be restored by calling (restore) in BODY."
   (let ((register (cl-gensym)))
     `(progn
        (window-configuration-to-register ',register)
-       ,@(tree-replace '(restore)
+       ,@(deep-replace '(restore)
                        `(ignore-errors
                           (jump-to-register ',register))
                        body))))
