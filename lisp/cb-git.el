@@ -119,7 +119,8 @@
   :commands magit-blame-mode
   :bind ("C-x g b" . magit-blame-mode)
   :config
-  (evil-global-set-key 'normal (kbd "g b") 'magit-blame-mode))
+  (after 'evil
+    (evil-global-set-key 'normal (kbd "g b") 'magit-blame-mode)))
 
 (use-package git-auto-commit-mode
   :ensure t
