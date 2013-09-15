@@ -93,6 +93,49 @@
   `(eval-after-load ,feature
      '(progn ,@body)))
 
+(defmacro* configuration-group (&rest
+                                body
+                                &key when unless after
+                                &allow-other-keys)
+  "Declare a configuration group for emacs initialisation.
+
+* WHEN and UNLESS make evaluation of the config conditional.
+
+* AFTER is a feature the must be loaded before the config is evaluated.
+
+* The remainder are BODY forms to be executed."
+  (let ((bod
+         ;; Remove keyword args from body.
+         `(progn ,@(->> body
+                     (-partition-all-in-steps 2 2)
+                     (--drop-while (keywordp (car it)))
+                     (apply '-concat))))
+        ;; Get the correct name of the file for debugging.
+        (file (or byte-compile-current-file load-file-name))
+        ;; Make a lisp form that unifies the loading predicates.
+        (should-load? (cond ((and when unless)
+                             (list 'and when (list 'not unless)))
+                            ((not (or when unless))
+                             t)
+                            (t
+                             (list 'or when (list 'not unless))))))
+
+    ;; Arrange body to be evaluated when declared prerequisites are satisfied.
+    `(condition-case-unless-debug err
+         (when ,should-load?
+           ,(if after
+                `(after ,after
+                   ,bod)
+              bod))
+
+       ;; Log error messages.
+       (error
+        (message
+         (cb-lib:format-message
+          ,(if file file "dynamic")
+          "Error raised in configuration"
+          (error-message-string err)))))))
+
 (defmacro command (&rest body)
   "Declare an `interactive' command with BODY forms."
   `(lambda (&optional _arg &rest _args)
