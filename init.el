@@ -124,14 +124,22 @@
 (require 'cb-mode-groups)
 (require 'personal-config)
 
-;; Byte-compile and load lisp-dir.
+;; Byte-compile lisp files.
 
 (when (boundp 'cb:lisp-dir)
   (byte-recompile-directory cb:lisp-dir 0))
 
-(-each (--filter (f-ext? it "elc")
-                 (f-files cb:lisp-dir))
-       'load-file)
+;; Load files in the lisp directory.
+;;
+;; Each file must declare a corresponding feature.
+
+(run-with-progress-bar
+ "Loading configuration"
+ (->> (f-files cb:lisp-dir)
+   (--filter (f-ext? it "elc"))
+   (--remove (s-contains? "flycheck" it))
+   (-map (-compose 'f-no-ext 'f-filename))
+   (--map (eval `(lambda () (require ',(intern it))) it))))
 
 (require 'custom)
 
