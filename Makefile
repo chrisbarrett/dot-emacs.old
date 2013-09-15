@@ -16,12 +16,12 @@ emacs_version = $(shell $(emacs) -Q --batch --exec \
 # ----------------------------------------------------------------------------
 
 .PHONY: default
-default : $(modules) el-get conf tags $(emacs_src)
+default : $(modules) el-get tags $(emacs_src)
 
 .PHONY: all
-all : $(modules) el-get compile tags \
+all : $(modules) el-get tags \
 	  ruby supercollider python clang scheme haskell gnus \
-	  $(emacs_src) conf
+	  $(emacs_src)
 
 .PHONY: tags
 tags :
@@ -39,18 +39,6 @@ $(modules) :
 el-get :
 	git clone 'https://github.com/dimitri/el-get' el-get/el-get
 	$(emacs) --batch -nw -l 'el-get/el-get/el-get-install.el' --exec '(eval-buffer)'
-
-# ----------------------------------------------------------------------------
-# Byte-compilation
-
-# Byte-compile files in ./lisp
-.PHONY: conf
-conf :
-	$(emacs_exec) byte-compile-conf
-
-# Byte-compile all elisp files.
-.PHONY: compile
-compile : conf tags
 
 # ----------------------------------------------------------------------------
 # Cleaning
