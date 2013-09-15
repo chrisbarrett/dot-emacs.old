@@ -392,26 +392,29 @@ If NO-PROPERTIES is non-nil, return the line without text properties."
            (&rest args) (apply 'ido-read-buffer)))
        ad-do-it)))
 
-(defun* format-progress-bar (pos length &optional (max-len (* 0.75 (window-width))))
+(defun* format-progress-bar (title pos length)
   "Draw a progress bar with pips up to POS along its LENGTH.
 MAX-LEN constrains the length of the bar.
 POS should be a number between 1 and LENGTH."
   (cl-assert (cl-plusp pos))
   (cl-assert (cl-plusp length))
-  (cl-assert (cl-plusp max-len))
-  (let* ((scaled-length (round (min max-len length)))
+  (let* ((leader (concat title " "))
+         (percentage (round (* 100 (/ (float pos) length))))
+         (trailer (concat " " (number-to-string percentage) "%"))
+         (max-len (- (1- (window-width))
+                     (+ (length leader) (length trailer))))
+
+         (scaled-length (round (min max-len length)))
          (step-scale (/ scaled-length length))
          (scaled-pos (round (* step-scale pos))))
-    (concat "["
+    (concat leader
             (s-repeat scaled-pos ".")
             (s-repeat (- scaled-length scaled-pos) " ")
-            "]")))
+            trailer)))
 
 (defun run-with-progress-bar (title actions)
   "Call ACTIONS, printing a progress bar with TITLE.
-Internal calls to `message' will be suppressed.
-
-String values returned from each action will be shown beside the bar."
+Internal calls to `message' will be suppressed."
   (cl-assert (sequencep actions))
   (cl-loop
    when actions
@@ -422,11 +425,7 @@ String values returned from each action will be shown beside the bar."
    for result = (noflet ((message (&rest _) (ignore))) (funcall action))
    ;; Print progress bar. Do not add it to the *Messages* buffer.
    do (let ((message-log-max nil))
-        (message "%s  %s  %s"
-                 title
-                 (format-progress-bar i len)
-                 (or (and (stringp result) result)
-                     "")))))
+        (message "%s" (format-progress-bar title i len)))))
 
 (provide 'cb-lib)
 
