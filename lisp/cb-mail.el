@@ -185,7 +185,6 @@ Kill the buffer when finished."
 
 ;; `wanderlust' email client.
 (use-package wl
-  :defer t
   :commands (wl wl-other-frame)
   :init
   (progn
