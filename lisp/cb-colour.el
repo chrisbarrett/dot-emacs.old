@@ -155,7 +155,10 @@
     (write-file cb:last-theme))
   (message nil))
 
-(cb-colour:load-last-theme)
+;; Load the last colour theme when starting emacs.
+
+(unless (true? after-init-time)
+  (cb-colour:load-last-theme))
 )
 
 (provide 'cb-colour)
