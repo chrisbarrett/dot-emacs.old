@@ -32,9 +32,6 @@
 (require 'bind-key)
 (autoload 'sp-splice-sexp-killing-around "smartparens")
 
-(defvar cb-lib:debug-hooks? nil
-  "Set to non-nil to prevent `hook-fn' from catching errors.")
-
 (defun cb-lib:format-message (category desc body)
   (format "* * * * * *\n[%s]: %s\n%s\n* * * * * *" category desc body))
 
@@ -53,8 +50,7 @@
 * ARGLIST overrides the default arglist for the hook's function."
   (declare (indent 1) (doc-string 2))
 
-  (assert (symbolp (eval hook)))
-
+  (cl-assert (symbolp (eval hook)))
 
   (let ((bod
          ;; Remove keyword args from body.
@@ -66,20 +62,17 @@
     `(progn
        (add-hook ,hook
                  (lambda ,arglist
-                   (if cb-lib:debug-hooks?
-                       (let ((debug-on-error t))
-                         ,bod)
-                     ;; Do not allow errors to propagate from the hook.
-                     (condition-case err
-                         ,bod
-                       (error
-                        (message
-                         (cb-lib:format-message
-                          ,(if file
-                               (format "%s in %s" (eval hook) file)
-                             hook)
-                          "Error raised in hook"
-                          (error-message-string err)))))))
+                   ;; Do not allow errors to propagate from the hook.
+                   (condition-case-unless-debug err
+                       ,bod
+                     (error
+                      (message
+                       (cb-lib:format-message
+                        ,(if file
+                             (format "%s in %s" (eval hook) file)
+                           hook)
+                        "Error raised in hook"
+                        (error-message-string err))))))
                  ,append ,local)
        ,hook)))
 
