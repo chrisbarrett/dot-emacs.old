@@ -80,7 +80,8 @@
               (geiser-eval-region (region-beginning) (region-end))))
           (message "Buffer evaluated %s" result))))
 
-    (define-key scheme-mode-map (kbd "C-c C-l") 'geiser-eval-buffer)
+    (after 'scheme
+      (define-key scheme-mode-map (kbd "C-c C-l") 'geiser-eval-buffer))
 
     (defadvice switch-to-geiser (after append-with-evil activate)
       "Move to end of REPL and append-line."
