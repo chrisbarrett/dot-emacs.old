@@ -48,10 +48,18 @@
           twittering-url-show-status nil
           twittering-edit-skeleton 'inherit-any)
 
-    ;;; Custom faces for tweets.
+    ;; Custom faces for tweets.
+    ;;
+    ;; Predeclare some of them, because the package does not define
+    ;; them with defface making customisation tricky.
+
+    (defface twittering-username-face
+      '((t (:foreground "#b58900")))
+      "Face for the username in a tweet."
+      :group 'twittering-mode)
 
     (defface cbtw:status-text
-      `((t (:family ,(sans-serif-font))))
+      `((t (:family ,(sans-serif-font) :height 110)))
       "Face for the text component of a tweet"
       :group 'twittering-mode)
 
@@ -60,18 +68,22 @@
       "Face for the retweet info in tweet"
       :group 'twittering-mode)
 
-    (defface cbtw:timestamp
-      '((((background dark))  (:foreground "gray50"))
-        (((background light)) (:foreground "gray70"))
-        (t (:foreground "#b58900" :height 110)))
+    (defface twittering-uri-face
+      `((default (:family ,(sans-serif-font)))
+        (((background dark))  (:foreground "gray50"))
+        (((background light)) (:foreground "gray70")))
       "Face for the timestamp in a tweet."
       :group 'twittering-mode)
 
     (setq twittering-status-format
           (concat
-           "%i %s\n\n"
+           ;; Header
+           "%i "
+           "%s\n\n"
+           ;; Status
            "%FILL[  ]{%FACE[cbtw:status-text]{%T}}\n\n"
-           "  %FACE[cbtw:timestamp]{%@}"
+           ;; Footer
+           "  %@"
            " %FACE[cbtw:status-retweet]{%r%R}\n\n"))))
 
 (provide 'cb-twittering)
