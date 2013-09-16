@@ -142,7 +142,9 @@
   :ensure   t
   :commands jedi:setup
   :init     (add-hook 'cb:python-modes-hook 'jedi:setup)
-  :config   (setq jedi:tooltip-method nil))
+  :config   (setq jedi:tooltip-method nil
+                  jedi:complete-on-dot t
+                  jedi:install-imenu t))
 
 ;; `virtualenv' configures Emacs according to the current python virtualenv
 ;; settings.
