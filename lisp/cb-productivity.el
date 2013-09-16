@@ -36,19 +36,6 @@
   :init     (hook-fn 'find-file-hook (require 'undo-tree))
   :config   (global-undo-tree-mode +1))
 
-(use-package key-chord
-  :ensure t
-  :config
-  (progn
-    (key-chord-define-global "x;" 'kill-current-buffer)
-    (after 'smartparens
-      (key-chord-define-global "qj" 'sp-backward-slurp-sexp)
-      (key-chord-define-global "qk" 'sp-forward-slurp-sexp)
-      (key-chord-define-global "ql" 'sp-splice-sexp-killing-backward)
-      (key-chord-define-global "qn" 'sp-backward-barf-sexp)
-      (key-chord-define-global "qm" 'sp-forward-barf-sexp))
-    (key-chord-mode +1)))
-
 (use-package scratch
   :ensure   t
   :commands scratch
