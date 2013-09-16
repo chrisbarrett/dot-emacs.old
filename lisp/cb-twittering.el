@@ -27,6 +27,12 @@
 ;;; Code:
 
 (require 'use-package)
+(require 'cb-typefaces)
+
+;; Disable smartparens in twittering-mode.
+(after 'smartparens
+  (hook-fn 'twittering-mode-hook
+    (smartparens-mode -1)))
 
 ;; `twittering-mode' is an Emacs twitter client.
 (use-package twittering-mode
