@@ -28,18 +28,21 @@
 
 (require 'use-package)
 (require 'cb-foundation)
-(autoload 'emr-line-matches? "emr")
+(require 'cb-mode-groups)
 
+;; Enable auto-complete in python modes.
 (after 'auto-complete
-  (add-to-list 'ac-modes 'python-mode)
-  (add-to-list 'ac-modes 'inferior-python-mode))
+  (--each cb:python-modes
+    (add-to-list 'ac-modes it)))
 
+;; Add special smart-operator behaviours for python buffers.
 (after 'smart-operator
 
   (defun cb:python-equals ()
     "Insert an '=' char padded by spaces, except in function arglists."
     (interactive)
-    (if (emr-line-matches? (rx (* space) "def" (+ space)))
+    (if (s-matches? (rx (* space) "def" (+ space))
+                    (current-line))
         (insert "=")
       (smart-insert-operator "=")))
 
@@ -49,10 +52,12 @@
     (local-unset-key (kbd "."))
     (local-unset-key (kbd ":"))))
 
+;; Configure smartparens formatting for python.
 (after 'smartparens
   (sp-with-modes cb:python-modes
     (sp-local-pair "{" "}" :post-handlers '(:add sp-generic-leading-space))))
 
+;; Use `python', the newer package off MELPA.
 (use-package python
   :ensure   t
   :commands python-mode
@@ -131,14 +136,19 @@
       "," 'cb:comma-then-space
       "C-c C-z" 'cb:switch-to-python)))
 
+;; `jedi' provides auto-completion, code search and docmentation for python
+;; buffers.
 (use-package jedi
   :ensure   t
   :commands jedi:setup
   :init     (add-hook 'cb:python-modes-hook 'jedi:setup)
   :config   (setq jedi:tooltip-method nil))
 
+;; `virtualenv' configures Emacs according to the current python virtualenv
+;; settings.
 (use-package virtualenv
   :ensure t
+  :diminish virtualenv-minor-mode
   :commands (virtualenv-workon
              virtualenv-deactivate
              virtualenv-minor-mode)
