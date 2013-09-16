@@ -135,7 +135,7 @@
   :ensure   t
   :commands jedi:setup
   :init     (add-hook 'cb:python-modes-hook 'jedi:setup)
-  :config   (setq jedi:setup-keys t))
+  :config   (setq jedi:tooltip-method nil))
 
 (use-package virtualenv
   :ensure t
