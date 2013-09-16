@@ -126,7 +126,7 @@
 (require 'cb-mode-groups)
 (require 'cb-typefaces)
 (require 'cb-colour)
-(require 'personal-config)
+(require 'personal-config nil t)
 
 
 ;; Load remaining config files in the lisp directory.
