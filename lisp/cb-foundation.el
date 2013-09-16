@@ -394,6 +394,8 @@ rather than the app bundle."
 
 (bind-key "C-c C" 'indirect-region)
 
+(bind-key* "C-<backspace>" 'kill-current-buffer)
+
 (provide 'cb-foundation)
 
 ;; Local Variables:
