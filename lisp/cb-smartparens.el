@@ -56,6 +56,8 @@
     "a" 'sp-add-to-next-sexp
     "B" 'sp-backward-barf-sexp
     "b" 'sp-forward-barf-sexp
+    "M" 'sp-backward-slurp-sexp
+    "m" 'sp-forward-slurp-sexp
     "c" 'sp-convolute-sexp
     "D" 'sp-backward-kill-sexp
     "d" 'sp-kill-sexp
@@ -75,7 +77,9 @@
     "Y" 'sp-backward-copy-sexp
     "y" 'sp-copy-sexp
     "<" 'sp-beginning-of-sexp
-    "," 'sp-end-of-sexp))
+    "," 'sp-previous-sexp
+    "." 'sp-next-sexp
+    ">" 'sp-end-of-sexp))
 
 (use-package smartparens
   :ensure t
