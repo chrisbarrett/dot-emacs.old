@@ -39,15 +39,40 @@
   :ensure t
   :commands twit
   :config
-  (setq twittering-use-master-password t
-        twittering-icon-mode t
-        twittering-use-icon-storage t
-        twittering-timer-interval (* 3 60)
-        twittering-url-show-status nil
-        twittering-edit-skeleton 'inherit-any
+  (progn
+    (setq twittering-use-master-password t
+          twittering-icon-mode t
+          twittering-convert-fix-size 32
+          twittering-use-icon-storage t
+          twittering-timer-interval (* 3 60)
+          twittering-url-show-status nil
+          twittering-edit-skeleton 'inherit-any)
 
-        twittering-status-format
-        "%i %s,  %@:\n%FILL[  ]{%T}\n%r%R"))
+    ;;; Custom faces for tweets.
+
+    (defface cbtw:status-text
+      `((t (:family ,(sans-serif-font))))
+      "Face for the text component of a tweet"
+      :group 'twittering-mode)
+
+    (defface cbtw:status-retweet
+      `((t (:italic t :family ,(sans-serif-font) :foreground "#6c71c4")))
+      "Face for the retweet info in tweet"
+      :group 'twittering-mode)
+
+    (defface cbtw:timestamp
+      '((((background dark))  (:foreground "gray50"))
+        (((background light)) (:foreground "gray70"))
+        (t (:foreground "#b58900" :height 110)))
+      "Face for the timestamp in a tweet."
+      :group 'twittering-mode)
+
+    (setq twittering-status-format
+          (concat
+           "%i %s\n\n"
+           "%FILL[  ]{%FACE[cbtw:status-text]{%T}}\n\n"
+           "  %FACE[cbtw:timestamp]{%@}"
+           " %FACE[cbtw:status-retweet]{%r%R}\n\n"))))
 
 (provide 'cb-twittering)
 
