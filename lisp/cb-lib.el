@@ -381,6 +381,12 @@ Delete the buffer if it was not already visited."
   "Generate a UUID using the uuid utility."
   (s-trim (shell-command-to-string "uuidgen")))
 
+(cl-defun buffer-string-no-properties (&optional (buffer (current-buffer)))
+  "Return the contents of BUFFER without text properties.
+If BUFFER is nil, the current buffer is used."
+  (with-current-buffer buffer
+    (buffer-substring-no-properties (point-min) (point-max))))
+
 (defun current-region (&optional no-properties)
   "Return the current active region, or nil if there is no region active.
 If NO-PROPERTIES is non-nil, return the region without text properties."
