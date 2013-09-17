@@ -31,21 +31,30 @@
 (require 'cb-lib)
 (require 'cb-evil)
 
-(defun cb:special-elisp-file? ()
+(defun cb:special-elisp-buffer? ()
   (and (derived-mode-p 'emacs-lisp-mode)
-       (buffer-file-name)
        (or
         (true? scratch-buffer)
-        (s-matches? (rx bol (? ".") (or "org-" "dir-locals"))
-                    (buffer-name))
-        (equal "*scratch*" (buffer-name)))))
+        (s-matches? (rx bol (? (any "*" "."))
+                        (or "org-"
+                            "Org "
+                            "Cask"
+                            "Carton"
+                            "scratch"
+                            "emacs-lisp"
+                            "autoloads"
+                            "dir-locals"))
+                    (buffer-name)))))
+
+;; Prevent flycheck from checkdoc for certain elisp file types.
 
 (after 'flycheck
-  ;; Use advice to ensure the mode is not started.
-  (defadvice flycheck-may-enable-mode
-    (around dont-activate-if-special-el-file activate)
-    "Prevent flycheck from running for certain elisp file types."
-    (and (not (cb:special-elisp-file?)) ad-do-it)))
+  (hook-fn 'flycheck-mode-hook
+    (when (cb:special-elisp-buffer?)
+      (flycheck-select-checker 'emacs-lisp)))
+
+  (setq flycheck-emacs-lisp-load-path (list cb:lib-dir
+                                            cb:lisp-dir)))
 
 (after 'projectile
 
