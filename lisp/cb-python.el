@@ -136,6 +136,10 @@
       "," 'cb:comma-then-space
       "C-c C-z" 'cb:switch-to-python)))
 
+;; Installs an info manual for Python 2.7
+(use-package python-info
+  :ensure t)
+
 ;; `jedi' provides auto-completion, code search and docmentation for python
 ;; buffers.
 (use-package jedi
