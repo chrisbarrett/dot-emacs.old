@@ -154,6 +154,9 @@
      org-footnote-auto-adjust t
      org-put-time-stamp-overlays t
      org-startup-with-inline-images t
+
+     ;; Exporter options
+
      org-html-html5-fancy t
 
      ;; Statistics
