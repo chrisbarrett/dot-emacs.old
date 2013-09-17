@@ -223,6 +223,9 @@ When used interactively, makes a guess at what to pass."
 (setq starttls-gnutls-program (executable-find "gnutls-cli")
       starttls-use-gnutls t)
 
+;; Bind font panel
+(bind-key* "s-T" 'ns-popup-font-panel)
+
 )
 
 (provide 'cb-osx)
