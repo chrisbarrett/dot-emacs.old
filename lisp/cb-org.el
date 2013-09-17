@@ -158,6 +158,7 @@
      ;; Exporter options
 
      org-html-html5-fancy t
+     org-export-backends '(ascii html latex md)
 
      ;; Statistics
      ;;
