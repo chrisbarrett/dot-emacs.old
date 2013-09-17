@@ -355,6 +355,28 @@ Return the elements of the default obarray that match PREDICATE."
 
 ;; -----------------------------------------------------------------------------
 
+(defmacro with-open-file (file &rest body)
+  "Visit FILE and return the result of evaluating BODY forms.
+Delete the buffer if it was not already visited."
+  (declare (indent 1))
+  (let ((gbuf (cl-gensym)))
+    `(save-excursion
+       (let ((,gbuf (get-buffer ,file)))
+         (cond
+          ;; Visit existing buffer if it's active.
+          ((and ,gbuf (buffer-live-p ,gbuf))
+           (with-current-buffer ,gbuf
+             ,@body))
+          ;; Otherwise, visit the file in a new buffer.
+          (t
+           ;; Rebind `kill-buffer-query-functions' to ensure no interactive
+           ;; prompts are issued.
+           (let ((kill-buffer-query-functions nil))
+             (find-file ,file)
+             (unwind-protect (save-excursion ,@body)
+               ;; Unconditionally kill the buffer.
+               (kill-buffer)))))))))
+
 (defun make-uuid ()
   "Generate a UUID using the uuid utility."
   (s-trim (shell-command-to-string "uuidgen")))
