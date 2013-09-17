@@ -258,6 +258,20 @@ Repeated invocations toggle between the two most recently open buffers."
   (interactive)
   (switch-to-buffer (other-buffer (current-buffer) 1)))
 
+;;;###autoload
+(defun insert-variable (variable)
+  "Insert the value of VARIABLE at point."
+  (interactive
+   (list
+    (intern
+     (ido-completing-read
+      "Variable: "
+      (-map 'symbol-name
+            (filter-atoms (-orfn 'custom-variable-p 'special-variable-p)))))))
+  (insert (pp-to-string (eval variable))))
+
+;; Key bindings.
+
 (bind-key* "C-;" 'swap-with-previous-buffer)
 (bind-keys
   "C-c k b"  'clean-buffers
@@ -266,6 +280,14 @@ Repeated invocations toggle between the two most recently open buffers."
   "s-f"      'cb:rotate-buffers
   "C-x C-o"  'other-window)
 
+(define-prefix-command 'cb:insertion-map)
+(global-set-key (kbd "C-c i") 'cb:insertion-map)
+(bind-keys
+  :global t
+  "C-c i f" 'insert-file
+  "C-c i v" 'insert-variable
+  "C-c i #" 'insert-shebang
+  "C-c i t" 'insert-timestamp)
 
 (define-key prog-mode-map (kbd "M-q") 'indent-dwim)
 
