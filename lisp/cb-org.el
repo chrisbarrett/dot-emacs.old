@@ -300,6 +300,8 @@
     (org-babel-do-load-languages
      'org-babel-load-languages '((python . t)
                                  (C . t)
+                                 (ditaa . t)
+                                 (sh . t)
                                  (calc . t)
                                  (emacs-lisp . t)
                                  (ruby . t)
