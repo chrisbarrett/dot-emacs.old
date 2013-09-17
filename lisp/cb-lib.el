@@ -463,6 +463,14 @@ In batch mode, just print a summary."
         (let ((message-log-max nil))
           (message "%s" (format-progress-bar title i len))))))
 
+(defun cb:append-buffer ()
+  "Enter insertion mode at the end of the current buffer."
+  (interactive)
+  (goto-char (point-max))
+  (if (fboundp 'evil-append-line)
+      (evil-append-line 1)
+    (end-of-line)))
+
 (provide 'cb-lib)
 
 ;; Local Variables:

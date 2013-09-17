@@ -288,14 +288,6 @@ rather than the app bundle."
 ;; in inferior language modes.
 (setq comint-prompt-read-only t)
 
-(defun cb:append-buffer ()
-  "Enter insertion mode at the end of the current buffer."
-  (interactive)
-  (goto-char (point-max))
-  (if (fboundp 'evil-append-line)
-      (evil-append-line 1)
-    (end-of-line)))
-
 (defun cb:clear-scrollback ()
   "Erase all but the last line of the current buffer."
   (interactive)
