@@ -336,6 +336,16 @@
       (when (minibufferp (window-buffer (selected-window)))
         (other-window 1)))))
 
+;; `orglink' adds support for org-mode-style and plain links in other modes.
+(use-package orglink
+  :ensure t
+  :init
+  (hook-fns '(prog-mode-hook text-mode-hook comint-mode)
+    (unless (derived-mode-p 'org-mode)
+      (orglink-mode +1)))
+  :config
+  (setq orglink-mode-lighter nil))
+
 ;; Define pairs for org-mode blocks.
 (after 'smartparens
   (sp-with-modes '(org-mode)
