@@ -226,6 +226,18 @@ When used interactively, makes a guess at what to pass."
 ;; Bind font panel
 (bind-key* "s-T" 'ns-popup-font-panel)
 
+;; Print to postscript
+
+(defun ps-print-with-faces-dwim ()
+  "Perform a context-sensitive printing command."
+  (interactive)
+  (call-interactively
+   (if (region-active-p)
+       'ps-print-region-with-faces
+       'ps-print-buffer-with-faces)))
+
+(bind-key* "s-p" 'ps-print-with-faces-dwim)
+
 )
 
 (provide 'cb-osx)
