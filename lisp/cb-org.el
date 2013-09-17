@@ -1118,10 +1118,11 @@ as the default task."
         (org-mime-change-element-style
          "pre" "border-left: 2px solid #B0B0B0; padding-left: 4px;")))))
 
-;; Disable auto-complete in org-buffers.
+;; Disable auto-complete in org-mode buffers.
 (after 'auto-complete
   (hook-fn 'org-mode-hook
-    (setq-local ac-sources nil)))
+    (setq-local ac-sources nil)
+    (auto-complete-mode -1)))
 
 (provide 'cb-org)
 
