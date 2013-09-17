@@ -159,7 +159,7 @@
     ;;;; File handling
 
     (hook-fn 'emacs-lisp-mode-hook
-      (when (cb:special-elisp-file?)
+      (when (cb:special-elisp-buffer?)
         (setq-local no-byte-compile t))
       (hook-fn 'after-save-hook
         "Check parens are balanced and byte-compile."
@@ -196,7 +196,9 @@
 (use-package macrostep
   :ensure t
   :bind   ("C-c e m" . macrostep-expand)
-  :config (evil-add-hjkl-bindings macrostep-mode-map 'motion))
+  :config
+  (after 'evil
+    (evil-add-hjkl-bindings macrostep-mode-map 'motion)))
 
 (use-package elisp-slime-nav
   :ensure   t
@@ -209,7 +211,7 @@
     (local-set-key (kbd "M-.") 'elisp-slime-nav-find-elisp-thing-at-point)
 
     ;; Make M-. work in normal state.
-    (when (featurep 'evil)
+    (after 'evil
       (evil-local-set-key 'normal (kbd "M-.")
                           'elisp-slime-nav-find-elisp-thing-at-point))))
 
