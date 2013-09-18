@@ -62,6 +62,8 @@
     "D" 'sp-backward-kill-sexp
     "d" 'sp-kill-sexp
     "e" 'sp-emit-sexp
+    "G" 'sp-end-of-sexp
+    "g" 'sp-beginning-of-sexp
     "j" 'sp-join-sexp
     "K" 'sp-splice-sexp-killing-backward
     "k" 'sp-splice-sexp-killing-forward
@@ -76,10 +78,10 @@
     "x" 'sp-split-sexp
     "Y" 'sp-backward-copy-sexp
     "y" 'sp-copy-sexp
-    "<" 'sp-beginning-of-sexp
     "," 'sp-previous-sexp
     "." 'sp-next-sexp
-    ">" 'sp-end-of-sexp))
+    "<" 'sp-backward-down-sexp
+    ">" 'sp-down-sexp))
 
 (use-package smartparens
   :ensure t
