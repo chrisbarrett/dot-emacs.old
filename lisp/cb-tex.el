@@ -58,6 +58,7 @@
         "TAB" 'TeX-complete-symbol))))
 
 (use-package tex-fold
+  :defer t
   :init
   (hook-fns '(tex-mode-hook latex-mode-hook)
     (TeX-fold-mode +1))
