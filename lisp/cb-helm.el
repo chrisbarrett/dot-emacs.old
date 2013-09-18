@@ -28,6 +28,7 @@
 
 (require 'use-package)
 
+;; `projectile' adds project-level management and editing commands.
 (use-package projectile
   :ensure   t
   :diminish projectile-mode
@@ -42,6 +43,7 @@
 
     (projectile-global-mode +1)))
 
+;; `helm' provides commands for making interactive selections.
 (use-package helm
   :ensure t
   :defer  t
@@ -56,16 +58,18 @@
 
     (after 'evil
       (bind-keys
-       :overriding? t
-       "M-a" 'helm-apropos
-       "M-b" 'helm-buffers-list
-       "C-x C-b" 'helm-buffers-list
-       "M-h" 'helm-mini
-       "M-i" 'helm-imenu
-       "M-f" 'helm-etags-select
-       "M-m" 'helm-man-woman
-       "M-w" 'helm-w3m-bookmarks))))
+        :overriding? t
+        "M-a" 'helm-apropos
+        "M-b" 'helm-buffers-list
+        "C-x C-b" 'helm-buffers-list
+        "M-h" 'helm-mini
+        "M-i" 'helm-imenu
+        "M-f" 'helm-etags-select
+        "M-m" 'helm-man-woman
+        "M-w" 'helm-w3m-bookmarks))))
 
+;; `helm-projectile' adds a helm command for selecting files or buffers in the
+;; current project.
 (use-package helm-projectile
   :ensure t
   :commands helm-projectile
