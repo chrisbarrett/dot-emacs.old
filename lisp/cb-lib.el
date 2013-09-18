@@ -442,10 +442,15 @@ POS should be a number between 1 and LENGTH."
             (s-repeat (- scaled-length scaled-pos) " ")
             trailer)))
 
-(defun run-with-progress-bar (title actions)
+(cl-defun run-with-progress-bar
+    (title actions &key (silent? t) &allow-other-keys)
   "Call ACTIONS, printing a progress bar with TITLE.
-Internal calls to `message' will be suppressed.
-In batch mode, just print a summary."
+
+By default, calls to `message' in each action will be suppressed.
+Use the SILENT? keyword to explicitly override this behaviour.
+
+In batch mode, this just prints a summary instead of progress."
+  (cl-assert (stringp title))
   (cl-assert (sequencep actions))
   (cl-loop
    when actions
@@ -456,8 +461,10 @@ In batch mode, just print a summary."
    ;; Get the step-number and action.
    with len = (length actions)
    for (i . action) in (--map-indexed (cons (1+ it-index) it) actions)
-   ;; Run action
-   do (noflet ((message (&rest _) (ignore))) (funcall action))
+   ;; Run action.
+   do (if silent?
+          (noflet ((message (&rest _) (ignore))) (funcall action))
+        (funcall action))
    ;; Print progress bar. Do not add it to the *Messages* buffer.
    do (unless noninteractive
         (let ((message-log-max nil))
