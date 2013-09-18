@@ -26,6 +26,9 @@
 
 ;;; Code:
 
+(require 'use-package)
+(require 'cb-lib)
+
 (unless (package-installed-p 'auctex)
   (package-install 'auctex))
 
