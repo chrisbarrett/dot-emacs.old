@@ -205,7 +205,7 @@
 
 ;; `erc' is an Emacs IRC client.
 (use-package erc
-  :defer t
+  :commands erc
   :config
   (progn
 
