@@ -93,10 +93,9 @@
 (use-package ace-jump-mode
   :ensure t
   :bind
-  (("C-L" . ace-jump-line-mode)
-   ("C-SPC" . ace-jump-word-mode)
-   ;; Needed for terminal.
-   ("C-@" . ace-jump-word-mode))
+  (("C-x j l" . ace-jump-line-mode)
+   ("C-x j w" . ace-jump-word-mode)
+   ("C-x j j" . ace-jump-word-mode))
   :init
   (hook-fn 'evil-mode-hook
     (require 'ace-jump-mode))
