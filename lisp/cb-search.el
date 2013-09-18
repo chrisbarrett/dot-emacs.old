@@ -123,6 +123,12 @@ PRED is a predicate to determine whether search method is currently available."
   (interactive)
   (let ((default (or (current-region) (thing-at-point 'symbol)))
         (m (cbs:select-method (->> cbs:search-methods
+                                ;; Use methods without a predicate or where the
+                                ;; predicate returns non-nil.
+                                (--filter
+                                 (-if-let (p (cbs-search-method-pred it))
+                                     (funcall p)
+                                   t))
                                 (-uniq)
                                 (-sort (-on 'string< 'cbs-search-method-key))))))
     (funcall (cbs-search-method-func m)
