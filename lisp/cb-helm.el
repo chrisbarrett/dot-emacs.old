@@ -48,6 +48,9 @@
   :idle   (require 'helm)
   :init
   (progn
+
+    (bind-key* "S-SPC" 'helm-mini)
+
     (after 'helm
       (define-key helm-map (kbd "C-[") 'helm-keyboard-quit))
 
