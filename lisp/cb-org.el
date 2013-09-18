@@ -346,6 +346,7 @@
 ;; `orglink' adds support for org-mode-style and plain links in other modes.
 (use-package orglink
   :ensure t
+  :defer t
   :init
   (hook-fns '(prog-mode-hook text-mode-hook comint-mode)
     (unless (derived-mode-p 'org-mode)
