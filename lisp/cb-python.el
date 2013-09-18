@@ -140,6 +140,7 @@
 
 ;; Installs an info manual for Python 2.7
 (use-package python-info
+  :defer t
   :ensure t)
 
 ;; `jedi' provides auto-completion, code search and docmentation for python
