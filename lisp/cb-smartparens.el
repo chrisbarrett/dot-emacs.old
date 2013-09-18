@@ -132,18 +132,17 @@
     (sp-pair "[" "]" :bind "M-[")
     (sp-pair "\"" "\"" :bind "M-\"")
     (sp-pair "`" "`" :bind "M-~")
-    (sp-pair "'" "'"
-             :bind "M-'"
-             :when '(:add sp-in-code-p)
-             :unless '(:add sp-in-string-p))
 
-    ;; Do not use apostrophe pair in text modes.
-    (sp-with-modes '(text-mode
-                     message-mode
-                     org-mode
-                     markdown-mode
-                     magit-log-edit-mode)
-      (sp-local-pair "'" "'" :actions '(:rem insert)))
+    ;; Use apostrophe pairs for certain modes.
+    (sp-with-modes (-flatten (list cb:ruby-modes
+                                   cb:python-modes
+                                   'shell-script-mode
+                                   'makefile-mode))
+      (sp-local-pair "'" "'"
+       :bind "M-'"
+       :when '(:add sp-in-code-p)
+       :unless '(:add sp-in-string-p)))
+
 
     (defun cb-sp:kill-blank-lines (&optional arg)
       (interactive "P")
