@@ -272,6 +272,8 @@ Repeated invocations toggle between the two most recently open buffers."
 
 ;; Key bindings.
 
+(bind-key* "S-SPC" 'swap-with-previous-buffer)
+
 (bind-keys
   "C-c k b"  'clean-buffers
   "C-<up>"   'move-line-up

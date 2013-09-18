@@ -111,8 +111,7 @@ Creates STATE bindings for DEFS. DEFS are comprised of alternating string-symbol
       "M-z" 'evil-emacs-state
       "C-z" 'evil-undefine
       "SPC" 'evil-toggle-fold
-      "K"   'get-documentation
-      "g o" 'swap-with-previous-buffer)
+      "K"   'get-documentation)
 
     (define-key evil-insert-state-map (kbd "C-z") 'evil-undefine)
     (define-key evil-emacs-state-map  (kbd "M-z") 'evil-normal-state)
