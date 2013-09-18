@@ -51,20 +51,23 @@
     (setq TeX-auto-save t
           TeX-parse-self t)
 
-    (hook-fns '(tex-mode-hook latex-mode-hook)
-      (local-set-key (kbd "M-P") 'previous-error)
-      (local-set-key (kbd "M-N") 'next-error)
-      (local-set-key (kbd "TAB") 'TeX-complete-symbol))))
+    (bind-keys
+      :map tex-mode-map
+      "M-P" 'flycheck-previous-error
+      "M-N" 'flycheck-next-error
+      "TAB" 'TeX-complete-symbol)))
 
 (use-package tex-fold
   :defer t
   :init
   (hook-fns '(tex-mode-hook latex-mode-hook)
-    (TeX-fold-mode +1)
-    (when (featurep 'evil)
-      (evil-local-set-key 'normal (kbd "z m") 'TeX-fold-buffer)
-      (evil-local-set-key 'normal (kbd "z r") 'TeX-fold-clearout-buffer)
-      (evil-local-set-key 'normal (kbd "SPC") 'TeX-fold-dwim))))
+    (TeX-fold-mode +1))
+   :config
+   (after 'evil
+     (evil-define-key 'normal tex-mode-map
+       (kbd "z m") 'TeX-fold-buffer
+       (kbd "z r") 'TeX-fold-clearout-buffer
+       (kbd "SPC") 'TeX-fold-dwim)))
 
 (provide 'cb-tex)
 
