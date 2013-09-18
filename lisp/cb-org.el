@@ -1123,7 +1123,16 @@ as the default task."
         (org-mime-change-element-style
          "blockquote" "border-left: 2px solid #B0B0B0; padding-left: 4px;")
         (org-mime-change-element-style
-         "pre" "border-left: 2px solid #B0B0B0; padding-left: 4px;")))))
+         "pre" "border-left: 2px solid #B0B0B0; padding-left: 4px;"))))
+
+  ;; `ox-koma-letter' adds TeX formal letter exporting using KOMA.
+  (use-package ox-koma-letter
+    :config
+    (add-to-list 'org-latex-classes
+                 `("koma-letter"
+                   ,(concat "\\documentclass\{scrlttr2\} "
+                            "\\usepackage[english]{babel} "
+                            "\[NO-DEFAULT-PACKAGES] \[NO-PACKAGES] \[EXTRA]")))))
 
 ;; Disable auto-complete in org-mode buffers.
 (after 'auto-complete
