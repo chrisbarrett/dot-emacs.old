@@ -283,7 +283,7 @@ Repeated invocations toggle between the two most recently open buffers."
 (define-prefix-command 'cb:insertion-map)
 (global-set-key (kbd "C-c i") 'cb:insertion-map)
 (bind-keys
-  :global t
+  :overriding? t
   "C-c i f" 'insert-file
   "C-c i v" 'insert-variable
   "C-c i #" 'insert-shebang

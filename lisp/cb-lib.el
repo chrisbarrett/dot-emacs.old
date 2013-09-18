@@ -262,7 +262,7 @@ Find the first window where PRED-FORM is not nil."
 
 ;; -----------------------------------------------------------------------------
 
-(defmacro* bind-keys (&rest bindings &key map overriding? &allow-other-keys)
+(cl-defmacro bind-keys (&rest bindings &key map overriding? &allow-other-keys)
   "Variadic form of `bind-key'.
 * MAP is an optional keymap.  The bindings will only be enabled when this keymap is active.
 
