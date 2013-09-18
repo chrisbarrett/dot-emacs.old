@@ -134,7 +134,10 @@
 (let* ((files (f-files cb:lisp-dir))
        (config-files (--filter (and (f-ext? it "el")
                                     (not (s-contains? "flycheck" it)))
-                               files)))
+                               files))
+       ;; Show use-package's debug messages if `use-package-verbose' is set.
+       (verbose? (and (true? use-package-verbose)
+                      (not after-init-time))))
   ;; Byte-compile lisp files. Skip this step if all config files have a
   ;; corresponding elc file.
   (unless (--all? (-contains? files (concat it "c")) config-files)
@@ -144,13 +147,15 @@
                      (let ((inhibit-redisplay t))
                        (save-window-excursion
                          (byte-recompile-file ,it nil 0)))))
-            config-files)))
+            config-files)
+     :silent? (not verbose?)))
   ;; Load files.
   (run-with-progress-bar
    "Loading configuration"
    (->> config-files
      (-map (-compose 'f-no-ext 'f-filename))
-     (--map (eval `(lambda () (use-package ,(intern it))))))))
+     (--map (eval `(lambda () (use-package ,(intern it))))))
+   :silent? (not verbose?)))
 
 (require 'custom)
 
