@@ -62,7 +62,6 @@
         "M-a" 'helm-apropos
         "M-b" 'helm-buffers-list
         "C-x C-b" 'helm-buffers-list
-        "M-h" 'helm-mini
         "M-i" 'helm-imenu
         "M-f" 'helm-etags-select
         "M-m" 'helm-man-woman
