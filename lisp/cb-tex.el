@@ -32,24 +32,14 @@
 (unless (package-installed-p 'auctex)
   (package-install 'auctex))
 
-(use-package preview
-  :defer t
-  :init
-  (hook-fns '(tex-mode-hook latex-mode-hook)
-    (require 'preview)))
-
-(use-package latex
-  :defer t
-  :init
-  (hook-fn 'tex-mode-hook
-    (require 'latex)))
-
 (use-package tex
   :defer t
   :config
   (progn
-    (defadvice tex-mode (after run-hooks activate)
-      (run-hooks 'tex-mode-hook))
+
+    (use-package preview)
+    (use-package latex)
+
 
     (defadvice TeX-complete-symbol (after position-point activate)
       "Position point inside braces."
@@ -59,23 +49,24 @@
     (setq TeX-auto-save t
           TeX-parse-self t)
 
-    (bind-keys
-      :map tex-mode-map
-      "M-P" 'flycheck-previous-error
-      "M-N" 'flycheck-next-error
-      "TAB" 'TeX-complete-symbol)))
+
+    (after 'tex
+      (bind-keys
+        :map TeX-mode-map
+        "M-P" 'flycheck-previous-error
+        "M-N" 'flycheck-next-error
+        "TAB" 'TeX-complete-symbol))))
 
 (use-package tex-fold
-  :defer t
   :init
   (hook-fns '(tex-mode-hook latex-mode-hook)
     (TeX-fold-mode +1))
-   :config
-   (after 'evil
-     (evil-define-key 'normal tex-mode-map
-       (kbd "z m") 'TeX-fold-buffer
-       (kbd "z r") 'TeX-fold-clearout-buffer
-       (kbd "SPC") 'TeX-fold-dwim)))
+  :config
+  (after 'evil
+    (evil-define-key 'normal TeX-mode-map
+      (kbd "z m") 'TeX-fold-buffer
+      (kbd "z r") 'TeX-fold-clearout-buffer
+      (kbd "SPC") 'TeX-fold-dwim)))
 
 (provide 'cb-tex)
 
