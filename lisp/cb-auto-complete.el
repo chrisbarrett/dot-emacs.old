@@ -31,13 +31,19 @@
 
 (use-package auto-complete
   :ensure   t
+  :defer t
+  :commands 'global-auto-complete-mode
   :diminish auto-complete-mode
+
+  :init
+  (hook-fn 'after-init-hook
+    (global-auto-complete-mode +1))
+
   :config
   (progn
 
     (require 'auto-complete-config)
     (ac-config-default)
-    (global-auto-complete-mode +1)
 
     (defadvice ac-quick-help (around ignore-errors activate)
       "Ignore errors when showing help popups."
