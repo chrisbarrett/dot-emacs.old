@@ -51,6 +51,11 @@
     (defadvice tex-mode (after run-hooks activate)
       (run-hooks 'tex-mode-hook))
 
+    (defadvice TeX-complete-symbol (after position-point activate)
+      "Position point inside braces."
+      (when (equal (char-before) ?\})
+        (forward-char -1)))
+
     (setq TeX-auto-save t
           TeX-parse-self t)
 
