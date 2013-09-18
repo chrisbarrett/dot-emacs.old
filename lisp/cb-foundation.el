@@ -388,6 +388,8 @@ rather than the app bundle."
 
 (bind-key* "C-<backspace>" 'kill-current-buffer)
 
+(bind-key* "C-/" 'quick-calc)
+
 (provide 'cb-foundation)
 
 ;; Local Variables:
