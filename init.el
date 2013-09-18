@@ -150,7 +150,7 @@
    "Loading configuration"
    (->> config-files
      (-map (-compose 'f-no-ext 'f-filename))
-     (--map (eval `(lambda () (require ',(intern it))))))))
+     (--map (eval `(lambda () (use-package ,(intern it))))))))
 
 (require 'custom)
 
