@@ -51,7 +51,7 @@
   :init
   (progn
 
-    (bind-key* "S-SPC" 'helm-mini)
+    (bind-key* "C-SPC" 'helm-mini)
 
     (after 'helm
       (define-key helm-map (kbd "C-[") 'helm-keyboard-quit))
