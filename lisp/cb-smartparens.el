@@ -134,6 +134,7 @@
     (sp-pair "[" "]" :bind "M-[")
     (sp-pair "\"" "\"" :bind "M-\"")
     (sp-pair "`" "`" :bind "M-~")
+    (sp-pair "'" "'" :bind "M-~" :actions '(:rem insert))
 
     ;; Use apostrophe pairs for certain modes.
     (sp-with-modes (-flatten (list cb:ruby-modes
@@ -142,6 +143,7 @@
                                    'makefile-mode))
       (sp-local-pair "'" "'"
        :bind "M-'"
+       :actions '(:add insert)
        :when '(:add sp-in-code-p)
        :unless '(:add sp-in-string-p)))
 
