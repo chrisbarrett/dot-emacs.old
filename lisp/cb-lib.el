@@ -495,6 +495,7 @@ In batch mode, this just prints a summary instead of progress."
                                    shell-command-to-string)
   "A list of commands that may be escalated using the `%-sudo' macro.")
 
+(defalias '%-quote 'shell-quote-argument)
 
 (defun % (command &rest arguments)
   "Run COMMAND with ARGUMENTS, returning the exit code."
