@@ -34,7 +34,11 @@
   :bind     ("C-x u" . undo-tree-visualize)
   :diminish undo-tree-mode
   :init     (hook-fn 'find-file-hook (require 'undo-tree))
-  :config   (global-undo-tree-mode +1))
+  :config
+  (progn
+    (global-undo-tree-mode +1)
+    (unless (fboundp 'redo)
+      (defalias 'redo 'undo-tree-redo))))
 
 (use-package scratch
   :ensure   t
