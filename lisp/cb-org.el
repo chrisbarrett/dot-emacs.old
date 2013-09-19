@@ -56,7 +56,7 @@
 (defvar calendar-date-style 'european)
 
 ;; Add contrib directory to load-path.
-(add-to-list 'load-path (f-join cb:etc-dir "org-mode" "contrib" "lisp"))
+(add-to-list 'load-path (f-join cb:lib-dir "org-mode" "contrib" "lisp"))
 
 ;; Show org agenda with M-O.
 (declare-modal-executor org-agenda-fullscreen
