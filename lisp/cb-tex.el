@@ -69,6 +69,14 @@
       (kbd "z r") 'TeX-fold-clearout-buffer
       (kbd "SPC") 'TeX-fold-dwim)))
 
+;; `whizzytex' provides live output display with incremental compilation.
+(use-package whizzytex
+  :defer t
+  :commands whizzytex-mode
+  :init
+  (hook-fn 'tex-mode-hook
+    (whizzytex-mode +1)))
+
 (provide 'cb-tex)
 
 ;; Local Variables:
