@@ -535,7 +535,8 @@ timeout period will not require the password again."
   (cl-destructuring-bind (fn cmd &rest args) command
     (let ((g-passwd (cl-gensym))
           (g-result (cl-gensym)))
-      `(-if-let (,g-passwd (unless ($-can-sudo-without-passwd?) ($-read-passwd)))
+      `(-if-let (,g-passwd (unless ($-can-sudo-without-passwd?)
+                             (read-passwd "Password: ")))
 
            ;; Path 1. The password is required: Consume the password and
            ;; tidy the shell output. Finally, delete the password string from
