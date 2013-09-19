@@ -44,7 +44,7 @@
           twittering-icon-mode t
           twittering-convert-fix-size 32
           twittering-use-icon-storage t
-          twittering-timer-interval (* 3 60)
+          twittering-timer-interval (* 5 60)
           twittering-url-show-status nil
           twittering-edit-skeleton 'inherit-any)
 
