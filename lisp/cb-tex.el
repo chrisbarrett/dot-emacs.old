@@ -77,8 +77,30 @@
   :defer t
   :commands whizzytex-mode
   :init
-  (hook-fn 'tex-mode-hook
-    (whizzytex-mode +1)))
+  (progn
+
+    (defvar whizzytex-sty-installation "/usr/local/share/whizzytex/latex/whizzytex.sty"
+      "Path to the whizzytex macro package.")
+
+    (defvar whizzytex-src (f-join cb:lib-dir "whizzytex" "src")
+      "Path to the whizzytex sources.")
+
+    (defvar whizzy-command-name (f-join whizzytex-src "whizzytex"))
+
+    (defun cbwh:install-tex-macros ()
+      "Prompt the user to install the tex macros if they do not exist."
+      (unless (f-exists? whizzytex-sty-installation)
+        (when (y-or-n-p (format "Install whizzytex macros into %s? "
+                                (f-dirname whizzytex-sty-installation)))
+          ;; Make installation directory and copy package there.
+          (%-sudo (% "mkdir -p" (f-dirname whizzytex-sty-installation)))
+          (%-sudo (% "cp -f"
+                     (%-quote (f-join whizzytex-src "whizzytex.sty"))
+                     (%-quote whizzytex-sty-installation))))))
+
+    (hook-fn 'tex-mode-hook
+      (cbwh:install-tex-macros)
+      (whizzytex-mode +1))))
 
 (provide 'cb-tex)
 
