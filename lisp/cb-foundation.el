@@ -46,7 +46,6 @@
 (define-path cb:tmp-dir       "tmp/")
 (define-path cb:yasnippet-dir "snippets/")
 
-(defalias 'yes-or-no-p 'y-or-n-p)
 (autoload 'edebug-step-mode "edebug")
 (autoload 'thing-at-point-looking-at "thingatpt")
 

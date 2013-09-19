@@ -32,6 +32,13 @@
 (require 'bind-key)
 (require 'noflet)
 
+;; Aliases for compatability
+
+(defalias 'make-local-hook 'ignore)
+(defalias 'yes-or-no-p 'y-or-n-p)
+
+;;; ----------------------------------------------------------------------------
+
 (defun cb-lib:format-message (category desc body)
   (format "* * * * * *\n[%s]: %s\n%s\n* * * * * *" category desc body))
 
