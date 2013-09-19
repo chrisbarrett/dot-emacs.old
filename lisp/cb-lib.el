@@ -499,15 +499,15 @@ In batch mode, this just prints a summary instead of progress."
 
 (defun % (command &rest arguments)
   "Run COMMAND with ARGUMENTS, returning the exit code."
-  (shell-command (concat command (s-join " " arguments))))
+  (shell-command (concat command " " (s-join " " arguments))))
 
 (defun %-str (command &rest arguments)
   "Run COMMAND with ARGUMENTS, returning its output as a string."
-  (shell-command-to-string (concat command (s-join " " arguments))))
+  (shell-command-to-string (concat command " " (s-join " " arguments))))
 
 (defun %-async (command &rest arguments)
   "Run COMMAND with ARGUMENTS, returning its output as a string."
-  (async-shell-command (concat command (s-join " " arguments))))
+  (async-shell-command (concat command " " (s-join " " arguments))))
 
 (defun %-can-sudo-without-passwd? ()
   "Test whether we are currently able to sudo without entering a password."
