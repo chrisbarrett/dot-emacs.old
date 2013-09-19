@@ -42,6 +42,7 @@
     (use-package preview)
     (use-package latex)
 
+    (TeX-global-PDF-mode +1)
 
     (defadvice TeX-complete-symbol (after position-point activate)
       "Position point inside braces."
