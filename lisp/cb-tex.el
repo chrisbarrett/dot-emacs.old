@@ -90,13 +90,13 @@
     (defun cbwh:install-tex-macros ()
       "Prompt the user to install the tex macros if they do not exist."
       (unless (f-exists? whizzytex-sty-installation)
-        (when (y-or-n-p (format "Install whizzytex macros into %s? "
+        (when (y-or-n-p (format "Install whizzytex macros into $s? "
                                 (f-dirname whizzytex-sty-installation)))
           ;; Make installation directory and copy package there.
-          (%-sudo (% "mkdir -p" (f-dirname whizzytex-sty-installation)))
-          (%-sudo (% "cp -f"
-                     (%-quote (f-join whizzytex-src "whizzytex.sty"))
-                     (%-quote whizzytex-sty-installation))))))
+          ($-sudo ($ "mkdir -p" (f-dirname whizzytex-sty-installation)))
+          ($-sudo ($ "cp -f"
+                     ($-quote (f-join whizzytex-src "whizzytex.sty"))
+                     ($-quote whizzytex-sty-installation))))))
 
     (hook-fn 'tex-mode-hook
       (cbwh:install-tex-macros)
