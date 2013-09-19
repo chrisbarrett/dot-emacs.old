@@ -51,10 +51,13 @@
   :init
   (progn
 
-    (bind-key* "C-SPC" 'helm-mini)
-
     (after 'helm
       (define-key helm-map (kbd "C-[") 'helm-keyboard-quit))
+
+    (bind-keys
+      :overriding? t
+      "C-SPC"   'helm-mini
+      "C-x SPC" 'helm-find-files)
 
     (after 'evil
       (bind-keys
