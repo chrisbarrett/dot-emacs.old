@@ -161,7 +161,7 @@
      (--map (eval `(lambda () (use-package ,(intern it))))))
    :silent? (not verbose?)))
 
-(require 'custom)
+(load (f-join user-emacs-directory "custom.el") t t)
 
 ;; Local Variables:
 ;; byte-compile-warnings: (not cl-functions)

@@ -40,11 +40,11 @@
 ;;; ----------------------------------------------------------------------------
 
 (defun cb-lib:format-message (category desc body)
-  (format "* * * * * *\n[%s]: %s\n%s\n* * * * * *" category desc body))
+  (format "[%s]: %s\n%s\n" category desc body))
 
-(defmacro* hook-fn (hook &rest body
-                         &key local append (arglist '(&rest _args))
-                         &allow-other-keys)
+(cl-defmacro hook-fn (hook &rest body
+                           &key local append (arglist '(&rest _args))
+                           &allow-other-keys)
   "Execute forms when a given hook is called.
 
 * HOOK is the name of the hook.
