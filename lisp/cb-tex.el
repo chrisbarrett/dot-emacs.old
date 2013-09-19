@@ -32,6 +32,8 @@
 (unless (package-installed-p 'auctex)
   (package-install 'auctex))
 
+;; `tex' is part of the auctex package and provides features like in-buffer
+;; formula previews and a rich editing commandset.
 (use-package tex
   :defer t
   :config
@@ -49,7 +51,6 @@
     (setq TeX-auto-save t
           TeX-parse-self t)
 
-
     (after 'tex
       (bind-keys
         :map TeX-mode-map
@@ -57,6 +58,8 @@
         "M-N" 'flycheck-next-error
         "TAB" 'TeX-complete-symbol))))
 
+;; `tex-fold' is part of auctex and provides improved folding commands over the
+;; defaults provided by tex-mode.
 (use-package tex-fold
   :defer t
   :init
