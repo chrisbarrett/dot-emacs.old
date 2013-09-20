@@ -493,7 +493,11 @@ In batch mode, this just prints a summary instead of progress."
                                    shell-command
                                    async-shell-command
                                    shell-command-to-string)
-  "A list of commands that may be escalated using the `%-sudo' macro.")
+  "A list of commands that may be escalated using the `%-sudo' macro.
+
+`%-sudo' operates by modifying the string passed to the shell.
+For this to work, all commands in this list must accept a string
+as their first parameter.")
 
 (defalias '%-quote 'shell-quote-argument)
 
