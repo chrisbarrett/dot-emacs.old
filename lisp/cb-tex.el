@@ -99,10 +99,10 @@
         (when (y-or-n-p (format "Install whizzytex macros into %s? "
                                 (f-dirname whizzytex-sty-installation)))
           ;; Make installation directory and copy package there.
-          ($-sudo ($ "mkdir -p" (f-dirname whizzytex-sty-installation)))
-          ($-sudo ($ "cp -f"
-                     ($-quote (f-join whizzytex-src "whizzytex.sty"))
-                     ($-quote whizzytex-sty-installation))))))
+          (%-sudo (%-sh "mkdir -p" (f-dirname whizzytex-sty-installation)))
+          (%-sudo (%-sh "cp -f"
+                        (%-quote (f-join whizzytex-src "whizzytex.sty"))
+                        (%-quote whizzytex-sty-installation))))))
 
     (hook-fn 'tex-mode-hook
       (cbwh:install-tex-macros)

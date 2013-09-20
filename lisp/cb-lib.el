@@ -487,33 +487,33 @@ In batch mode, this just prints a summary instead of progress."
 
 ;;; ----------------------------------------------------------------------------
 
-(defvar $-sudo-liftable-commands '($
-                                   $-async
-                                   $-string
+(defvar %-sudo-liftable-commands '(%-sh
+                                   %-async
+                                   %-string
                                    shell-command
                                    async-shell-command
                                    shell-command-to-string)
-  "A list of commands that may be escalated using the `$-sudo' macro.")
+  "A list of commands that may be escalated using the `%-sudo' macro.")
 
-(defalias '$-quote 'shell-quote-argument)
+(defalias '%-quote 'shell-quote-argument)
 
-(defun $ (command &rest arguments)
+(defun %-sh (command &rest arguments)
   "Run COMMAND with ARGUMENTS, returning the exit code."
   (shell-command (concat command " " (s-join " " arguments))))
 
-(defun $-string (command &rest arguments)
+(defun %-string (command &rest arguments)
   "Run COMMAND with ARGUMENTS, returning its output as a string."
   (shell-command-to-string (concat command " " (s-join " " arguments))))
 
-(defun $-async (command &rest arguments)
+(defun %-async (command &rest arguments)
   "Run COMMAND with ARGUMENTS, returning its output as a string."
   (async-shell-command (concat command " " (s-join " " arguments))))
 
-(defun $-can-sudo-without-passwd? ()
+(defun %-can-sudo-without-passwd? ()
   "Test whether we are currently able to sudo without entering a password."
   (zerop (shell-command "sudo -n true")))
 
-(defmacro $-sudo (command)
+(defmacro %-sudo (command)
   "Execute a shell command with escalated privileges.
 
 COMMAND must be a direct call to one of the forms listed in
@@ -525,7 +525,7 @@ password if necessary.  Subsequent calls to sudo within the
 timeout period will not require the password again."
   (cl-assert command)
   (cl-assert (listp command))
-  (cl-assert (-contains? $-sudo-liftable-commands (car command)))
+  (cl-assert (-contains? %-sudo-liftable-commands (car command)))
 
   ;; Reach into the command and replace the direct shell command argument,
   ;; wrapping it with a call to sudo.
@@ -535,7 +535,7 @@ timeout period will not require the password again."
   (cl-destructuring-bind (fn cmd &rest args) command
     (let ((g-passwd (cl-gensym))
           (g-result (cl-gensym)))
-      `(-if-let (,g-passwd (unless ($-can-sudo-without-passwd?)
+      `(-if-let (,g-passwd (unless (%-can-sudo-without-passwd?)
                              (read-passwd "Password: ")))
 
            ;; Path 1. The password is required: Consume the password and
