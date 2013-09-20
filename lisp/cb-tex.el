@@ -32,6 +32,11 @@
 (unless (package-installed-p 'auctex)
   (package-install 'auctex))
 
+;; Configure smartparens for latex.
+(after 'smartparens
+  (after 'tex
+    (use-package smartparens-latex)))
+
 ;; `tex' is part of the auctex package and provides features like in-buffer
 ;; formula previews and a rich editing commandset.
 (use-package tex
