@@ -200,6 +200,22 @@
 
 (defvar modeline-mail-indicator nil)
 
+(defvar modeline-custom-description-functions nil
+  "A list of functions.
+The first function returning non-nil is used for the description
+section in the modeline.")
+
+(defun cbmd:description ()
+  "Format the mode line description.
+This will normally be the path and buffer name, unless there is a suitable
+entry in `modeline-custom-description-functions'."
+  (or
+   (-when-let (s (-first 'funcall modeline-custom-description-functions))
+     (propertize (funcall s) 'face 'mode-line-filename))
+   (concat
+    (if (buffer-file-name) (cb:propertize-file-directory) "")
+    (propertize (buffer-name) 'face 'mode-line-filename))))
+
 (setq-default
  mode-line-format
  `(
@@ -244,8 +260,7 @@
    " "
    ;; --------------------------------------------------------------------------
    ;; Buffer name and path.
-   (:eval (if (buffer-file-name) (cb:propertize-file-directory) ""))
-   (:propertize "%b" face mode-line-filename)
+   (:eval (cbmd:description))
 
    ;; --------------------------------------------------------------------------
    ;; Narrowing
