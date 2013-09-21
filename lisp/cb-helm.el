@@ -27,6 +27,7 @@
 ;;; Code:
 
 (require 'use-package)
+(autoload 'helm-read-file-name "helm-mode")
 
 ;; `projectile' adds project-level management and editing commands.
 (use-package projectile
