@@ -1,4 +1,4 @@
-;;; cb-mail.el --- Configuration for emaiL
+;;; cb-mail.el --- Configuration for email
 
 ;; Copyright (C) 2013 Chris Barrett
 
@@ -28,6 +28,7 @@
 
 (require 'use-package)
 (require 'cb-lib)
+(require 'cb-modeline)
 (autoload 'bbdb-record-name "bbdb")
 (autoload 'std11-field-body "std11")
 (autoload 'bbdb-complete-mail "bbdb-com")
@@ -286,6 +287,16 @@ Rewrap in an org-style quote block."
 
 ;; Prepare any messages sent for editing by mutt.
 (add-hook 'server-visit-hook 'org-mutt:maybe-edit)
+
+;; Set the modeline description for mutt messages.
+
+(defun org-mutt:buffer-description ()
+  (when (and
+         (buffer-file-name)
+         (s-contains? "/.mutt/temp/" (buffer-file-name)))
+    (format "Unsent Message [mutt]")))
+
+(add-to-list 'modeline-custom-description-functions 'org-mutt:buffer-description)
 
 ;; -----------------------------------------------------------------------------
 ;; Display unread mail count in mode-line.
