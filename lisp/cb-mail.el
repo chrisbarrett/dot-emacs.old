@@ -293,7 +293,7 @@ Rewrap in an org-style quote block."
 (defun org-mutt:buffer-description ()
   (when (and
          (buffer-file-name)
-         (s-contains? "/.mutt/temp/" (buffer-file-name)))
+         (s-contains? ".mutt/temp/" (buffer-file-name)))
     (format "Unsent Message [mutt]")))
 
 (add-to-list 'modeline-custom-description-functions 'org-mutt:buffer-description)
