@@ -133,6 +133,10 @@
   (after 'org
     (set-face-underline  'org-block-begin-line t)
     (set-face-attribute  'org-block-end-line nil :overline t)
+    (set-face-background 'org-hide 'unspecified)
+    (set-face-foreground 'org-document-info-keyword 'unspecified)
+    (set-face-italic 'org-meta-line nil)
+    (set-face-attribute 'org-document-info-keyword nil :inherit 'org-meta-line)
     (--each (--filter-atoms (and (s-starts-with? "org-level-" (symbol-name it))
                                  (facep it)))
       (unless (equal 'org-level-1 it)
