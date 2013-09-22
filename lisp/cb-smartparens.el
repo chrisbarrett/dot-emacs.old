@@ -140,7 +140,8 @@
     (sp-with-modes (-flatten (list cb:ruby-modes
                                    cb:python-modes
                                    'shell-script-mode
-                                   'makefile-mode))
+                                   'makefile-mode
+                                   'conf-mode))
       (sp-local-pair "'" "'"
        :bind "M-'"
        :actions '(:add insert)
