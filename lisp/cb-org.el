@@ -200,6 +200,7 @@
        ("@errand" . ?e)
        ("@leisure" . ?l)
        ("@home" . ?h)
+       ("@phone" . ?p)
        ("@work" . ?w)
        (:endgroup . nil)))
 
@@ -530,7 +531,7 @@ Non-nil if modifications where made."
                  (file+headline org-default-notes-file "Tasks")
                  ,(s-unlines
                    (concat "* TODO %^{Description}%?    "
-                           ":%^{Context|@anywhere|@errand|@leisure|@home|@project|@work}:")
+                           ":%^{Context|@anywhere|@errand|@leisure|@home|@phone|@work}:")
                    "SCHEDULED: %^{Schedule}t"
                    ":LOGBOOK:"
                    ":CAPTURED: %U"
@@ -567,7 +568,7 @@ Non-nil if modifications where made."
                  (file+headline org-default-notes-file "Habits")
                  ,(s-unlines
                    (concat "* TODO %^{Description}%?    "
-                           ":%^{Context|@anywhere|@errand|@leisure|@home|@project|@work}:")
+                           ":%^{Context|@anywhere|@errand|@leisure|@home|@phone|@work}:")
                    "SCHEDULED: %^{Schedule}t"
                    ":PROPERTIES:"
                    ":STYLE: habit"
@@ -712,12 +713,14 @@ See `cb-org:show-agenda-idle-delay'.")
                     ((tags-todo "@anywhere")
                      (tags-todo "@errand")
                      (tags-todo "@home")
+                     (tags-todo "@phone")
                      (tags-todo "@leisure")
                      (tags-todo "@work")))
                    ("ge" "Errands"  tags-todo "@errand")
+                   ("gp" "Phone"    tags-todo "@phone")
+                   ("gw" "Work"     tags-todo "@work")
                    ("gh" "Home"     tags-todo "@home")
-                   ("gl" "Leisure"  tags-todo "@leisure")
-                   ("gw" "Work"     tags-todo "@work"))
+                   ("gl" "Leisure"  tags-todo "@leisure"))
               (--map-when (listp (cdr it))
                           (append it '(((org-agenda-customise-window-hook
                                          (lambda ()
