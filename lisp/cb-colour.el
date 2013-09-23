@@ -124,6 +124,7 @@
 (defun cb-colour:common-setup ()
   "Perform customisation common to all themes."
   (set-face-underline 'hl-line nil)
+  (set-face-font 'default (format "%s 11" (monospace-font)))
   (after 'helm
     (set-face-underline   'helm-selection nil))
   (after 'smartparens
@@ -145,24 +146,35 @@
 
 (defalias 'black 'tomorrow-night)
 
-(defconst cb:last-theme (concat cb:tmp-dir "last-theme"))
+;; Write current theme to disk whenever the colour theme is changed so it can be
+;; reloaded on startup.
 
-(defun cb-colour:load-last-theme ()
-  (condition-case _
-      (load cb:last-theme nil t t)
-    (error (solarized-light))))
+(defconst cbcl:saved-theme-file (concat cb:tmp-dir "last-theme")
+  "Filepath to a file containing the last selected colour theme.")
 
-(hook-fn 'cb:color-theme-changed-hook
-  (set-face-font 'default (format "%s 11" (monospace-font)))
-  (with-temp-buffer
-    (insert (prin1-to-string _args))
-    (write-file cb:last-theme))
-  (message nil))
+(defun cbcl:save-theme-settings (theme)
+  "Save THEME to a file at `cbcl:saved-theme-file'."
+  (message "Saving theme...")
+  (async-start
+   `(lambda ()
+      (package-initialize)
+      (require 'f)
+      (f-write-text (prin1-to-string '(,theme)) 'utf-8
+                    ,cbcl:saved-theme-file))
+   (lambda (x) (message "Saving theme...done"))))
+
+(add-hook 'cb:color-theme-changed-hook 'cbcl:save-theme-settings)
 
 ;; Load the last colour theme when starting emacs.
 
+(defun cb-colour:load-last-theme ()
+  (condition-case _
+      (load cbcl:saved-theme-file nil t t)
+    (error (solarized-light))))
+
 (unless (true? after-init-time)
   (cb-colour:load-last-theme))
+
 )
 
 (provide 'cb-colour)
