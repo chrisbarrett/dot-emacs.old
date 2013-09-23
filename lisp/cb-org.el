@@ -117,7 +117,7 @@
       "C-o C-k" 'org-capture)
 
     (declare-modal-executor org-show-todo-list
-      :bind "C-o <RET>"
+      :bind "C-o <SPC>"
       :command (progn
                  (org-agenda prefix-arg "t")
                  (org-agenda-filter-apply '("-someday") 'tag)))
