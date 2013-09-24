@@ -132,11 +132,13 @@
 
 (defvar growl-program "growlnotify")
 
-(defun* growl (title
-               message
-               &optional (icon "/Applications/Emacs.app/Contents/Resources/Emacs.icns"))
+(cl-defun growl (title
+                 message
+                 &optional (icon "/Applications/Emacs.app/Contents/Resources/Emacs.icns"))
   "Display a growl notification on localhost.
-The notification will have the given TITLE and MESSAGE."
+The notification will have the given TITLE and MESSAGE.
+
+This is a no-op if growl cannot be found."
   (start-process "growl" " growl"
                  growl-program
                  title
