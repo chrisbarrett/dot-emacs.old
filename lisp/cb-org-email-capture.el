@@ -45,13 +45,13 @@
 ;;;
 ;;; The search path is memoised and should be accessed using the accessor function.
 
+;; String
 (defvar cbom:target-folder nil
   "Folder path to search for messages to use for capturing.")
 
+;; IO String
 (defun cbom:target-folder ()
-  "IO String
-
-Accessor for the variable of the same name.
+  "Accessor for the variable of the same name.
 Return the path to the 'org' folder in the maildir and memoise."
   (or cbom:target-folder
       (let ((dir (->> (f-join user-home-directory "Maildir")
@@ -61,10 +61,9 @@ Return the path to the 'org' folder in the maildir and memoise."
         (setq cbom:target-folder dir)
         dir)))
 
+;; [FilePath] -> IO [(String, FilePath)]
 (defun cbom:unprocessed-messages (dir)
-  "[FilePath] -> IO [(String, FilePath)]
-
-The unprocessed mail in DIR.
+  "The unprocessed mail in DIR.
 DIR should be an IMAP maildir folder containing a subdir called 'new'."
   (let ((new (f-join dir "new")))
     (when (f-exists? new)
@@ -73,22 +72,21 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 
 ;;; Message processing
 
+;; String -> String -> Maybe String
 (defun cbom:message-header-value (header msg)
-  "String -> String -> Maybe String"
   (cadr (s-match (eval `(rx bol ,header ":" (* space) (group (* nonl)))) msg)))
 
+;; String -> Bool
 (defun cbom:multipart-message? (msg)
-  "String -> Bool"
-  (s-matches? "multipart/alternative"
-              (cbom:message-header-value "content-type" msg)))
+  (s-matches? "multipart/alternative" (cbom:message-header-value "content-type" msg)))
 
+;; String -> (String, String)
 (defun cbom:split-message-head-and-body (msg)
-  "String -> (String, String)"
   (let ((div (s-index-of "\n\n" msg)))
     (cons (substring msg 0 div) (substring msg div))))
 
+;; String -> String
 (defun cbom:multipart-body-plaintext-section (msg)
-  "String -> String"
   (cl-destructuring-bind (head . body)
       (cbom:split-message-head-and-body msg)
     (->> body
@@ -106,10 +104,9 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
       (s-trim)
       (s-chop-suffix "="))))
 
+;; (String, FilePath) -> MessagePlist
 (cl-defun cbom:parse-message ((msg path))
-  "(String, FilePath) -> MessagePlist
-
-Read the string MSG parse interesting data into a plist."
+  "Read the string MSG parse interesting data into a plist."
   (list :subject (cbom:message-header-value "subject" msg)
         :filepath path
         :body
@@ -120,33 +117,32 @@ Read the string MSG parse interesting data into a plist."
 
 ;;; Org capture
 
+;; IO [String]
 (defun cbom:capture-keywords ()
-  "IO [String]"
   (-map (-compose 's-downcase 'cadr) org-capture-templates))
 
+;; MessagePlist -> IO Bool
 (defun cbom:capture-candidate? (msg-plist)
-  "MessagePlist -> IO Bool"
   (-contains? (cbom:capture-keywords)
               (s-downcase (plist-get msg-plist :subject))))
 
+;; MessagePlist -> IO (String, String, ...)
 (defun cbom:capture-template-for-plist (msg-plist)
-  "MessagePlist -> IO (String, String, ...)
-
-Find an org capture template corresponding to the subject in MSG-PLIST."
+  "Find an org capture template corresponding to the subject in MSG-PLIST."
   (--first
    (cl-destructuring-bind (_key title &rest rest_) it
      (equal (s-downcase title)
             (s-downcase (plist-get msg-plist :subject))))
    org-capture-templates))
 
+;; MessagePlist -> IO ()
 (defun cbom:growl-notify (msg-plist)
-  "MessagePlist -> IO ()"
   (growl (format "%s Captured" (s-capitalize (plist-get msg-plist :subject)))
          (plist-get msg-plist :body)
          (f-join user-emacs-directory "assets" "org_unicorn.png")))
 
+;; String -> IO String
 (defun cbom:fetch-html-title (url)
-  "String -> IO String"
   (with-current-buffer
       (url-retrieve-synchronously
        (if (s-matches? (rx "http" (? "s") "://") url)
@@ -155,10 +151,9 @@ Find an org capture template corresponding to the subject in MSG-PLIST."
     (cadr (s-match (rx "<title>" (group (* nonl)) "</title>")
                    (buffer-string)))))
 
+;; MessagePlist -> IO ()
 (defun cbom:capture-with-template (msg-plist)
-  "MessagePlist -> IO ()
-
-Capture the data in MSG-PLIST into the destination in its
+  "Capture the data in MSG-PLIST into the destination in its
 correspoding capture template."
   (cl-destructuring-bind (key &rest rest_)
       (cbom:capture-template-for-plist msg-plist)
@@ -186,14 +181,14 @@ correspoding capture template."
           (org-insert-subheading subtree-append)
           (insert heading)))))))
 
+;; MessagePlist -> IO ()
 (defun cbom:move-message-to-read (msg-plist)
-  "MessagePlist -> IO ()
-
-Move an unread message into the corresponding cur directory."
+  "Move an unread message into the corresponding cur directory."
   (let* ((new (plist-get msg-plist :filepath))
          (cur (f-join (f-parent (f-dirname new)) "cur")))
     (f-move new cur)))
 
+;; IO ()
 (defun cbom:capture-messages ()
   "Parse and capture unread messages in `cbom:target-folder'.
 Captures messages subjects match one of the values in `org-capture-templates'.
@@ -209,6 +204,7 @@ Captured messages are marked as read."
           (cbom:growl-notify it)
           (cbom:move-message-to-read it))))))
 
+;; Timer
 (defvar cbom:capture-timer
   (run-with-timer 0 10 'cbom:capture-messages))
 
