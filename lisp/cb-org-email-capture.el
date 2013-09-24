@@ -136,7 +136,7 @@ Find an org capture template corresponding to the subject in MSG-PLIST."
   "String -> IO String"
   (with-current-buffer
       (url-retrieve-synchronously
-       (if (s-starts-with? "http://" url)
+       (if (s-matches? (rx "http" (? "s") "://") url)
            url
          (s-prepend "http://" url)))
     (cadr (s-match (rx "<title>" (group (* nonl)) "</title>")
