@@ -53,8 +53,8 @@
     (when (cb:special-elisp-buffer?)
       (flycheck-select-checker 'emacs-lisp)))
 
-  (setq flycheck-emacs-lisp-load-path (list cb:lib-dir
-                                            cb:lisp-dir)))
+  (setq-default flycheck-emacs-lisp-load-path
+                (list cb:lib-dir cb:lisp-dir)))
 
 (after 'projectile
 
