@@ -47,6 +47,12 @@
     (use-package preview)
     (use-package latex)
 
+    ;; HACK: Set tex mode in a very manual way, because something is overriding
+    ;; it.
+    (hook-fn 'find-file-hook
+      (when (equal "tex" (f-ext (buffer-file-name)))
+        (TeX-mode)))
+
     (TeX-global-PDF-mode +1)
 
     (defadvice TeX-complete-symbol (after position-point activate)
