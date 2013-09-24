@@ -122,13 +122,13 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 (defun cbom:find-url (str)
   "Extract the first URL from STR. Performs loose matching."
   (car (s-match
-        (rx (or
+        (rx bow
+            (or
              ;; Match URLs, with and without protocol.
              (and "http" (? "s") "://")
              (and "www." (* alnum) ".")
              ;; Loosely match strings with common TLDs,
-             (and bos (* alnum) "."
-                  (or "edu" "net" "gov" "com" "biz" "org" "info" "co.")))
+             (and (+ alnum) "." (or "edu" "net" "gov" "com" "biz" "org" "info" "co.")))
             (* (not (any space "\n" "\r"))))
         str)))
 
