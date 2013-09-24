@@ -487,6 +487,30 @@ In batch mode, this just prints a summary instead of progress."
 
 ;;; ----------------------------------------------------------------------------
 
+;;; Growl Notifications
+
+(defvar growl-program "growlnotify")
+
+(cl-defun growl (title
+                 message
+                 &optional (icon "/Applications/Emacs.app/Contents/Resources/Emacs.icns"))
+  "Display a growl notification on localhost.
+The notification will have the given TITLE and MESSAGE.
+
+This is a no-op if growl cannot be found."
+  (when (executable-find growl-program)
+    (start-process "growl" " growl"
+                   growl-program
+                   title
+                   "-n" "Emacs"
+                   "-a" "Emacs"
+                   "--image" icon)
+    (process-send-string " growl" message)
+    (process-send-string " growl" "\n")
+    (process-send-eof " growl")))
+
+;;; ----------------------------------------------------------------------------
+
 (defvar %-sudo-liftable-commands '(%-sh
                                    %-async
                                    %-string
