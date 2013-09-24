@@ -230,6 +230,24 @@ correspoding capture template."
           (org-insert-subheading subtree-append)
           (insert heading)))))))
 
+;; IO ()
+(defun cbom:dispatch-agenda-email ()
+  ""
+  (let ((inhibit-redisplay t))
+    (-when-let (key (car (--first (s-matches? "email" (cdr it))
+                                  org-capture-templates)))
+      (org-capture nil key))))
+
+;; MessagePlist -> IO ()
+(defun cbom:capture (msg-plist)
+  "Read MSG-PLIST and execute the appropriate handler."
+  (let ((subj (plist-get msg-plist :subject)))
+    (cond
+     ((s-matches? "agenda" subj)
+      (cbom:dispatch-agenda-email))
+     (t
+      (cbom:capture-with-template msg-plist)))))
+
 ;; MessagePlist -> IO ()
 (defun cbom:move-message-to-read (msg-plist)
   "Move an unread message into the corresponding cur directory."
@@ -248,7 +266,7 @@ Captured messages are marked as read."
       (--each (-map 'cbom:parse-message
                     (cbom:unprocessed-messages (cbom:target-folder)))
         (atomic-change-group
-          (cbom:capture-with-template it)
+          (cbom:capture it)
           (cbom:growl-notify it)
           (cbom:move-message-to-read it))))))
 
