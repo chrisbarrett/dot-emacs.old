@@ -166,8 +166,8 @@ correspoding capture template."
          ((s-matches? "link" type)
           (org-insert-subheading subtree-append)
           (org-insert-link nil heading
-                           (ignore-errors
-                             (cbom:fetch-html-title heading))))
+                           (or (ignore-errors (cbom:fetch-html-title heading))
+                               heading)))
          ;; Otherwise insert the plain heading.
          (t
           (org-insert-subheading subtree-append)
