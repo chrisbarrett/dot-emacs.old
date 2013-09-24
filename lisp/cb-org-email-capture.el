@@ -26,10 +26,38 @@
 ;; path of a maildir folder to search for capturable tasks.
 ;;
 ;; I have a server-side rule set up that moves any messages from my own address
-;; to a folder called 'org'.
+;; to a folder called 'org'. This is the default maildir folder that will be searched.
 ;;
-;; Once configured, you can send yourself an email and org will automatically capture
-;; the contents if it can find a task matching the subject line.
+;; This package works by associating message subjects with capture
+;; templates. You should customise `org-capture-templates' to include actions
+;; with the following titles:
+;;
+;; * Todo
+;; * Note
+;; * Link
+;; * Email
+;; * Diary
+;;
+;; Once configured, you can send yourself an email and this package will perform
+;; an action:
+;;
+;; * Messages with the 'todo' or 'link' subjects will have the message body
+;;   added at the appropriate capture destination.
+;;
+;; * Messages whose body contains a link will be captured as a link.
+;;
+;; * Messages with 'diary' as the subject will be added to the diary. The first line
+;;   in the message body is read by the org date parser, so you can write dates like
+;;   'mon', '+3d', 'aug 10', etc. The next line is used for the entry's title.
+;;
+;; * Messages with 'agenda' as the subject will invoke a special 'Email'
+;;   action. I have this configured to mail me a formatted copy of my agenda for
+;;   the day.
+;;
+;; * In any other case, the message will be inserted at the appropriate tree for
+;;   its capture template. If a capture template cannot be found, it will be inserted
+;;   as a note using the 'Note' template.
+;;
 
 ;;; Code:
 
