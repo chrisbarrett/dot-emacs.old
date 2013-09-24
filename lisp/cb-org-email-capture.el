@@ -186,14 +186,15 @@ Move an unread message into the corresponding cur directory."
 Captures messages subjects match one of the values in `org-capture-templates'.
 Captured messages are marked as read."
   (interactive)
-  (save-excursion
-    (--each (->> (cbom:unprocessed-messages cbom:target-folder)
-              (-map 'cbom:parse-message)
-              (-filter 'cbom:capture-candidate?))
-      (atomic-change-group
-        (cbom:capture-with-template! it)
-        (cbom:growl-notify it)
-        (cbom:move-message-to-read! it)))))
+  (save-window-excursion
+    (save-excursion
+      (--each (->> (cbom:unprocessed-messages cbom:target-folder)
+                (-map 'cbom:parse-message)
+                (-filter 'cbom:capture-candidate?))
+        (atomic-change-group
+          (cbom:capture-with-template! it)
+          (cbom:growl-notify it)
+          (cbom:move-message-to-read! it))))))
 
 (defvar cbom:capture-timer
   (run-with-timer 0 10 'cbom:capture-messages))
