@@ -251,9 +251,13 @@ Captured messages are marked as read."
           (cbom:growl-notify it)
           (cbom:move-message-to-read it))))))
 
-;; Timer
-(defvar cbom:capture-timer
-  (run-with-timer 0 10 'cbom:capture-messages))
+;;; Timer
+;;;
+;;; Run after init to ensure it does not interfere with the agenda startup.
+
+(hook-fn 'after-init-hook
+  (defvar cbom:capture-timer
+    (run-with-timer 5 10 'cbom:capture-messages)))
 
 (provide 'cb-org-email-capture)
 
