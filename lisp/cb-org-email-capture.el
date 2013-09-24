@@ -22,8 +22,8 @@
 
 ;;; Commentary:
 
-;; Capture tasks from emails in maildir. Set cbom:target-folder to the path of a
-;; maildir folder to search for capturable tasks.
+;; Capture tasks from emails in maildir. Set `cbom:target-folder' to the
+;; path of a maildir folder to search for capturable tasks.
 ;;
 ;; I have a server-side rule set up that moves any messages from my own address
 ;; to a folder called 'org'.
@@ -41,12 +41,23 @@
 (autoload 'org-capture-goto-target "org-capture")
 (autoload 'org-insert-subheading "org")
 
-(defvar cbom:target-folder (->> (f-join user-home-directory "Maildir")
-                             (f-directories)
-                             (-mapcat 'f-directories)
-                             (--first (s-ends-with? "org" it))))
-
 ;;; Message reading
+;;;
+;;; The search path is memoised and should be accessed using the accessor function.
+
+(defvar cbom:target-folder nil
+  "Folder path to search for messages to use for capturing.")
+
+(defun cbom:target-folder ()
+  "Return the value of `cbom:target-folder' if it is set.
+Otherwise initialise that variable."
+  (or cbom:target-folder
+      (let ((dir (->> (f-join user-home-directory "Maildir")
+                   (f-directories)
+                   (-mapcat 'f-directories)
+                   (--first (s-ends-with? "org" it)))))
+        (setq cbom:target-folder dir)
+        dir)))
 
 (defun cbom:unprocessed-messages (dir)
   "[FilePath] -> IO [(String, FilePath)]
@@ -188,7 +199,7 @@ Captured messages are marked as read."
   (interactive)
   (save-window-excursion
     (save-excursion
-      (--each (->> (cbom:unprocessed-messages cbom:target-folder)
+      (--each (->> (cbom:unprocessed-messages (cbom:target-folder))
                 (-map 'cbom:parse-message)
                 (-filter 'cbom:capture-candidate?))
         (atomic-change-group
