@@ -36,10 +36,11 @@
 (require 'cb-lib)
 (require 'cb-paths)
 (require 'async)
-(autoload 'org-insert-link "org")
-(autoload 'org-insert-todo-subheading "org")
 (autoload 'org-capture-goto-target "org-capture")
+(autoload 'org-insert-link "org")
 (autoload 'org-insert-subheading "org")
+(autoload 'org-insert-todo-subheading "org")
+(autoload 'org-read-date "org")
 
 ;;; Message reading
 ;;;
