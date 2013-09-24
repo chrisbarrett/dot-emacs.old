@@ -154,24 +154,24 @@ correspoding capture template."
       (end-of-line)
       ;; Insert appropriate header, depending on capture type.
       (let ((heading (plist-get msg-plist :body))
-            (subtree-append '(16)))
-        (cl-case (s-downcase (plist-get msg-plist :subject))
-          ;; Capture todos.
-          (("todo")
-           (org-insert-todo-subheading subtree-append)
-           (insert (format "TODO %s" heading)))
-          ;; Capture links.
-          ;; Assume the heading is a well-formed link.
-          (("link")
-           (org-insert-subheading subtree-append)
-           (org-insert-link nil heading
-                            (ignore-errors
-                              (cbom:fetch-html-title heading))))
-          ;; Otherwise insert the plain heading.
-          (t
-           (org-insert-subheading subtree-append)
-           (insert heading)))
-        (newline)))))
+            (subtree-append '(16))
+            (type (plist-get msg-plist :subject)))
+        (cond
+         ;; Capture todos.
+         ((s-matches? "todo" type)
+          (org-insert-todo-subheading subtree-append)
+          (insert heading))
+         ;; Capture links.
+         ;; Assume the heading is a well-formed link.
+         ((s-matches? "link" type)
+          (org-insert-subheading subtree-append)
+          (org-insert-link nil heading
+                           (ignore-errors
+                             (cbom:fetch-html-title heading))))
+         ;; Otherwise insert the plain heading.
+         (t
+          (org-insert-subheading subtree-append)
+          (insert heading)))))))
 
 (defun cbom:move-message-to-read! (msg-plist)
   "MessagePlist -> IO ()
