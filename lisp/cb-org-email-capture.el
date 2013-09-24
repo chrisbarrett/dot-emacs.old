@@ -142,7 +142,7 @@ Find an org capture template corresponding to the subject in MSG-PLIST."
     (cadr (s-match (rx "<title>" (group (* nonl)) "</title>")
                    (buffer-string)))))
 
-(defun cbom:capture-with-template! (msg-plist)
+(defun cbom:capture-with-template (msg-plist)
   "MessagePlist -> IO ()
 
 Capture the data in MSG-PLIST into the destination in its
@@ -173,7 +173,7 @@ correspoding capture template."
           (org-insert-subheading subtree-append)
           (insert heading)))))))
 
-(defun cbom:move-message-to-read! (msg-plist)
+(defun cbom:move-message-to-read (msg-plist)
   "MessagePlist -> IO ()
 
 Move an unread message into the corresponding cur directory."
@@ -192,9 +192,9 @@ Captured messages are marked as read."
                 (-map 'cbom:parse-message)
                 (-filter 'cbom:capture-candidate?))
         (atomic-change-group
-          (cbom:capture-with-template! it)
+          (cbom:capture-with-template it)
           (cbom:growl-notify it)
-          (cbom:move-message-to-read! it))))))
+          (cbom:move-message-to-read it))))))
 
 (defvar cbom:capture-timer
   (run-with-timer 0 10 'cbom:capture-messages))
