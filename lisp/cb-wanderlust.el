@@ -175,7 +175,6 @@
       (hook-fn 'mime-view-mode-hook
         (evil-local-set-key 'normal "q" 'delete-window )))))
 
-
 (provide 'cb-wanderlust)
 
 ;; Local Variables:
