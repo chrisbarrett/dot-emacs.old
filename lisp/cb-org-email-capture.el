@@ -96,8 +96,10 @@ Return the path to the 'org' folder in the maildir and memoise."
 DIR should be an IMAP maildir folder containing a subdir called 'new'."
   (let ((new (f-join dir "new")))
     (when (f-exists? new)
-      (-map (-juxt 'f-read-text 'identity)
-            (f-files new)))))
+      (->> (f-files new)
+        (-map (-juxt 'f-read-text 'identity))
+        ;; Remove messages dispatched by org functions, like the agenda.
+        (--remove (s-starts-with? "[org]" (car it)))))))
 
 ;;; Message processing
 
