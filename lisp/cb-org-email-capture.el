@@ -104,11 +104,22 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
       (s-trim)
       (s-chop-suffix "="))))
 
+(defun cbom:fuzzy-parse-subject (subject)
+  "Map the SUBJECT of a message to a capture action."
+  (cond
+   ((s-matches? "link" subject) "link")
+   ((s-matches? "todo" subject) "todo")
+   (t
+    subject)))
+
 ;; (String, FilePath) -> MessagePlist
 (cl-defun cbom:parse-message ((msg path))
   "Read the string MSG parse interesting data into a plist."
-  (list :subject (cbom:message-header-value "subject" msg)
-        :filepath path
+  (list :filepath path
+
+        :subject
+        (cbom:fuzzy-parse-subject (cbom:message-header-value "subject" msg))
+
         :body
         (s-trim
          (if (cbom:multipart-message? msg)
