@@ -88,6 +88,11 @@
   :config
   (progn
     (smartparens-global-mode +1)
+
+    ;; Use strict version of smartparens for programming
+    (hook-fns '(prog-mode-hook cb:markup-modes-hook)
+      (smartparens-strict-mode +1))
+
     (show-smartparens-global-mode +1)
     (require 'smartparens-config)
 
