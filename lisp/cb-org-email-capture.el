@@ -183,6 +183,8 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
        (if (s-matches? (rx "http" (? "s") "://") url)
            url
          (s-prepend "http://" url)))
+    ;; Clear request status.
+    (message nil)
     (cadr (s-match (rx "<title>" (group (* nonl)) "</title>")
                    (buffer-string)))))
 
