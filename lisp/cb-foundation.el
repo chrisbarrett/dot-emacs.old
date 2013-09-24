@@ -28,23 +28,8 @@
 
 (require 'use-package)
 (require 'cb-lib)
+(require 'cb-paths)
 (require 'noflet)
-
-(defvar user-home-directory (concat (getenv "HOME") "/"))
-(defvar user-dropbox-directory (concat user-home-directory "Dropbox/"))
-
-(define-path cb:assets-dir       "assets/")
-(define-path cb:autosaves-dir "tmp/autosaves/")
-(define-path cb:backups-dir   "backups/")
-(define-path cb:bin-dir       "bin/")
-(define-path cb:el-get-dir    "el-get")
-(define-path cb:elpa-dir      "elpa/")
-(define-path cb:etc-dir       "etc/")
-(define-path cb:lib-dir       "lib/" t)
-(define-path cb:lisp-dir      "lisp/" t)
-(define-path cb:src-dir       "src")
-(define-path cb:tmp-dir       "tmp/")
-(define-path cb:yasnippet-dir "snippets/")
 
 (autoload 'edebug-step-mode "edebug")
 (autoload 'thing-at-point-looking-at "thingatpt")
