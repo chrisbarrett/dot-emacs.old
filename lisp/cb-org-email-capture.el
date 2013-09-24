@@ -104,27 +104,46 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
       (s-trim)
       (s-chop-suffix "="))))
 
+;; String -> String
 (defun cbom:fuzzy-parse-subject (subject)
   "Map the SUBJECT of a message to a capture action."
   (cond
    ((s-matches? "link" subject) "link")
    ((s-matches? "todo" subject) "todo")
+   ((s-matches? "book" subject) "reading")
+   ((s-matches? "song" subject) "listening")
+   ((s-matches? "music" subject) "listening")
+   ((s-matches? "album" subject) "listening")
    (t
     subject)))
 
+;; String -> Maybe String
+(defun cbom:find-url (str)
+  "Extract the first URL from STR."
+  (car (s-match
+        (rx (or (and "http" (? "s") "://")
+                (and "www." (* alnum) ".")
+                (and bos (* alnum) "." (or "com" "org" "co")))
+            (* (not (any space "\n" "\r"))))
+        str)))
+
 ;; (String, FilePath) -> MessagePlist
 (cl-defun cbom:parse-message ((msg path))
-  "Read the string MSG parse interesting data into a plist."
-  (list :filepath path
-
-        :subject
-        (cbom:fuzzy-parse-subject (cbom:message-header-value "subject" msg))
-
-        :body
-        (s-trim
-         (if (cbom:multipart-message? msg)
-             (cbom:multipart-body-plaintext-section msg)
-           (cdr (cbom:split-message-head-and-body msg))))))
+  "Parse message body, preferentially selecting links."
+  ;; Parse the body. We look at the body to determine if it's just a link.
+  (-if-let* ((body (if (cbom:multipart-message? msg)
+                       (cbom:multipart-body-plaintext-section msg)
+                     (cdr (cbom:split-message-head-and-body msg))))
+             (url (cbom:find-url body)))
+      ;; If the body contains a url, capture that.
+      (list :filepath path
+            :body url
+            :subject "link")
+    ;; Otherwise parse the subject.
+    (list :filepath path
+          :body (s-trim body)
+          :subject (cbom:fuzzy-parse-subject
+                    (cbom:message-header-value "subject" msg)))))
 
 ;;; Org capture
 
