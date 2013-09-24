@@ -353,7 +353,8 @@
     (unless (derived-mode-p 'org-mode)
       (orglink-mode +1)))
   :config
-  (setq orglink-mode-lighter nil))
+  (setq orglink-mode-lighter nil
+        orglink-activate-links '(angle plain)))
 
 ;; Define pairs for org-mode blocks.
 (after 'smartparens
