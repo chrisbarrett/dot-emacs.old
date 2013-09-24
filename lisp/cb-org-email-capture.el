@@ -189,10 +189,11 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 (defun cbom:capture-with-template (msg-plist)
   "Capture the data in MSG-PLIST into the destination in its
 correspoding capture template."
-  (cl-destructuring-bind (key &rest rest_)
+  (cl-destructuring-bind (&optional key &rest rest_)
       (cbom:capture-template-for-plist msg-plist)
     (save-excursion
-      (org-capture-goto-target key)
+      ;; Capture as a note if a suitable template cannot be found.
+      (org-capture-goto-target (or key "n"))
       (end-of-line)
       ;; Insert appropriate header, depending on capture type.
       (let ((heading (plist-get msg-plist :body))
@@ -230,9 +231,8 @@ Captured messages are marked as read."
   (interactive)
   (save-window-excursion
     (save-excursion
-      (--each (->> (cbom:unprocessed-messages (cbom:target-folder))
-                (-map 'cbom:parse-message)
-                (-filter 'cbom:capture-candidate?))
+      (--each (-map 'cbom:parse-message
+                    (cbom:unprocessed-messages (cbom:target-folder)))
         (atomic-change-group
           (cbom:capture-with-template it)
           (cbom:growl-notify it)
