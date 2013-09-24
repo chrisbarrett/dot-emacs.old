@@ -202,12 +202,13 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 ;; MessagePlist -> IO ()
 (defun cbom:growl-notify (msg-plist)
   (let ((type (plist-get msg-plist :subject))
-        (icon (f-join user-emacs-directory "assets" "org_unicorn.png")))
+        (icon (f-join user-emacs-directory "assets" "org_unicorn.png"))
+        (body (plist-get msg-plist :body)))
     (cond
      ((s-matches? "agenda" type)
       (growl "Agenda Emailed" "" icon))
      (t
-      (growl (format "%s Captured" (s-capitalize type)) (plist-get msg-plist :body) icon)))))
+      (growl (format "%s Captured" (s-capitalize type)) body icon)))))
 
 ;; String -> IO String
 (defun cbom:fetch-html-title (url)
@@ -266,7 +267,7 @@ correspoding capture template."
 (defun cbom:dispatch-agenda-email ()
   ""
   (let ((inhibit-redisplay t))
-    (-when-let (key (car (--first (s-matches? "email" (cdr it))
+    (-when-let (key (car (--first (s-matches? "email" (cadr it))
                                   org-capture-templates)))
       (org-capture nil key))))
 
