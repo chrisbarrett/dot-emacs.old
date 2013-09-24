@@ -71,6 +71,12 @@
         "M-m" 'helm-man-woman
         "M-w" 'helm-w3m-bookmarks))))
 
+;; `helm-adaptive'
+(use-package helm-adaptative
+  :defer t
+  :config
+  (setq helm-adaptive-history-file (f-join cb:tmp-dir "helm-adaptive-history")))
+
 ;; `helm-projectile' adds a helm command for selecting files or buffers in the
 ;; current project.
 (use-package helm-projectile
