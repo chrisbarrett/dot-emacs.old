@@ -49,8 +49,10 @@
   "Folder path to search for messages to use for capturing.")
 
 (defun cbom:target-folder ()
-  "Return the value of `cbom:target-folder' if it is set.
-Otherwise initialise that variable."
+  "IO String
+
+Accessor for the variable of the same name.
+Return the path to the 'org' folder in the maildir and memoise."
   (or cbom:target-folder
       (let ((dir (->> (f-join user-home-directory "Maildir")
                    (f-directories)
