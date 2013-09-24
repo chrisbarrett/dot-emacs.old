@@ -207,10 +207,10 @@ The original state can be restored by calling (restore) in BODY."
 
 * COMMAND is a function or sexp to evaluate.
 
-* KEY-BINDING is used to globally invoke the command.
+* BIND is a key binding used to globally invoke the command.
 
 * RESTORE-BINDINGS are key commands that will restore the buffer
-state.  If none are given, KEY-BINDING will be used as the
+state.  If none are given, BIND will be used as the
 restore key."
   (declare (indent defun))
   (let ((fname (intern (format "executor:%s" name))))
