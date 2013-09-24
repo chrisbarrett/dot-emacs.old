@@ -188,6 +188,11 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
     (cadr (s-match (rx "<title>" (group (* nonl)) "</title>")
                    (buffer-string)))))
 
+;; String -> String
+(defun cbom:format-diary-entry (str)
+  (cl-destructuring-bind (date title) (s-lines str)
+    (format "%s\n<%s>" title (org-read-date nil nil date))))
+
 ;; MessagePlist -> IO ()
 (defun cbom:capture-with-template (msg-plist)
   "Capture the data in MSG-PLIST into the destination in its
@@ -214,6 +219,11 @@ correspoding capture template."
           (org-insert-link nil heading
                            (or (ignore-errors (cbom:fetch-html-title heading))
                                heading)))
+         ;; Capture diary entries.
+         ((s-matches? (rx (or "diary" "calendar" "appt" "appointment")) type)
+          (org-insert-subheading subtree-append)
+          (insert (cbom:format-diary-entry heading)))
+
          ;; Otherwise insert the plain heading.
          (t
           (org-insert-subheading subtree-append)
