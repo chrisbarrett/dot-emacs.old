@@ -374,6 +374,8 @@ rather than the app bundle."
 
 (bind-key* "C-/" 'quick-calc)
 
+(bind-key* "S-SPC" 'execute-extended-command)
+
 (provide 'cb-foundation)
 
 ;; Local Variables:
