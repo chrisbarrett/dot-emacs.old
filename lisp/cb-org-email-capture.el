@@ -304,7 +304,10 @@ correspoding capture template."
          ;; Otherwise insert the plain heading.
          (t
           (org-insert-subheading subtree-append)
-          (insert heading)))))))
+          (insert heading)))
+        ;; Insert captured timestamp
+        (org-set-property "CAPTURED" (s-with-temp-buffer
+                                       (org-insert-time-stamp (current-time) t 'inactive)))))))
 
 ;; IO ()
 (defun cbom:dispatch-agenda-email ()
