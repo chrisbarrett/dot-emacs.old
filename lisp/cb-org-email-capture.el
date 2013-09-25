@@ -272,6 +272,24 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
   (cl-destructuring-bind (date title) (s-lines str)
     (format "%s\n<%s>" title (org-read-date nil nil date))))
 
+;; String -> String
+(defun cbom:format-todo (str)
+  (let* ((lns (->> (s-lines str) (-map 's-trim) (-remove 's-blank?)))
+         (sched (->> lns
+                  (--keep (s-match (rx bol "s" (+ space) (group (* nonl))) it))
+                  (-map 'cadr)
+                  (car)))
+         (deadl (->> lns
+                  (--keep (s-match (rx bol "d" (+ space) (group (* nonl))) it))
+                  (-map 'cadr)
+                  (car)))
+         (title (--first (not (s-matches? (rx bol (or "s" "d") (+ space)) it))
+                         lns)))
+    (concat
+     title
+     (when sched (format "\nSCHEDULED: <%s>" (org-read-date nil nil sched)))
+     (when deadl (format "\nDEADLINE: <%s>" (org-read-date nil nil deadl))))))
+
 ;; MessagePlist -> IO ()
 (defun cbom:capture-with-template (msg-plist)
   "Capture the data in MSG-PLIST into the destination in its
@@ -283,30 +301,30 @@ correspoding capture template."
       (org-capture-goto-target (or key "n"))
       (end-of-line)
       ;; Insert appropriate header, depending on capture type.
-      (let ((heading (plist-get msg-plist :body))
+      (let ((msg (plist-get msg-plist :body))
             (subtree-append '(16))
             (type (plist-get msg-plist :subject)))
         (cond
          ;; Capture todos.
          ((s-matches? "todo" type)
           (org-insert-todo-subheading subtree-append)
-          (insert heading))
+          (insert (cbom:format-todo msg)))
          ;; Capture links.
-         ;; Assume the heading is a well-formed link.
+         ;; Assume the message body is a well-formed link.
          ((s-matches? "link" type)
           (org-insert-subheading subtree-append)
-          (org-insert-link nil heading
-                           (or (ignore-errors (cbom:fetch-html-title heading))
-                               heading)))
+          (org-insert-link nil msg
+                           (or (ignore-errors (cbom:fetch-html-title msg))
+                               msg)))
          ;; Capture diary entries.
          ((s-matches? (rx (or "diary" "calendar" "appt" "appointment")) type)
           (org-insert-subheading subtree-append)
-          (insert (cbom:format-diary-entry heading)))
+          (insert (cbom:format-diary-entry msg)))
 
          ;; Otherwise insert the plain heading.
          (t
           (org-insert-subheading subtree-append)
-          (insert heading)))
+          (insert msg)))
         ;; Insert captured timestamp
         (org-set-property "CAPTURED" (s-with-temp-buffer
                                        (org-insert-time-stamp (current-time) t 'inactive)))))))
