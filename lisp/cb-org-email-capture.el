@@ -226,7 +226,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
      :url (cbom:find-url body)
      :title
      (->> lns
-       (--remove (s-matches? (rx bol (or "s" "d") (+ space)) it))
+       (--remove (s-matches? (rx bol (or "s" "d" "t") (+ space)) it))
        (s-join "\n"))
      :scheduled
      (->> lns
@@ -238,6 +238,11 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
        (--keep (s-match (rx bol "d" (+ space) (group (* nonl))) it))
        (-map 'cadr)
        (car))
+     :tags
+     (->> lns
+       (--keep (s-match (rx bol "t" (+ space) (group (* nonl))) it))
+       (-mapcat (-compose 's-split-words 'cadr))
+       (-distinct))
      :kind
      (cbom:parse-subject (cbom:message-header-value "subject" msg)))))
 
@@ -322,6 +327,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
     (cbom:goto-capture-site (plist-get msg-plist :kind))
     (org-insert-subheading '(16))
     (insert (apply 'cbom:format-for-insertion msg-plist))
+    (org-set-tags-to (plist-get msg-plist :tags))
     (org-set-property
      "CAPTURED"
      (s-with-temp-buffer
