@@ -22,7 +22,7 @@
 
 ;;; Commentary:
 
-;; Capture tasks from emails in maildir. Set `cbom:target-folder' to the
+;; Capture tasks from emails in maildir. Set `cbom:org-mail-folder' to the
 ;; path of a maildir folder to search for capturable tasks.
 ;;
 ;; I have a server-side rule set up that moves any messages from my own address
@@ -79,24 +79,45 @@
 (autoload 'org-insert-todo-subheading "org")
 (autoload 'org-read-date "org")
 
+;;; Customisable interface
+
+;; FilePath
+(defvar cbom:org-mail-folder nil
+  "Folder path to search for messages to use for capturing.")
+
+;; FilePath
+(defvar cbom:org-deleted-mail-folder nil
+  "Folder path to move items to when deleting.")
+
+;;; Internal
+
 ;;; Message reading
 ;;;
 ;;; The search path is memoised and should be accessed using the accessor function.
 
-;; String
-(defvar cbom:target-folder nil
-  "Folder path to search for messages to use for capturing.")
-
-;; IO String
-(defun cbom:target-folder ()
+;; IO FilePath
+(defun cbom:org-mail-folder ()
   "Accessor for the variable of the same name.
 Return the path to the 'org' folder in the maildir and memoise."
-  (or cbom:target-folder
+  (or cbom:org-mail-folder
       (let ((dir (->> (f-join user-home-directory "Maildir")
                    (f-directories)
                    (-mapcat 'f-directories)
                    (--first (s-ends-with? "org" it)))))
-        (setq cbom:target-folder dir)
+        (setq cbom:org-mail-folder dir)
+        dir)))
+
+;; IO FilePath
+(defun cbom:org-deleted-mail-folder ()
+  "Accessor for the variable of the same name.
+Return the path to the 'trash' folder in the deleted-maildir and memoise."
+  (or cbom:org-deleted-mail-folder
+      (let ((dir (->> (f-join user-home-directory "Maildir")
+                   (f-directories)
+                   (-mapcat 'f-directories)
+                   (--first (s-matches? (rx (or "trash" "deleted"))
+                                        (car (last (s-split (f-path-separator) it))))))))
+        (setq cbom:org-deleted-mail-folder dir)
         dir)))
 
 ;; String -> Bool
@@ -314,14 +335,14 @@ correspoding capture template."
 
 ;; IO ()
 (defun cbom:capture-messages ()
-  "Parse and capture unread messages in `cbom:target-folder'.
+  "Parse and capture unread messages in `cbom:org-mail-folder'.
 Captures messages subjects match one of the values in `org-capture-templates'.
 Captured messages are marked as read."
   (interactive)
   (save-window-excursion
     (save-excursion
       (--each (-map 'cbom:parse-message
-                    (cbom:unprocessed-messages (cbom:target-folder)))
+                    (cbom:unprocessed-messages (cbom:org-mail-folder)))
         (atomic-change-group
           (cbom:capture it)
           (cbom:growl-notify it)
