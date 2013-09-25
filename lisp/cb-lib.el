@@ -339,6 +339,13 @@ Find the first window where PRED-FORM is not nil."
   "Concatenate FORMAT-STRS then pass them to `s-lex-format'."
   `(s-lex-format ,(apply 'concat format-strs)))
 
+(defmacro s-with-temp-buffer (&rest body)
+  "Evaluate BODY in a temporary buffer and return the buffer string."
+  (declare (indent 0) (debug t))
+  `(with-temp-buffer
+     ,@body
+     (buffer-string)))
+
 ;; -----------------------------------------------------------------------------
 
 (defun filter-atoms (predicate)
