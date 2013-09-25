@@ -350,12 +350,11 @@ Captured messages are marked as read."
           (cbom:remove-message it))))))
 
 ;;; Timer
-;;;
-;;; Run after init to ensure it does not interfere with the agenda startup.
 
-(hook-fn 'after-init-hook
-  (defvar cbom:capture-timer
-    (run-with-timer 5 10 'cbom:capture-messages)))
+(defvar cbom:capture-timer
+  (run-with-timer 5 10 (lambda ()
+                         (when (featurep 'org)
+                           (cbom:capture-messages)))))
 
 (provide 'cb-org-email-capture)
 
