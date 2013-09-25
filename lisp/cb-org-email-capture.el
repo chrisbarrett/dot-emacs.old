@@ -93,44 +93,28 @@
 
 ;;; Customisable interface
 
-;; FilePath
-(defvar cbom:org-mail-folder nil
-  "Folder path to search for messages to use for capturing.")
+;; IO FilePath
+(defvar cbom:org-mail-folder
+  (lambda ()
+    (->> (f-join user-home-directory "Maildir")
+      (f-directories)
+      (-mapcat 'f-directories)
+      (--first (s-ends-with? "org" it))))
+  "A function returning the maildir folder to capture from.")
 
-;; FilePath
-(defvar cbom:org-processed-mail-folder nil
-  "Folder path to move items once processed.")
+;; IO FilePath
+(defvar cbom:org-processed-mail-folder
+  (lambda ()
+    (->> (f-join user-home-directory "Maildir")
+      (f-directories)
+      (-mapcat 'f-directories)
+      (--first (s-matches? (rx (or "trash" "deleted"))
+                           (car (last (s-split (f-path-separator) it)))))))
+  "A function returning the maildir folder to move items to once processed.")
 
 ;;; Internal
 
 ;;; Message reading
-;;;
-;;; The search path is memoised and should be accessed using the accessor function.
-
-;; IO FilePath
-(defun cbom:org-mail-folder ()
-  "Accessor for the variable of the same name.
-By default, return the path to the maildir 'org' folder and memoise."
-  (or cbom:org-mail-folder
-      (let ((dir (->> (f-join user-home-directory "Maildir")
-                   (f-directories)
-                   (-mapcat 'f-directories)
-                   (--first (s-ends-with? "org" it)))))
-        (setq cbom:org-mail-folder dir)
-        dir)))
-
-;; IO FilePath
-(defun cbom:org-processed-mail-folder ()
-  "Accessor for the variable of the same name.
-By default, return the path to the maildir trash folder and memoise."
-  (or cbom:org-processed-mail-folder
-      (let ((dir (->> (f-join user-home-directory "Maildir")
-                   (f-directories)
-                   (-mapcat 'f-directories)
-                   (--first (s-matches? (rx (or "trash" "deleted"))
-                                        (car (last (s-split (f-path-separator) it))))))))
-        (setq cbom:org-processed-mail-folder dir)
-        dir)))
 
 ;; Maybe String -> Bool
 (defun cbom:org-dispatched-message? (msg)
@@ -149,7 +133,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
         ;; Remove messages dispatched by org functions, like the agenda.
         (-remove (-compose 'cbom:org-dispatched-message? 'car))))))
 
-;;; Message processing
+;;; Message parsing
 
 ;; String -> String -> Maybe String
 (defun cbom:message-header-value (header msg)
@@ -338,7 +322,9 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
   ;; Create filepath to the destination dir, with filename tags that mark
   ;; the message as read.
   (let* ((dest-file (format "%s:2,S" (car (s-split ":" (f-filename filepath)))))
-         (dest-filepath (f-join (cbom:org-processed-mail-folder) "cur" dest-file)))
+         (dest-filepath (f-join (funcall cbom:org-processed-mail-folder)
+                                "cur"
+                                dest-file)))
     (f-move filepath dest-filepath)))
 
 ;; IO ()
@@ -349,7 +335,7 @@ Captured messages are marked as read."
   (interactive)
   (save-window-excursion
     (--each (-map 'cbom:parse-message
-                  (cbom:unprocessed-messages (cbom:org-mail-folder)))
+                  (cbom:unprocessed-messages (funcall cbom:org-mail-folder)))
       (save-excursion
         (atomic-change-group
           (cbom:capture it)
