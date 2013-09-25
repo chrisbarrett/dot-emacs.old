@@ -26,7 +26,8 @@
 ;; path of a maildir folder to search for capturable tasks.
 ;;
 ;; I have a server-side rule set up that moves any messages from my own address
-;; to a folder called 'org'. This is the default maildir folder that will be searched.
+;; to a folder called 'org'. This is the default maildir folder that will be
+;; searched.
 ;;
 ;; This package works by associating message subjects with capture
 ;; templates. You should customise `org-capture-templates' to include actions
@@ -35,8 +36,10 @@
 ;; * Todo
 ;; * Note
 ;; * Link
-;; * Email
 ;; * Diary
+;;
+;; Furthermore, you may have an entry in `org-agenda-custom-commands' called
+;; 'email' that will email a copy of your agenda to yourself.
 ;;
 ;; Once configured, you can send yourself an email and this package will perform
 ;; an action:
@@ -57,6 +60,12 @@
 ;; * In any other case, the message will be inserted at the appropriate tree for
 ;;   its capture template. If a capture template cannot be found, it will be inserted
 ;;   as a note using the 'Note' template.
+;;
+;; IMPORTANT: You should ensure that any messages in this maildir folder that
+;; you do not want parsed and captured have subjects beginning with '[org]'
+;; (without the quotes). This is to allow for other org commands to send messages
+;; to your own address. For instance, my 'email' agenda command will send an email
+;; to my own address and I don't want my agenda captured to a note!
 ;;
 
 ;;; Code:
