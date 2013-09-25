@@ -321,16 +321,14 @@ correspoding capture template."
       (cbom:capture-with-template msg-plist)))))
 
 ;; MessagePlist -> IO ()
-(defun cbom:mark-as-read (msg-plist)
-  "Move an unread message into the corresponding cur directory."
+(defun cbom:delete-message (msg-plist)
+  "Move the message corresponding to MSG-PLIST to the IMAP trash folder."
   (let* ((new (plist-get msg-plist :filepath))
          (file (f-filename (plist-get msg-plist :filepath)))
-         (cur (f-join (f-parent (f-dirname new)) "cur"))
-         ;; Appending tags to the filename is how the maildir format signifies
-         ;; read messages.  See
-         ;; <http://blog.steve.org.uk/delivering_to_a_maildir_folder__but_marking_as_read.html>
-         (dest (format "%s:2,S" (f-join cur file))))
-    ;; Move to read messages directory, with updated filename to tag as read.
+         ;; Create filepath to trash cur dir, with filename tags that mark the
+         ;; message as read.
+         (dest (format "%s:2,S" (f-join (cbom:org-deleted-mail-folder) "cur" file))))
+    ;; Move to trash directory, with updated filename to tag as read.
     (f-move new dest)))
 
 ;; IO ()
@@ -346,7 +344,7 @@ Captured messages are marked as read."
         (atomic-change-group
           (cbom:capture it)
           (cbom:growl-notify it)
-          (cbom:mark-as-read it))))))
+          (cbom:delete-message it))))))
 
 ;;; Timer
 ;;;
