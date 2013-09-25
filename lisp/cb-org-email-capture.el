@@ -29,27 +29,28 @@
 ;; Create an IMAP folder called 'org' and create a server-side rule to move messages
 ;; from your own address into that folder.
 ;;
-;; Processed messages are moved into your trash maildir directory. You can
+;; Configure your offlineimaprc (or whatever you use to manage your maildir) to
+;; sync that folder.
 ;;
 ;; This package works by associating message subjects with capture
 ;; templates. You should customise `org-capture-templates' to include actions
-;; with the following titles:
+;; with the at least the following titles:
 ;;
 ;; * Todo
 ;; * Note
 ;; * Link
 ;; * Diary
 ;;
-;; Furthermore, you may have an entry in `org-agenda-custom-commands' called
+;; Furthermore, you should make an entry in `org-agenda-custom-commands' called
 ;; 'email' that should email a copy of your agenda to yourself.
+
+;;; Usage:
+
 ;;
 ;; Once configured, you can send yourself an email and this package will perform
 ;; an appropriate action:
 ;;
 ;; * Messages whose body contains a link will be captured as a link.
-;;
-;; * Messages with the 'todo' or 'link' subjects will have the message body
-;;   added at the appropriate capture destination.
 ;;
 ;; * Messages with 'diary' as the subject will be added to the diary.
 ;;
@@ -61,16 +62,14 @@
 ;;   its capture template. If a capture template cannot be found, it will be
 ;;   inserted as a note using the 'Note' template.
 ;;
-;; The body of a message may contain special directives:
+;; A message may contain special directives. They occur at the start of any line
+;; and take the form <letter><space><args...>.
 ;;
-;; * Scheduled time: Start a line with the letter 's' and a space. The remainder
-;;   of the line is read as a time-stamp specification.
+;; * Schedule (s): The line is read as a time-stamp specification.
 ;;
-;; * Deadline: Start a line with the letter 'd' and a space. The remainder of
-;;   the line is read as a time-stamp specification.
+;; * Deadline (d): The line is read as a time-stamp specification.
 ;;
-;; * Tags: Start a line with the letter 't' and a space. The remainder of
-;;   the line is interpreted as a space-separated list of tags.
+;; * Tags (t): The line is interpreted as a space-separated list of tags.
 ;;
 ;; IMPORTANT: You should ensure that any messages in this maildir folder that
 ;; you do not want parsed and captured have subjects beginning with '[org]'
