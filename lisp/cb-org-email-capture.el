@@ -386,10 +386,12 @@ Captured messages are marked as read."
 
 ;;; Timer
 
-(defvar cbom:capture-timer
-  (run-with-timer 5 10 (lambda ()
-                         (when (featurep 'org)
-                           (cbom:capture-messages)))))
+(hook-fn 'after-init-hook
+  (defvar cbom:capture-timer
+    (run-with-timer 5 10 (lambda ()
+                           (when (featurep 'org)
+                             (with-demoted-errors
+                               (cbom:capture-messages)))))))
 
 (provide 'cb-org-email-capture)
 
