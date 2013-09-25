@@ -195,41 +195,79 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
             (* (not (any space "\n" "\r"))))
         str)))
 
+;; String -> String -> Maybe String
+(defun cbom:match-directive (directive it)
+  (cadr (s-match (eval `(rx bol ,directive (+ space) (group (* nonl)))) it)))
+
+;; String -> TimeStringHM
+(defun cbom:parse-12-hour-time (str)
+  (cl-destructuring-bind (&optional _ hour min ampm &rest rest_)
+      (s-match (rx (group (** 1 2 digit))
+                   (? ":" (group (= 2 digit)))
+                   (group (or "am" "pm")))
+               str)
+    (when hour
+      (format "%s:%s"
+              ;; Convert to 24-hour. Get the modulo just to prevent crazy times.
+              (if (s-matches? "pm" ampm)
+                  (mod (+ 12 (string-to-number hour))
+                       24)
+                hour)
+              (or min "00")))))
+
+;; String -> TimeStringHM
+(defun cbom:parse-24-hour-time (str)
+  (car (s-match (rx (** 1 2 digit) ":" (= 2 digit)) str)))
+
+;; String -> TimeString
+(defun cbom:parse-date (str)
+  (when str
+    ;; Try to extract a time of day from STR.
+    (-if-let (time (or (cbom:parse-12-hour-time str)
+                       (cbom:parse-24-hour-time str)))
+        (format "%s %s" (org-read-date t nil str) time)
+      (org-read-date t nil str))))
+
 ;; (String, FilePath) -> MessagePlist
 (cl-defun cbom:parse-message ((msg path))
   "Parse message body, preferentially selecting links."
-  (let* (;; Make sure we're dealing with the plaintext message content.
-         (body (if (cbom:multipart-message? msg)
-                   (cbom:multipart-body-plaintext-section msg)
-                 (cdr (cbom:split-message-head-and-body msg))))
-         ;; Remove the pertinent lines from the plist.
-         (lns (->> (s-lines body) (-map 's-trim) (-remove 's-blank?))))
+  (let* ((body
+          ;; Make sure we're dealing with the plaintext message content.
+          (if (cbom:multipart-message? msg)
+              (cbom:multipart-body-plaintext-section msg)
+            (cdr (cbom:split-message-head-and-body msg))))
+         (lns
+          ;; Remove the pertinent lines from the plist.
+          (-remove 's-blank? (-map 's-trim (s-lines body)))))
     (list
      :filepath path
      :url (cbom:find-url body)
+     :kind (cbom:parse-subject (cbom:message-header-value "subject" msg))
+
      :title
      (->> lns
        (--remove (s-matches? (rx bol (or "s" "d" "t") (+ space)) it))
        (s-join "\n"))
+
      :scheduled
      (->> lns
-       (--keep (s-match (rx bol "s" (+ space) (group (* nonl))) it))
-       (-map 'cadr)
-       (car))
+       (--keep (cbom:match-directive "s" it))
+       (car)
+       (cbom:parse-date))
+
      :deadline
      (->> lns
-       (--keep (s-match (rx bol "d" (+ space) (group (* nonl))) it))
-       (-map 'cadr)
-       (car))
+       (--keep (cbom:match-directive "d" it))
+       (car)
+       (cbom:parse-date))
+
      :tags
      (->> lns
-       (--keep (s-match (rx bol "t" (+ space) (group (* nonl))) it))
-       (-mapcat (-compose 's-split-words 'cadr))
-       (-distinct))
-     :kind
-     (cbom:parse-subject (cbom:message-header-value "subject" msg)))))
+       (--keep (cbom:match-directive "t" it))
+       (-mapcat 's-split-words)
+       (-distinct)))))
 
-;;; Org capture
+;; Org capture
 
 ;; IO [String]
 (defun cbom:capture-keywords ()
@@ -278,8 +316,8 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
    (t
     (concat
      (if (s-matches? "todo" kind) (concat "TODO " title) title)
-     (when scheduled (format "\nSCHEDULED: <%s>" (org-read-date nil nil scheduled)))
-     (when deadline (format "\nDEADLINE: <%s>" (org-read-date nil nil deadline)))))))
+     (when scheduled (format "\nSCHEDULED: <%s>" scheduled))
+     (when deadline (format "\nDEADLINE: <%s>" deadline))))))
 
 ;; String -> IO ()
 (defun cbom:goto-capture-site (kind)
