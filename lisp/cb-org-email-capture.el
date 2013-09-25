@@ -204,22 +204,23 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 ;; (String, FilePath) -> MessagePlist
 (cl-defun cbom:parse-message ((msg path))
   "Parse message body, preferentially selecting links."
-  ;; Parse the body. We look at the body to determine if it's just a link.
-  (-if-let* ((body (if (cbom:multipart-message? msg)
-                       (cbom:multipart-body-plaintext-section msg)
-                     (cdr (cbom:split-message-head-and-body msg))))
-             (url (cbom:find-url body)))
-      ;; If the body contains a url, capture that.
+  (let ((body (if (cbom:multipart-message? msg)
+                  (cbom:multipart-body-plaintext-section msg)
+                (cdr (cbom:split-message-head-and-body msg)))))
+    ;; We look at the body to determine if it's just a link.
+    ;; If the body contains a url, capture this message as a link.
+    (-if-let (url (cbom:find-url body))
+        (list :filepath path
+              :body url
+              :subject "link")
+      ;; Otherwise parse the subject to determine how to capture this message.
+      ;; If no subject was provided, capture as a note.
       (list :filepath path
-            :body url
-            :subject "link")
-    ;; Otherwise parse the subject. If no subject was provided, set the subject to 'note'.
-    (list :filepath path
-          :body (s-trim body)
-          :subject
-          (-if-let (subj (cbom:message-header-value "subject" msg))
-              (cbom:fuzzy-parse-subject subj)
-            "note"))))
+            :body (s-trim body)
+            :subject
+            (-if-let (subj (cbom:message-header-value "subject" msg))
+                (cbom:fuzzy-parse-subject subj)
+              "note")))))
 
 ;;; Org capture
 
