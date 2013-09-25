@@ -60,6 +60,14 @@
       "C-SPC"   'helm-mini
       "C-x SPC" 'helm-find-files)
 
+    (after 'helm-files
+      (define-key helm-find-files-map
+        (kbd "~")
+        (command
+         (if (looking-back "/")
+             (helm-insert-in-minibuffer "~/" t)
+           (call-interactively 'self-insert-command)))))
+
     (after 'evil
       (bind-keys
         :overriding? t
