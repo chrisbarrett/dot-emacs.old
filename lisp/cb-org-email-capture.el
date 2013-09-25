@@ -319,18 +319,19 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 ;; MessagePlist -> IO ()
 (defun cbom:capture (msg-plist)
   "Read MSG-PLIST and execute the appropriate capture behaviour."
-  (cond
-   ((s-matches? "agenda" (plist-get msg-plist :kind))
-    (cbom:dispatch-agenda-email))
-   (t
-    (cbom:goto-capture-site (plist-get msg-plist :kind))
-    (org-insert-subheading '(16)) ; 16 = at end of list
-    (insert (apply 'cbom:format-for-insertion msg-plist))
-    (org-set-tags-to (plist-get msg-plist :tags))
-    (org-set-property
-     "CAPTURED"
-     (s-with-temp-buffer
-       (org-insert-time-stamp (current-time) t 'inactive))))))
+  (let ((kind (plist-get msg-plist :kind)))
+    (cond
+     ((s-matches? "agenda" kind)
+      (cbom:dispatch-agenda-email))
+     (t
+      (cbom:goto-capture-site kind)
+      (org-insert-subheading '(16))     ; 16 = at end of list
+      (insert (apply 'cbom:format-for-insertion msg-plist))
+      (org-set-tags-to (plist-get msg-plist :tags))
+      (org-set-property
+       "CAPTURED"
+       (s-with-temp-buffer
+         (org-insert-time-stamp (current-time) t 'inactive)))))))
 
 ;; MessagePlist -> IO ()
 (cl-defun cbom:remove-message (&key filepath &allow-other-keys)
