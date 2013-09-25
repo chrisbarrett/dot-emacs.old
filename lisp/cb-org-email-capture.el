@@ -324,7 +324,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
     (cbom:dispatch-agenda-email))
    (t
     (cbom:goto-capture-site (plist-get msg-plist :kind))
-    (org-insert-subheading '(16))
+    (org-insert-subheading '(16)) ; 16 = at end of list
     (insert (apply 'cbom:format-for-insertion msg-plist))
     (org-set-tags-to (plist-get msg-plist :tags))
     (org-set-property
@@ -338,7 +338,6 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
   ;; the message as read.
   (let* ((dest-file (format "%s:2,S" (car (s-split ":" (f-filename filepath)))))
          (dest-filepath (f-join (cbom:org-processed-mail-folder) "cur" dest-file)))
-    ;; Move to trash directory, with updated filename to tag as read.
     (f-move filepath dest-filepath)))
 
 ;; IO ()
