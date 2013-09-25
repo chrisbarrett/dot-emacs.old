@@ -58,12 +58,19 @@
 ;;   the day.
 ;;
 ;; * In any other case, the message will be inserted at the appropriate tree for
-;;   its capture template. If a capture template cannot be found, it will be inserted
-;;   as a note using the 'Note' template.
+;;   its capture template. If a capture template cannot be found, it will be
+;;   inserted as a note using the 'Note' template.
 ;;
-;; The body of a message may contain special directives.  To schedule an
-;; item or set a deadline, start a line with the letter 's' or 'd', then a
-;; space.  The remainder of the line is read as the timestamp.
+;; The body of a message may contain special directives:
+;;
+;; * Scheduled time: Start a line with the letter 's' and a space. The remainder
+;;   of the line is read as a time-stamp specification.
+;;
+;; * Deadline: Start a line with the letter 'd' and a space. The remainder of
+;;   the line is read as a time-stamp specification.
+;;
+;; * Tags: Start a line with the letter 't' and a space. The remainder of
+;;   the line is interpreted as a space-separated list of tags.
 ;;
 ;; IMPORTANT: You should ensure that any messages in this maildir folder that
 ;; you do not want parsed and captured have subjects beginning with '[org]'
@@ -179,17 +186,17 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
       (s-chop-suffix "="))))
 
 ;; String -> String
-(defun cbom:fuzzy-parse-subject (subject)
+(defun cbom:parse-subject (subj)
   "Map the SUBJECT of a message to a capture action."
   (cond
-   ((s-matches? "link" subject) "link")
-   ((s-matches? "todo" subject) "todo")
-   ((s-matches? "book" subject) "reading")
-   ((s-matches? "song" subject) "listening")
-   ((s-matches? "music" subject) "listening")
-   ((s-matches? "album" subject) "listening")
+   ((s-blank? subj) "note")
+   ((s-matches? "book" subj) "reading")
+   ((s-matches? (rx (or "song" "music" "album")) subj)
+    "listening")
+   ((s-matches? (rx (or "diary" "calendar" "appt" "appointment")) subj)
+    "diary")
    (t
-    subject)))
+    (s-downcase subj))))
 
 ;; String -> Maybe String
 (defun cbom:find-url (str)
@@ -208,23 +215,31 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 ;; (String, FilePath) -> MessagePlist
 (cl-defun cbom:parse-message ((msg path))
   "Parse message body, preferentially selecting links."
-  (let ((body (if (cbom:multipart-message? msg)
-                  (cbom:multipart-body-plaintext-section msg)
-                (cdr (cbom:split-message-head-and-body msg)))))
-    ;; We look at the body to determine if it's just a link.
-    ;; If the body contains a url, capture this message as a link.
-    (-if-let (url (cbom:find-url body))
-        (list :filepath path
-              :body url
-              :subject "link")
-      ;; Otherwise parse the subject to determine how to capture this message.
-      ;; If no subject was provided, capture as a note.
-      (list :filepath path
-            :body (s-trim body)
-            :subject
-            (-if-let (subj (cbom:message-header-value "subject" msg))
-                (cbom:fuzzy-parse-subject subj)
-              "note")))))
+  (let* (;; Make sure we're dealing with the plaintext message content.
+         (body (if (cbom:multipart-message? msg)
+                   (cbom:multipart-body-plaintext-section msg)
+                 (cdr (cbom:split-message-head-and-body msg))))
+         ;; Remove the pertinent lines from the plist.
+         (lns (->> (s-lines body) (-map 's-trim) (-remove 's-blank?))))
+    (list
+     :filepath path
+     :url (cbom:find-url body)
+     :title
+     (->> lns
+       (--remove (s-matches? (rx bol (or "s" "d") (+ space)) it))
+       (s-join "\n"))
+     :scheduled
+     (->> lns
+       (--keep (s-match (rx bol "s" (+ space) (group (* nonl))) it))
+       (-map 'cadr)
+       (car))
+     :deadline
+     (->> lns
+       (--keep (s-match (rx bol "d" (+ space) (group (* nonl))) it))
+       (-map 'cadr)
+       (car))
+     :kind
+     (cbom:parse-subject (cbom:message-header-value "subject" msg)))))
 
 ;;; Org capture
 
@@ -233,29 +248,15 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
   (-map (-compose 's-downcase 'cadr) org-capture-templates))
 
 ;; MessagePlist -> IO Bool
-(defun cbom:capture-candidate? (msg-plist)
-  (-contains? (cbom:capture-keywords)
-              (s-downcase (plist-get msg-plist :subject))))
-
-;; MessagePlist -> IO (String, String, ...)
-(defun cbom:capture-template-for-plist (msg-plist)
-  "Find an org capture template corresponding to the subject in MSG-PLIST."
-  (--first
-   (cl-destructuring-bind (_key title &rest rest_) it
-     (equal (s-downcase title)
-            (s-downcase (plist-get msg-plist :subject))))
-   org-capture-templates))
+(cl-defun cbom:capture-candidate? (&key kind &allow-other-keys)
+  (-contains? (cbom:capture-keywords) (s-downcase kind)))
 
 ;; MessagePlist -> IO ()
-(defun cbom:growl-notify (msg-plist)
-  (let ((type (plist-get msg-plist :subject))
-        (icon (f-join user-emacs-directory "assets" "org_unicorn.png"))
-        (body (plist-get msg-plist :body)))
-    (cond
-     ((s-matches? "agenda" type)
-      (growl "Agenda Emailed" "" icon))
-     (t
-      (growl (format "%s Captured" (s-capitalize type)) body icon)))))
+(cl-defun cbom:growl-notify (&key kind title &allow-other-keys)
+  (let ((icon (f-join user-emacs-directory "assets" "org_unicorn.png")))
+    (if (s-matches? "agenda" kind)
+        (growl "Agenda Emailed" "" icon)
+      (growl (format "%s Captured" (s-capitalize kind)) title icon))))
 
 ;; String -> IO String
 (defun cbom:fetch-html-title (url)
@@ -269,105 +270,71 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
     (cadr (s-match (rx "<title>" (group (* nonl)) "</title>")
                    (buffer-string)))))
 
-;; String -> String
-(defun cbom:format-diary-entry (str)
-  (let* ((lns (->> (s-lines str) (-map 's-trim) (-remove 's-blank?)))
-         (sched (->> lns
-                  (--keep (s-match (rx bol "s" (+ space) (group (* nonl))) it))
-                  (-map 'cadr)
-                  (car)))
-         (title (->> lns
-                  (--remove (s-matches? (rx bol (or "s" "d") (+ space)) it))
-                  (s-join "\n"))))
-    (format "%s\n<%s>" title (org-read-date nil nil sched))))
+;; MessagePlist -> String
+(cl-defun cbom:format-for-insertion
+    (&key kind url title scheduled deadline &allow-other-keys)
+  "Format a parsed message according to its kind."
+  (cond
 
-;; String -> String
-(defun cbom:format-body (str)
-  (let* ((lns (->> (s-lines str) (-map 's-trim) (-remove 's-blank?)))
-         (sched (->> lns
-                  (--keep (s-match (rx bol "s" (+ space) (group (* nonl))) it))
-                  (-map 'cadr)
-                  (car)))
-         (deadl (->> lns
-                  (--keep (s-match (rx bol "d" (+ space) (group (* nonl))) it))
-                  (-map 'cadr)
-                  (car)))
-         (title (->> lns
-                  (--remove (s-matches? (rx bol (or "s" "d") (+ space)) it))
-                  (s-join "\n"))))
+   ;; Give precedence to URLs.
+   (url
+    (format "[[%s][%s]]" url
+            (or (ignore-errors (cbom:fetch-html-title url))
+                url)))
+
+   ;; Special diary format
+   ((s-matches? "diary" kind)
+    (format "%s\n<%s>" title (org-read-date nil nil scheduled)))
+
+   ;; All other types can follow a standard style.
+   (t
     (concat
-     title
-     (when sched (format "\nSCHEDULED: <%s>" (org-read-date nil nil sched)))
-     (when deadl (format "\nDEADLINE: <%s>" (org-read-date nil nil deadl))))))
+     (if (s-matches? "todo" kind) (concat "TODO " title) title)
+     (when scheduled (format "\nSCHEDULED: <%s>" (org-read-date nil nil scheduled)))
+     (when deadline (format "\nDEADLINE: <%s>" (org-read-date nil nil deadline)))))))
 
-;; MessagePlist -> IO ()
-(defun cbom:capture-with-template (msg-plist)
-  "Capture the data in MSG-PLIST into the destination in its
-correspoding capture template."
+;; String -> IO ()
+(defun cbom:goto-capture-site (kind)
+  "Move to the insertion site for the capture template associated with KIND."
   (cl-destructuring-bind (&optional key &rest rest_)
-      (cbom:capture-template-for-plist msg-plist)
-    (save-excursion
-      ;; Capture as a note if a suitable template cannot be found.
-      (org-capture-goto-target (or key "n"))
-      (end-of-line)
-      ;; Insert appropriate header, depending on capture type.
-      (let ((msg (plist-get msg-plist :body))
-            (subtree-append '(16))
-            (type (plist-get msg-plist :subject)))
-        (cond
-         ;; Capture todos.
-         ((s-matches? "todo" type)
-          (org-insert-todo-subheading subtree-append)
-          (insert (cbom:format-body msg)))
-         ;; Capture links.
-         ;; Assume the message body is a well-formed link.
-         ((s-matches? "link" type)
-          (org-insert-subheading subtree-append)
-          (org-insert-link nil msg
-                           (or (ignore-errors (cbom:fetch-html-title msg))
-                               msg)))
-         ;; Capture diary entries.
-         ((s-matches? (rx (or "diary" "calendar" "appt" "appointment")) type)
-          (org-insert-subheading subtree-append)
-          (insert (cbom:format-diary-entry msg)))
-
-         ;; Otherwise insert the plain heading.
-         (t
-          (org-insert-subheading subtree-append)
-          (insert (cbom:format-body msg))))
-        ;; Insert captured timestamp
-        (org-set-property "CAPTURED" (s-with-temp-buffer
-                                       (org-insert-time-stamp (current-time) t 'inactive)))))))
+      (--first (equal (s-downcase (elt it 1)) (s-downcase kind))
+               org-capture-templates)
+    (org-capture-goto-target (or key "n"))
+    (end-of-line)))
 
 ;; IO ()
 (defun cbom:dispatch-agenda-email ()
   (let ((inhibit-redisplay t))
-    (-when-let (key (car (--first (and (listp (cdr it)) ; ignore improper lists.
-                                       (s-matches? "email" (cadr it)))
-                                  org-agenda-custom-commands)))
+    (-when-let
+        (key (car (--first
+                   (and (listp (cdr it)) ; ignore improper lists.
+                        (s-matches? "email" (cadr it)))
+                   org-agenda-custom-commands)))
       (org-agenda nil key))))
 
 ;; MessagePlist -> IO ()
 (defun cbom:capture (msg-plist)
-  "Read MSG-PLIST and execute the appropriate handler."
-  (let ((subj (plist-get msg-plist :subject)))
-    (cond
-     ((s-matches? "agenda" subj)
-      (cbom:dispatch-agenda-email))
-     (t
-      (cbom:capture-with-template msg-plist)))))
+  "Read MSG-PLIST and execute the appropriate capture behaviour."
+  (cond
+   ((s-matches? "agenda" (plist-get msg-plist :kind))
+    (cbom:dispatch-agenda-email))
+   (t
+    (cbom:goto-capture-site (plist-get msg-plist :kind))
+    (org-insert-subheading '(16))
+    (insert (apply 'cbom:format-for-insertion msg-plist))
+    (org-set-property
+     "CAPTURED"
+     (s-with-temp-buffer
+       (org-insert-time-stamp (current-time) t 'inactive))))))
 
 ;; MessagePlist -> IO ()
-(defun cbom:remove-message (msg-plist)
-  "Move the message corresponding to MSG-PLIST to `cbom:org-processed-mail-folder'and mark as read."
-  (let* ((new (plist-get msg-plist :filepath))
-         (file (f-filename (plist-get msg-plist :filepath)))
-         ;; Create filepath to trash cur dir, with filename tags that mark the
-         ;; message as read.
-         (dest-filename (format "%s:2,S" (car (s-split ":" file))))
-         (dest (f-join (cbom:org-processed-mail-folder) "cur" dest-filename)))
+(cl-defun cbom:remove-message (&key filepath &allow-other-keys)
+  ;; Create filepath to the destination dir, with filename tags that mark
+  ;; the message as read.
+  (let* ((dest-file (format "%s:2,S" (car (s-split ":" (f-filename filepath)))))
+         (dest-filepath (f-join (cbom:org-processed-mail-folder) "cur" dest-file)))
     ;; Move to trash directory, with updated filename to tag as read.
-    (f-move new dest)))
+    (f-move filepath dest-filepath)))
 
 ;; IO ()
 (defun cbom:capture-messages ()
@@ -382,8 +349,8 @@ Captured messages are marked as read."
         (atomic-change-group
           (cbom:capture it)
           (save-buffer)
-          (cbom:growl-notify it)
-          (cbom:remove-message it))))))
+          (apply 'cbom:growl-notify it)
+          (apply 'cbom:remove-message it))))))
 
 ;;; Timer
 
