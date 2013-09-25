@@ -83,13 +83,14 @@
 (require 'cb-lib)
 (require 'cb-paths)
 (require 'async)
-(autoload 'org-set-property "org")
 (autoload 'org-insert-link "org")
 (autoload 'org-insert-time-stamp "org")
 (autoload 'org-insert-subheading "org")
 (autoload 'org-insert-todo-subheading "org")
 (autoload 'org-read-date "org")
 (autoload 'org-capture-goto-target "org-capture")
+(autoload 'org-set-property "org")
+(autoload 'org-set-tags-to "org")
 
 ;;; Customisable interface
 
