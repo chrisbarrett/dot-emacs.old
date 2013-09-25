@@ -22,12 +22,14 @@
 
 ;;; Commentary:
 
-;; Capture tasks from emails in maildir. Set `cbom:org-mail-folder' to the
-;; path of a maildir folder to search for capturable tasks.
+;; Capture emails in a specified maildir folder with org-mode.
+
+;;; Configuration:
+
+;; Create an IMAP folder called 'org' and create a server-side rule to move messages
+;; from your own address into that folder.
 ;;
-;; I have a server-side rule set up that moves any messages from my own address
-;; to a folder called 'org'. This is the default maildir folder that will be
-;; searched.
+;; Processed messages are moved into your trash maildir directory. You can
 ;;
 ;; This package works by associating message subjects with capture
 ;; templates. You should customise `org-capture-templates' to include actions
@@ -39,15 +41,15 @@
 ;; * Diary
 ;;
 ;; Furthermore, you may have an entry in `org-agenda-custom-commands' called
-;; 'email' that will email a copy of your agenda to yourself.
+;; 'email' that should email a copy of your agenda to yourself.
 ;;
 ;; Once configured, you can send yourself an email and this package will perform
-;; an action:
+;; an appropriate action:
+;;
+;; * Messages whose body contains a link will be captured as a link.
 ;;
 ;; * Messages with the 'todo' or 'link' subjects will have the message body
 ;;   added at the appropriate capture destination.
-;;
-;; * Messages whose body contains a link will be captured as a link.
 ;;
 ;; * Messages with 'diary' as the subject will be added to the diary. The first line
 ;;   in the message body is read by the org date parser, so you can write dates like
@@ -86,8 +88,8 @@
   "Folder path to search for messages to use for capturing.")
 
 ;; FilePath
-(defvar cbom:org-deleted-mail-folder nil
-  "Folder path to move items to when deleting.")
+(defvar cbom:org-processed-mail-folder nil
+  "Folder path to move items once processed.")
 
 ;;; Internal
 
@@ -98,7 +100,7 @@
 ;; IO FilePath
 (defun cbom:org-mail-folder ()
   "Accessor for the variable of the same name.
-Return the path to the 'org' folder in the maildir and memoise."
+By default, return the path to the maildir 'org' folder and memoise."
   (or cbom:org-mail-folder
       (let ((dir (->> (f-join user-home-directory "Maildir")
                    (f-directories)
@@ -108,16 +110,16 @@ Return the path to the 'org' folder in the maildir and memoise."
         dir)))
 
 ;; IO FilePath
-(defun cbom:org-deleted-mail-folder ()
+(defun cbom:org-processed-mail-folder ()
   "Accessor for the variable of the same name.
-Return the path to the 'trash' folder in the deleted-maildir and memoise."
-  (or cbom:org-deleted-mail-folder
+By default, return the path to the maildir trash folder and memoise."
+  (or cbom:org-processed-mail-folder
       (let ((dir (->> (f-join user-home-directory "Maildir")
                    (f-directories)
                    (-mapcat 'f-directories)
                    (--first (s-matches? (rx (or "trash" "deleted"))
                                         (car (last (s-split (f-path-separator) it))))))))
-        (setq cbom:org-deleted-mail-folder dir)
+        (setq cbom:org-processed-mail-folder dir)
         dir)))
 
 ;; String -> Bool
@@ -321,13 +323,13 @@ correspoding capture template."
       (cbom:capture-with-template msg-plist)))))
 
 ;; MessagePlist -> IO ()
-(defun cbom:delete-message (msg-plist)
-  "Move the message corresponding to MSG-PLIST to the IMAP trash folder."
+(defun cbom:remove-message (msg-plist)
+  "Move the message corresponding to MSG-PLIST to `cbom:org-processed-mail-folder'and mark as read."
   (let* ((new (plist-get msg-plist :filepath))
          (file (f-filename (plist-get msg-plist :filepath)))
          ;; Create filepath to trash cur dir, with filename tags that mark the
          ;; message as read.
-         (dest (format "%s:2,S" (f-join (cbom:org-deleted-mail-folder) "cur" file))))
+         (dest (format "%s:2,S" (f-join (cbom:org-processed-mail-folder) "cur" file))))
     ;; Move to trash directory, with updated filename to tag as read.
     (f-move new dest)))
 
@@ -344,7 +346,7 @@ Captured messages are marked as read."
         (atomic-change-group
           (cbom:capture it)
           (cbom:growl-notify it)
-          (cbom:delete-message it))))))
+          (cbom:remove-message it))))))
 
 ;;; Timer
 ;;;
