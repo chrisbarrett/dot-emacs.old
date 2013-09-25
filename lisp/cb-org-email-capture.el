@@ -364,7 +364,8 @@ correspoding capture template."
          (file (f-filename (plist-get msg-plist :filepath)))
          ;; Create filepath to trash cur dir, with filename tags that mark the
          ;; message as read.
-         (dest (format "%s:2,S" (f-join (cbom:org-processed-mail-folder) "cur" file))))
+         (dest-filename (format "%s:2,S" (car (s-split ":" file))))
+         (dest (f-join (cbom:org-processed-mail-folder) "cur" dest-filename)))
     ;; Move to trash directory, with updated filename to tag as read.
     (f-move new dest)))
 
