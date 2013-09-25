@@ -274,11 +274,11 @@ correspoding capture template."
 
 ;; IO ()
 (defun cbom:dispatch-agenda-email ()
-  ""
   (let ((inhibit-redisplay t))
-    (-when-let (key (car (--first (s-matches? "email" (cadr it))
-                                  org-capture-templates)))
-      (org-capture nil key))))
+    (-when-let (key (car (--first (and (listp (cdr it)) ; ignore improper lists.
+                                       (s-matches? "email" (cadr it)))
+                                  org-agenda-custom-commands)))
+      (org-agenda nil key))))
 
 ;; MessagePlist -> IO ()
 (defun cbom:capture (msg-plist)
