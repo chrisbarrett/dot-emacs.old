@@ -51,9 +51,7 @@
 ;; * Messages with the 'todo' or 'link' subjects will have the message body
 ;;   added at the appropriate capture destination.
 ;;
-;; * Messages with 'diary' as the subject will be added to the diary. The first line
-;;   in the message body is read by the org date parser, so you can write dates like
-;;   'mon', '+3d', 'aug 10', etc. The next line is used for the entry's title.
+;; * Messages with 'diary' as the subject will be added to the diary.
 ;;
 ;; * Messages with 'agenda' as the subject will invoke a special 'Email'
 ;;   action. I have this configured to mail me a formatted copy of my agenda for
@@ -62,6 +60,10 @@
 ;; * In any other case, the message will be inserted at the appropriate tree for
 ;;   its capture template. If a capture template cannot be found, it will be inserted
 ;;   as a note using the 'Note' template.
+;;
+;; The body of a message may contain special directives.  To schedule an
+;; item or set a deadline, start a line with the letter 's' or 'd', then a
+;; space.  The remainder of the line is read as the timestamp.
 ;;
 ;; IMPORTANT: You should ensure that any messages in this maildir folder that
 ;; you do not want parsed and captured have subjects beginning with '[org]'
@@ -269,11 +271,18 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 
 ;; String -> String
 (defun cbom:format-diary-entry (str)
-  (cl-destructuring-bind (date title) (s-lines str)
-    (format "%s\n<%s>" title (org-read-date nil nil date))))
+  (let* ((lns (->> (s-lines str) (-map 's-trim) (-remove 's-blank?)))
+         (sched (->> lns
+                  (--keep (s-match (rx bol "s" (+ space) (group (* nonl))) it))
+                  (-map 'cadr)
+                  (car)))
+         (title (->> lns
+                  (--remove (s-matches? (rx bol (or "s" "d") (+ space)) it))
+                  (s-join "\n"))))
+    (format "%s\n<%s>" title (org-read-date nil nil sched))))
 
 ;; String -> String
-(defun cbom:format-todo (str)
+(defun cbom:format-body (str)
   (let* ((lns (->> (s-lines str) (-map 's-trim) (-remove 's-blank?)))
          (sched (->> lns
                   (--keep (s-match (rx bol "s" (+ space) (group (* nonl))) it))
@@ -283,8 +292,9 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
                   (--keep (s-match (rx bol "d" (+ space) (group (* nonl))) it))
                   (-map 'cadr)
                   (car)))
-         (title (--first (not (s-matches? (rx bol (or "s" "d") (+ space)) it))
-                         lns)))
+         (title (->> lns
+                  (--remove (s-matches? (rx bol (or "s" "d") (+ space)) it))
+                  (s-join "\n"))))
     (concat
      title
      (when sched (format "\nSCHEDULED: <%s>" (org-read-date nil nil sched)))
@@ -308,7 +318,7 @@ correspoding capture template."
          ;; Capture todos.
          ((s-matches? "todo" type)
           (org-insert-todo-subheading subtree-append)
-          (insert (cbom:format-todo msg)))
+          (insert (cbom:format-body msg)))
          ;; Capture links.
          ;; Assume the message body is a well-formed link.
          ((s-matches? "link" type)
@@ -324,7 +334,7 @@ correspoding capture template."
          ;; Otherwise insert the plain heading.
          (t
           (org-insert-subheading subtree-append)
-          (insert msg)))
+          (insert (cbom:format-body msg))))
         ;; Insert captured timestamp
         (org-set-property "CAPTURED" (s-with-temp-buffer
                                        (org-insert-time-stamp (current-time) t 'inactive)))))))
