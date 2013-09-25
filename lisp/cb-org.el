@@ -566,7 +566,7 @@ Non-nil if modifications where made."
                  :clock-resume t)
 
                 ("h" "Habit" entry
-                 (file+headline org-default-notes-file "Habits")
+                 (file+headline org-default-notes-file "Habits/Recurring")
                  ,(s-unlines
                    (concat "* TODO %^{Description}%?    "
                            ":%^{Context|@anywhere|@errand|@leisure|@home|@phone|@work}:")
