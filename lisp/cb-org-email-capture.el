@@ -122,12 +122,11 @@ By default, return the path to the maildir trash folder and memoise."
         (setq cbom:org-processed-mail-folder dir)
         dir)))
 
-;; String -> Bool
+;; Maybe String -> Bool
 (defun cbom:org-dispatched-message? (msg)
   "Test whether MSG has [org] in its subject."
-  (s-starts-with?
-   "[org]"
-   (cbom:message-header-value "subject" msg)))
+  (-when-let (subj (cbom:message-header-value "subject" msg))
+    (s-starts-with? "[org]" subj)))
 
 ;; [FilePath] -> IO [(String, FilePath)]
 (defun cbom:unprocessed-messages (dir)
@@ -214,11 +213,13 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
       (list :filepath path
             :body url
             :subject "link")
-    ;; Otherwise parse the subject.
+    ;; Otherwise parse the subject. If no subject was provided, set the subject to 'note'.
     (list :filepath path
           :body (s-trim body)
-          :subject (cbom:fuzzy-parse-subject
-                    (cbom:message-header-value "subject" msg)))))
+          :subject
+          (-if-let (subj (cbom:message-header-value "subject" msg))
+              (cbom:fuzzy-parse-subject subj)
+            "note"))))
 
 ;;; Org capture
 
