@@ -376,11 +376,12 @@ Captures messages subjects match one of the values in `org-capture-templates'.
 Captured messages are marked as read."
   (interactive)
   (save-window-excursion
-    (save-excursion
-      (--each (-map 'cbom:parse-message
-                    (cbom:unprocessed-messages (cbom:org-mail-folder)))
+    (--each (-map 'cbom:parse-message
+                  (cbom:unprocessed-messages (cbom:org-mail-folder)))
+      (save-excursion
         (atomic-change-group
           (cbom:capture it)
+          (save-buffer)
           (cbom:growl-notify it)
           (cbom:remove-message it))))))
 
