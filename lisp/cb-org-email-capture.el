@@ -90,6 +90,13 @@ Return the path to the 'org' folder in the maildir and memoise."
         (setq cbom:target-folder dir)
         dir)))
 
+;; String -> Bool
+(defun cbom:org-dispatched-message? (msg)
+  "Test whether MSG has [org] in its subject."
+  (s-starts-with?
+   "[org]"
+   (cbom:message-header-value "subject" msg)))
+
 ;; [FilePath] -> IO [(String, FilePath)]
 (defun cbom:unprocessed-messages (dir)
   "The unprocessed mail in DIR.
@@ -99,7 +106,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
       (->> (f-files new)
         (-map (-juxt 'f-read-text 'identity))
         ;; Remove messages dispatched by org functions, like the agenda.
-        (--remove (s-starts-with? "[org]" (car it)))))))
+        (-remove (-compose 'cbom:org-dispatched-message? 'car))))))
 
 ;;; Message processing
 
