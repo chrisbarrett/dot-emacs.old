@@ -82,7 +82,6 @@
 
 (require 'cb-lib)
 (require 'cb-paths)
-(require 'async)
 (autoload 'org-insert-link "org")
 (autoload 'org-insert-time-stamp "org")
 (autoload 'org-insert-subheading "org")
