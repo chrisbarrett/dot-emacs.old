@@ -181,10 +181,21 @@
                  (yank))
         (setq kill-ring (cdr kill-ring))))
 
+    (defun eval-in-ielm ()
+      "Eval the sexp at point in ielm."
+      (interactive)
+      (send-to-ielm)
+      (ielm-return)
+      (recenter -1)
+      (switch-to-elisp))
+
     (hook-fn 'ielm-mode-hook
       (local-set-key (kbd "C-c C-z") 'switch-to-elisp))
 
-    (define-key emacs-lisp-mode-map (kbd "C-c C-c") 'send-to-ielm)
+    (define-keys emacs-lisp-mode-map
+      "C-c C-c" 'send-to-ielm
+      "C-c RET" 'eval-in-ielm)
+
 
     ;;;; File handling
 
