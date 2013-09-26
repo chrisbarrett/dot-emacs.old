@@ -194,6 +194,22 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
              (and (+ alnum) "." (or "edu" "net" "gov" "com" "biz" "org" "info" "co.")))
             (* (not (any space "\n" "\r"))))
         str)))
+  (-when-let
+      (uri (car (s-match
+                 (rx bow
+                     (or
+                      ;; Match URIs, with and without protocol.
+                      (and "http" (? "s") "://")
+                      (and "www." (* alnum) ".")
+                      ;; Loosely match strings with common domains.
+                      (and (+ alnum) "."
+                           (or "edu" "net" "gov" "com" "biz" "org" "info" "co.")))
+                     (* (not (any space "\n" "\r"))))
+                 str)))
+    ;; Set the URI's protocol to http if none is provided.
+    (if (s-contains? "://" uri)
+        uri
+      (s-prepend "http://" uri))))
 
 ;; String -> String -> Maybe String
 (defun cbom:match-directive (directive it)
