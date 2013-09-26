@@ -341,7 +341,10 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 ;; MessagePlist -> IO ()
 (defun cbom:capture (msg-plist)
   "Read MSG-PLIST and execute the appropriate capture behaviour."
-  (let ((kind (plist-get msg-plist :kind)))
+  ;; If a message contains a URL, capture using the link template.
+  (let ((kind (if (plist-get msg-plist :url)
+                  "link"
+                (plist-get msg-plist :kind))))
     (cond
      ((s-matches? "agenda" kind)
       (cbom:dispatch-agenda-email))
