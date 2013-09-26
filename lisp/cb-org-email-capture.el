@@ -145,8 +145,8 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 
 ;; String -> (String, String)
 (defun cbom:split-message-head-and-body (msg)
-  (let ((div (s-index-of "\n\n" msg)))
-    (cons (substring msg 0 div) (substring msg div))))
+  (AP (C (@ 'cons) (π (~ 'substring msg 0) (~ 'substring msg)))
+      (s-index-of "\n\n" msg)))
 
 ;; String -> String
 (defun cbom:multipart-body-plaintext-section (msg)
