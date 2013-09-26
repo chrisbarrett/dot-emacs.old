@@ -338,8 +338,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 (defun cbom:goto-capture-site (kind)
   "Move to the insertion site for the capture template associated with KIND."
   (cl-destructuring-bind (&optional key &rest rest_)
-      (-first (C (~ 'equal (s-downcase kind))
-                 's-downcase (~R 'elt 1))
+      (-first (C (~ 'equal (s-downcase kind)) 's-downcase 'cadr)
               org-capture-templates)
     (org-capture-goto-target (or key "n"))
     (end-of-line)))
