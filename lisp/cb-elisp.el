@@ -121,6 +121,16 @@
 (after 'smartparens
   (add-hook 'ielm-mode-hook 'smartparens-strict-mode))
 
+(after 'auto-complete
+  (add-to-list 'ac-modes 'ielm-mode)
+  (hook-fn 'ielm-mode-hook
+    (auto-complete-mode +1)
+    (setq ac-sources '(ac-source-features
+                       ac-source-functions
+                       ac-source-yasnippet
+                       ac-source-variables
+                       ac-source-symbols))))
+
 (hook-fn 'minibuffer-setup-hook
   "Enable Paredit during eval-expression."
   (when (equal this-command 'eval-expression)
