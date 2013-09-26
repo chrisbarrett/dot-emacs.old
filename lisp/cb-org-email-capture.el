@@ -288,18 +288,6 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
         (growl "Agenda Emailed" "" icon)
       (growl (format "%s Captured" (s-capitalize kind)) title icon))))
 
-;; String -> IO String
-(defun cbom:fetch-html-title (uri)
-  (with-current-buffer
-      (url-retrieve-synchronously
-       (if (s-matches? (rx "http" (? "s") "://") uri)
-           uri
-         (s-prepend "http://" uri)))
-    ;; Clear request status.
-    (message nil)
-    (cadr (s-match (rx "<title>" (group (* nonl)) "</title>")
-                   (buffer-string)))))
-
 ;; URI -> String
 (defun cbom:maybe-download-title-at-uri (uri)
   "Download the title element."
@@ -309,7 +297,15 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
                       uri)
     (with-timeout (1 nil)
       (ignore-errors
-        (cbom:fetch-html-title uri)))))
+        (with-current-buffer
+            (url-retrieve-synchronously
+             (if (s-matches? (rx "http" (? "s") "://") uri)
+                 uri
+               (s-prepend "http://" uri)))
+          ;; Clear request status.
+          (message nil)
+          (cadr (s-match (rx "<title>" (group (* nonl)) "</title>")
+                         (buffer-string))))))))
 
 ;; MessagePlist -> String
 (cl-defun cbom:format-for-insertion
