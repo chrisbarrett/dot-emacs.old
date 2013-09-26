@@ -100,7 +100,7 @@
   `(eval-after-load ,feature
      '(progn ,@body)))
 
-(defmacro* configuration-group (&rest
+(cl-defmacro configuration-group (&rest
                                 body
                                 &key when unless after
                                 &allow-other-keys)
@@ -188,7 +188,7 @@ The original state can be restored by calling (restore) in BODY."
                           (jump-to-register ',register))
                        body))))
 
-(defmacro* declare-modal-view (command &optional (quit-key "q"))
+(cl-defmacro declare-modal-view (command &optional (quit-key "q"))
   "Advise a given command to restore window state when finished."
   `(defadvice ,command (around
                         ,(intern (format "%s-wrapper" command))
@@ -199,7 +199,7 @@ The original state can be restored by calling (restore) in BODY."
        (delete-other-windows)
        (local-set-key (kbd ,quit-key) (command (kill-buffer) (restore))))))
 
-(defmacro* declare-modal-executor
+(cl-defmacro declare-modal-executor
     (name &optional &key command bind restore-bindings)
   "Execute a command with modal window behaviour.
 
@@ -243,15 +243,15 @@ restore key."
 
 ;;; ----------------------------------------------------------------------------
 
-(defmacro* --filter-buffers (pred-form &optional (bufs '(buffer-list)))
+(cl-defmacro --filter-buffers (pred-form &optional (bufs '(buffer-list)))
   "Anaphoric form of `-filter-buffers'"
   `(--filter (with-current-buffer it ,pred-form) ,bufs))
 
-(defmacro* --map-buffers (form &optional (bufs '(buffer-list)))
+(cl-defmacro --map-buffers (form &optional (bufs '(buffer-list)))
   "Anaphoric form of `-map-buffers'"
   `(--map (with-current-buffer it ,form) ,bufs))
 
-(defmacro* --first-buffer (pred-form &optional (bufs '(buffer-list)))
+(cl-defmacro --first-buffer (pred-form &optional (bufs '(buffer-list)))
   "Anaphoric form of `-first-buffer'"
   `(--first (with-current-buffer it ,pred-form) ,bufs))
 
@@ -274,10 +274,10 @@ Find the first window where PRED-FORM is not nil."
 * BINDINGS are alternating strings and functions to use for keybindings."
   (declare (indent 0))
   (let ((bs (->> bindings (-partition-all 2) (--remove (keywordp (car it))))))
-    `(progn ,@(loop for (k f) in bs collect
-                    (if overriding?
-                        `(bind-key* ,k ,f)
-                      `(bind-key ,k ,f ,map))))))
+    `(progn ,@(cl-loop for (k f) in bs collect
+                       (if overriding?
+                           `(bind-key* ,k ,f)
+                         `(bind-key ,k ,f ,map))))))
 
 (defmacro define-keys (keymap &rest bindings)
   "Variadic form of `define-key'.
@@ -286,11 +286,11 @@ Find the first window where PRED-FORM is not nil."
   (declare (indent 1))
   (let ((bs (->> bindings (-partition-all 2) (--remove (keywordp (car it))))))
     `(progn
-       ,@(loop for (k f) in bs
-               collect `(define-key
-                          ,keymap
-                          ,(if (stringp k) `(kbd ,k) k)
-                          ,f)))))
+       ,@(cl-loop for (k f) in bs
+                  collect `(define-key
+                             ,keymap
+                             ,(if (stringp k) `(kbd ,k) k)
+                             ,f)))))
 
 (defun buffer-local-set-key (key command)
   "Map KEY to COMMAND in this buffer alone."
