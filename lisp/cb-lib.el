@@ -356,6 +356,8 @@ Find the first window where PRED-FORM is not nil."
      ,@body
      (buffer-string)))
 
+(defalias 's-no-props 'substring-no-properties)
+
 ;; -----------------------------------------------------------------------------
 
 (defun filter-atoms (predicate)
