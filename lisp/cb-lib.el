@@ -243,11 +243,6 @@ restore key."
 
 ;;; ----------------------------------------------------------------------------
 
-(defmacro with-previous-buffer (&rest forms)
-  "Execute FORMS within the context of the previous active buffer."
-  `(with-current-buffer (nth 1 (buffer-list))
-     ,@forms))
-
 (defmacro* --filter-buffers (pred-form &optional (bufs '(buffer-list)))
   "Anaphoric form of `-filter-buffers'"
   `(--filter (with-current-buffer it ,pred-form) ,bufs))
