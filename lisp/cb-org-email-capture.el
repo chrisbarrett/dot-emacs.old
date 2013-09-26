@@ -319,9 +319,15 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
             (or (cbom:maybe-download-title-at-uri uri)
                 uri)))
 
-   ;; Special diary format
+   ;; Special diary format. The deadline is interpreted as an end time-stamp.
    ((s-matches? "diary" kind)
-    (format "%s\n<%s>" title (org-read-date nil nil scheduled)))
+    (cond
+     ((and scheduled deadline)
+      (format "%s\n<%s>--<%s>" title scheduled deadline))
+     (scheduled
+      (format "%s\n<%s>" title scheduled))
+     (t
+      title)))
 
    ;; All other types can follow a standard style.
    (t
