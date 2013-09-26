@@ -340,7 +340,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
   (cl-destructuring-bind (&optional key &rest rest_)
       (-first (C (~ 'equal (s-downcase kind))
                  's-downcase (~R 'elt 1))
-               org-capture-templates)
+              org-capture-templates)
     (org-capture-goto-target (or key "n"))
     (end-of-line)))
 
