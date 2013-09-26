@@ -32,8 +32,9 @@
 (require 'bind-key)
 (require 'noflet)
 
-;; Aliases for combinators in dash-functional.
+;; Aliases for combinators
 
+(defalias 'AP 'funcall)
 (defalias 'C '-compose)
 (defalias '@ '-applify)
 (defalias '~ '-partial)
