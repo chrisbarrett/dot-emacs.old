@@ -99,7 +99,7 @@
     (->> (f-join user-home-directory "Maildir")
       (f-directories)
       (-mapcat 'f-directories)
-      (--first (s-ends-with? "org" it))))
+      (-first (~ 's-ends-with? "org"))))
   "A function returning the maildir folder to capture from.")
 
 ;; IO FilePath
@@ -108,8 +108,8 @@
     (->> (f-join user-home-directory "Maildir")
       (f-directories)
       (-mapcat 'f-directories)
-      (--first (s-matches? (rx (or "trash" "deleted"))
-                           (car (last (s-split (f-path-separator) it)))))))
+      (-first (C (~ 's-matches? (rx (or "trash" "deleted"))) '-last-item
+                 (~ 's-split (f-path-separator))))))
   "A function returning the maildir folder to move items to once processed.")
 
 ;;; Internal
@@ -129,9 +129,9 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
   (let ((new (f-join dir "new")))
     (when (f-exists? new)
       (->> (f-files new)
-        (-map (-juxt 'f-read-text 'identity))
+        (-map (π 'f-read-text 'I))
         ;; Remove messages dispatched by org functions, like the agenda.
-        (-remove (-compose 'cbom:org-dispatched-message? 'car))))))
+        (-remove (C 'cbom:org-dispatched-message? 'car))))))
 
 ;;; Message parsing
 
@@ -156,14 +156,14 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
       ;; Split the body by the boundary specified in the header and select
       ;; the section with plaintext MIME encoding.
       (s-split (cadr (s-match (rx "boundary=" (group (* nonl))) head)))
-      (--first (s-contains? "text/plain" it))
+      (-first (~ 's-contains? "text/plain"))
       ;; Tidy the section, removing MIME headers.
       (s-trim)
       (s-chop-suffix "--")
       (s-lines)
-      (--drop-while (or (s-matches? (rx bol (or "charset" "content") (* nonl)
-                                        (or "=" ":")) it)
-                        (s-blank? it)))
+      (-drop-while (| (~ 's-matches? (rx bol (or "charset" "content") (* nonl)
+                                         (or "=" ":")))
+                      's-blank?))
       (s-join "\n")
       (s-trim)
       (s-chop-suffix "="))))
@@ -252,24 +252,24 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 
      :title
      (->> lns
-       (--remove (s-matches? (rx bol (or "s" "d" "t") (+ space)) it))
+       (-remove (~ 's-matches? (rx bol (or "s" "d" "t") (+ space))))
        (s-join "\n"))
 
      :scheduled
      (->> lns
-       (--keep (cbom:match-directive "s" it))
+       (-keep (~ 'cbom:match-directive "s"))
        (car)
        (cbom:parse-date))
 
      :deadline
      (->> lns
-       (--keep (cbom:match-directive "d" it))
+       (-keep (~ 'cbom:match-directive "d"))
        (car)
        (cbom:parse-date))
 
      :tags
      (->> lns
-       (--keep (cbom:match-directive "t" it))
+       (-keep (~ 'cbom:match-directive "t"))
        (-mapcat 's-split-words)
        (-distinct)))))
 
@@ -277,7 +277,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 
 ;; IO [String]
 (defun cbom:capture-keywords ()
-  (-map (-compose 's-downcase 'cadr) org-capture-templates))
+  (-map (C 's-downcase 'cadr) org-capture-templates))
 
 ;; MessagePlist -> IO Bool
 (cl-defun cbom:capture-candidate? (&key kind &allow-other-keys)
@@ -340,7 +340,8 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 (defun cbom:goto-capture-site (kind)
   "Move to the insertion site for the capture template associated with KIND."
   (cl-destructuring-bind (&optional key &rest rest_)
-      (--first (equal (s-downcase (elt it 1)) (s-downcase kind))
+      (-first (C (~ 'equal (s-downcase kind))
+                 's-downcase (~R 'elt 1))
                org-capture-templates)
     (org-capture-goto-target (or key "n"))
     (end-of-line)))
@@ -348,11 +349,9 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 ;; IO ()
 (defun cbom:dispatch-agenda-email ()
   (let ((inhibit-redisplay t))
-    (-when-let
-        (key (car (--first
-                   (and (listp (cdr it)) ; ignore improper lists.
-                        (s-matches? "email" (cadr it)))
-                   org-agenda-custom-commands)))
+    (-when-let (key (->> org-agenda-custom-commands
+                      (-first (& (C 'listp 'cdr) (C (~ 's-matches? "email") 'cadr)))
+                      (car)))
       (org-agenda nil key))))
 
 ;; MessagePlist -> IO ()
