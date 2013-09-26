@@ -166,19 +166,6 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
       ;; Convert latin-1 line breaks.
       (s-replace "=0A" "\n"))))
 
-;; String -> String
-(defun cbom:parse-subject (subj)
-  "Map the SUBJECT of a message to a capture action."
-  (cond
-   ((s-blank? subj) "note")
-   ((s-matches? "book" subj) "reading")
-   ((s-matches? (rx (or "song" "music" "album")) subj)
-    "listening")
-   ((s-matches? (rx (or "diary" "calendar" "appt" "appointment")) subj)
-    "diary")
-   (t
-    (s-downcase subj))))
-
 ;; String -> Maybe URI
 (defun cbom:find-uri (str)
   "Extract the first URI from STR. Performs loose matching."
@@ -234,42 +221,50 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 
 ;; (String, FilePath) -> MessagePlist
 (cl-defun cbom:parse-message ((msg path))
-  "Parse message body, preferentially selecting links."
-  (let* ((body
-          ;; Make sure we're dealing with the plaintext message content.
-          (if (cbom:multipart-message? msg)
-              (cbom:multipart-body-plaintext-section msg)
-            (cdr (cbom:split-message-head-and-body msg))))
-         (lns
-          ;; Remove the pertinent lines from the plist.
-          (-remove 's-blank? (-map 's-trim (s-lines body)))))
-    (list
-     :filepath path
-     :uri (cbom:find-uri body)
-     :kind (cbom:parse-subject (cbom:message-header-value "subject" msg))
+  "Parse message body."
+  (let* ((body (if (cbom:multipart-message? msg)
+                   (cbom:multipart-body-plaintext-section msg)
+                 (cdr (cbom:split-message-head-and-body msg))))
+         (lns (-remove 's-blank? (-map 's-trim (s-lines body))))
+         (scheduled (->> lns
+                      (-keep (~ 'cbom:match-directive "s"))
+                      (car)
+                      (cbom:parse-date)))
+         (subject (cbom:message-header-value "subject" msg))
+         (uri (cbom:find-uri body)))
+    ;; Construct a plist of parsed values.
+    (list :uri uri
+          :subject subject
+          :title (->> lns
+                  (-remove (~ 's-matches? (rx bol (or "s" "d" "t") (+ space))))
+                  (s-join "\n"))
+          :scheduled scheduled
+          :filepath path
 
-     :title
-     (->> lns
-       (-remove (~ 's-matches? (rx bol (or "s" "d" "t") (+ space))))
-       (s-join "\n"))
-
-     :scheduled
-     (->> lns
-       (-keep (~ 'cbom:match-directive "s"))
-       (car)
-       (cbom:parse-date))
-
-     :deadline
-     (->> lns
-       (-keep (~ 'cbom:match-directive "d"))
-       (car)
-       (cbom:parse-date))
-
-     :tags
-     (->> lns
-       (-keep (~ 'cbom:match-directive "t"))
-       (-mapcat 's-split-words)
-       (-distinct)))))
+          :deadline (->> lns
+                      (-keep (~ 'cbom:match-directive "d"))
+                      (car)
+                      (cbom:parse-date))
+          :tags
+          (->> lns
+            (-keep (~ 'cbom:match-directive "t"))
+            (-mapcat 's-split-words)
+            (-distinct))
+          ;; Now that the message body is entirely parsed we can determine what
+          ;; form of data we're capturing. This allows the user to get away with
+          ;; setting an empty subject most of the time.
+          :kind
+          (cond
+           ((and (s-blank? subject) scheduled) "diary")
+           ((and (s-blank? subject) uri) "link")
+           ((s-blank? subject) "note")
+           ((s-matches? "book" subject) "reading")
+           ((s-matches? (rx (or "song" "music" "album")) subject)
+            "listening")
+           ((s-matches? (rx (or "diary" "calendar" "appt" "appointment")) subject)
+            "diary")
+           (t
+            (s-downcase subject))))))
 
 ;; Org capture
 
