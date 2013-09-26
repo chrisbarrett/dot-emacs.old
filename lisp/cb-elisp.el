@@ -118,6 +118,9 @@
       (1 font-lock-keyword-face)
       (2 font-lock-function-name-face)))))
 
+(after 'smartparens
+  (add-hook 'ielm-mode-hook 'smartparens-strict-mode))
+
 (hook-fn 'minibuffer-setup-hook
   "Enable Paredit during eval-expression."
   (when (equal this-command 'eval-expression)
