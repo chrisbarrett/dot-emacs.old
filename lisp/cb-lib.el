@@ -32,7 +32,7 @@
 (require 'bind-key)
 (require 'noflet)
 
-;; Aliases for compatability
+;; Aliases for compatibility
 
 (defalias 'make-local-hook 'ignore)
 (defalias 'yes-or-no-p 'y-or-n-p)
