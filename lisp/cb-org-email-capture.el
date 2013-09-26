@@ -349,6 +349,12 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
      ((s-matches? "agenda" kind)
       (cbom:dispatch-agenda-email))
      (t
+      ;; Capture according to kind.
+      ;;
+      ;; Because capture templates may be interactive, we can't use them
+      ;; directly. We read the template declaration to find the appropriate
+      ;; insertion site and manually construct a suitable capture result.
+      ;;
       (cbom:goto-capture-site kind)
       (org-insert-subheading '(16))     ; 16 = at end of list
       (insert (apply 'cbom:format-for-insertion msg-plist))
