@@ -202,8 +202,8 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
       (s-prepend "http://" uri))))
 
 ;; String -> String -> Maybe String
-(defun cbom:match-directive (directive it)
-  (cadr (s-match (eval `(rx bol ,directive (+ space) (group (* nonl)))) it)))
+(defun cbom:match-directive (directive line)
+  (cadr (s-match (eval `(rx bol ,directive (+ space) (group (* nonl)))) line)))
 
 ;; String -> TimeStringHM
 (defun cbom:parse-12-hour-time (str)
