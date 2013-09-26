@@ -296,6 +296,17 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
     (cadr (s-match (rx "<title>" (group (* nonl)) "</title>")
                    (buffer-string)))))
 
+;; Url -> String
+(defun cbom:maybe-download-title-at-url (url)
+  "Download the title element."
+  ;; Ignore URLs that may point to binary files, e.g. aac, wma, mpeg, pdf.
+  (unless (s-matches? (rx "." (or "z" "r" "t" "p" "d" "a" "w" "m")
+                          (** 2 3 alnum) eol)
+                      url)
+    (with-timeout (1 nil)
+      (ignore-errors
+        (cbom:fetch-html-title url)))))
+
 ;; MessagePlist -> String
 (cl-defun cbom:format-for-insertion
     (&key kind url title scheduled deadline &allow-other-keys)
@@ -305,7 +316,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
    ;; Give precedence to URLs.
    (url
     (format "[[%s][%s]]" url
-            (or (ignore-errors (cbom:fetch-html-title url))
+            (or (cbom:maybe-download-title-at-url url)
                 url)))
 
    ;; Special diary format
