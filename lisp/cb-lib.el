@@ -34,17 +34,17 @@
 
 ;; Aliases for combinators in dash-functional.
 
-(defalias '· '-compose)
-(defalias 'AP '-applify)
-(defalias '·· '-partial)
-(defalias '··R '-rpartial)
+(defalias 'C '-compose)
+(defalias '@ '-applify)
+(defalias '~ '-partial)
+(defalias '~R '-rpartial)
 (defalias 'K '-const)
-(defalias '↔ '-flip)
-(defalias '∧ '-andfn)
-(defalias '∨ '-orfn)
+(defalias 'W '-flip)
+(defalias '& '-andfn)
+(defalias '| '-orfn)
+(defalias '! '-not)
 (defalias 'I 'identity)
-(defalias '× '-juxt)
-(defalias '¬ '-not)
+(defalias 'π '-juxt)
 
 ;; Aliases for compatibility
 
@@ -443,7 +443,7 @@ If NO-PROPERTIES is non-nil, return the line without text properties."
            (&rest args) (apply 'ido-read-buffer)))
        ad-do-it)))
 
-(defun* format-progress-bar (title pos length)
+(cl-defun format-progress-bar (title pos length)
   "Format a progress bar with TITLE and pips up to POS along its LENGTH.
 POS should be a number between 1 and LENGTH."
   (cl-assert (cl-plusp pos))
