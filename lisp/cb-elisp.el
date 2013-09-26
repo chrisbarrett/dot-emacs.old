@@ -30,6 +30,7 @@
 (require 'noflet)
 (require 'cb-lib)
 (require 'cb-evil)
+(autoload 'sp-kill-sexp "smartparens")
 
 (defun cb:special-elisp-buffer? ()
   (and (derived-mode-p 'emacs-lisp-mode)
@@ -166,8 +167,24 @@
       (-when-let (buf (--first-buffer (derived-mode-p 'emacs-lisp-mode)))
         (switch-to-buffer-other-window buf)))
 
+    (defun send-to-ielm ()
+      "Send the sexp at point to IELM"
+      (interactive)
+      (sp-kill-sexp nil 'yank)
+      (unwind-protect
+          (progn (switch-to-ielm)
+                 (delete-region (save-excursion
+                                  (search-backward-regexp (rx bol "ELISP>"))
+                                  (search-forward "> ")
+                                  (point))
+                                (line-end-position))
+                 (yank))
+        (setq kill-ring (cdr kill-ring))))
+
     (hook-fn 'ielm-mode-hook
       (local-set-key (kbd "C-c C-z") 'switch-to-elisp))
+
+    (define-key emacs-lisp-mode-map (kbd "C-c C-c") 'send-to-ielm)
 
     ;;;; File handling
 
