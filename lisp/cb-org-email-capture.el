@@ -181,19 +181,9 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
    (t
     (s-downcase subj))))
 
-;; String -> Maybe String
-(defun cbom:find-url (str)
-  "Extract the first URL from STR. Performs loose matching."
-  (car (s-match
-        (rx bow
-            (or
-             ;; Match URLs, with and without protocol.
-             (and "http" (? "s") "://")
-             (and "www." (* alnum) ".")
-             ;; Loosely match strings with common TLDs,
-             (and (+ alnum) "." (or "edu" "net" "gov" "com" "biz" "org" "info" "co.")))
-            (* (not (any space "\n" "\r"))))
-        str)))
+;; String -> Maybe URI
+(defun cbom:find-uri (str)
+  "Extract the first URI from STR. Performs loose matching."
   (-when-let
       (uri (car (s-match
                  (rx bow
@@ -257,7 +247,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
           (-remove 's-blank? (-map 's-trim (s-lines body)))))
     (list
      :filepath path
-     :url (cbom:find-url body)
+     :uri (cbom:find-uri body)
      :kind (cbom:parse-subject (cbom:message-header-value "subject" msg))
 
      :title
@@ -301,39 +291,39 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
       (growl (format "%s Captured" (s-capitalize kind)) title icon))))
 
 ;; String -> IO String
-(defun cbom:fetch-html-title (url)
+(defun cbom:fetch-html-title (uri)
   (with-current-buffer
       (url-retrieve-synchronously
-       (if (s-matches? (rx "http" (? "s") "://") url)
-           url
-         (s-prepend "http://" url)))
+       (if (s-matches? (rx "http" (? "s") "://") uri)
+           uri
+         (s-prepend "http://" uri)))
     ;; Clear request status.
     (message nil)
     (cadr (s-match (rx "<title>" (group (* nonl)) "</title>")
                    (buffer-string)))))
 
-;; Url -> String
-(defun cbom:maybe-download-title-at-url (url)
+;; URI -> String
+(defun cbom:maybe-download-title-at-uri (uri)
   "Download the title element."
-  ;; Ignore URLs that may point to binary files, e.g. aac, wma, mpeg, pdf.
+  ;; Ignore URIs that may point to binary files, e.g. aac, wma, mpeg, pdf.
   (unless (s-matches? (rx "." (or "z" "r" "t" "p" "d" "a" "w" "m")
                           (** 2 3 alnum) eol)
-                      url)
+                      uri)
     (with-timeout (1 nil)
       (ignore-errors
-        (cbom:fetch-html-title url)))))
+        (cbom:fetch-html-title uri)))))
 
 ;; MessagePlist -> String
 (cl-defun cbom:format-for-insertion
-    (&key kind url title scheduled deadline &allow-other-keys)
+    (&key kind uri title scheduled deadline &allow-other-keys)
   "Format a parsed message according to its kind."
   (cond
 
-   ;; Give precedence to URLs.
-   (url
-    (format "[[%s][%s]]" url
-            (or (cbom:maybe-download-title-at-url url)
-                url)))
+   ;; Give precedence to URIs.
+   (uri
+    (format "[[%s][%s]]" uri
+            (or (cbom:maybe-download-title-at-uri uri)
+                uri)))
 
    ;; Special diary format
    ((s-matches? "diary" kind)
@@ -368,8 +358,8 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 ;; MessagePlist -> IO ()
 (defun cbom:capture (msg-plist)
   "Read MSG-PLIST and execute the appropriate capture behaviour."
-  ;; If a message contains a URL, capture using the link template.
-  (let ((kind (if (plist-get msg-plist :url)
+  ;; If a message contains a URI, capture using the link template.
+  (let ((kind (if (plist-get msg-plist :uri)
                   "link"
                 (plist-get msg-plist :kind))))
     (cond
