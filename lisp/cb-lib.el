@@ -32,6 +32,20 @@
 (require 'bind-key)
 (require 'noflet)
 
+;; Aliases for combinators in dash-functional.
+
+(defalias '· '-compose)
+(defalias 'AP '-applify)
+(defalias '·· '-partial)
+(defalias '··R '-rpartial)
+(defalias 'K '-const)
+(defalias '↔ '-flip)
+(defalias '∧ '-andfn)
+(defalias '∨ '-orfn)
+(defalias 'I 'identity)
+(defalias '× '-juxt)
+(defalias '¬ '-not)
+
 ;; Aliases for compatibility
 
 (defalias 'make-local-hook 'ignore)
