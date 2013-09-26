@@ -150,23 +150,21 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 
 ;; String -> String
 (defun cbom:multipart-body-plaintext-section (msg)
-  (cl-destructuring-bind (head . body)
-      (cbom:split-message-head-and-body msg)
+  (cl-destructuring-bind (head . body) (cbom:split-message-head-and-body msg)
     (->> body
       ;; Split the body by the boundary specified in the header and select
       ;; the section with plaintext MIME encoding.
       (s-split (cadr (s-match (rx "boundary=" (group (* nonl))) head)))
       (-first (~ 's-contains? "text/plain"))
-      ;; Tidy the section, removing MIME headers.
+      ;; Tidy the section, dropping headers.
       (s-trim)
       (s-chop-suffix "--")
-      (s-lines)
-      (-drop-while (| (~ 's-matches? (rx bol (or "charset" "content") (* nonl)
-                                         (or "=" ":")))
-                      's-blank?))
-      (s-join "\n")
+      (s-split "\n\n")
+      (cadr)
       (s-trim)
-      (s-chop-suffix "="))))
+      (s-chop-suffix "=")
+      ;; Convert latin-1 line breaks.
+      (s-replace "=0A" "\n"))))
 
 ;; String -> String
 (defun cbom:parse-subject (subj)
