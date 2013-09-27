@@ -80,27 +80,28 @@
 
     ;; Override behaviours
 
-    (defun geiser-eval-buffer (&optional and-go raw nomsg)
-      "Eval the current buffer in the Geiser REPL.
+    (after 'geiser-mode
+      (defun geiser-eval-buffer (&optional and-go raw nomsg)
+        "Eval the current buffer in the Geiser REPL.
 
 With prefix, goes to the REPL buffer afterwards (as
 `geiser-eval-buffer-and-go')"
-      (interactive "P")
-      (let ((start (progn
-                     (goto-char (point-min))
-                     (while (s-matches? (rx bol "#") (current-line))
-                       (forward-line))
-                     (point)))
-            (end (point-max)))
-        (save-restriction
-          (narrow-to-region start end)
-          (check-parens))
-        (geiser-debug--send-region nil
-                                   start
-                                   end
-                                   (and and-go 'geiser--go-to-repl)
-                                   (not raw)
-                                   nomsg)))
+        (interactive "P")
+        (let ((start (progn
+                       (goto-char (point-min))
+                       (while (s-matches? (rx bol "#") (current-line))
+                         (forward-line))
+                       (point)))
+              (end (point-max)))
+          (save-restriction
+            (narrow-to-region start end)
+            (check-parens))
+          (geiser-debug--send-region nil
+                                     start
+                                     end
+                                     (and and-go 'geiser--go-to-repl)
+                                     (not raw)
+                                     nomsg))))
 
     (defadvice switch-to-geiser (after append-with-evil activate)
       "Move to end of REPL and append-line."
