@@ -66,35 +66,37 @@
     (setq-default sgml-xml-mode t)
     (local-set-key (kbd "M-q") 'tidy-xml-buffer)))
 
-(use-package html-mode
-  :defer t
-  :init
-  (after 'auto-complete
-    (defconst cb:html-tag-attrs
-      '("class" "id")
-      "Global attributes that appear in HTML tags.")
+(use-package tagedit
+  :ensure t
+  :defer t)
 
-    (ac-define-source html-tag-source
-      '((candidates . (-when-let (tag (te/current-tag))
-                        (and (te/eligible-for-auto-attribute-insert?)
-                             (not (s-starts-with? "%" (te/get tag :name)))
-                             (--none? (te/has-attribute it tag)
-                                      cb:html-tag-attrs)
+;; Configure ac-source for html tag attributes.
+(after 'auto-complete
+  (defconst cb:html-tag-attrs
+    '("class" "id")
+    "Global attributes that appear in HTML tags.")
 
-                             cb:html-tag-attrs)))
-        (symbol     . "a")
-        (requires   . '(tagedit))
-        (action     . (lambda ()
-                        (insert "=\"\"")
-                        (unless (thing-at-point-looking-at ">")
-                          (just-one-space))
-                        (search-backward "=")
-                        (forward-char 2)))))
+  (ac-define-source html-tag-source
+    '((candidates . (-when-let (tag (te/current-tag))
+                      (and (te/eligible-for-auto-attribute-insert?)
+                           (not (s-starts-with? "%" (te/get tag :name)))
+                           (--none? (te/has-attribute it tag)
+                                    cb:html-tag-attrs)
 
-    (add-to-list 'ac-modes 'html-mode)
-    (hook-fn 'html-mode-hook
-      (auto-complete-mode +1)
-      (add-to-list 'ac-sources 'ac-source-html-tag-source))))
+                           cb:html-tag-attrs)))
+      (symbol     . "a")
+      (requires   . '(tagedit))
+      (action     . (lambda ()
+                      (insert "=\"\"")
+                      (unless (thing-at-point-looking-at ">")
+                        (just-one-space))
+                      (search-backward "=")
+                      (forward-char 2)))))
+
+  (add-to-list 'ac-modes 'html-mode)
+  (hook-fn 'html-mode-hook
+    (auto-complete-mode +1)
+    (add-to-list 'ac-sources 'ac-source-html-tag-source)))
 
 (use-package markdown-mode
   :ensure t
@@ -137,6 +139,7 @@
 
 (use-package creole-mode
   :commands creole-mode
+  :defer t
   :ensure t
   :config
   (progn
