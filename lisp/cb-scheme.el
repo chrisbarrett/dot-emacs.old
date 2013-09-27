@@ -30,12 +30,28 @@
 (require 'noflet)
 (require 'cb-mode-groups)
 
+;; `geiser' provides slime-like interaction for Scheme.  I mainly use Racket, so
+;; the config below probably doesn't work for other Schemes.
 (use-package geiser
   :ensure t
   :commands run-geiser
   :init (hook-fn 'cb:scheme-modes (require 'geiser))
   :config
   (progn
+
+    (setq geiser-mode-start-repl-p t
+          geiser-repl-startup-time 20000
+          geiser-repl-history-filename (concat cb:tmp-dir "geiser-history")
+          geiser-active-implementations '(racket))
+
+    (after 'scheme
+      (define-keys scheme-mode-map
+        "C-c C-l" 'geiser-eval-buffer
+        "C-c C-h" 'geiser-doc-look-up-manual))
+
+    ;; Auto-complete
+    ;;
+    ;; Geiser supports company-mode. Adapt to auto-complete.
     (after 'auto-complete
       (autoload 'geiser-company--prefix-at-point "geiser-company")
       (autoload 'geiser-company--doc "geiser-company")
@@ -63,42 +79,34 @@
       (hook-fn 'cb:scheme-modes-hook
         (setq ac-sources '(ac-source-yasnippet ac-source-geiser))))
 
-    (defun geiser-eval-buffer ()
-      "Evaluate the current Scheme buffer with Geiser."
-      (interactive)
-      ;; Switch to source if we're in the repl.
-      (if (derived-mode-p 'repl-mode 'comint-mode 'inferior-scheme-mode)
-          (save-excursion
-            (switch-to-geiser)
-            (geiser-eval-buffer)
-            (switch-to-geiser))
+    ;; Override behaviours
 
-        (let (result)
-          (noflet ((message (&rest args) (setq result (apply 'format args))))
-            (save-excursion
-              (goto-char (point-min))
-              (when (search-forward-regexp (rx bol "#lang" space (* nonl)) nil t)
-                (forward-line)
-                (beginning-of-line))
-              (geiser-eval-region (point) (point-max))))
+    (defun geiser-eval-buffer (&optional and-go raw nomsg)
+      "Eval the current buffer in the Geiser REPL.
 
-          (message "Buffer evaluated %s" result))))
-
-    (after 'scheme
-      (define-keys scheme-mode-map
-        "C-c C-l" 'geiser-eval-buffer
-        "C-c C-h" 'geiser-doc-look-up-manual))
+With prefix, goes to the REPL buffer afterwards (as
+`geiser-eval-buffer-and-go')"
+      (interactive "P")
+      (let ((start (progn
+                     (goto-char (point-min))
+                     (while (s-matches? (rx bol "#") (current-line))
+                       (forward-line))
+                     (point)))
+            (end (point-max)))
+        (save-restriction
+          (narrow-to-region start end)
+          (check-parens))
+        (geiser-debug--send-region nil
+                                   start
+                                   end
+                                   (and and-go 'geiser--go-to-repl)
+                                   (not raw)
+                                   nomsg)))
 
     (defadvice switch-to-geiser (after append-with-evil activate)
       "Move to end of REPL and append-line."
       (when (derived-mode-p 'comint-mode)
-        (cb:append-buffer)))
-
-    (setq
-     geiser-mode-start-repl-p t
-     geiser-repl-startup-time 20000
-     geiser-repl-history-filename (concat cb:tmp-dir "geiser-history")
-     geiser-active-implementations '(racket))))
+        (cb:append-buffer)))))
 
 (provide 'cb-scheme)
 
