@@ -76,8 +76,12 @@
         (let (result)
           (noflet ((message (&rest args) (setq result (apply 'format args))))
             (save-excursion
-              (mark-whole-buffer)
-              (geiser-eval-region (region-beginning) (region-end))))
+              (goto-char (point-min))
+              (when (search-forward-regexp (rx bol "#lang" space (* nonl)) nil t)
+                (forward-line)
+                (beginning-of-line))
+              (geiser-eval-region (point) (point-max))))
+
           (message "Buffer evaluated %s" result))))
 
     (after 'scheme
