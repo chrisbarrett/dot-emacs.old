@@ -81,7 +81,9 @@
           (message "Buffer evaluated %s" result))))
 
     (after 'scheme
-      (define-key scheme-mode-map (kbd "C-c C-l") 'geiser-eval-buffer))
+      (define-keys scheme-mode-map
+        "C-c C-l" 'geiser-eval-buffer
+        "C-c C-h" 'geiser-doc-look-up-manual))
 
     (defadvice switch-to-geiser (after append-with-evil activate)
       "Move to end of REPL and append-line."
