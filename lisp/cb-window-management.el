@@ -61,41 +61,6 @@
       "Ignore errors in modeline display function caused by custom modeline."
       (ignore-errors ad-do-it))))
 
-(use-package popwin
-  :ensure t
-  :config
-  (progn
-    (hook-fn 'window-configuration-change-hook
-      (unless (true? popwin-mode)
-        (popwin-mode +1)))
-
-    (setq display-buffer-function 'popwin:display-buffer
-          popwin:special-display-config
-          '(("*Help*"  :height 30 :stick t)
-            ("*Completions*" :noselect t)
-            ("*Shell Command Output*")
-            ("*compilation*" :noselect t)
-            ("*Compile-Log*" :height 20 :noselect t)
-            ("*Messages*" :height 30)
-            ("*Directory*")
-            ("*Org Note*")
-            ("*jedi:doc*" :height 30)
-            ("*bbdb*")
-            ("*BBDB*")
-            ("*Occur*" :noselect t)
-            ("\\*Slime Description.*" :noselect t :regexp t :height 30)
-            ("*magit-commit*" :noselect t :height 40 :width 80)
-            ("*magit-diff*" :height 40 :width 80)
-            ("*magit-edit-log*" :noselect t :height 15 :width 80)
-            ("\\*Slime Inspector.*" :regexp t :height 30)
-            ("*Ido Completions*" :noselect t :height 30)
-            ("*eshell*" :height 30)
-            ("*shell*" :height 30)
-            (".*overtone.log" :regexp t :height 30)
-            ("*gists*" :height 30)
-            ("*sldb.*" :regexp t :height 30)
-            ("*robe-doc*" :height 30)))))
-
 (use-package transpose-frame
   :bind
   (("C-x t" . transpose-frame)
