@@ -94,18 +94,6 @@
      geiser-repl-history-filename (concat cb:tmp-dir "geiser-history")
      geiser-active-implementations '(racket))))
 
-(use-package r5rs
-  :ensure t
-  :commands scheme-r5rs-lookup
-  :init
-  (progn
-    (setq scheme-r5rs-root (concat cb:etc-dir "r5rs-html/"))
-    (hook-fn 'cb:scheme-modes-hook
-      (local-set-key (kbd "C-c C-h") 'scheme-r5rs-lookup)
-      (set (make-local-variable 'browse-url-browser-function)
-           (lambda (url &rest _)
-             (cb:w3m-browse-url-as-help (concat "file://" url)))))))
-
 (provide 'cb-scheme)
 
 ;; Local Variables:
