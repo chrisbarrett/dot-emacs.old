@@ -202,8 +202,8 @@
     (hook-fn 'emacs-lisp-mode-hook
       (when (cb:special-elisp-buffer?)
         (setq-local no-byte-compile t))
+      ;; Check parens are balanced and byte-compile.
       (hook-fn 'after-save-hook
-        "Check parens are balanced and byte-compile."
         :local t
         (check-parens)
         (byte-compile-file (buffer-file-name))))
