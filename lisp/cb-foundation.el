@@ -376,6 +376,11 @@ rather than the app bundle."
 
 (bind-key* "S-SPC" 'execute-extended-command)
 
+(bind-keys
+  "C-c -" 'text-scale-set
+  "C-c +" 'text-scale-set
+  "C-c 0" 'text-scale-set)
+
 (provide 'cb-foundation)
 
 ;; Local Variables:
