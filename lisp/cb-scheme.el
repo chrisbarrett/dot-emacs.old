@@ -27,7 +27,6 @@
 ;;; Code:
 
 (require 'use-package)
-(require 'noflet)
 (require 'cb-mode-groups)
 
 ;; `geiser' provides slime-like interaction for Scheme.  I mainly use Racket, so
