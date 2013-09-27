@@ -108,6 +108,41 @@ With prefix, goes to the REPL buffer afterwards (as
       (when (derived-mode-p 'comint-mode)
         (cb:append-buffer)))))
 
+;; Provide a command to compile and run the current buffer on C-c C-c
+(after 'scheme
+  ;; String
+  (defconst cbscm:run-scm-bufname "*execute scheme*")
+
+  ;; String -> String
+  (defun cbscm:lang (s)
+    (cadr (s-match (rx bol "#lang" (+ space) (group (+ nonl))) s)))
+
+  ;; FilePath -> IO Process
+  (defun cbscm:run-file (file)
+    (interactive "f")
+    (async-shell-command
+     (s-join " "
+             `("racket"
+               ,@(-when-let (lang (cbscm:lang (f-read-text file)))
+                   (list "-I" lang))
+               ,file))
+     cbscm:run-scm-bufname))
+
+  ;; IO ()
+  (defun cbscm:execute-buffer ()
+    "Compile and run the current buffer in Racket."
+    (interactive)
+    ;; Offer to save buffer.
+    (when (and (buffer-modified-p) (y-or-n-p "Save buffer? "))
+      (save-buffer))
+    (if (and (buffer-file-name) (f-exists? (buffer-file-name)))
+        (cbscm:run-file (buffer-file-name))
+      (let ((f (make-temp-file nil nil ".rkt")))
+        (f-write (buffer-string) 'utf-8 f)
+        (cbscm:run-file f))))
+
+  (define-key scheme-mode-map (kbd "C-c C-c") 'cbscm:execute-buffer))
+
 (provide 'cb-scheme)
 
 ;; Local Variables:
