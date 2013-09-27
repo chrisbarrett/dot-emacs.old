@@ -835,11 +835,13 @@ Return nil if there are no items to display."
 
       (defun cb-org:refresh-agenda ()
         "Refresh all org agenda buffers."
-        (save-excursion
-          (--each (--filter-buffers (derived-mode-p 'org-agenda-mode))
-            (with-current-buffer it
-              (ignore-errors
-                (org-agenda-redo t))))))
+        (save-window-excursion
+          (let ((inhibit-redisplay t))
+            (save-excursion
+              (--each (--filter-buffers (derived-mode-p 'org-agenda-mode))
+                (with-current-buffer it
+                  (ignore-errors
+                    (org-agenda-redo t))))))))
 
       (hook-fn 'org-mode-hook
         (add-hook 'after-save-hook 'cb-org:refresh-agenda nil 'local))))
