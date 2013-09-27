@@ -28,6 +28,9 @@
 
 (require 'use-package)
 (require 'cb-mode-groups)
+(autoload 'geiser-company--doc "geiser-company")
+(autoload 'geiser-company--prefix-at-point "geiser-company")
+(autoload 'popwin:popup-buffer "popwin")
 
 ;; `geiser' provides slime-like interaction for Scheme.  I mainly use Racket, so
 ;; the config below probably doesn't work for other Schemes.
@@ -52,9 +55,6 @@
     ;;
     ;; Geiser supports company-mode. Adapt to auto-complete.
     (after 'auto-complete
-      (autoload 'geiser-company--prefix-at-point "geiser-company")
-      (autoload 'geiser-company--doc "geiser-company")
-
       (defun cb:geiser-ac-doc (fname &optional module impl)
         (let* ((symbol (intern fname))
                (impl (or impl geiser-impl--implementation))
