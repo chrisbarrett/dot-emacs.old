@@ -178,7 +178,9 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
                       (and "www." (* alnum) ".")
                       ;; Loosely match strings with common domains.
                       (and (+ alnum) "."
-                           (or "edu" "net" "gov" "com" "biz" "org" "info" "co.")))
+                           (or "io" "edu" "net"
+                               "gov" "com" "biz"
+                               "org" "info" "co.")))
                      (* (not (any space "\n" "\r"))))
                  str)))
     ;; Set the URI's protocol to http if none is provided.
