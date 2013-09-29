@@ -36,6 +36,23 @@
 (after 'auto-complete
   (-each cb:scheme-modes (~ add-to-list 'ac-modes)))
 
+;; Add font locking for typed racket.
+
+(after 'scheme
+  (font-lock-add-keywords
+   'scheme-mode
+   `(;; Definition forms
+     (,(rx "(" (group "def" (* (not space))))
+      (1 font-lock-keyword-face))
+     ;; Var identifiers
+     (,(rx "(def" (* (not space)) (+ space)
+           (group (not (any "(")) (+ (not space))))
+      (1 font-lock-variable-name-face))
+     ;; Var identifiers
+     (,(rx "(def" (* (not space)) (+ space) "("
+           (group (+ (not (any ")" space)))))
+      (1 font-lock-function-name-face)))))
+
 ;; `geiser' provides slime-like interaction for Scheme.  I mainly use Racket, so
 ;; the config below probably doesn't work for other Schemes.
 (use-package geiser
