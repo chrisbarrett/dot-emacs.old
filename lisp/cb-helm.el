@@ -100,6 +100,11 @@
           (helm-projectile)
         (helm-mini)))
 
+    (when cb:use-vim-keybindings?
+      (bind-key* "M-I" (command
+                        (noflet ((projectile-project-root () user-emacs-directory))
+                          (helm-projectile)))))
+
     (after 'evil
       (bind-key* "C-j" 'cb:helm-dwim))))
 

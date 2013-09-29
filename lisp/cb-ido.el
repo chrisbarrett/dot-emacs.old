@@ -59,7 +59,6 @@
    ido-completing-read)
   :init
   (progn
-    (bind-key* "M-I" (command (ido-find-file-in-dir cb:lisp-dir)))
     (bind-keys
       "C-x C-f" 'ido-find-file
       "C-x d"   'ido-dired
