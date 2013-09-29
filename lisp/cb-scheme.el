@@ -32,12 +32,15 @@
 (autoload 'geiser-company--prefix-at-point "geiser-company")
 (autoload 'popwin:popup-buffer "popwin")
 
+;; Add scheme modes to ac-modes.
+(after 'auto-complete
+  (-each cb:scheme-modes (~ 'add-to-list 'ac-modes)))
+
 ;; `geiser' provides slime-like interaction for Scheme.  I mainly use Racket, so
 ;; the config below probably doesn't work for other Schemes.
 (use-package geiser
   :ensure t
   :commands run-geiser
-  :init (hook-fn 'cb:scheme-modes (require 'geiser))
   :config
   (progn
 
@@ -86,10 +89,11 @@ With prefix, goes to the REPL buffer afterwards (as
   :ensure t
   :init
   (progn
-    (add-hook 'geiser-mode-hook 'ac-geiser-setup)
-    (add-hook 'geiser-repl-mode-hook 'ac-geiser-setup)
-    (after 'auto-complete
-      (add-to-list 'ac-modes 'geiser-repl-mode))))
+    (hook-fn 'geiser-mode-hook
+      (ac-geiser-setup)
+      (add-to-list 'ac-sources 'ac-source-yasnippet))
+
+    (add-hook 'geiser-repl-mode-hook 'ac-geiser-setup)))
 
 ;; Provide a command to compile and run the current buffer on C-c C-c
 (after 'scheme
