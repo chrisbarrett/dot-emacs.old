@@ -38,6 +38,12 @@
 
 (add-to-list 'auto-mode-alist '("\\.html\\.erb" . erb-mode))
 
+;; Add evil doc lookup handler for ruby.
+(after 'cb-evil
+  (hook-fn 'evil-find-doc-hook
+    (call-interactively 'robe-doc)
+    t))
+
 (after 'smart-operator
   (defun cb-rb:smart-colon ()
     "Insert a colon, with or without padding.
