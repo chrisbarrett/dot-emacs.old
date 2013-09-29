@@ -48,7 +48,6 @@
                     (buffer-name)))))
 
 ;; Prevent flycheck from running checkdoc for certain elisp file types.
-
 (after 'flycheck
   (hook-fn 'flycheck-mode-hook
     (when (cb:special-elisp-buffer?)
@@ -57,6 +56,7 @@
   (setq-default flycheck-emacs-lisp-load-path
                 (list cb:lib-dir cb:lisp-dir)))
 
+;; Add command to switch to corresponding unit test.
 (after 'projectile
 
   (defun src<->code ()
@@ -70,13 +70,14 @@
 
          ;; Otherwise it's a source file, find a corresponding test.
          (concat (projectile-project-root) "test/"
-                 (destructuring-bind (_ name ext)
+                 (cl-destructuring-bind (_ name ext)
                      (s-match (rx bol (group (* nonl)) (group "." (* alnum) eol))
                               fname)
                    (concat name "-tests" ext)))))))
 
   (define-key emacs-lisp-mode-map (kbd "C-c C-j") 'src<->code))
 
+;; Customise font-locking for elisp.
 (after 'lisp-mode
   (font-lock-add-keywords
    'emacs-lisp-mode
@@ -121,9 +122,11 @@
       (1 font-lock-keyword-face)
       (2 font-lock-function-name-face)))))
 
+;; Configure sp for IELM.
 (after 'smartparens
   (add-hook 'ielm-mode-hook 'smartparens-strict-mode))
 
+;; Configure auto-complete for IELM.
 (after 'auto-complete
   (add-to-list 'ac-modes 'ielm-mode)
   (hook-fn 'ielm-mode-hook
