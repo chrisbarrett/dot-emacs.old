@@ -51,33 +51,6 @@
         "C-c C-l" 'geiser-eval-buffer
         "C-c C-h" 'geiser-doc-look-up-manual))
 
-    ;; Auto-complete
-    ;;
-    ;; Geiser supports company-mode. Adapt to auto-complete.
-    (after 'auto-complete
-      (defun cb:geiser-ac-doc (fname &optional module impl)
-        (let* ((symbol (intern fname))
-               (impl (or impl geiser-impl--implementation))
-               (module (geiser-doc--module (or module (geiser-eval--get-module))
-                                           impl)))
-          (-when-let (ds (geiser-doc--get-docstring symbol module))
-            (ignore-errors
-              (with-temp-buffer
-                (geiser-doc--insert-title
-                 (geiser-autodoc--str* (cdr (assoc "signature" ds))))
-                (newline)
-                (insert (or (cdr (assoc "docstring" ds)) ""))
-                (buffer-string))))))
-
-      (ac-define-source geiser
-        '((candidates . (progn
-                          (geiser-company--prefix-at-point)
-                          (cdr geiser-company--completions)))
-          (document   . cb:geiser-ac-doc)))
-
-      (hook-fn 'cb:scheme-modes-hook
-        (setq ac-sources '(ac-source-yasnippet ac-source-geiser))))
-
     ;; Override behaviours
 
     (after 'geiser-mode
@@ -107,6 +80,16 @@ With prefix, goes to the REPL buffer afterwards (as
       "Move to end of REPL and append-line."
       (when (derived-mode-p 'comint-mode)
         (cb:append-buffer)))))
+
+;; `ac-geiser' provides auto-complete sources for geiser.
+(use-package ac-geiser
+  :ensure t
+  :init
+  (progn
+    (add-hook 'geiser-mode-hook 'ac-geiser-setup)
+    (add-hook 'geiser-repl-mode-hook 'ac-geiser-setup)
+    (after 'auto-complete
+      (add-to-list 'ac-modes 'geiser-repl-mode))))
 
 ;; Provide a command to compile and run the current buffer on C-c C-c
 (after 'scheme
