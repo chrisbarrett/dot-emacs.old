@@ -37,7 +37,6 @@
   (-each cb:scheme-modes (~ add-to-list 'ac-modes)))
 
 ;; Add font locking for typed racket.
-
 (after 'scheme
   (font-lock-add-keywords
    'scheme-mode
@@ -53,8 +52,11 @@
            (group (+ (not (any ")" space)))))
       (1 font-lock-function-name-face))
      ;; Types
-     (,(rx bos upper (* (not space)) eos)
-      (0 font-lock-type-face)))))
+     (,(rx bow upper (* (not space)) eow)
+      (0 font-lock-type-face))
+     ;; Arrows
+     (,(rx bow "->" eow)
+      (0 (prog1 nil (compose-region (match-beginning 0) (match-end 0) "→")))))))
 
 ;; `geiser' provides slime-like interaction for Scheme.  I mainly use Racket, so
 ;; the config below probably doesn't work for other Schemes.
