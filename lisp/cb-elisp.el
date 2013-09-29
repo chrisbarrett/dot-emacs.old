@@ -142,11 +142,13 @@
 
   (defun get-elisp-doc (sym)
     "Find the appropriate documentation for SYM."
-    (cond
-     ((symbol-function sym) (describe-function sym))
-     ((boundp sym)          (describe-variable sym))
-     ((facep sym)           (describe-face sym))
-     (t                     (user-error "No documentation available"))))
+    (when (apply 'derived-mode-p cb:elisp-modes)
+      (cond
+       ((symbol-function sym) (describe-function sym))
+       ((boundp sym)          (describe-variable sym))
+       ((facep sym)           (describe-face sym))
+       (t                     (user-error "No documentation available")))
+      major-mode))
 
   (add-hook 'evil-find-doc-hook (C get-elisp-doc intern)))
 
