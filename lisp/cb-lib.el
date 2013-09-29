@@ -61,7 +61,7 @@
   "Like `-compose', but does not require FNS to be quoted."
   `(-compose ,@(-map 'cblib:quote-if-fn fns)))
 
-(defmacro W (fn)
+(defmacro ^ (fn)
   "Like `-flip', but does not require FN to be quoted."
   `(-flip ,(cblib:quote-if-fn fn)))
 

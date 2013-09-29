@@ -137,7 +137,7 @@
 ;; Each file must declare a corresponding emacs feature.
 (let* ((files (f-files cb:lisp-dir))
        (config-files (-filter
-                      (& (-cut f-ext? <> "el")
+                      (& (~ (^ f-ext?) "el")
                          (¬ (| (~ s-contains? "flycheck")
                                (~ s-ends-with? "~"))))
                       files))
