@@ -44,7 +44,7 @@
             ("*compilation*" :noselect t)
             ("*Compile-Log*" :height 7 :noselect t)
             ("*Messages*" :height 30)
-            ("* Racket REPL *" :height 7)
+            ("* Racket REPL *" :height 7 :stick t)
             ("*Geiser dbg*" :height 7)
             ("*execute scheme*" :height 7 :noselect t)
             ("*Directory*")
