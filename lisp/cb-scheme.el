@@ -126,6 +126,7 @@ With prefix, goes to the REPL buffer afterwards (as
                ,@(-when-let (lang (cbscm:lang (f-read-text file)))
                    (list "-I" lang))
                ,file))
+     cbscm:run-scm-bufname
      cbscm:run-scm-bufname))
 
   ;; IO ()
