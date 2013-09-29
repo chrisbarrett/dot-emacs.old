@@ -36,7 +36,10 @@
   :config
   (progn
     (setq projectile-known-projects-file
-          (concat cb:tmp-dir "projectile-bookmarks.eld"))
+          (f-join cb:tmp-dir "projectile-bookmarks.eld")
+
+          projectile-cache-file
+          (f-join cb:tmp-dir "projectile.cache"))
 
     (defadvice find-tag (before set-tags-directory activate)
       "Ensure the TAGS path is set before searching for tags."
