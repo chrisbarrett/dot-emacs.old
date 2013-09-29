@@ -234,6 +234,7 @@
     (define-keys org-mode-map
       "C-c C-k" 'cb-org:ctrl-c-ctrl-k
       "C-c C-." 'org-time-stamp-inactive
+      "C-c o" 'org-attach-open
       "M-p" 'org-metaup
       "M-n" 'org-metadown
       ;; disable annoying comment toggle key
