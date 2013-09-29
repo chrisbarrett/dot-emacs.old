@@ -93,23 +93,8 @@
 (use-package helm-projectile
   :ensure t
   :commands helm-projectile
-  :idle (require 'helm-projectile)
-  :init
-  (progn
-    (defun cb:helm-dwim ()
-      "Show helm-projectile, failling back to helm-mini if not in a project."
-      (interactive)
-      (if (projectile-project-p)
-          (helm-projectile)
-        (helm-mini)))
-
-    (when cb:use-vim-keybindings?
-      (bind-key* "M-I" (command
-                        (noflet ((projectile-project-root () user-emacs-directory))
-                          (helm-projectile)))))
-
-    (after 'evil
-      (bind-key* "C-j" 'cb:helm-dwim))))
+  :bind (("M-j" . helm-projectile))
+  :idle (require 'helm-projectile))
 
 (provide 'cb-helm)
 
