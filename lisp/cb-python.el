@@ -59,6 +59,13 @@
     (sp-with-modes cb:python-modes
       (sp-local-pair "{" "}" :post-handlers '(:add sp-generic-leading-space)))))
 
+;; Add documentation lookup handler for python.
+(after 'cb-evil
+  (hook-fn 'evil-find-doc-hook
+    (when (apply 'derived-mode-p cb:python-modes)
+      (jedi:show-doc)
+      t)))
+
 ;; Use `python', the newer package off MELPA.
 (use-package python
   :ensure   t
