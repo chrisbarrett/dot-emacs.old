@@ -151,7 +151,7 @@
 ;; buffers.
 (use-package jedi
   :ensure   t
-  :commands jedi:setup
+  :commands (jedi:setup jedi:show-doc)
   :init     (add-hook 'cb:python-modes-hook 'jedi:setup)
   :config   (setq jedi:tooltip-method nil
                   jedi:complete-on-dot t
