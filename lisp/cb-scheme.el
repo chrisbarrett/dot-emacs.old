@@ -58,7 +58,7 @@
      (,(rx bow "->" eow)
       (0 (prog1 nil (compose-region (match-beginning 0) (match-end 0) "→")))))))
 
-;; Declare a flycheck checker for Typed Racket.
+;; Declare a flycheck checker for Racket.
 (after 'flycheck
 
   (defun cbscm:parse-err (output &rest _)
@@ -78,19 +78,16 @@
                                       'error
                                       message)))))
 
-  (flycheck-define-checker typed-racket
-    "Typecheck the current buffer.
-Only activates if the #lang directive is set to typed/racket."
+  (flycheck-define-checker racket
+    "Execute the current racket buffer to see if it works cleanly.
+This is particularly useful for Typed Racket sources."
     :command ("racket" "-f" source)
-    :modes scheme-mode
-    :predicate (lambda ()
-                 (s-matches? (rx bol "#lang" (+ space) "typed/racket" eow)
-                             (buffer-string)))
+    :predicate (lambda () (derived-mode-p 'scheme-mode))
     :error-parser cbscm:parse-err)
 
   (hook-fn 'scheme-mode-hook
     (flycheck-mode +1)
-    (flycheck-select-checker 'typed-racket)))
+    (flycheck-select-checker 'racket)))
 
 ;; `geiser' provides slime-like interaction for Scheme.  I mainly use Racket, so
 ;; the config below probably doesn't work for other Schemes.
