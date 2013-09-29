@@ -118,7 +118,7 @@ With prefix, goes to the REPL buffer afterwards (as
       (let ((inhibit-read-only t))
         (delete-region (point-min) (point-max))))
 
-    ;; Start a new process.
+    ;; Start a new Scheme process in the appropriate language for this file.
     (let ((lang (cbscm:lang (buffer-string))))
       (cond
        ;; Create a temp file if there are unwritten changes or this buffer does
