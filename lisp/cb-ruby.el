@@ -41,8 +41,9 @@
 ;; Add evil doc lookup handler for ruby.
 (after 'cb-evil
   (hook-fn 'evil-find-doc-hook
-    (call-interactively 'robe-doc)
-    t))
+    (when (apply 'derived-mode-p cb:ruby-modes)
+      (call-interactively 'robe-doc)
+      major-mode)))
 
 (after 'smart-operator
   (defun cb-rb:smart-colon ()
