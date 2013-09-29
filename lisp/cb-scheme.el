@@ -107,6 +107,10 @@ This is particularly useful for Typed Racket sources."
         "C-c C-l" 'geiser-eval-buffer
         "C-c C-h" 'geiser-doc-look-up-manual))
 
+    (after 'evil
+      (evil-define-key 'normal geiser-mode-map
+        (kbd "M-.") 'geiser-edit-symbol-at-point))
+
     ;; Override behaviours
 
     (after 'geiser-mode
