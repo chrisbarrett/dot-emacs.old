@@ -94,36 +94,45 @@ With prefix, goes to the REPL buffer afterwards (as
 ;; Provide a command to compile and run the current buffer on C-c C-c
 (after 'scheme
   ;; String
-  (defconst cbscm:run-scm-bufname "*execute scheme*")
+  (defconst cbscm:scm-buf "*execute scheme*")
 
   ;; String -> String
   (defun cbscm:lang (s)
-    (cadr (s-match (rx bol "#lang" (+ space) (group (+ nonl))) s)))
+    (or (cadr (s-match (rx bol "#lang" (+ space) (group (+ nonl))) s))
+        "racket"))
 
   ;; FilePath -> IO Process
-  (defun cbscm:run-file (file)
+  (defun cbscm:run-file (file language)
     (interactive "f")
-    (async-shell-command
-     (s-join " "
-             `("racket"
-               ,@(-when-let (lang (cbscm:lang (f-read-text file)))
-                   (list "-I" lang))
-               ,file))
-     cbscm:run-scm-bufname
-     cbscm:run-scm-bufname))
+    (start-process cbscm:scm-buf cbscm:scm-buf
+                   "racket" "-I" language file))
 
   ;; IO ()
   (defun cbscm:execute-buffer ()
     "Compile and run the current buffer in Racket."
     (interactive)
-    ;; Offer to save buffer.
-    (when (and (buffer-modified-p) (y-or-n-p "Save buffer? "))
-      (save-buffer))
-    (if (and (buffer-file-name) (f-exists? (buffer-file-name)))
-        (cbscm:run-file (buffer-file-name))
-      (let ((f (make-temp-file nil nil ".rkt")))
-        (f-write (buffer-string) 'utf-8 f)
-        (cbscm:run-file f))))
+    ;; Kill running processes and prepare buffer.
+    (with-current-buffer (get-buffer-create cbscm:scm-buf)
+      (read-only-mode +1)
+      (ignore-errors (kill-process))
+      (let ((inhibit-read-only t))
+        (delete-region (point-min) (point-max))))
+
+    ;; Start a new process.
+    (let ((lang (cbscm:lang (buffer-string))))
+      (cond
+       ;; Create a temp file if there are unwritten changes or this buffer does
+       ;; not have a corresponding file.
+       ((or (buffer-modified-p)
+            (and (buffer-file-name) (not (f-exists? (buffer-file-name)))))
+        (let ((f (make-temp-file nil nil ".rkt")))
+          (f-write (buffer-string) 'utf-8 f)
+          (cbscm:run-file f lang)))
+       ;; Otherwise run this file directly.
+       (t
+        (cbscm:run-file (buffer-file-name) lang))))
+
+    (display-buffer-other-frame cbscm:scm-buf))
 
   (define-key scheme-mode-map (kbd "C-c C-c") 'cbscm:execute-buffer))
 
