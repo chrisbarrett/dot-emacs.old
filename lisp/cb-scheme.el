@@ -52,7 +52,7 @@
                    "do:"
                    ;; Types
                    "struct:"
-                   (and ":" space)
+                   ":"
                    "provide:"
                    "cast"))
 
@@ -62,17 +62,24 @@
      ;; Definition forms
      (,(rx "(" (group "def" (* (not space))))
       (1 font-lock-keyword-face))
+
      ;; Var identifiers
      (,(rx "(def" (* (not space)) (+ space)
            (group (not (any "(")) (+ (not space))))
       (1 font-lock-variable-name-face))
-     ;; Var identifiers
+
+     ;; Function identifiers
      (,(rx "(def" (* (not space)) (+ space) "("
            (group (+ (not (any ")" space)))))
       (1 font-lock-function-name-face))
+     (,(rx "(:" (+ space)
+           (group (+ (not (any space "{" "}" "(" "[" "]" ")")))))
+      (1 font-lock-function-name-face))
+
      ;; Types
-     (,(rx bow upper (* (not space)) eow)
+     (,(rx bow upper (* (not (any space "{" "}" "(" "[" "]" ")"))) eow)
       (0 font-lock-type-face))
+
      ;; Arrows
      (,(rx bow "->" eow)
       (0 (prog1 nil (compose-region (match-beginning 0) (match-end 0) "→")))))))
