@@ -134,6 +134,19 @@
                        ac-source-variables
                        ac-source-symbols))))
 
+;; Add evil documentation lookup for elisp.
+(after 'cb-evil
+
+  (defun get-elisp-doc (sym)
+    "Find the appropriate documentation for SYM."
+    (cond
+     ((symbol-function sym) (describe-function sym))
+     ((boundp sym)          (describe-variable sym))
+     ((facep sym)           (describe-face sym))
+     (t                     (user-error "No documentation available"))))
+
+  (add-hook 'evil-find-doc-hook (C get-elisp-doc intern)))
+
 (hook-fn 'minibuffer-setup-hook
   "Enable Paredit during eval-expression."
   (when (equal this-command 'eval-expression)
