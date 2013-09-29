@@ -51,7 +51,10 @@
      ;; Var identifiers
      (,(rx "(def" (* (not space)) (+ space) "("
            (group (+ (not (any ")" space)))))
-      (1 font-lock-function-name-face)))))
+      (1 font-lock-function-name-face))
+     ;; Types
+     (,(rx bos upper (* (not space)) eos)
+      (0 font-lock-type-face)))))
 
 ;; `geiser' provides slime-like interaction for Scheme.  I mainly use Racket, so
 ;; the config below probably doesn't work for other Schemes.
