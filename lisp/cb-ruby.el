@@ -31,132 +31,129 @@
 (require 'cb-lib)
 (require 'cb-foundation)
 
-(after 'ruby
+(define-derived-mode erb-mode html-mode
+  "ERB" nil
+  (when (fboundp 'flycheck-mode)
+    (flycheck-mode -1)))
 
-  (define-derived-mode erb-mode html-mode
-    "ERB" nil
-    (when (fboundp 'flycheck-mode)
-      (flycheck-mode -1)))
+(add-to-list 'auto-mode-alist `("\\.html\\.erb" . erb-mode))
 
-  (add-to-list 'auto-mode-alist `("\\.html\\.erb" . erb-mode))
-
-  (after 'smart-operator
-    (defun cb-rb:smart-colon ()
-      "Insert a colon, with or without padding.
+(after 'smart-operator
+  (defun cb-rb:smart-colon ()
+    "Insert a colon, with or without padding.
 If this is the leading colon for a symbol, do not insert padding.
 If this is the trailing colon for a hash key, insert padding."
-      (interactive)
-      (insert ":")
-      (when (s-matches? (rx (+ alnum) ":" eol)
-                        (buffer-substring (line-beginning-position) (point)))
-        (just-one-space)))
+    (interactive)
+    (insert ":")
+    (when (s-matches? (rx (+ alnum) ":" eol)
+                      (buffer-substring (line-beginning-position) (point)))
+      (just-one-space)))
 
-    (hook-fn 'cb:ruby-modes-hook
-      (local-set-key (kbd ",") (command (insert ",") (just-one-space)))
-      (local-set-key (kbd ":") 'cb-rb:smart-colon)
-      (local-set-key (kbd "|") (smart-op "|"))
-      (local-set-key (kbd "~") (smart-op "~"))
-      (local-set-key (kbd "<") (smart-op "<"))
-      (local-set-key (kbd ">") (smart-op ">"))
-      (local-set-key (kbd "=") (smart-op "="))
-      (local-set-key (kbd "-") (smart-op "-"))
-      (local-set-key (kbd "+") (smart-op "+"))
-      (local-set-key (kbd "/") (smart-op "/"))))
+  (hook-fn 'cb:ruby-modes-hook
+    (local-set-key (kbd ",") (command (insert ",") (just-one-space)))
+    (local-set-key (kbd ":") 'cb-rb:smart-colon)
+    (local-set-key (kbd "|") (smart-op "|"))
+    (local-set-key (kbd "~") (smart-op "~"))
+    (local-set-key (kbd "<") (smart-op "<"))
+    (local-set-key (kbd ">") (smart-op ">"))
+    (local-set-key (kbd "=") (smart-op "="))
+    (local-set-key (kbd "-") (smart-op "-"))
+    (local-set-key (kbd "+") (smart-op "+"))
+    (local-set-key (kbd "/") (smart-op "/"))))
 
-  (after 'hideshow
-    (add-to-list 'hs-special-modes-alist
-                 `(ruby-mode
-                   ,(rx (or "def" "class" "module" "{" "[")) ; Block start
-                   ,(rx (or "}" "]" "end"))                  ; Block end
-                   ,(rx (or "#" "=begin"))                   ; Comment start
-                   ruby-forward-sexp nil)))
+(after 'hideshow
+  (add-to-list 'hs-special-modes-alist
+               `(ruby-mode
+                 ,(rx (or "def" "class" "module" "{" "[")) ; Block start
+                 ,(rx (or "}" "]" "end"))                  ; Block end
+                 ,(rx (or "#" "=begin"))                   ; Comment start
+                 ruby-forward-sexp nil)))
 
-  (after 'auto-complete
-    (--each cb:ruby-modes
-      (add-to-list 'ac-modes it))
+(after 'auto-complete
+  (-each cb:ruby-modes (~ add-to-list 'ac-modes))
 
-    (defun cb-rb:inside-class? ()
-      "Test whether point is in the body of a Ruby class."
-      (and (not (emr-line-matches? (rx bol (* space) "class" (+ space))))
-           (save-excursion
-             (sp-backward-up-sexp)
-             (thing-at-point-looking-at "class"))))
+  (defun cb-rb:inside-class? ()
+    "Test whether point is in the body of a Ruby class."
+    (and (not (emr-line-matches? (rx bol (* space) "class" (+ space))))
+         (save-excursion
+           (sp-backward-up-sexp)
+           (thing-at-point-looking-at "class"))))
 
-    (ac-define-source ruby-class-keywords
-      '((available  . cb-rb:inside-class?)
-        (candidates . '("public" "private" "protected"))
-        (symbol     . "s")))
+  (ac-define-source ruby-class-keywords
+    '((available  . cb-rb:inside-class?)
+      (candidates . '("public" "private" "protected"))
+      (symbol     . "s")))
 
-    (ac-define-source ruby-class-attributes
-      '((available  . cb-rb:inside-class?)
-        (candidates . '("attr_accessor" "attr_reader" "attr_writer"))
-        (action     . (lambda () (insert " :")))
-        (symbol     . "m")))
+  (ac-define-source ruby-class-attributes
+    '((available  . cb-rb:inside-class?)
+      (candidates . '("attr_accessor" "attr_reader" "attr_writer"))
+      (action     . (lambda () (insert " :")))
+      (symbol     . "m")))
 
-    (defun cb-rb:configure-ac ()
-      (add-to-list 'ac-sources 'ac-source-yasnippet)
-      (add-to-list 'ac-sources 'ac-source-ruby-class-keywords)
-      (add-to-list 'ac-sources 'ac-source-ruby-class-attributes))
+  (defun cb-rb:configure-ac ()
+    (add-to-list 'ac-sources 'ac-source-yasnippet)
+    (add-to-list 'ac-sources 'ac-source-ruby-class-keywords)
+    (add-to-list 'ac-sources 'ac-source-ruby-class-attributes))
 
-    (add-hook 'cb:ruby-modes-hook 'cb-rb:configure-ac))
+  (add-hook 'cb:ruby-modes-hook 'cb-rb:configure-ac))
 
-  (after 'smartparens
-    (require 'smartparens-ruby)
+(after 'smartparens
+  (require 'smartparens-ruby)
 
-    ;; Change word boundaries so slurping works.
-    (after 'ruby-mode
-      (modify-syntax-entry ?@ "w" ruby-mode-syntax-table)
-      (modify-syntax-entry ?_ "w" ruby-mode-syntax-table)
-      (modify-syntax-entry ?! "w" ruby-mode-syntax-table)
-      (modify-syntax-entry ?? "w" ruby-mode-syntax-table))
+  ;; Change word boundaries so slurping works.
+  (after 'ruby-mode
+    (modify-syntax-entry ?@ "w" ruby-mode-syntax-table)
+    (modify-syntax-entry ?_ "w" ruby-mode-syntax-table)
+    (modify-syntax-entry ?! "w" ruby-mode-syntax-table)
+    (modify-syntax-entry ?? "w" ruby-mode-syntax-table))
 
-    (defun sp-ruby-should-insert-pipe-close (_id _action _ctx)
-      "Test whether to insert the closing pipe for a lambda-binding pipe pair."
-      (thing-at-point-looking-at
-       (rx-to-string `(and (or "do" "{") (* space) "|"))))
+  (defun sp-ruby-should-insert-pipe-close (_id _action _ctx)
+    "Test whether to insert the closing pipe for a lambda-binding pipe pair."
+    (thing-at-point-looking-at
+     (rx-to-string `(and (or "do" "{") (* space) "|"))))
 
-    (defun sp-ruby-sp-hook-space-before (_id action _ctx)
-      "Move to point before ID and insert a space."
-      (when (equal 'insert action)
-        (save-excursion
-          (search-backward "|")
-          (just-one-space))))
+  (defun sp-ruby-sp-hook-space-before (_id action _ctx)
+    "Move to point before ID and insert a space."
+    (when (equal 'insert action)
+      (save-excursion
+        (search-backward "|")
+        (just-one-space))))
 
-    (defun sp-ruby-sp-hook-space-after (_id action _ctx)
-      "Move to point after ID and insert a space."
-      (when (equal 'insert action)
-        (save-excursion
-          (search-forward "|")
-          (just-one-space))))
+  (defun sp-ruby-sp-hook-space-after (_id action _ctx)
+    "Move to point after ID and insert a space."
+    (when (equal 'insert action)
+      (save-excursion
+        (search-forward "|")
+        (just-one-space))))
 
-    (sp-with-modes '(ruby-mode inf-ruby-mode)
+  (sp-with-modes '(ruby-mode inf-ruby-mode)
 
-      (sp-local-pair "{" "}"
-                     :post-handlers '(:add sp-generic-leading-space))
+    (sp-local-pair "{" "}"
+                   :post-handlers '(:add sp-generic-leading-space))
 
-      (sp-local-pair "[" "]"
-                     :pre-handlers '(sp-ruby-pre-handler))
+    (sp-local-pair "[" "]"
+                   :pre-handlers '(sp-ruby-pre-handler))
 
-      (sp-local-pair "%q{" "}" :when '(sp-in-code-p))
-      (sp-local-pair "%Q{" "}" :when '(sp-in-code-p))
-      (sp-local-pair "%w{" "}" :when '(sp-in-code-p))
-      (sp-local-pair "%W{" "}" :when '(sp-in-code-p))
-      (sp-local-pair  "%(" ")" :when '(sp-in-code-p))
-      (sp-local-pair "%x(" ")" :when '(sp-in-code-p))
-      (sp-local-pair  "#{" "}" :when '(sp-in-string-p))
+    (sp-local-pair "%q{" "}" :when '(sp-in-code-p))
+    (sp-local-pair "%Q{" "}" :when '(sp-in-code-p))
+    (sp-local-pair "%w{" "}" :when '(sp-in-code-p))
+    (sp-local-pair "%W{" "}" :when '(sp-in-code-p))
+    (sp-local-pair  "%(" ")" :when '(sp-in-code-p))
+    (sp-local-pair "%x(" ")" :when '(sp-in-code-p))
+    (sp-local-pair  "#{" "}" :when '(sp-in-string-p))
 
-      (sp-local-pair "|" "|"
-                     :when '(sp-ruby-should-insert-pipe-close)
-                     :unless '(sp-in-string-p)
-                     :pre-handlers '(sp-ruby-sp-hook-space-before)
-                     :post-handlers '(sp-ruby-sp-hook-space-after))
+    (sp-local-pair "|" "|"
+                   :when '(sp-ruby-should-insert-pipe-close)
+                   :unless '(sp-in-string-p)
+                   :pre-handlers '(sp-ruby-sp-hook-space-before)
+                   :post-handlers '(sp-ruby-sp-hook-space-after))
 
-      (sp-local-pair "case" "end"
-                     :when '(("SPC" "RET" "<evil-ret>"))
-                     :unless '(sp-ruby-in-string-or-word-p)
-                     :actions '(insert)
-                     :pre-handlers '(sp-ruby-pre-handler)
-                     :post-handlers '(sp-ruby-block-post-handler)))))
+    (sp-local-pair "case" "end"
+                   :when '(("SPC" "RET" "<evil-ret>"))
+                   :unless '(sp-ruby-in-string-or-word-p)
+                   :actions '(insert)
+                   :pre-handlers '(sp-ruby-pre-handler)
+                   :post-handlers '(sp-ruby-block-post-handler))))
 
 (use-package ruby-mode
   :ensure t
