@@ -37,7 +37,7 @@
 Each handler should take the search string as an argument.")
 
 (configuration-group
-  :when cb:use-vim-keybindings?
+  :when (true? cb:use-vim-keybindings?)
 
   (defun get-manpage (candidate)
     "Show the manpage for CANDIDATE."
