@@ -83,10 +83,6 @@
     (set-face-background  'helm-selection "white")
     (set-face-foreground  'helm-selection "black"))
 
-  (after 'smartparens
-    (set-face-foreground  'sp-show-pair-match-face "#fdf6e3")
-    (set-face-background  'sp-show-pair-match-face "black"))
-
   (after 'parenface-plus
     (set-face-foreground  'paren-face "grey80")))
 
