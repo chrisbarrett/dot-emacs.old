@@ -108,6 +108,13 @@ This is particularly useful for Typed Racket sources."
     (flycheck-mode +1)
     (flycheck-select-checker 'racket)))
 
+;; Add evil doc lookup handler for scheme.
+(after 'cb-evil
+  (hook-fn 'evil-find-doc-hook
+    (when (apply 'derived-mode-p cb:scheme-modes)
+      (call-interactively 'geiser-doc-symbol-at-point)
+      major-mode)))
+
 ;; `geiser' provides slime-like interaction for Scheme.  I mainly use Racket, so
 ;; the config below probably doesn't work for other Schemes.
 (use-package geiser
