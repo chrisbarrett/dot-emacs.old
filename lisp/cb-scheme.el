@@ -40,7 +40,26 @@
 (after 'scheme
   (font-lock-add-keywords
    'scheme-mode
-   `(;; Definition forms
+   `(;; Special forms in Typed Racket.
+     (,(rx "("
+           (group (or
+                   ;; let family
+                   (and (? "p") "let" (* (not space)) ":")
+                   ;; lambdas
+                   (and (* (not space)) "lambda:")
+                   ;; loops
+                   (and "for" (* (not space)) ":")
+                   "do:"
+                   ;; Types
+                   "struct:"
+                   (and ":" space)
+                   "provide:"
+                   "cast"))
+
+           (or space "\n"))
+      (1 font-lock-keyword-face))
+
+     ;; Definition forms
      (,(rx "(" (group "def" (* (not space))))
       (1 font-lock-keyword-face))
      ;; Var identifiers
