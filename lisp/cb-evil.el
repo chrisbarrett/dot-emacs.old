@@ -34,242 +34,245 @@
 
 (configuration-group :when cb:use-vim-keybindings?
 
-(defun get-manpage (candidate)
-  "Show the manpage for CANDIDATE."
-  (let ((wfiles (mapcar 'car (woman-file-name-all-completions candidate))))
-    (condition-case _
-        (if (> (length wfiles) 1)
-            (woman-find-file
-             (helm-comp-read
-              "ManFile: " wfiles :must-match t))
-          (woman candidate))
-      ;; If woman is unable to format correctly
-      ;; use man instead.
-      (error
-       (kill-buffer)
-       (Man-getpage-in-background candidate)))))
+(configuration-group
+  :when cb:use-vim-keybindings?
 
-(defun get-elisp-doc (sym)
-  "Find the appropriate documentation for SYM."
-  (cond
-   ((symbol-function sym) (describe-function sym))
-   ((facep sym)           (describe-face sym))
-   ((boundp sym)          (describe-variable sym))
-   (t                     (user-error "No documentation available"))))
+  (defun get-manpage (candidate)
+    "Show the manpage for CANDIDATE."
+    (let ((wfiles (mapcar 'car (woman-file-name-all-completions candidate))))
+      (condition-case _
+          (if (> (length wfiles) 1)
+              (woman-find-file
+               (helm-comp-read
+                "ManFile: " wfiles :must-match t))
+            (woman candidate))
+        ;; If woman is unable to format correctly
+        ;; use man instead.
+        (error
+         (kill-buffer)
+         (Man-getpage-in-background candidate)))))
 
-(defun* get-documentation (&optional (candidate (thing-at-point 'symbol)))
-  "Get documentation for CANDIDATE."
-  (interactive)
-  ;;
-  (cl-flet ((derived? (list-symbol)
-                      (when (boundp list-symbol)
-                        (apply 'derived-mode-p (eval list-symbol)))))
-    (condition-case _
-        (cond
-         ((derived? 'cb:elisp-modes)
-          (get-elisp-doc (intern candidate)))
-         ((derived? 'cb:ruby-modes)
-          (call-interactively 'robe-doc))
-         ((derived? 'cb:python-modes)
-          (call-interactively 'jedi:show-doc))
-         (t
-          (get-manpage candidate)))
-      (error
-       (user-error "No documentation available")))))
+  (defun get-elisp-doc (sym)
+    "Find the appropriate documentation for SYM."
+    (cond
+     ((symbol-function sym) (describe-function sym))
+     ((facep sym)           (describe-face sym))
+     ((boundp sym)          (describe-variable sym))
+     (t                     (user-error "No documentation available"))))
 
-(use-package evil
-  :ensure   t
-  :commands evil-mode
-  :init
-  (progn
-    (add-hook 'after-init-hook 'evil-mode)
+  (defun* get-documentation (&optional (candidate (thing-at-point 'symbol)))
+    "Get documentation for CANDIDATE."
+    (interactive)
+    ;;
+    (cl-flet ((derived? (list-symbol)
+                        (when (boundp list-symbol)
+                          (apply 'derived-mode-p (eval list-symbol)))))
+      (condition-case _
+          (cond
+           ((derived? 'cb:elisp-modes)
+            (get-elisp-doc (intern candidate)))
+           ((derived? 'cb:ruby-modes)
+            (call-interactively 'robe-doc))
+           ((derived? 'cb:python-modes)
+            (call-interactively 'jedi:show-doc))
+           (t
+            (get-manpage candidate)))
+        (error
+         (user-error "No documentation available")))))
 
-    (defmacro evil-define-keys (state keymap &rest defs)
-      "Variadic version of `evil-define-key'.
+  (use-package evil
+    :ensure   t
+    :commands evil-mode
+    :init
+    (progn
+      (add-hook 'after-init-hook 'evil-mode)
+
+      (defmacro evil-define-keys (state keymap &rest defs)
+        "Variadic version of `evil-define-key'.
 Creates STATE bindings for keymap. DEFS are alternating keys and functions."
-      (declare (indent 2))
-      `(after 'evil
-         ,@(--map `(evil-define-key ,state ,keymap (kbd ,(car it)) ,(cadr it))
-                  (-partition-all 2 defs))))
+        (declare (indent 2))
+        `(after 'evil
+           ,@(--map `(evil-define-key ,state ,keymap (kbd ,(car it)) ,(cadr it))
+                    (-partition-all 2 defs))))
 
-    (defmacro evil-global-set-keys (state &rest defs)
-      "Variadic version of `evil-global-set-key'
+      (defmacro evil-global-set-keys (state &rest defs)
+        "Variadic version of `evil-global-set-key'
 Creates STATE bindings for DEFS. DEFS are comprised of alternating string-symbol pairs."
-      (declare (indent 1))
-      `(after 'evil
-         ,@(--map `(evil-global-set-key ,state (kbd ,(car it)) ,(cadr it))
-                  (-partition-all 2 defs)))))
-  :config
-  (progn
+        (declare (indent 1))
+        `(after 'evil
+           ,@(--map `(evil-global-set-key ,state (kbd ,(car it)) ,(cadr it))
+                    (-partition-all 2 defs)))))
+    :config
+    (progn
 
-    (defun evil-undefine ()
-      (interactive)
-      (let (evil-mode-map-alist)
-        (call-interactively (key-binding (this-command-keys)))))
+      (defun evil-undefine ()
+        (interactive)
+        (let (evil-mode-map-alist)
+          (call-interactively (key-binding (this-command-keys)))))
 
-    (define-keys evil-normal-state-map
-      "M-z" 'evil-emacs-state
-      "C-z" 'evil-undefine
-      "SPC" 'evil-toggle-fold
-      "K"   'get-documentation
-      "u"   'undo-tree-undo
-      "C-R" 'undo-tree-redo)
+      (define-keys evil-normal-state-map
+        "M-z" 'evil-emacs-state
+        "C-z" 'evil-undefine
+        "SPC" 'evil-toggle-fold
+        "K"   'get-documentation
+        "u"   'undo-tree-undo
+        "C-R" 'undo-tree-redo)
 
-    (define-key evil-insert-state-map (kbd "C-z") 'evil-undefine)
-    (define-key evil-emacs-state-map  (kbd "M-z") 'evil-normal-state)
-    (define-key evil-visual-state-map (kbd "C-z") 'evil-undefine)
+      (define-key evil-insert-state-map (kbd "C-z") 'evil-undefine)
+      (define-key evil-emacs-state-map  (kbd "M-z") 'evil-normal-state)
+      (define-key evil-visual-state-map (kbd "C-z") 'evil-undefine)
 
     ;;;; Emacs-state window management
 
-    ;; Make window-management the same as evil in emacs state.
+      ;; Make window-management the same as evil in emacs state.
 
-    (define-prefix-command 'cb:evil-window-emu)
-    (global-set-key (kbd "C-w") 'cb:evil-window-emu)
-    (bind-keys
-      :overriding? t
-      "C-w C-w" 'evil-window-prev
-      "C-w C-s" 'split-window-vertically
-      "C-w C-v" 'split-window-horizontally
-      "C-w C-o" 'delete-other-windows
-      "C-w C-c" 'delete-window
-      "C-w w" 'evil-window-prev
-      "C-w s" 'split-window-vertically
-      "C-w v" 'split-window-horizontally
-      "C-w o" 'delete-other-windows
-      "C-w c" 'delete-window)
+      (define-prefix-command 'cb:evil-window-emu)
+      (global-set-key (kbd "C-w") 'cb:evil-window-emu)
+      (bind-keys
+        :overriding? t
+        "C-w C-w" 'evil-window-prev
+        "C-w C-s" 'split-window-vertically
+        "C-w C-v" 'split-window-horizontally
+        "C-w C-o" 'delete-other-windows
+        "C-w C-c" 'delete-window
+        "C-w w" 'evil-window-prev
+        "C-w s" 'split-window-vertically
+        "C-w v" 'split-window-horizontally
+        "C-w o" 'delete-other-windows
+        "C-w c" 'delete-window)
 
     ;;;; Visual line fixes
 
-    ;; Evil commands should respect visual-line mode and operate on the visible
-    ;; line endings rather than logical lines.
+      ;; Evil commands should respect visual-line mode and operate on the visible
+      ;; line endings rather than logical lines.
 
-    (loop for (key cmd) in
-          '(("j" evil-next-visual-line)
-            ("k" evil-previous-visual-line)
-            ("$" evil-end-of-visual-line)
-            ("^" evil-first-non-blank-of-visual-line)
-            ("0" evil-beginning-of-visual-line))
-          for state in '(motion normal)
-          for hook in  '(prog-mode-hook text-mode-hook)
-          do (eval `(hook-fn ',hook
-                      (evil-local-set-key ',state ,key ',cmd))))
+      (loop for (key cmd) in
+            '(("j" evil-next-visual-line)
+              ("k" evil-previous-visual-line)
+              ("$" evil-end-of-visual-line)
+              ("^" evil-first-non-blank-of-visual-line)
+              ("0" evil-beginning-of-visual-line))
+            for state in '(motion normal)
+            for hook in  '(prog-mode-hook text-mode-hook)
+            do (eval `(hook-fn ',hook
+                        (evil-local-set-key ',state ,key ',cmd))))
 
-    (evil-define-text-object evil-line (count &rest _)
-      "Move COUNT - 1 lines down."
-      (list
-       (save-excursion
-         (beginning-of-visual-line)
-         (point))
+      (evil-define-text-object evil-line (count &rest _)
+        "Move COUNT - 1 lines down."
+        (list
+         (save-excursion
+           (beginning-of-visual-line)
+           (point))
 
-       (save-excursion
-         ;; Move to the next line. If on the last line, take end of line instead.
-         (if (equal (line-number-at-pos) (buffer-length-lines))
-             (goto-char (point-max))
-           (beginning-of-visual-line (1+ (or count 1))))
+         (save-excursion
+           ;; Move to the next line. If on the last line, take end of line instead.
+           (if (equal (line-number-at-pos) (buffer-length-lines))
+               (goto-char (point-max))
+             (beginning-of-visual-line (1+ (or count 1))))
 
-         (point))))
+           (point))))
 
-    (defun evil-insert-line (count &optional vcount)
-      "Switch to Insert state just before the first non-blank character
+      (defun evil-insert-line (count &optional vcount)
+        "Switch to Insert state just before the first non-blank character
 on the current line. The insertion will be repeated COUNT times."
-      (interactive "p")
-      (if evil-auto-indent
-          (goto-char (max (save-excursion (back-to-indentation) (point))
-                          (save-excursion (beginning-of-visual-line) (point))))
-        (beginning-of-visual-line))
-      (setq evil-insert-count count
-            evil-insert-lines nil
-            evil-insert-vcount (and vcount
-                                    (> vcount 1)
-                                    (list (line-number-at-pos)
-                                          #'evil-first-non-blank
-                                          vcount)))
-      (evil-insert-state 1))
+        (interactive "p")
+        (if evil-auto-indent
+            (goto-char (max (save-excursion (back-to-indentation) (point))
+                            (save-excursion (beginning-of-visual-line) (point))))
+          (beginning-of-visual-line))
+        (setq evil-insert-count count
+              evil-insert-lines nil
+              evil-insert-vcount (and vcount
+                                      (> vcount 1)
+                                      (list (line-number-at-pos)
+                                            #'evil-first-non-blank
+                                            vcount)))
+        (evil-insert-state 1))
 
-    (defun evil-append-line (count &optional vcount)
-      "Switch to Insert state at the end of the current line.
+      (defun evil-append-line (count &optional vcount)
+        "Switch to Insert state at the end of the current line.
 The insertion will be repeated COUNT times."
-      (interactive "p")
-      (end-of-visual-line)
-      (setq evil-insert-count count
-            evil-insert-lines nil
-            evil-insert-vcount (and vcount
-                                    (> vcount 1)
-                                    (list (line-number-at-pos)
-                                          #'end-of-line
-                                          vcount)))
-      (evil-insert-state 1))
+        (interactive "p")
+        (end-of-visual-line)
+        (setq evil-insert-count count
+              evil-insert-lines nil
+              evil-insert-vcount (and vcount
+                                      (> vcount 1)
+                                      (list (line-number-at-pos)
+                                            #'end-of-line
+                                            vcount)))
+        (evil-insert-state 1))
 
     ;;; General config
 
-    (evil-add-hjkl-bindings tar-mode-map)
-    (evil-add-hjkl-bindings occur-mode-map)
-    (evil-add-hjkl-bindings archive-mode-map)
+      (evil-add-hjkl-bindings tar-mode-map)
+      (evil-add-hjkl-bindings occur-mode-map)
+      (evil-add-hjkl-bindings archive-mode-map)
 
-    (after 'man
-      (evil-declare-key 'normal Man-mode-map (kbd "q") 'Man-kill))
+      (after 'man
+        (evil-declare-key 'normal Man-mode-map (kbd "q") 'Man-kill))
 
-    (after 'message
-      (hook-fn 'message-mode-hook (evil-append-line 1)))
+      (after 'message
+        (hook-fn 'message-mode-hook (evil-append-line 1)))
 
-    (after 'undo-tree
-      ;; Ensure undo-tree commands are remapped. The referenced keymap in
-      ;; evil-integration is incorrect.
-      (define-keys undo-tree-visualizer-mode-map
-        [remap evil-backward-char] 'undo-tree-visualize-switch-branch-left
-        [remap evil-forward-char]  'undo-tree-visualize-switch-branch-right
-        [remap evil-next-line]     'undo-tree-visualize-redo
-        [remap evil-previous-line] 'undo-tree-visualize-undo))
+      (after 'undo-tree
+        ;; Ensure undo-tree commands are remapped. The referenced keymap in
+        ;; evil-integration is incorrect.
+        (define-keys undo-tree-visualizer-mode-map
+          [remap evil-backward-char] 'undo-tree-visualize-switch-branch-left
+          [remap evil-forward-char]  'undo-tree-visualize-switch-branch-right
+          [remap evil-next-line]     'undo-tree-visualize-redo
+          [remap evil-previous-line] 'undo-tree-visualize-undo))
 
-    (evil-global-set-key 'insert (kbd "S-TAB") 'tab-to-tab-stop)
+      (evil-global-set-key 'insert (kbd "S-TAB") 'tab-to-tab-stop)
 
-    ;; Use ESC as quit command in most situations.
-    (--each '(evil-normal-state-map
-              evil-visual-state-map
-              minibuffer-local-map
-              minibuffer-local-ns-map
-              minibuffer-local-completion-map
-              minibuffer-local-must-match-map
-              minibuffer-local-isearch-map)
-      (define-key (eval it) [escape] 'keyboard-quit))
+      ;; Use ESC as quit command in most situations.
+      (--each '(evil-normal-state-map
+                evil-visual-state-map
+                minibuffer-local-map
+                minibuffer-local-ns-map
+                minibuffer-local-completion-map
+                minibuffer-local-must-match-map
+                minibuffer-local-isearch-map)
+        (define-key (eval it) [escape] 'keyboard-quit))
 
-    (setq evil-want-visual-char-semi-exclusive t
-          evil-toggle-key (kbd "M-z")
-          evil-default-cursor t)
-    (setq-default evil-shift-width 2)
+      (setq evil-want-visual-char-semi-exclusive t
+            evil-toggle-key (kbd "M-z")
+            evil-default-cursor t)
+      (setq-default evil-shift-width 2)
 
-    (evil-mode +1)))
+      (evil-mode +1)))
 
-(use-package surround
-  :ensure t
-  :defer  t
-  :idle   (require 'surround)
-  :init   (after 'evil (require 'surround))
-  :config
-  (progn
-    (global-surround-mode +1)
-    (setq-default surround-pairs-alist
-                  (-union surround-pairs-alist
-                          '((?\( . ("(" . ")"))
-                            (?\[ . ("[" . "]"))
-                            (?<  . ("<" . ">"))
-                            (?\{ . ("{" . "}")))))
+  (use-package surround
+    :ensure t
+    :defer  t
+    :idle   (require 'surround)
+    :init   (after 'evil (require 'surround))
+    :config
+    (progn
+      (global-surround-mode +1)
+      (setq-default surround-pairs-alist
+                    (-union surround-pairs-alist
+                            '((?\( . ("(" . ")"))
+                              (?\[ . ("[" . "]"))
+                              (?<  . ("<" . ">"))
+                              (?\{ . ("{" . "}")))))
 
-    (hook-fn 'cb:lisp-modes-hook
-      (push '(?\` . ("`" . "'")) surround-pairs-alist))))
+      (hook-fn 'cb:lisp-modes-hook
+        (push '(?\` . ("`" . "'")) surround-pairs-alist))))
 
-(use-package evil-numbers
-  :ensure t
-  :commands
-  (evil-numbers/dec-at-pt
-   evil-numbers/inc-at-pt)
-  :init
-  (after 'evil
-    (define-keys evil-normal-state-map
-      "C--" 'evil-numbers/dec-at-pt
-      "C-+" 'evil-numbers/inc-at-pt)))
+  (use-package evil-numbers
+    :ensure t
+    :commands
+    (evil-numbers/dec-at-pt
+     evil-numbers/inc-at-pt)
+    :init
+    (after 'evil
+      (define-keys evil-normal-state-map
+        "C--" 'evil-numbers/dec-at-pt
+        "C-+" 'evil-numbers/inc-at-pt)))
 
-)
+  )
 
 (provide 'cb-evil)
 
