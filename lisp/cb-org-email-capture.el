@@ -99,7 +99,7 @@
     (->> (f-join user-home-directory "Maildir")
       (f-directories)
       (-mapcat 'f-directories)
-      (-first (~ 's-ends-with? "org"))))
+      (-first (~ s-ends-with? "org"))))
   "A function returning the maildir folder to capture from.")
 
 ;; IO FilePath
@@ -108,8 +108,8 @@
     (->> (f-join user-home-directory "Maildir")
       (f-directories)
       (-mapcat 'f-directories)
-      (-first (C (~ 's-matches? (rx (or "trash" "deleted"))) '-last-item
-                 (~ 's-split (f-path-separator))))))
+      (-first (C (~ s-matches? (rx (or "trash" "deleted"))) -last-item
+                 (~ s-split (f-path-separator))))))
   "A function returning the maildir folder to move items to once processed.")
 
 ;;; Internal
@@ -129,9 +129,9 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
   (let ((new (f-join dir "new")))
     (when (f-exists? new)
       (->> (f-files new)
-        (-map (π 'f-read-text 'I))
+        (-map (π f-read-text I))
         ;; Remove messages dispatched by org functions, like the agenda.
-        (-remove (C 'cbom:org-dispatched-message? 'car))))))
+        (-remove (C cbom:org-dispatched-message? car))))))
 
 ;;; Message parsing
 
@@ -145,7 +145,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 
 ;; String -> (String, String)
 (defun cbom:split-message-head-and-body (msg)
-  (AP (C (@ 'cons) (π (~ 'substring msg 0) (~ 'substring msg)))
+  (AP (C (@ cons) (π (~ substring msg 0) (~ substring msg)))
       (s-index-of "\n\n" msg)))
 
 ;; String -> String
@@ -155,7 +155,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
       ;; Split the body by the boundary specified in the header and select
       ;; the section with plaintext MIME encoding.
       (s-split (cadr (s-match (rx "boundary=" (group (* nonl))) head)))
-      (-first (~ 's-contains? "text/plain"))
+      (-first (~ s-contains? "text/plain"))
       ;; Tidy the section, dropping headers.
       (s-trim)
       (s-chop-suffix "--")
@@ -229,7 +229,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
                  (cdr (cbom:split-message-head-and-body msg))))
          (lns (-remove 's-blank? (-map 's-trim (s-lines body))))
          (scheduled (->> lns
-                      (-keep (~ 'cbom:match-directive "s"))
+                      (-keep (~ cbom:match-directive "s"))
                       (car)
                       (cbom:parse-date)))
          (subject (cbom:message-header-value "subject" msg))
@@ -238,18 +238,18 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
     (list :uri uri
           :subject subject
           :title (->> lns
-                  (-remove (~ 's-matches? (rx bol (or "s" "d" "t") (+ space))))
+                  (-remove (~ s-matches? (rx bol (or "s" "d" "t") (+ space))))
                   (s-join "\n"))
           :scheduled scheduled
           :filepath path
 
           :deadline (->> lns
-                      (-keep (~ 'cbom:match-directive "d"))
+                      (-keep (~ cbom:match-directive "d"))
                       (car)
                       (cbom:parse-date))
           :tags
           (->> lns
-            (-keep (~ 'cbom:match-directive "t"))
+            (-keep (~ cbom:match-directive "t"))
             (-mapcat 's-split-words)
             (-distinct))
           ;; Now that the message body is entirely parsed we can determine what
@@ -272,7 +272,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 
 ;; IO [String]
 (defun cbom:capture-keywords ()
-  (-map (C 's-downcase 'cadr) org-capture-templates))
+  (-map (C s-downcase cadr) org-capture-templates))
 
 ;; MessagePlist -> IO Bool
 (cl-defun cbom:capture-candidate? (&key kind &allow-other-keys)
@@ -337,7 +337,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 (defun cbom:goto-capture-site (kind)
   "Move to the insertion site for the capture template associated with KIND."
   (cl-destructuring-bind (&optional key &rest rest_)
-      (-first (C (~ 'equal (s-downcase kind)) 's-downcase 'cadr)
+      (-first (C (~ equal (s-downcase kind)) s-downcase cadr)
               org-capture-templates)
     (org-capture-goto-target (or key "n"))
     (end-of-line)))
@@ -346,7 +346,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 (defun cbom:dispatch-agenda-email ()
   (let ((inhibit-redisplay t))
     (-when-let (key (->> org-agenda-custom-commands
-                      (-first (& (C 'listp 'cdr) (C (~ 's-matches? "email") 'cadr)))
+                      (-first (& (C listp cdr) (C (~ s-matches? "email") cadr)))
                       (car)))
       (org-agenda nil key))))
 

@@ -136,9 +136,11 @@
 ;; Load remaining config files in the lisp directory.
 ;; Each file must declare a corresponding emacs feature.
 (let* ((files (f-files cb:lisp-dir))
-       (config-files (--filter (and (f-ext? it "el")
-                                    (not (s-contains? "flycheck" it)))
-                               files))
+       (config-files (-filter
+                      (& (-cut f-ext? <> "el")
+                         (¬ (| (~ s-contains? "flycheck")
+                               (~ s-ends-with? "~"))))
+                      files))
        ;; Show use-package's debug messages if `use-package-verbose' is set.
        (verbose? (and (true? use-package-verbose)
                       (not after-init-time))))
@@ -157,8 +159,8 @@
   (run-with-progress-bar
    "Loading configuration"
    (->> config-files
-     (-map (-compose 'f-no-ext 'f-filename))
-     (--map (eval `(lambda () (use-package ,(intern it))))))
+     (-map (C intern f-no-ext f-filename))
+     (--map (eval `(lambda () (use-package ,it)))))
    :silent? (not verbose?)))
 
 (load (f-join user-emacs-directory "custom.el") t t)

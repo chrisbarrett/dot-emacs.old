@@ -34,7 +34,7 @@
 
 ;; Add scheme modes to ac-modes.
 (after 'auto-complete
-  (-each cb:scheme-modes (~ 'add-to-list 'ac-modes)))
+  (-each cb:scheme-modes (~ add-to-list 'ac-modes)))
 
 ;; `geiser' provides slime-like interaction for Scheme.  I mainly use Racket, so
 ;; the config below probably doesn't work for other Schemes.

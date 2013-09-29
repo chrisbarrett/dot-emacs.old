@@ -35,17 +35,47 @@
 ;; Aliases for combinators
 
 (defalias 'AP 'funcall)
-(defalias 'C '-compose)
-(defalias '@ '-applify)
-(defalias '~ '-partial)
-(defalias '~R '-rpartial)
 (defalias 'K '-const)
-(defalias 'W '-flip)
-(defalias '& '-andfn)
-(defalias '| '-orfn)
-(defalias '! '-not)
 (defalias 'I 'identity)
-(defalias 'π '-juxt)
+
+(defun cblib:quote-if-fn (fn)
+  (if (symbolp fn) `',fn fn))
+
+(defmacro ¬ (fn)
+  "Like `-not', but does not require FN to be quoted."
+  `(-not ,(cblib:quote-if-fn fn)))
+
+(defmacro ~ (fn &rest args)
+  "Like `-partial', but does not require FN to be quoted."
+  `(-partial ,(cblib:quote-if-fn fn) ,@args))
+
+(defmacro ~R (fn &rest args)
+  "Like `-rpartial', but does not require FN to be quoted."
+  `(-partial ,(cblib:quote-if-fn fn) ,@args))
+
+(defmacro π (&rest fns)
+  "Like `-juxt', but does not require FNS to be quoted."
+  `(-juxt ,@(-map 'cblib:quote-if-fn fns)))
+
+(defmacro C (&rest fns)
+  "Like `-compose', but does not require FNS to be quoted."
+  `(-compose ,@(-map 'cblib:quote-if-fn fns)))
+
+(defmacro W (fn)
+  "Like `-flip', but does not require FN to be quoted."
+  `(-flip ,(cblib:quote-if-fn fn)))
+
+(defmacro & (&rest fns)
+  "Like `-andfn', but does not require FNS to be quoted."
+  `(-andfn ,@(-map 'cblib:quote-if-fn fns)))
+
+(defmacro | (&rest fns)
+  "Like `-orfn', but does not require FNS to be quoted."
+  `(-orfn ,@(-map 'cblib:quote-if-fn fns)))
+
+(defmacro @ (fn)
+  "Like `-applify', but does not require FN to be quoted."
+  `(-applify ,(cblib:quote-if-fn fn)))
 
 ;; Aliases for compatibility
 
