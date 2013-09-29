@@ -84,7 +84,7 @@
     (->> (s-lines output)
       (-keep (~ s-match (rx bol
                             ;; File
-                            (not (any space)) (+ (not (any ":"))) ":"
+                            (+ (not (any ":"))) ":"
                             ;; Line
                             (group (+ digit))  ":"
                             ;; Col
