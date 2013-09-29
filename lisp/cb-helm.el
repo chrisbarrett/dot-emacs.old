@@ -85,10 +85,13 @@
 
 ;; `helm-files' provides file-search functions for helm.
 (use-package helm-files
-  :commands helm-find-files-1
+  :commands (helm-find-files-1 helm-find-files)
   :defer t
   :init
   (progn
+
+    (bind-key* "C-x C-f" 'helm-find-files)
+
     (defun helm-find-in-lisp-dir (arg)
       (interactive "P")
       (let ((default-directory cb:lisp-dir))
@@ -96,6 +99,7 @@
 
     (when cb:use-vim-keybindings?
       (bind-key* "M-I" 'helm-find-in-lisp-dir)))
+
   :config
   (after 'helm-files
     (define-key helm-find-files-map
