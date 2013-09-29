@@ -64,23 +64,16 @@ Each handler should take the search string as an argument.")
 
   (defun* get-documentation (&optional (candidate (thing-at-point 'symbol)))
     "Get documentation for CANDIDATE."
+
+  (cl-defun cbevil:get-documentation (&optional (candidate (thing-at-point 'symbol)))
+    "Get documentation for string CANDIDATE.
+Runs each handler added to `evil-find-doc-hook' until one of them returns non-nil."
     (interactive)
-    ;;
-    (cl-flet ((derived? (list-symbol)
-                        (when (boundp list-symbol)
-                          (apply 'derived-mode-p (eval list-symbol)))))
-      (condition-case _
-          (cond
-           ((derived? 'cb:elisp-modes)
-            (get-elisp-doc (intern candidate)))
-           ((derived? 'cb:ruby-modes)
-            (call-interactively 'robe-doc))
-           ((derived? 'cb:python-modes)
-            (call-interactively 'jedi:show-doc))
-           (t
-            (get-manpage candidate)))
-        (error
-         (user-error "No documentation available")))))
+    (condition-case-unless-debug _
+        (or (run-hook-with-args-until-success 'evil-find-doc-hook candidate)
+            (get-manpage candidate))
+      (error
+       (user-error "No documentation available"))))
 
   (use-package evil
     :ensure   t
