@@ -110,6 +110,9 @@ This is particularly useful for Typed Racket sources."
     ;; Override behaviours
 
     (after 'geiser-mode
+
+      (define-key geiser-repl-mode-map (kbd "C-c C-h") 'geiser-doc-look-up-manual)
+
       (defun geiser-eval-buffer (&optional and-go raw nomsg)
         "Eval the current buffer in the Geiser REPL.
 
