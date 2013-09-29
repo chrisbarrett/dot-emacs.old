@@ -52,18 +52,8 @@ Each handler should take the search string as an argument.")
         ;; use man instead.
         (error
          (kill-buffer)
-         (Man-getpage-in-background candidate)))))
-
-  (defun get-elisp-doc (sym)
-    "Find the appropriate documentation for SYM."
-    (cond
-     ((symbol-function sym) (describe-function sym))
-     ((facep sym)           (describe-face sym))
-     ((boundp sym)          (describe-variable sym))
-     (t                     (user-error "No documentation available"))))
-
-  (defun* get-documentation (&optional (candidate (thing-at-point 'symbol)))
-    "Get documentation for CANDIDATE."
+         (Man-getpage-in-background candidate)))
+      t))
 
   (cl-defun cbevil:get-documentation (&optional (candidate (thing-at-point 'symbol)))
     "Get documentation for string CANDIDATE.
