@@ -32,7 +32,9 @@
 (autoload 'woman-file-name-all-completions "woman")
 (autoload 'Man-getpage-in-background "man")
 
-(configuration-group :when cb:use-vim-keybindings?
+(defvar evil-find-doc-hook nil
+  "Hook run when finding documentation for the symbol at point.
+Each handler should take the search string as an argument.")
 
 (configuration-group
   :when cb:use-vim-keybindings?
