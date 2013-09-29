@@ -54,29 +54,16 @@
   :idle   (require 'helm)
   :init
   (progn
-
     (after 'helm
       (define-key helm-map (kbd "C-[") 'helm-keyboard-quit))
-
-    (bind-keys
-      :overriding? t
-      "C-SPC"   'helm-mini
-      "C-x SPC" 'helm-find-files)
-
-    (after 'helm-files
-      (define-key helm-find-files-map
-        (kbd "~")
-        (command
-         (if (looking-back "/")
-             (helm-insert-in-minibuffer "~/" t)
-           (call-interactively 'self-insert-command)))))
 
     (after 'evil
       (bind-keys
         :overriding? t
+        "C-SPC"   'helm-mini
+        "C-x C-b" 'helm-buffers-list
         "M-a" 'helm-apropos
         "M-b" 'helm-buffers-list
-        "C-x C-b" 'helm-buffers-list
         "M-i" 'helm-imenu
         "M-f" 'helm-etags-select
         "M-m" 'helm-man-woman
@@ -95,6 +82,28 @@
   :commands helm-projectile
   :bind (("M-j" . helm-projectile))
   :idle (require 'helm-projectile))
+
+;; `helm-files' provides file-search functions for helm.
+(use-package helm-files
+  :commands helm-find-files-1
+  :defer t
+  :init
+  (progn
+    (defun helm-find-in-lisp-dir (arg)
+      (interactive "P")
+      (let ((default-directory cb:lisp-dir))
+        (helm-find-files arg)))
+
+    (when cb:use-vim-keybindings?
+      (bind-key* "M-I" 'helm-find-in-lisp-dir)))
+  :config
+  (after 'helm-files
+    (define-key helm-find-files-map
+      (kbd "~")
+      (command
+       (if (looking-back "/")
+           (helm-insert-in-minibuffer "~/" t)
+         (call-interactively 'self-insert-command))))))
 
 (provide 'cb-helm)
 
