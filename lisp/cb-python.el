@@ -30,34 +30,31 @@
 (require 'cb-foundation)
 (require 'cb-mode-groups)
 
-(after 'python
+;; Enable auto-complete in python modes.
+(after 'auto-complete
+  (-each cb:python-modes (~ add-to-list 'ac-modes)))
 
-  ;; Enable auto-complete in python modes.
-  (after 'auto-complete
-    (--each cb:python-modes
-      (add-to-list 'ac-modes it)))
+;; Add special smart-operator behaviours for python buffers.
+(after 'smart-operator
 
-  ;; Add special smart-operator behaviours for python buffers.
-  (after 'smart-operator
+  (defun cb:python-equals ()
+    "Insert an '=' char padded by spaces, except in function arglists."
+    (interactive)
+    (if (s-matches? (rx (* space) "def" (+ space))
+                    (current-line))
+        (insert "=")
+      (smart-insert-operator "=")))
 
-    (defun cb:python-equals ()
-      "Insert an '=' char padded by spaces, except in function arglists."
-      (interactive)
-      (if (s-matches? (rx (* space) "def" (+ space))
-                      (current-line))
-          (insert "=")
-        (smart-insert-operator "=")))
+  (hook-fn 'cb:python-modes-hook
+    (smart-insert-operator-hook)
+    (local-set-key (kbd "=") 'cb:python-equals)
+    (local-unset-key (kbd "."))
+    (local-unset-key (kbd ":"))))
 
-    (hook-fn 'cb:python-modes-hook
-      (smart-insert-operator-hook)
-      (local-set-key (kbd "=") 'cb:python-equals)
-      (local-unset-key (kbd "."))
-      (local-unset-key (kbd ":"))))
-
-  ;; Configure smartparens formatting for python.
-  (after 'smartparens
-    (sp-with-modes cb:python-modes
-      (sp-local-pair "{" "}" :post-handlers '(:add sp-generic-leading-space)))))
+;; Configure smartparens formatting for python.
+(after 'smartparens
+  (sp-with-modes cb:python-modes
+    (sp-local-pair "{" "}" :post-handlers '(:add sp-generic-leading-space))))
 
 ;; Add documentation lookup handler for python.
 (after 'cb-evil
