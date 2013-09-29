@@ -36,7 +36,7 @@
   (when (fboundp 'flycheck-mode)
     (flycheck-mode -1)))
 
-(add-to-list 'auto-mode-alist `("\\.html\\.erb" . erb-mode))
+(add-to-list 'auto-mode-alist '("\\.html\\.erb" . erb-mode))
 
 (after 'smart-operator
   (defun cb-rb:smart-colon ()
