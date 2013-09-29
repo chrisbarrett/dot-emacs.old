@@ -204,7 +204,7 @@ If this is the trailing colon for a hash key, insert padding."
   :ensure t
   :diminish robe-mode
   :defer t
-  :commands robe-mode
+  :commands (robe-mode robe-doc)
   :config
   ;; Undefine keys conflicting with org src mode.
   (define-key robe-mode-map (kbd "C-c C-k") nil)
