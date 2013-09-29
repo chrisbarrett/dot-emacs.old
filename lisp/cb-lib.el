@@ -156,6 +156,7 @@
 * AFTER is a feature the must be loaded before the config is evaluated.
 
 * The remainder are BODY forms to be executed."
+  (declare (indent 0))
   (let ((bod
          ;; Remove keyword args from body.
          `(progn ,@(->> body
