@@ -136,11 +136,10 @@
 ;; Load remaining config files in the lisp directory.
 ;; Each file must declare a corresponding emacs feature.
 (let* ((files (f-files cb:lisp-dir))
-       (config-files (-filter
-                      (& (~ (^ f-ext?) "el")
-                         (¬ (| (~ s-contains? "flycheck")
-                               (~ s-ends-with? "~"))))
-                      files))
+       (config-files (-filter (& (~ (^ f-ext?) "el")
+                                 (N (| (~ s-contains? "flycheck")
+                                       (~ s-ends-with? "~"))))
+                              files))
        ;; Show use-package's debug messages if `use-package-verbose' is set.
        (verbose? (and (true? use-package-verbose)
                       (not after-init-time))))
