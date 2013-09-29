@@ -91,7 +91,8 @@
                           "noflet"
                           "ac-define-source"
                           "evil-global-set-keys"
-                          "flycheck-declare-checker")
+                          "flycheck-declare-checker"
+                          "flycheck-define-checker")
                       symbol-end)
            word-end)
       (1 font-lock-keyword-face))
@@ -99,7 +100,8 @@
      ;; Identifiers after keywords
      (,(rx "(" (group (or "use-package"
                           "ac-define-source"
-                          "flycheck-declare-checker"))
+                          "flycheck-declare-checker"
+                          "flycheck-define-checker"))
            (+ space)
            (group (+ (regex "\[^ )\n\]"))
                   symbol-end))
