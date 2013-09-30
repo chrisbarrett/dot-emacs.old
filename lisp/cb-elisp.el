@@ -79,48 +79,49 @@
 
 ;; Customise font-locking for elisp.
 (after 'lisp-mode
-  (font-lock-add-keywords
-   'emacs-lisp-mode
-   `(
-     ;; General keywords
-     (,(rx "(" (group (or "use-package"
-                          "configuration-group"
-                          "cal"
-                          "hook-fn"
-                          "hook-fns"
-                          "after"
-                          "noflet"
-                          "ac-define-source"
-                          "evil-global-set-keys"
-                          "flycheck-declare-checker"
-                          "flycheck-define-checker")
-                      symbol-end)
-           word-end)
-      (1 font-lock-keyword-face))
+  (--each cb:elisp-modes
+    (font-lock-add-keywords
+     it
+     `(
+       ;; General keywords
+       (,(rx "(" (group (or "use-package"
+                            "configuration-group"
+                            "cal"
+                            "hook-fn"
+                            "hook-fns"
+                            "after"
+                            "noflet"
+                            "ac-define-source"
+                            "evil-global-set-keys"
+                            "flycheck-declare-checker"
+                            "flycheck-define-checker")
+                        symbol-end)
+             word-end)
+        (1 font-lock-keyword-face))
 
-     ;; Identifiers after keywords
-     (,(rx "(" (group (or "use-package"
-                          "ac-define-source"
-                          "flycheck-declare-checker"
-                          "flycheck-define-checker"))
-           (+ space)
-           (group (+ (regex "\[^ )\n\]"))
-                  symbol-end))
-      (2 font-lock-constant-face))
-
-     ;; definition forms
-     (,(rx bol (* space) "("
-           (group-n 1
-                    symbol-start
-                    (* (not space))
-                    (or "declare" "define" "extend" "gentest")
-                    (+ (not space))
-                    symbol-end)
-           (+ space)
-           (group-n 2 (+ (regex "\[^ )\n\]"))
+       ;; Identifiers after keywords
+       (,(rx "(" (group (or "use-package"
+                            "ac-define-source"
+                            "flycheck-declare-checker"
+                            "flycheck-define-checker"))
+             (+ space)
+             (group (+ (regex "\[^ )\n\]"))
                     symbol-end))
-      (1 font-lock-keyword-face)
-      (2 font-lock-function-name-face)))))
+        (2 font-lock-constant-face))
+
+       ;; definition forms
+       (,(rx bol (* space) "("
+             (group-n 1
+                      symbol-start
+                      (* (not space))
+                      (or "declare" "define" "extend" "gentest")
+                      (+ (not space))
+                      symbol-end)
+             (+ space)
+             (group-n 2 (+ (regex "\[^ )\n\]"))
+                      symbol-end))
+        (1 font-lock-keyword-face)
+        (2 font-lock-function-name-face))))))
 
 ;; Configure sp for IELM.
 (after 'smartparens
