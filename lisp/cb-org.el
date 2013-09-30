@@ -894,9 +894,6 @@ Return nil if there are no items to display."
             org-clock-auto-clock-resolution 'when-no-clock-is-running
             org-clock-report-include-clocking-task t)
 
-      (defvar cb-org:keep-clock-running nil
-        "Used to enforce clocking to default task when clocking out.")
-
       (defun cb-org:project? ()
         "Any task with a todo keyword subtask"
         (save-restriction
@@ -945,97 +942,6 @@ Switch projects and subprojects from NEXT back to TODO."
             "TODO"))))
 
       (setq org-clock-in-switch-to-state 'cb-org:clock-in-to-next-state)
-
-      ;; Clocking commands
-      ;;
-      ;; Provides a pair of commands that, when used religiously, ensures that
-      ;; all your time is logged somewhere by org-mode.
-      ;;
-      ;; The idea is to 'punch in' (C-o C-i) at the start of the workday, then
-      ;; 'punch out' (C-o C-o) at the end.  If there's a task at point when you
-      ;; punch in, that becomes a default task for time logging; otherwise a
-      ;; default task in your notes file is used.  This ensures that all your
-      ;; time is being logged somewhere, even if you're not working on a
-      ;; specific task.
-      ;;
-      ;; When you clock out from a task, org-mode will search for an enclosing
-      ;; heading to clock in to or fall back to the default task.
-      ;;
-      ;; See: http://doc.norang.ca/org-mode.html#Clocking
-
-      (defun cb-org:punch-in (arg)
-        "Start continuous clocking and set the default task to the
-selected task.  If no task is selected set the Organization task
-as the default task."
-        (interactive "p")
-        (setq cb-org:keep-clock-running t)
-        (if (equal major-mode 'org-agenda-mode)
-            ;; We're in the agenda
-            (let* ((marker (org-get-at-bol 'org-hd-marker))
-                   (tags (org-with-point-at marker (org-get-tags-at))))
-              (if (and (eq arg 4) tags)
-                  (org-agenda-clock-in '(16))
-                (cb-org:clock-in-organization-task-as-default)))
-          ;; We are not in the agenda
-          (save-restriction
-            (widen)
-            ;; Find the tags on the current task
-            (if (and (equal major-mode 'org-mode)
-                     (not (org-before-first-heading-p))
-                     (eq arg 4))
-                (org-clock-in '(16))
-              (cb-org:clock-in-organization-task-as-default))))
-        (message "Punched in to [%s]." org-clock-current-task))
-
-      (defun cb-org:punch-out ()
-        (interactive)
-        (setq cb-org:keep-clock-running nil)
-        (when (org-clock-is-active)
-          (org-clock-out))
-        (org-agenda-remove-restriction-lock)
-        (message "Punched out."))
-
-      (defun cb-org:clock-in-default-task ()
-        (save-excursion
-          (org-with-point-at org-clock-default-task
-            (org-clock-in))))
-
-      (defun cb-org:clock-in-parent-task ()
-        "Move point to the parent (project) task if any and clock in"
-        (let ((parent-task))
-          (save-excursion
-            (save-restriction
-              (widen)
-              (while (and (not parent-task) (org-up-heading-safe))
-                (when (member (nth 2 (org-heading-components)) org-todo-keywords-1)
-                  (setq parent-task (point))))
-              (if parent-task
-                  (org-with-point-at parent-task
-                    (org-clock-in))
-                (when cb-org:keep-clock-running
-                  (cb-org:clock-in-default-task)))))))
-
-      (defvar cb-org:organization-task-id "EB155A82-92B2-4F25-A3C6-0304591AF2F9")
-
-      (defun cb-org:clock-in-organization-task-as-default ()
-        (interactive)
-        (org-with-point-at (org-id-find cb-org:organization-task-id 'marker)
-          (org-clock-in '(16))))
-
-      (defun cb-org:clock-out-maybe ()
-        (when (and cb-org:keep-clock-running
-                   (not org-clock-clocking-in)
-                   (marker-buffer org-clock-default-task)
-                   (not org-clock-resolving-clocks-due-to-idleness))
-          (cb-org:clock-in-parent-task)))
-
-      (add-hook 'org-clock-out-hook 'cb-org:clock-out-maybe 'append)
-
-      (bind-keys
-        :overriding? t
-        "C-o C-c" (command (org-clock-in '(4)))
-        "C-o C-i" 'cb-org:punch-in
-        "C-o C-o" 'cb-org:punch-out)
 
       ;; Remove empty LOGBOOK drawers when clocking out.
       (hook-fn 'org-clock-out-hook
