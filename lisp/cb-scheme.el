@@ -63,7 +63,11 @@
      (,(rx "(" (group "def" (* (not space))))
       (1 font-lock-keyword-face))
 
-     ;; Var identifiers
+     ;; Bindings created by `define-values'
+     (,(rx "(define-values" (+ space) "(" (group (+ (not (any ")")))) ")")
+      (1 font-lock-variable-name-face))
+
+     ;; General binding identifiers
      (,(rx "(def" (* (not space)) (+ space)
            (group (not (any "(")) (+ (not space))))
       (1 font-lock-variable-name-face))
@@ -79,10 +83,6 @@
      ;; Types
      (,(rx bow upper (* (not (any space "{" "}" "(" "[" "]" ")"))) eow)
       (0 font-lock-type-face))
-
-     ;; Bindings by `define-values'
-     (,(rx "(define-values" (+ space) "(" (group (+ (not (any ")")))) ")")
-      (1 font-lock-variable-name-face))
 
      ;; Arrows
      (,(rx bow "->" eow)
