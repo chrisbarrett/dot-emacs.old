@@ -45,12 +45,12 @@
        (,(rx "("
              (group (or
                      ;; let family
-                     (and (? "p") "let" (* (not space)) ":")
-                     (and "let/" (+ (not (any space "\n" "{" "}" "(" "[" "]" ")"))))
+                     (and (? "p") "let" (* anything) ":")
+                     (and "let/" (+ anything))
                      ;; lambdas
-                     (and (* (not space)) "lambda:")
+                     (and (* anything) "lambda:")
                      ;; loops
-                     (and "for" (* (not space)) ":")
+                     (and "for" (* anything) ":")
                      "do:"
                      ;; Types
                      "struct:"
@@ -58,41 +58,50 @@
                      "provide:"
                      "cast"))
 
-             (or space "\n"))
+             eow)
         (1 font-lock-keyword-face))
 
        ;; Definition forms
-       (,(rx "(" (group "def"
-                        (* (not (any space "\n" "{" "}" "(" "[" "]" ")")))))
+       (,(rx "(" (group "def" (* (syntax word)) eow))
         (1 font-lock-keyword-face))
 
        ;; Bindings created by `define-values'
-       (,(rx "(define-values" (+ space) "(" (group (+ (not (any ")")))) ")")
+       (,(rx "(define-values" (+ space)
+             "(" (group (+ (or (syntax word) space))) ")")
         (1 font-lock-variable-name-face))
 
        ;; General binding identifiers
-       (,(rx "(def" (* (not space)) (+ space)
-             (group (+ (not (any space "{" "}" "(" "[" "]" ")")))))
+       (,(rx "(def" (* (syntax word)) (+ space)
+             (group (+ (syntax word))))
         (1 font-lock-variable-name-face))
 
        ;; Function identifiers
-       (,(rx "(def" (* (not space)) (+ space) "("
-             (group (+ (not (any ")" space)))))
+       (,(rx "(def" (* (syntax word)) (+ space)
+             "(" (group (+ (syntax word))))
         (1 font-lock-function-name-face))
-       (,(rx "(:" (+ space)
-             (group (+ (not (any space "{" "}" "(" "[" "]" ")")))))
+
+       ;; Function identifier in type declaration
+       (,(rx "(:" (+ space) (group bow (+ (syntax word)) eow))
         (1 font-lock-function-name-face))
 
        ;; Arrows
        (,(rx bow "->" eow)
-        (0 (prog1 nil (compose-region (match-beginning 0) (match-end 0) "→"))))))
+        (0 (prog1 nil (compose-region (match-beginning 0) (match-end 0) "→"))))
+
+       ;; Grab-bag of keywords
+       (,(rx "(" (group (or (and "begin" num)
+                            "parameterize"
+                                        ; ...
+                            ))
+             eow)
+        (1 font-lock-keyword-face))))
 
     ;; Do not add type font locking to the REPL, because it has too many false
     ;; positives.
     (font-lock-add-keywords
      'scheme-mode
      ;; Types for Typed Racket.
-     `((,(rx bow upper (* (not (any space "{" "}" "(" "[" "]" ")"))) eow)
+     `((,(rx bow upper (* (syntax word)) eow)
         (0 font-lock-type-face))))))
 
 ;; Custom indentation
