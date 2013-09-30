@@ -45,12 +45,12 @@
        (,(rx "("
              (group (or
                      ;; let family
-                     (and (? "p") "let" (* anything) ":")
-                     (and "let/" (+ anything))
+                     (and (? "p") "let" (* (syntax word)) ":")
+                     (and "let/" (+ (syntax word)))
                      ;; lambdas
-                     (and (* anything) "lambda:")
+                     (and (* (syntax word)) "lambda:")
                      ;; loops
-                     (and "for" (* anything) ":")
+                     (and "for" (* (syntax word)) ":")
                      "do:"
                      ;; Types
                      "struct:"
