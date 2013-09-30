@@ -60,9 +60,9 @@
       "C-c y" 'cb:yas-map
       "C-c y TAB" 'yas-expand
       "C-c y n" 'yas-new-snippet
-      "C-c y f" 'yas-find-snippets
-      "C-c y r" (command (yas-recompile-all) (yas-reload-all))
+      "C-c y f" 'yas-visit-snippet-file
       "C-c y v" 'yas-visit-snippet-file
+      "C-c y r" (command (yas-recompile-all) (yas-reload-all))
       "C-c y i" 'yas-insert-snippet)))
 
 (provide 'cb-yasnippet)
