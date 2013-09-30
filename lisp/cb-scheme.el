@@ -70,7 +70,7 @@
 
        ;; General binding identifiers
        (,(rx "(def" (* (not space)) (+ space)
-             (group (not (any "(")) (+ (not space))))
+             (group (+ (not (any space "{" "}" "(" "[" "]" ")")))))
         (1 font-lock-variable-name-face))
 
        ;; Function identifiers
