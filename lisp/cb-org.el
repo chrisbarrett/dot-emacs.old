@@ -237,7 +237,7 @@
       "C-c o" 'org-attach-open
       "M-p" 'org-metaup
       "M-n" 'org-metadown
-      "C-c l" 'org-columns
+      "C-c x" 'org-columns
       ;; disable annoying comment toggle key
       "C-c ;" nil)
 
@@ -1094,7 +1094,7 @@ as the default task."
       (setq org-crypt-disable-auto-save nil)
       (add-to-list 'org-tags-exclude-from-inheritance "crypt")
 
-      (define-key org-mode-map (kbd "C-c c") 'org-encrypt-entry)
+      (define-key org-mode-map (kbd "C-c x") 'org-encrypt-entry)
 
       ;; Decrypt with C-c C-c
 
