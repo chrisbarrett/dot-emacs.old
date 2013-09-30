@@ -358,6 +358,12 @@
   (setq orglink-mode-lighter nil
         orglink-activate-links '(angle plain)))
 
+;; `org-pomodoro' adds Pomodoro clocking functions.
+(use-package org-pomodoro
+  :ensure t
+  :config
+  (bind-key* "<f5>" 'org-pomodoro))
+
 ;; Define pairs for org-mode blocks.
 (after 'smartparens
   (sp-with-modes '(org-mode)
