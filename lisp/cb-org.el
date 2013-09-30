@@ -361,8 +361,8 @@
 ;; `org-pomodoro' adds Pomodoro clocking functions.
 (use-package org-pomodoro
   :ensure t
-  :config
-  (bind-key* "<f5>" 'org-pomodoro))
+  :defer t
+  :bind ("<f5>" . org-pomodoro))
 
 ;; Define pairs for org-mode blocks.
 (after 'smartparens
