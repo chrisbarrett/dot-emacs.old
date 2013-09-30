@@ -61,7 +61,8 @@
         (1 font-lock-keyword-face))
 
        ;; Definition forms
-       (,(rx "(" (group "def" (* (not space))))
+       (,(rx "(" (group "def"
+                        (* (not (any space "\n" "{" "}" "(" "[" "]" ")")))))
         (1 font-lock-keyword-face))
 
        ;; Bindings created by `define-values'
