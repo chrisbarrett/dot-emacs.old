@@ -66,8 +66,7 @@
         "M-b" 'helm-buffers-list
         "M-i" 'helm-imenu
         "M-f" 'helm-etags-select
-        "M-m" 'helm-man-woman
-        "M-w" 'helm-w3m-bookmarks))))
+        "M-m" 'helm-man-woman))))
 
 ;; `helm-adaptive'
 (use-package helm-adaptative
