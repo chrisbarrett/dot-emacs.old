@@ -46,6 +46,7 @@
              (group (or
                      ;; let family
                      (and (? "p") "let" (* (not space)) ":")
+                     (and "let/" (+ (not (any space "\n" "{" "}" "(" "[" "]" ")"))))
                      ;; lambdas
                      (and (* (not space)) "lambda:")
                      ;; loops
