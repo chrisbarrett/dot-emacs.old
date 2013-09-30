@@ -92,6 +92,11 @@
        (,(rx "(" (group "match" (* (syntax word)) eow))
         (1 font-lock-keyword-face))
 
+       ;; Error signalling keywords
+       (,(rx "(" (group (or "error" "raise")
+                        (* (syntax word)) eow))
+        (1 font-lock-warning-face))
+
        ;; Grab-bag of keywords
        (,(rx "(" (group (or (and "begin" num)
                             "parameterize"
