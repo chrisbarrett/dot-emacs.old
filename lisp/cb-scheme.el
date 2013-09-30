@@ -88,10 +88,13 @@
        (,(rx bow "->" eow)
         (0 (prog1 nil (compose-region (match-beginning 0) (match-end 0) "→"))))
 
+       ;; Match keywords
+       (,(rx "(" (group "match" (* (syntax word)) eow))
+        (1 font-lock-keyword-face))
+
        ;; Grab-bag of keywords
        (,(rx "(" (group (or (and "begin" num)
                             "parameterize"
-                                        ; ...
                             ))
              eow)
         (1 font-lock-keyword-face))))
