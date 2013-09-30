@@ -45,9 +45,11 @@
     (add-hook 'sgml-mode-hook 'yas-minor-mode))
   :config
   (progn
-    (setq
-     yas-prompt-functions'(yas-ido-prompt)
-     yas/trigger-key (kbd "RET"))
+
+    (setq yas-prompt-functions '(yas-ido-prompt)
+          yas/trigger-key (kbd "RET")
+          yas-wrap-around-region t)
+
     (add-to-list 'yas-snippet-dirs cb:yasnippet-dir)
     (yas-global-mode t)
     (hook-fn 'snippet-mode-hook
