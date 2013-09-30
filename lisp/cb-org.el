@@ -1047,14 +1047,15 @@ as the default task."
       ;; Automatically change projects from NEXT to TODO
 
       (defun cb-org:mark-next-parent-tasks-todo ()
-        "Visit each parent task and change NEXT states to TODO"
+        "Visit each parent task and change state to TODO"
         (let ((mystate (or (and (fboundp 'org-state)
                                 state)
                            (nth 2 (org-heading-components)))))
           (when mystate
             (save-excursion
               (while (org-up-heading-safe)
-                (when (member (nth 2 (org-heading-components)) (list "NEXT"))
+                (when (-contains? '("NEXT" "WAITING" "MAYBE")
+                                  (nth 2 (org-heading-components)))
                   (org-todo "TODO")))))))
 
       (hook-fns '(org-after-todo-state-change-hook org-clock-in-hook)
