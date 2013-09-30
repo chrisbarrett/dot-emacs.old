@@ -237,6 +237,7 @@
       "C-c o" 'org-attach-open
       "M-p" 'org-metaup
       "M-n" 'org-metadown
+      "C-c l" 'org-columns
       ;; disable annoying comment toggle key
       "C-c ;" nil)
 
