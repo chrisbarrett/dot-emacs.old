@@ -36,57 +36,58 @@
 (after 'auto-complete
   (-each cb:scheme-modes (~ add-to-list 'ac-modes)))
 
-;; Add font locking for typed racket.
+;; Customise font lock for scheme modes.
 (after 'scheme
-  (font-lock-add-keywords
-   'scheme-mode
-   `(;; Special forms in Typed Racket.
-     (,(rx "("
-           (group (or
-                   ;; let family
-                   (and (? "p") "let" (* (not space)) ":")
-                   ;; lambdas
-                   (and (* (not space)) "lambda:")
-                   ;; loops
-                   (and "for" (* (not space)) ":")
-                   "do:"
-                   ;; Types
-                   "struct:"
-                   ":"
-                   "provide:"
-                   "cast"))
+  (--each cb:scheme-modes
+    (font-lock-add-keywords
+     it
+     `(;; Special forms in Typed Racket.
+       (,(rx "("
+             (group (or
+                     ;; let family
+                     (and (? "p") "let" (* (not space)) ":")
+                     ;; lambdas
+                     (and (* (not space)) "lambda:")
+                     ;; loops
+                     (and "for" (* (not space)) ":")
+                     "do:"
+                     ;; Types
+                     "struct:"
+                     ":"
+                     "provide:"
+                     "cast"))
 
-           (or space "\n"))
-      (1 font-lock-keyword-face))
+             (or space "\n"))
+        (1 font-lock-keyword-face))
 
-     ;; Definition forms
-     (,(rx "(" (group "def" (* (not space))))
-      (1 font-lock-keyword-face))
+       ;; Definition forms
+       (,(rx "(" (group "def" (* (not space))))
+        (1 font-lock-keyword-face))
 
-     ;; Bindings created by `define-values'
-     (,(rx "(define-values" (+ space) "(" (group (+ (not (any ")")))) ")")
-      (1 font-lock-variable-name-face))
+       ;; Bindings created by `define-values'
+       (,(rx "(define-values" (+ space) "(" (group (+ (not (any ")")))) ")")
+        (1 font-lock-variable-name-face))
 
-     ;; General binding identifiers
-     (,(rx "(def" (* (not space)) (+ space)
-           (group (not (any "(")) (+ (not space))))
-      (1 font-lock-variable-name-face))
+       ;; General binding identifiers
+       (,(rx "(def" (* (not space)) (+ space)
+             (group (not (any "(")) (+ (not space))))
+        (1 font-lock-variable-name-face))
 
-     ;; Function identifiers
-     (,(rx "(def" (* (not space)) (+ space) "("
-           (group (+ (not (any ")" space)))))
-      (1 font-lock-function-name-face))
-     (,(rx "(:" (+ space)
-           (group (+ (not (any space "{" "}" "(" "[" "]" ")")))))
-      (1 font-lock-function-name-face))
+       ;; Function identifiers
+       (,(rx "(def" (* (not space)) (+ space) "("
+             (group (+ (not (any ")" space)))))
+        (1 font-lock-function-name-face))
+       (,(rx "(:" (+ space)
+             (group (+ (not (any space "{" "}" "(" "[" "]" ")")))))
+        (1 font-lock-function-name-face))
 
-     ;; Types
-     (,(rx bow upper (* (not (any space "{" "}" "(" "[" "]" ")"))) eow)
-      (0 font-lock-type-face))
+       ;; Types
+       (,(rx bow upper (* (not (any space "{" "}" "(" "[" "]" ")"))) eow)
+        (0 font-lock-type-face))
 
-     ;; Arrows
-     (,(rx bow "->" eow)
-      (0 (prog1 nil (compose-region (match-beginning 0) (match-end 0) "→")))))))
+       ;; Arrows
+       (,(rx bow "->" eow)
+        (0 (prog1 nil (compose-region (match-beginning 0) (match-end 0) "→"))))))))
 
 ;; Declare a flycheck checker for Racket.
 (after 'flycheck
