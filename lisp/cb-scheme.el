@@ -81,13 +81,17 @@
              (group (+ (not (any space "{" "}" "(" "[" "]" ")")))))
         (1 font-lock-function-name-face))
 
-       ;; Types
-       (,(rx bow upper (* (not (any space "{" "}" "(" "[" "]" ")"))) eow)
-        (0 font-lock-type-face))
-
        ;; Arrows
        (,(rx bow "->" eow)
-        (0 (prog1 nil (compose-region (match-beginning 0) (match-end 0) "→"))))))))
+        (0 (prog1 nil (compose-region (match-beginning 0) (match-end 0) "→"))))))
+
+    ;; Do not add type font locking to the REPL, because it has too many false
+    ;; positives.
+    (font-lock-add-keywords
+     'scheme-mode
+     ;; Types for Typed Racket.
+     `((,(rx bow upper (* (not (any space "{" "}" "(" "[" "]" ")"))) eow)
+        (0 font-lock-type-face))))))
 
 ;; Declare a flycheck checker for Racket.
 (after 'flycheck
