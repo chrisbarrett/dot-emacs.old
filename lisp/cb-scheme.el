@@ -80,6 +80,10 @@
      (,(rx bow upper (* (not (any space "{" "}" "(" "[" "]" ")"))) eow)
       (0 font-lock-type-face))
 
+     ;; Bindings by `define-values'
+     (,(rx "(define-values" (+ space) "(" (group (+ (not (any ")")))) ")")
+      (1 font-lock-variable-name-face))
+
      ;; Arrows
      (,(rx bow "->" eow)
       (0 (prog1 nil (compose-region (match-beginning 0) (match-end 0) "→")))))))
