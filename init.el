@@ -75,7 +75,9 @@
                       s f
                       noflet
                       async
-                      auto-compile)
+                      auto-compile
+                      deferred
+                      )
          initially (unless package-archive-contents (package-refresh-contents))
          unless (package-installed-p pkg)
          do (package-install pkg)
