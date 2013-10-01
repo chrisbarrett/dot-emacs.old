@@ -102,6 +102,7 @@
       "C-o C-a" 'org-agenda
       "C-o C-f" 'org-search-view
       "C-o C-j" 'org-clock-goto
+      "<f6>"    'org-clock-goto
       "C-o d" (command (find-file org-agenda-diary-file))
       "C-o K" (command (org-capture nil "T"))
       "C-o k" (command (org-capture nil "t"))
@@ -362,7 +363,21 @@
 (use-package org-pomodoro
   :ensure t
   :defer t
-  :bind ("<f5>" . org-pomodoro))
+  :bind ("<f5>" . org-pomodoro)
+  :config
+  (progn
+
+    ;; HACK: Do not show seconds on pomodoro timer.
+    (after 'org-pomodoro
+      (defun org-pomodoro-minutes ()
+        "Return the current countdown value in minutes as string."
+        (->> (org-timer-secs-to-hms org-pomodoro-countdown)
+          (s-split ":")
+          (cl-second))))
+
+    (setq org-pomodoro-format "• %s")
+    (when (equal system-type 'darwin)
+      (setq org-pomodoro-audio-player (executable-find "afplay")))))
 
 ;; Define pairs for org-mode blocks.
 (after 'smartparens
