@@ -293,8 +293,9 @@ Otherwise insert an arrow at the end of the line."
 
     (defadvice haskell-mode-after-save-handler (around ignore-warnings activate)
       "Prevent subprocess warnings from changing window state."
-      (save-window-excursion
-        ad-do-it))))
+      (let ((inhibit-redisplay t))
+        (save-window-excursion
+          ad-do-it)))))
 
 ;; `haskell-c' provides a major-mode for haskell-c code.
 (use-package haskell-c
