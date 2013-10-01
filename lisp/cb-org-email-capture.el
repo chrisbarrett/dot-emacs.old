@@ -82,6 +82,7 @@
 
 (require 'cb-lib)
 (require 'cb-paths)
+(require 'async)
 (autoload 'org-insert-link "org")
 (autoload 'org-insert-time-stamp "org")
 (autoload 'org-insert-subheading "org")
@@ -239,8 +240,8 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
     (list :uri uri
           :subject subject
           :title (->> lns
-                  (-remove (~ s-matches? (rx bol (or "s" "d" "t") (+ space))))
-                  (s-join "\n"))
+                   (-remove (~ s-matches? (rx bol (or "s" "d" "t") (+ space))))
+                   (s-join "\n"))
           :scheduled scheduled
           :filepath path
 
@@ -270,6 +271,14 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
             (s-downcase subject))))))
 
 ;; Org capture
+;;
+;; Because capture templates may be interactive, we can't use them
+;; directly. We do it a roundabout way instead, inspecting `org-capture-templates'
+;; to find the insertion site corresponding to each parsed message.
+;; This means the captured is unlikely to follow the exact format
+;; specified by the capture template.
+;;
+
 
 ;; IO [String]
 (defun cbom:capture-keywords ()
@@ -293,7 +302,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
   (unless (s-matches? (rx "." (or "z" "r" "t" "p" "d" "a" "w" "m")
                           (** 2 3 alnum) eol)
                       uri)
-    (with-timeout (3 nil)
+    (with-timeout (10 nil)
       (ignore-errors
         (with-current-buffer
             (url-retrieve-synchronously
@@ -336,15 +345,6 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
      (when scheduled (format "\nSCHEDULED: <%s>" scheduled))
      (when deadline (format "\nDEADLINE: <%s>" deadline))))))
 
-;; String -> IO ()
-(defun cbom:goto-capture-site (kind)
-  "Move to the insertion site for the capture template associated with KIND."
-  (cl-destructuring-bind (&optional key &rest rest_)
-      (-first (C (~ equal (s-downcase kind)) s-downcase cadr)
-              org-capture-templates)
-    (org-capture-goto-target (or key "n"))
-    (end-of-line)))
-
 ;; IO ()
 (defun cbom:dispatch-agenda-email ()
   (let ((inhibit-redisplay t))
@@ -354,30 +354,23 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
       (org-agenda nil key))))
 
 ;; MessagePlist -> IO ()
-(defun cbom:capture (msg-plist)
+(cl-defun cbom:capture (str kind &key tags &allow-other-keys)
   "Read MSG-PLIST and execute the appropriate capture behaviour."
-  ;; If a message contains a URI, capture using the link template.
-  (let ((kind (if (plist-get msg-plist :uri)
-                  "link"
-                (plist-get msg-plist :kind))))
-    (cond
-     ((s-matches? "agenda" kind)
-      (cbom:dispatch-agenda-email))
-     (t
-      ;; Capture according to kind.
-      ;;
-      ;; Because capture templates may be interactive, we can't use them
-      ;; directly. We read the template declaration to find the appropriate
-      ;; insertion site and manually construct a suitable capture result.
-      ;;
-      (cbom:goto-capture-site kind)
-      (org-insert-subheading '(16))     ; 16 = at end of list
-      (insert (apply 'cbom:format-for-insertion msg-plist))
-      (org-set-tags-to (plist-get msg-plist :tags))
-      (org-set-property
-       "CAPTURED"
-       (s-with-temp-buffer
-         (org-insert-time-stamp (current-time) t 'inactive)))))))
+  ;; Move to the capture site associated with KIND.
+  (cl-destructuring-bind (&optional key &rest rest_)
+      (-first (C (~ equal (s-downcase kind)) s-downcase cadr)
+              org-capture-templates)
+    (org-capture-goto-target (or key "n")))
+  ;; Preprare headline.
+  (end-of-line)
+  (org-insert-subheading '(16))     ; 16 = at end of list
+  ;; Insert item.
+  (insert str)
+  (org-set-tags-to tags)
+  (org-set-property
+   "CAPTURED"
+   (s-with-temp-buffer
+     (org-insert-time-stamp (current-time) t 'inactive))))
 
 ;; MessagePlist -> IO ()
 (cl-defun cbom:remove-message (&key filepath &allow-other-keys)
@@ -389,21 +382,40 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
                                 dest-file)))
     (f-move filepath dest-filepath)))
 
+;; MessagePlist -> String
+(defun cbom:effective-kind (msg-plist)
+  (if (plist-get msg-plist :uri) "link" (plist-get msg-plist :kind)))
+
 ;; IO ()
 (defun cbom:capture-messages ()
   "Parse and capture unread messages in `cbom:org-mail-folder'.
 Captures messages subjects match one of the values in `org-capture-templates'.
 Captured messages are marked as read."
   (interactive)
-  (save-window-excursion
-    (--each (-map 'cbom:parse-message
-                  (cbom:unprocessed-messages (funcall cbom:org-mail-folder)))
-      (save-excursion
-        (atomic-change-group
-          (cbom:capture it)
-          (save-buffer)
-          (apply 'cbom:growl-notify it)
-          (apply 'cbom:remove-message it))))))
+  (atomic-change-group
+    (--each (->> (AP cbom:org-mail-folder)
+              (cbom:unprocessed-messages)
+              (-map 'cbom:parse-message))
+
+      (let ((kind (cbom:effective-kind it)))
+        (cond
+         ;; If a message contains a URI, capture using the link template.
+         ((s-matches? "agenda" kind)
+          (cbom:dispatch-agenda-email))
+         ;; Capture according to kind.
+         (t
+          (async-start `(lambda ()
+                          (package-initialize)
+                          (add-to-list 'load-path ,cb:lisp-dir)
+                          (require 'cb-org-email-capture)
+                          (apply 'cbom:format-for-insertion ',it))
+
+                       `(lambda (fmt)
+                          (save-excursion
+                            (save-window-excursion
+                              (apply 'cbom:capture fmt ,kind ',it)))
+                          (apply 'cbom:growl-notify ',it)
+                          (apply 'cbom:remove-message ',it)))))))))
 
 ;;; Timer
 
