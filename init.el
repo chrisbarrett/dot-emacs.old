@@ -88,8 +88,9 @@
 (setq use-package-verbose nil)
 
 ;; As a special case, remove elpa version of org-mode from load-path.
-(-when-let (org (--first (s-matches? (rx "/org-" (+ num) eol) it) (f-directories package-user-dir)))
-  (delete* org load-path))
+(-when-let (org (--first (s-matches? (rx "/org-" (+ num) eol) it)
+                         (f-directories package-user-dir)))
+  (cl-delete org load-path))
 
 ;; Configure el-get
 
