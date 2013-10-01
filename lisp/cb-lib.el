@@ -195,6 +195,22 @@
      (interactive)
      ,@body))
 
+(defmacro lambda+ (arglist &rest body)
+  "A lambda function supporting argument destructuring.
+
+ARGLIST is a full Common Lisp arglist.  Its bindings are availabe
+in BODY.
+
+\(fn ARGS [DOCSTRING] [INTERACTIVE] BODY)"
+  (declare (doc-string 2) (indent defun)
+           (debug (&define lambda-list
+                           [&optional stringp]
+                           [&optional ("interactive" interactive)]
+                           def-body)))
+  `(lambda (&rest args)
+     (cl-destructuring-bind ,arglist args
+       ,@body)))
+
 ;;; ----------------------------------------------------------------------------
 
 (defun cb:prepare-load-dir (dir add-path)
