@@ -311,11 +311,13 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
   "Format a parsed message according to its kind."
   (cond
 
-   ;; Give precedence to URIs.
+   ;; Messages with a URI are always captured as a link.
    (uri
     (format "[[%s][%s]]" uri
-            (or (cbom:maybe-download-title-at-uri uri)
-                uri)))
+            (s-truncate
+             70
+             (or (cbom:maybe-download-title-at-uri uri)
+                 uri))))
 
    ;; Special diary format. The deadline is interpreted as an end time-stamp.
    ((s-matches? "diary" kind)
