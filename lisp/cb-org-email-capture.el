@@ -293,7 +293,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
   (unless (s-matches? (rx "." (or "z" "r" "t" "p" "d" "a" "w" "m")
                           (** 2 3 alnum) eol)
                       uri)
-    (with-timeout (1 nil)
+    (with-timeout (3 nil)
       (ignore-errors
         (with-current-buffer
             (url-retrieve-synchronously
