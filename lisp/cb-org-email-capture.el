@@ -82,7 +82,7 @@
 
 (require 'cb-lib)
 (require 'cb-paths)
-(require 'async)
+(require 'deferred)
 (autoload 'org-insert-link "org")
 (autoload 'org-insert-time-stamp "org")
 (autoload 'org-insert-subheading "org")
@@ -115,24 +115,14 @@
 
 ;;; Internal
 
-;;; Message reading
-
-;; Maybe String -> Bool
-(defun cbom:org-dispatched-message? (msg)
-  "Test whether MSG has [org] in its subject."
-  (-when-let (subj (cbom:message-header-value "subject" msg))
-    (s-starts-with? "[org]" subj)))
-
 ;; [FilePath] -> IO [(String, FilePath)]
 (defun cbom:unprocessed-messages (dir)
   "The unprocessed mail in DIR.
 DIR should be an IMAP maildir folder containing a subdir called 'new'."
   (let ((new (f-join dir "new")))
     (when (f-exists? new)
-      (->> (f-files new)
-        (-map (π f-read-text I))
-        ;; Remove messages dispatched by org functions, like the agenda.
-        (-remove (C cbom:org-dispatched-message? car))))))
+      (-map (π f-read-text I)
+            (f-files new)))))
 
 ;;; Message parsing
 
@@ -237,38 +227,49 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
          (subject (cbom:message-header-value "subject" msg))
          (uri (cbom:find-uri body)))
     ;; Construct a plist of parsed values.
-    (list :uri uri
-          :subject subject
-          :title (->> lns
-                   (-remove (~ s-matches? (rx bol (or "s" "d" "t") (+ space))))
-                   (s-join "\n"))
-          :scheduled scheduled
-          :filepath path
+     (list :uri uri
+           :subject subject
+           :title (->> lns
+                    (-remove (~ s-matches? (rx bol (or "s" "d" "t") (+ space))))
+                    (s-join "\n"))
+           :scheduled scheduled
+           :filepath path
 
-          :deadline (->> lns
-                      (-keep (~ cbom:match-directive "d"))
-                      (car)
-                      (cbom:parse-date))
-          :tags
-          (->> lns
-            (-keep (~ cbom:match-directive "t"))
-            (-mapcat 's-split-words)
-            (-distinct))
-          ;; Now that the message body is entirely parsed we can determine what
-          ;; form of data we're capturing. This allows the user to get away with
-          ;; setting an empty subject most of the time.
-          :kind
-          (cond
-           ((and (s-blank? subject) scheduled) "diary")
-           ((and (s-blank? subject) uri) "link")
-           ((s-blank? subject) "note")
-           ((s-matches? "book" subject) "reading")
-           ((s-matches? (rx (or "song" "music" "album")) subject)
-            "listening")
-           ((s-matches? (rx (or "diary" "calendar" "appt" "appointment")) subject)
-            "diary")
-           (t
-            (s-downcase subject))))))
+           :deadline (->> lns
+                       (-keep (~ cbom:match-directive "d"))
+                       (car)
+                       (cbom:parse-date))
+           :tags
+           (->> lns
+             (-keep (~ cbom:match-directive "t"))
+             (-mapcat 's-split-words)
+             (-distinct))
+           ;; Now that the message body is entirely parsed we can determine what
+           ;; form of data we're capturing. This allows the user to get away with
+           ;; setting an empty subject most of the time.
+           :kind
+           (cond
+            (uri "link")
+            ((and (s-blank? subject) scheduled)
+             "diary")
+            ((s-blank? subject)
+             "note")
+            ((s-matches? (rx bol "book") subject)
+             "reading")
+            ((s-matches? (rx bol (or "song" "music" "album")) subject)
+             "listening")
+            ((s-matches? (rx bol (or "diary" "calendar" "appt" "appointment"))
+                         subject)
+             "diary")
+            ((s-matches? (rx bol "agenda") subject)
+             "agenda")
+
+            (t
+             (s-downcase subject))))))
+
+(cl-defun cbom:validate-message-plist (&key uri kind &allow-other-keys)
+  (when uri
+    (cl-assert (equal "link" kind))))
 
 ;; Org capture
 ;;
@@ -286,14 +287,10 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 
 ;; MessagePlist -> IO Bool
 (cl-defun cbom:capture-candidate? (&key kind &allow-other-keys)
-  (-contains? (cbom:capture-keywords) (s-downcase kind)))
+  (-contains? (cbom:capture-keywords) kind))
 
-;; MessagePlist -> IO ()
-(cl-defun cbom:growl-notify (&key kind title &allow-other-keys)
-  (let ((icon (f-join user-emacs-directory "assets" "org_unicorn.png")))
-    (if (s-matches? "agenda" kind)
-        (growl "Agenda Emailed" "" icon)
-      (growl (format "%s Captured" (s-capitalize kind)) title icon))))
+;; FilePath
+(defconst cbom:icon (f-join user-emacs-directory "assets" "org_unicorn.png"))
 
 ;; URI -> String
 (defun cbom:maybe-download-title-at-uri (uri)
@@ -329,7 +326,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
                  uri))))
 
    ;; Special diary format. The deadline is interpreted as an end time-stamp.
-   ((s-matches? "diary" kind)
+   ((equal "diary" kind)
     (cond
      ((and scheduled deadline)
       (format "%s\n<%s>--<%s>" title scheduled deadline))
@@ -341,9 +338,10 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
    ;; All other types can follow a standard style.
    (t
     (concat
-     (if (s-matches? "todo" kind) (concat "TODO " title) title)
+     (if (equal "todo" kind) (concat "TODO " title) title)
      (when scheduled (format "\nSCHEDULED: <%s>" scheduled))
-     (when deadline (format "\nDEADLINE: <%s>" deadline))))))
+     (when deadline (format "\nDEADLINE: <%s>" deadline)))))
+  )
 
 ;; IO ()
 (defun cbom:dispatch-agenda-email ()
@@ -354,11 +352,11 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
       (org-agenda nil key))))
 
 ;; MessagePlist -> IO ()
-(cl-defun cbom:capture (str kind &key tags &allow-other-keys)
+(cl-defun cbom:capture (str &key kind tags &allow-other-keys)
   "Read MSG-PLIST and execute the appropriate capture behaviour."
   ;; Move to the capture site associated with KIND.
   (cl-destructuring-bind (&optional key &rest rest_)
-      (-first (C (~ equal (s-downcase kind)) s-downcase cadr)
+      (-first (C (~ equal kind) s-downcase cadr)
               org-capture-templates)
     (org-capture-goto-target (or key "n")))
   ;; Preprare headline.
@@ -382,9 +380,11 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
                                 dest-file)))
     (f-move filepath dest-filepath)))
 
-;; MessagePlist -> String
-(defun cbom:effective-kind (msg-plist)
-  (if (plist-get msg-plist :uri) "link" (plist-get msg-plist :kind)))
+;; MessagePlist -> IO ()
+(cl-defun cbom:growl (&key kind title &allow-other-keys)
+  (growl (format "%s Captured" (s-capitalize kind))
+         (s-truncate 40 title)
+         cbom:icon))
 
 ;; IO ()
 (defun cbom:capture-messages ()
@@ -393,32 +393,30 @@ Captures messages subjects match one of the values in `org-capture-templates'.
 Captured messages are marked as read."
   (interactive)
   (atomic-change-group
-    (--each (->> (AP cbom:org-mail-folder)
-              (cbom:unprocessed-messages)
-              (-map 'cbom:parse-message))
-
+    (dolist (pl (->> (AP cbom:org-mail-folder)
+                  (cbom:unprocessed-messages)
+                  (-map 'cbom:parse-message)))
       ;; Capture according to kind.
-      (let ((kind (cbom:effective-kind it)))
-        (cond
-         ;; If a message contains a URI, capture using the link template.
-         ((s-matches? "agenda" kind)
-          (cbom:dispatch-agenda-email))
-         ;;
-         ;; Prepare messages for capture in another Emacs process to keep the UI
-         ;; responsive while performing web requests, etc.
-         (t
-          (async-start `(lambda ()
-                          (package-initialize)
-                          (add-to-list 'load-path ,cb:lisp-dir)
-                          (require 'cb-org-email-capture)
-                          (apply 'cbom:format-for-insertion ',it))
-
-                       `(lambda (fmt)
-                          (save-excursion
-                            (save-window-excursion
-                              (apply 'cbom:capture fmt ,kind ',it)))
-                          (apply 'cbom:growl-notify ',it)
-                          (apply 'cbom:remove-message ',it)))))))))
+      (cond
+       ;; If a message contains a URI, capture using the link template.
+       ((equal "agenda" (plist-get pl :kind))
+        (cbom:dispatch-agenda-email)
+        (growl "Agenda Emailed" "" cbom:icon))
+       ;;
+       ;; Prepare messages for capture in another Emacs process. This keeps
+       ;; the UI responsive while performing web requests, etc.
+       (t
+        (deferred:$
+          (deferred:next
+            (lambda ()
+              (apply 'cbom:format-for-insertion ',pl)))
+          (deferred:nextc it
+            `(lambda (fmt)
+               (save-excursion
+                 (save-window-excursion
+                   (apply 'cbom:capture fmt ',pl)
+                   (apply 'cbom:growl ',pl)
+                   (apply 'cbom:remove-message ',pl)))))))))))
 
 ;;; Timer
 
