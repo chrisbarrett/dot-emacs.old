@@ -164,6 +164,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
       (s-trim)
       (s-chop-suffix "=")
       ;; Convert latin-1 line breaks.
+      (s-replace "=\n" "")
       (s-replace "=0A" "\n"))))
 
 ;; String -> Maybe URI
