@@ -234,6 +234,11 @@ entry in `modeline-custom-description-functions'."
    (:eval (or (and (true? cbm:mode-line-indicator)
                    (concat " " cbm:mode-line-indicator " "))
               ""))
+
+   ;; Pomodoro
+   (:eval (or (and (true? org-pomodoro-mode-line)
+                   (concat " " (s-join "" org-pomodoro-mode-line)))
+              ""))
    ;; --------------------------------------------------------------------------
    ;; File status.
    (:eval

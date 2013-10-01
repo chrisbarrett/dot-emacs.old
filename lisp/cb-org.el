@@ -367,8 +367,14 @@
   :config
   (progn
 
-    ;; HACK: Do not show seconds on pomodoro timer.
+    (setq org-pomodoro-format "• %s")
+    (when (equal system-type 'darwin)
+      (setq org-pomodoro-audio-player (executable-find "afplay")))
+
+    ;; Override functions.
     (after 'org-pomodoro
+
+      ;; Pomodoro indicator shows only number of minutes.
       (defun org-pomodoro-minutes ()
         "Return the current countdown value in minutes as string."
         ;; Round up to nearest minute.
@@ -378,11 +384,24 @@
           (-drop 1)
           (s-join ".")
           (string-to-number)
-          (ceiling))))
+          (ceiling)))
 
-    (setq org-pomodoro-format "• %s")
-    (when (equal system-type 'darwin)
-      (setq org-pomodoro-audio-player (executable-find "afplay")))))
+      ;; Do not add the pmodoro to the global modeline---it's part of the modeline format.
+      (defun org-pomodoro-start (&optional state)
+        "Start the `org-pomodoro` timer.
+The argument STATE is optional.  The default state is `:pomodoro`."
+        (when org-pomodoro-timer (cancel-timer org-pomodoro-timer))
+
+        (unless state (setq state :pomodoro))
+        (setq org-pomodoro-state state
+              org-pomodoro-countdown (case state
+                                       (:pomodoro (* 60 org-pomodoro-length))
+                                       (:short-break (* 60 org-pomodoro-short-break-length))
+                                       (:long-break (* 60 org-pomodoro-long-break-length)))
+              org-pomodoro-timer (run-with-timer t 1 'org-pomodoro-tick))
+        (when (eq org-pomodoro-state :pomodoro)
+          (run-hooks 'org-pomodoro-started-hook))
+        (org-pomodoro-update-mode-line)))))
 
 ;; Define pairs for org-mode blocks.
 (after 'smartparens
