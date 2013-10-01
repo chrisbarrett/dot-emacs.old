@@ -110,7 +110,7 @@
     (if (derived-mode-p 'prog-mode)
         (format "#+BEGIN_SRC %s\n%s\n#+END_SRC\n"
                 ;; Determine name of mode to use.
-                (case major-mode
+                (cl-case major-mode
                   (c-mode 'C)
                   (emacs-lisp-mode 'elisp)
                   (otherwise
@@ -162,7 +162,7 @@ Kill the buffer when finished."
               (replace-match ", ")))))
     (call-interactively 'org-cycle)))
 
-(defun* cb-org:header->alist (str)
+(defun cb-org:header->alist (str)
   "Extract the header values from the contents of the given buffer string STR."
   (->> (s-lines str)
     ;; Get header lines
@@ -170,7 +170,7 @@ Kill the buffer when finished."
                       (s-blank? it)))
     (-remove 's-blank?)
     ;; Create alist of keywords -> values
-    (--map (destructuring-bind (_ key val &rest rest)
+    (--map (cl-destructuring-bind (_ key val &rest rest)
                (s-match (rx bol "#+" (group (+ nonl))
                             ":" (* space)
                             (group (+ nonl)))
@@ -245,14 +245,14 @@ Kill the buffer when finished."
   "Take the first quote level and discard nested quotes in STR.
 Rewrap in an org-style quote block."
   (-if-let (preamble (car (s-match org-mutt:reply-quote-preamble str)))
-    (destructuring-bind (bod quote) (s-split (regexp-quote preamble) str)
+    (cl-destructuring-bind (bod quote) (s-split (regexp-quote preamble) str)
       (s-unlines bod
                  preamble
                  "#+BEGIN_QUOTE"
                  ;; Reformat quote. Remove any inner quotes.
                  (->> quote
                    (s-lines)
-                   (--map (s-chop-prefix "> " it))
+                   (-map (~ s-chop-prefix "> "))
                    (-remove 'org-mutt:quote-line?)
                    (s-join "\n")
                    (s-trim))
@@ -314,15 +314,15 @@ Rewrap in an org-style quote block."
   "Return the number of unread messages in all folders in your maildir."
   (->> (f-directories cbm:mail-directory)
     (-mapcat 'f-directories)
-    (--remove (s-matches? (rx (or "low" "archive" "draft" "org"
-                                  "deleted" "trash" "sent")) it))
+    (-remove (~ s-matches? (rx (or "low" "archive" "draft" "org"
+                                   "deleted" "trash" "sent"))))
     (-mapcat 'f-directories)
-    (--filter (s-ends-with? "new" it))
-    (-map (-compose 'length 'f-files))
+    (-filter (~ s-ends-with? "new"))
+    (-map (C length f-files))
     (-sum)))
 
 (defun cbm:make-indicator (n)
-  (when (plusp n)
+  (when (cl-plusp n)
     (concat
      (propertize "@" 'display cbm:mail-icon)
      (int-to-string n))))
