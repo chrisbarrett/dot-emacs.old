@@ -371,9 +371,14 @@
     (after 'org-pomodoro
       (defun org-pomodoro-minutes ()
         "Return the current countdown value in minutes as string."
-        (->> (org-timer-secs-to-hms org-pomodoro-countdown)
+        ;; Round up to nearest minute.
+        (->> org-pomodoro-countdown
+          (org-timer-secs-to-hms)
           (s-split ":")
-          (cl-second))))
+          (-drop 1)
+          (s-join ".")
+          (string-to-number)
+          (ceiling))))
 
     (setq org-pomodoro-format "• %s")
     (when (equal system-type 'darwin)
