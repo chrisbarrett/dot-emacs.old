@@ -397,12 +397,15 @@ Captured messages are marked as read."
               (cbom:unprocessed-messages)
               (-map 'cbom:parse-message))
 
+      ;; Capture according to kind.
       (let ((kind (cbom:effective-kind it)))
         (cond
          ;; If a message contains a URI, capture using the link template.
          ((s-matches? "agenda" kind)
           (cbom:dispatch-agenda-email))
-         ;; Capture according to kind.
+         ;;
+         ;; Prepare messages for capture in another Emacs process to keep the UI
+         ;; responsive while performing web requests, etc.
          (t
           (async-start `(lambda ()
                           (package-initialize)
