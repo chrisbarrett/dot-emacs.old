@@ -388,6 +388,12 @@
              (f-join cb:assets-dir "org-pomodoro.png")))
 
     (when (equal system-type 'darwin)
+      ;; Use system sounds for alerts.
+      (setq org-pomodoro-sound (osx-find-system-sound "purr")
+            org-pomodoro-short-break-sound (osx-find-system-sound "purr")
+            org-pomodoro-long-break-sound (osx-find-system-sound "purr"))
+
+      ;; Show growl notifications
       (add-hook 'org-pomodoro-started-hook 'cb-org:pomodoro-growl)
       (add-hook 'org-pomodoro-killed-hook 'cb-org:pomodoro-growl)
       (add-hook 'org-pomodoro-finished-hook 'cb-org:pomodoro-growl))
