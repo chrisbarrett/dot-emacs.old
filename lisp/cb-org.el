@@ -102,7 +102,7 @@
       "C-o C-a" 'org-agenda
       "C-o C-f" 'org-search-view
       "C-o C-j" 'org-clock-goto
-      "<f6>"    'org-clock-goto
+      "<f7>"    'org-clock-goto
       "C-o d" (command (find-file org-agenda-diary-file))
       "C-o K" (command (org-capture nil "T"))
       "C-o k" (command (org-capture nil "t"))
