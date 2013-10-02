@@ -367,7 +367,9 @@
   :config
   (progn
 
-    (setq org-pomodoro-format "• %s")
+    (setq org-pomodoro-format "• %s"
+          org-pomodoro-short-break-format "B %s"
+          org-pomodoro-long-break-format "LB %s")
     (when (equal system-type 'darwin)
       (setq org-pomodoro-audio-player (executable-find "afplay")))
 
@@ -376,10 +378,13 @@
     (defun cb-org:pomodoro-growl ()
       (growl "Pomodoro"
              (cl-case org-pomodoro-state
-               (:pomodoro "Timer started")
-               (:short-break (format "%s-minute break" org-pomodoro-short-break-length))
-               (:long-break (format "%s-minute break" org-pomodoro-long-break-length))
-               (otherwise ""))
+               (:pomodoro (format "Timer started (%s/%s)"
+                                  org-pomodoro-count
+                                  org-pomodoro-long-break-frequency
+                                  ))
+               (:short-break (format "Short break" org-pomodoro-short-break-length))
+               (:long-break (format "Long break" org-pomodoro-long-break-length))
+               (otherwise "Stopped"))
              (f-join cb:assets-dir "org-pomodoro.png")))
 
     (when (equal system-type 'darwin)
