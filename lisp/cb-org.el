@@ -156,6 +156,12 @@
      org-put-time-stamp-overlays t
      org-startup-with-inline-images t
 
+     ;; Org habit
+
+     org-habit-preceding-days 14
+     org-habit-following-days 4
+     org-habit-graph-column 50
+
      ;; Exporter options
 
      org-html-html5-fancy t
