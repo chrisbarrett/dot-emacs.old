@@ -170,9 +170,7 @@ Otherwise insert an arrow at the end of the line."
       (just-one-space)))
 
   (defun cb-hs:at-typedecl? ()
-    (let ((ln (buffer-substring (line-beginning-position) (point))))
-      (or (s-matches? "::" ln)
-          (s-matches? (rx bol (or "type" "newtype")) ln))))
+    (s-matches? "::" (buffer-substring (line-beginning-position) (point))))
 
   (defun cb-hs:smart-minus ()
     "Insert an arrow if we're in a typesig, otherwise perform a normal insertion."
