@@ -81,8 +81,9 @@
       (destructuring-bind (pat rep) it
         (cb-hs:apply-font-lock
          (rx-to-string `(and (not (any "\""))
-                             (group (? "`") symbol-start ,pat symbol-end
-                                    (? "`"))
+                             (? "`")
+                             (group  symbol-start ,pat symbol-end)
+                             (? "`")
                              (not (any "\""))))
          rep))))
 
