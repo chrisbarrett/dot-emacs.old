@@ -389,9 +389,10 @@
 
     (when (equal system-type 'darwin)
       ;; Use system sounds for alerts.
-      (setq org-pomodoro-sound (osx-find-system-sound "purr")
-            org-pomodoro-short-break-sound (osx-find-system-sound "purr")
-            org-pomodoro-long-break-sound (osx-find-system-sound "purr"))
+      (let ((snd (osx-find-system-sound "purr")))
+        (setq org-pomodoro-sound snd
+              org-pomodoro-short-break-sound snd
+              org-pomodoro-long-break-sound snd))
 
       ;; Show growl notifications
       (add-hook 'org-pomodoro-started-hook 'cb-org:pomodoro-growl)
