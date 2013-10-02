@@ -89,7 +89,7 @@
   :init
   (progn
 
-    (bind-key* "C-x C-f" 'helm-find-files)
+    (bind-key* "C-x SPC" 'helm-find-files)
 
     (defun helm-find-in-lisp-dir (arg)
       (interactive "P")
