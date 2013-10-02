@@ -47,6 +47,7 @@
             ("* Racket REPL *" :height 7 :stick t)
             ("*Geiser dbg*" :height 7)
             ("*execute scheme*" :height 7 :noselect t)
+            ("*haskell*" :height 7 :stick t)
             ("*Directory*")
             ("*Org Note*")
             ("*jedi:doc*" :height 30)
