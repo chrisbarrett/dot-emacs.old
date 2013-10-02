@@ -584,8 +584,7 @@ Non-nil if modifications where made."
                    ":LOGBOOK:"
                    ":CAPTURED: %U"
                    ":END:")
-                 :clock-in t
-                 :clock-resume t)
+                 :clock-keep t)
 
                 ("s" "Someday" entry
                  (file+olp org-default-notes-file "Someday" "Tasks")
@@ -594,13 +593,12 @@ Non-nil if modifications where made."
                    ":LOGBOOK:"
                    ":CAPTURED: %U"
                    ":END:")
-                 :clock-in t
-                 :clock-resume t)
+                 :clock-keep t)
 
                 ("d" "Diary" entry
                  (file+datetree org-agenda-diary-file)
                  "* %?\n%^t"
-                 :clock-resume t)
+                 :clock-keep t)
 
                 ("b" "Bill" entry
                  (file+headline org-default-notes-file "Bills")
@@ -610,7 +608,7 @@ Non-nil if modifications where made."
                    ":LOGBOOK:"
                    ":CAPTURED: %U"
                    ":END:")
-                 :clock-resume t)
+                 :clock-keep t)
 
                 ("h" "Habit" entry
                  (file+headline org-default-notes-file "Habits/Recurring")
@@ -624,7 +622,7 @@ Non-nil if modifications where made."
                    ":LOGBOOK:"
                    ":CAPTURED: %U"
                    ":END:")
-                 :clock-resume t)
+                 :clock-keep t)
 
                 ("r" "Reading" entry
                  (file+olp org-default-notes-file "Someday" "Readings")
@@ -633,7 +631,7 @@ Non-nil if modifications where made."
                    ":LOGBOOK:"
                    ":CAPTURED: %U"
                    ":END:")
-                 :clock-resume t)
+                 :clock-keep t)
 
                 ("l" "Link" entry
                  (file+headline org-default-notes-file "Links")
@@ -644,7 +642,7 @@ Non-nil if modifications where made."
                    ":END:"
                    "%i")
                  :immediate-finish t
-                 :clock-resume t)
+                 :clock-keep t)
 
                 ("m" "Listening" entry
                  (file+olp org-default-notes-file "Someday" "Listening")
@@ -653,7 +651,7 @@ Non-nil if modifications where made."
                    ":LOGBOOK:"
                    ":CAPTURED: %U"
                    ":END:")
-                 :clock-resume t)
+                 :clock-keep t)
 
                 ("n" "Note" entry
                  (file+headline org-default-notes-file "Notes")
@@ -662,7 +660,7 @@ Non-nil if modifications where made."
                    ":LOGBOOK:"
                    ":CAPTURED: %U"
                    ":END:")
-                 :clock-resume t)
+                 :clock-keep t)
 
                 ("z" "Task Note" entry
                  (clock)
@@ -692,9 +690,8 @@ Non-nil if modifications where made."
                    ":LOGBOOK:"
                    ":CAPTURED: %U"
                    ":END:")
-                 :kill-buffer t
-                 :clock-resume t
-                 :clock-in t)
+                 :clock-keep
+                 :kill-buffer t)
 
                 ("N" "Project Note" entry
                  (file+headline (cb-org:project-file) "Notes")
