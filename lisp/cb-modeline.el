@@ -237,7 +237,7 @@ entry in `modeline-custom-description-functions'."
 
    ;; Pomodoro
    (:eval (or (and (true? org-pomodoro-mode-line)
-                   (concat " " (s-join "" org-pomodoro-mode-line)))
+                   (s-join "" org-pomodoro-mode-line))
               ""))
    ;; --------------------------------------------------------------------------
    ;; File status.
