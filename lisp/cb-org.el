@@ -371,6 +371,22 @@
     (when (equal system-type 'darwin)
       (setq org-pomodoro-audio-player (executable-find "afplay")))
 
+    ;; Notifications
+
+    (defun cb-org:pomodoro-growl ()
+      (growl "Pomodoro"
+             (cl-case org-pomodoro-state
+               (:pomodoro "Timer started")
+               (:short-break (format "%s-minute break" org-pomodoro-short-break-length))
+               (:long-break (format "%s-minute break" org-pomodoro-long-break-length))
+               (otherwise ""))
+             (f-join cb:assets-dir "org-pomodoro.png")))
+
+    (when (equal system-type 'darwin)
+      (add-hook 'org-pomodoro-started-hook 'cb-org:pomodoro-growl)
+      (add-hook 'org-pomodoro-killed-hook 'cb-org:pomodoro-growl)
+      (add-hook 'org-pomodoro-finished-hook 'cb-org:pomodoro-growl))
+
     ;; Override functions.
     (after 'org-pomodoro
 
