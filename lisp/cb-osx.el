@@ -30,11 +30,15 @@
 (require 'cb-lib)
 (autoload 'thing-at-point-url-at-point "thingatpt")
 
+(defun osx-find-system-sound (name)
+  "Find a system alert matching NAME."
+  (when (equal system-type 'darwin)
+    (-first (~ s-matches? name) (f-files "/System/Library/Sounds"))))
+
 (defun osx-play-system-sound (name)
   "Play alert matching NAME."
   (when (equal system-type 'darwin)
-    (-when-let (snd (-first (~ s-matches? name)
-                            (f-files "/System/Library/Sounds")))
+    (-when-let (snd (osx-find-system-sound name))
       (start-process "appt alert" " appt alert" "afplay" snd))))
 
 (configuration-group
