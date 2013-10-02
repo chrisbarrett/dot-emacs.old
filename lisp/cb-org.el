@@ -197,10 +197,10 @@
        (:endgroup . nil)
        ;; Context tags
        (:startgroup . nil)
-       ("@anywhere" . ?a)
+       ("@computer" . ?a)
        ("@errand" . ?e)
-       ("@leisure" . ?l)
        ("@home" . ?h)
+       ("@leisure" . ?l)
        ("@phone" . ?p)
        ("@work" . ?w)
        (:endgroup . nil)))
@@ -607,7 +607,7 @@ Non-nil if modifications where made."
                 (file+headline org-default-notes-file "Tasks")
                 ,(s-unlines
                   (concat "* TODO %^{Description}%?    "
-                          ":%^{Context|@anywhere|@errand|@leisure|@home|@phone|@work}:")
+                          ":%^{Context|@computer|@errand|@leisure|@home|@phone|@work}:")
                   "SCHEDULED: %^{Schedule}t"
                   ":LOGBOOK:"
                   ":CAPTURED: %U"
@@ -628,54 +628,15 @@ Non-nil if modifications where made."
                 "* %?\n%^t"
                 :clock-keep t)
 
-               ("b" "Bill" entry
-                (file+headline org-default-notes-file "Bills")
-                ,(s-unlines
-                  "* TODO %?"
-                  "DEADLINE: %^{Deadline}t"
-                  ":LOGBOOK:"
-                  ":CAPTURED: %U"
-                  ":END:")
-                :clock-keep t)
-
                ("h" "Habit" entry
                 (file+headline org-default-notes-file "Habits/Recurring")
                 ,(s-unlines
                   (concat "* TODO %^{Description}%?    "
-                          ":%^{Context|@anywhere|@errand|@leisure|@home|@phone|@work}:")
+                          ":%^{Context|@computer|@errand|@leisure|@home|@phone|@work}:")
                   "SCHEDULED: %^{Schedule}t"
                   ":PROPERTIES:"
                   ":STYLE: habit"
                   ":END:"
-                  ":LOGBOOK:"
-                  ":CAPTURED: %U"
-                  ":END:")
-                :clock-keep t)
-
-               ("r" "Reading" entry
-                (file+olp org-default-notes-file "Someday" "Readings")
-                ,(s-unlines
-                  "* TODO %i%?"
-                  ":LOGBOOK:"
-                  ":CAPTURED: %U"
-                  ":END:")
-                :clock-keep t)
-
-               ("l" "Link" entry
-                (file+headline org-default-notes-file "Links")
-                ,(s-unlines
-                  "* %c"
-                  ":LOGBOOK:"
-                  ":CAPTURED: %U"
-                  ":END:"
-                  "%i")
-                :immediate-finish t
-                :clock-keep t)
-
-               ("m" "Listening" entry
-                (file+olp org-default-notes-file "Someday" "Listening")
-                ,(s-unlines
-                  "* TODO %i%?"
                   ":LOGBOOK:"
                   ":CAPTURED: %U"
                   ":END:")
@@ -783,11 +744,11 @@ See `cb-org:show-agenda-idle-delay'.")
                      (tags "someday")))
                    ("g" . "GTD contexts")
                    ("gg" "Anywhere"
-                    ((tags-todo "@anywhere")
+                    ((tags-todo "@computer")
                      (tags-todo "@errand")
                      (tags-todo "@home")
-                     (tags-todo "@phone")
                      (tags-todo "@leisure")
+                     (tags-todo "@phone")
                      (tags-todo "@work")))
                    ("ge" "Errands"  tags-todo "@errand")
                    ("gp" "Phone"    tags-todo "@phone")
