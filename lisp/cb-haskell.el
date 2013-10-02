@@ -195,6 +195,7 @@ Otherwise insert an arrow at the end of the line."
     (local-set-key (kbd ".") 'cb-hs:smart-dot)
     (local-set-key (kbd ":") 'cb-hs:smart-colon)
     (local-set-key (kbd "|") 'cb-hs:smart-pipe)
+    (local-set-key (kbd "?") (command (smart-insert-operator "?")))
     (local-set-key (kbd "$") (command (smart-insert-operator "$")))))
 
 ;; Configure Smartparens.
