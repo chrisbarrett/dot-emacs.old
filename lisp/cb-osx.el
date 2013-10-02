@@ -30,6 +30,13 @@
 (require 'cb-lib)
 (autoload 'thing-at-point-url-at-point "thingatpt")
 
+(defun osx-play-system-sound (name)
+  "Play alert matching NAME."
+  (when (equal system-type 'darwin)
+    (-when-let (snd (-first (~ s-matches? name)
+                            (f-files "/System/Library/Sounds")))
+      (start-process "appt alert" " appt alert" "afplay" snd))))
+
 (configuration-group
   :when (equal system-type 'darwin)
 
@@ -169,9 +176,7 @@
         (-each (-zip-with 'list title mins)
                (-applify 'cb-appt:growl)))
       ;; Play sound.
-      (let ((snd "/System/Library/Sounds/Blow.aiff"))
-        (when (f-exists? snd)
-          (start-process "appt alert" " appt alert" "afplay" snd)))))
+      (osx-play-system-sound "blow")))
 
 ;;; Open thing at point
 
