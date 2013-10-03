@@ -384,6 +384,12 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
          (s-truncate 40 title)
          cbom:icon))
 
+;; IO [FilePath]
+(defvar cbom:processed-messages nil
+  "A list of messages that have already been processed.
+This is needed to prevent double-ups in the case that the timer
+repeats before all the messages are processed and removed.")
+
 ;; IO ()
 (defun cbom:capture-messages ()
   "Parse and capture unread messages in `cbom:org-mail-folder'.
@@ -393,7 +399,9 @@ Captured messages are marked as read."
   (atomic-change-group
     (dolist (pl (->> (AP cbom:org-mail-folder)
                   (cbom:unprocessed-messages)
+                  (-remove (C (~ -contains? cbom:processed-messages) cdr))
                   (-map 'cbom:parse-message)))
+      (add-to-list 'cbom:processed-messages (plist-get pl :filepath))
       ;; Capture according to kind.
       (cond
        ;; If a message contains a URI, capture using the link template.
