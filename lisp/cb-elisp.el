@@ -89,7 +89,7 @@
                             "cal"
                             "hook-fn"
                             "hook-fns"
-                            "lamba+"
+                            "lambda+"
                             "after"
                             "noflet"
                             "ac-define-source"
