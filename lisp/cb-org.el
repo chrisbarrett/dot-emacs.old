@@ -416,10 +416,10 @@
               org-pomodoro-long-break-sound snd))
 
       ;; Show growl notifications
-      (add-hook 'org-pomodoro-break-finished-hook 'cb-org:pomodoro-growl)
+      (add-hook 'org-pomodoro-break-hook 'cb-org:pomodoro-growl)
       (add-hook 'org-pomodoro-started-hook 'cb-org:pomodoro-growl)
       (add-hook 'org-pomodoro-killed-hook 'cb-org:pomodoro-growl)
-      (add-hook 'org-pomodoro-finished-hook 'cb-org:pomodoro-growl-end-break))
+      (add-hook 'org-pomodoro-break-finished-hook 'cb-org:pomodoro-growl-end-break))
 
     ;; Override functions.
     (after 'org-pomodoro
