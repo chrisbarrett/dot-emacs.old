@@ -422,9 +422,7 @@ Captured messages are marked as read."
        ;; the UI responsive while performing web requests, etc.
        (t
         (deferred:$
-          (deferred:next
-            `(lambda ()
-               (apply 'cbom:format-for-insertion ',pl)))
+          (deferred:next (@ cbom:format-for-insertion) pl)
           (deferred:nextc it
             `(lambda (fmt)
                (save-excursion
