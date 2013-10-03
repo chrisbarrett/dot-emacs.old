@@ -444,20 +444,18 @@
 
       (defun org-pomodoro-update-mode-line ()
         "Set the modeline accordingly to the current state."
-        (unless (eq org-pomodoro-state :none)
-          (let ((s (cl-case org-pomodoro-state
-                     (:none "")
-                     (:pomodoro
-                      (propertize org-pomodoro-format
-                                  'face 'org-pomodoro-mode-line))
-                     (:short-break
-                      (propertize org-pomodoro-short-break-format
-                                  'face 'org-pomodoro-mode-line-break))
-                     (:long-break
-                      (propertize org-pomodoro-long-break-format
-                                  'face 'org-pomodoro-mode-line-break)))))
-
-            (setq org-pomodoro-mode-line
+        (setq org-pomodoro-mode-line
+              (unless (eq org-pomodoro-state :none)
+                (let ((s (cl-case org-pomodoro-state
+                           (:pomodoro
+                            (propertize org-pomodoro-format
+                                        'face 'org-pomodoro-mode-line))
+                           (:short-break
+                            (propertize org-pomodoro-short-break-format
+                                        'face 'org-pomodoro-mode-line-break))
+                           (:long-break
+                            (propertize org-pomodoro-long-break-format
+                                        'face 'org-pomodoro-mode-line-break)))))
                   (list "[" (format s (org-pomodoro-minutes)) "] "))))
 
         (force-mode-line-update))
