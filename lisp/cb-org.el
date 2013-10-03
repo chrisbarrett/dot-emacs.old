@@ -589,7 +589,7 @@ Non-nil if modifications where made."
                 (file+headline org-default-notes-file "Tasks")
                 ,(s-unlines
                   "* TODO %?"
-                  ":LOGBOOK:"
+                  ":PROPERTIES:"
                   ":CAPTURED: %U"
                   ":END:")
                 :clock-keep t)
@@ -598,7 +598,7 @@ Non-nil if modifications where made."
                 (file+olp org-default-notes-file "Someday" "Tasks")
                 ,(s-unlines
                   "* MAYBE %?"
-                  ":LOGBOOK:"
+                  ":PROPERTIES:"
                   ":CAPTURED: %U"
                   ":END:")
                 :clock-keep t)
@@ -617,7 +617,46 @@ Non-nil if modifications where made."
                   ":PROPERTIES:"
                   ":STYLE: habit"
                   ":END:"
-                  ":LOGBOOK:"
+                  ":PROPERTIES:"
+                  ":CAPTURED: %U"
+                  ":END:")
+                :clock-keep t)
+
+
+               ("b" "Bill" entry
+                (file+headline org-default-notes-file "Accounts" "Bills")
+                ,(s-unlines
+                  "* TODO %?"
+                  ":PROPERTIES:"
+                  ":CAPTURED: %U"
+                  ":END:")
+                :clock-resume t)
+
+               ("r" "Reading" entry
+                (file+olp org-default-notes-file "Someday" "Readings")
+                ,(s-unlines
+                  "* TODO %i%?"
+                  ":PROPERTIES:"
+                  ":CAPTURED: %U"
+                  ":END:")
+                :clock-keep t)
+
+               ("l" "Link" entry
+                (file+headline org-default-notes-file "Links")
+                ,(s-unlines
+                  "* %c"
+                  ":PROPERTIES:"
+                  ":CAPTURED: %U"
+                  ":END:"
+                  "%i")
+                :immediate-finish t
+                :clock-keep t)
+
+               ("m" "Listening" entry
+                (file+olp org-default-notes-file "Someday" "Listening")
+                ,(s-unlines
+                  "* TODO %i%?"
+                  ":PROPERTIES:"
                   ":CAPTURED: %U"
                   ":END:")
                 :clock-keep t)
@@ -626,7 +665,7 @@ Non-nil if modifications where made."
                 (file+headline org-default-notes-file "Notes")
                 ,(s-unlines
                   "* %i%?"
-                  ":LOGBOOK:"
+                  ":PROPERTIES:"
                   ":CAPTURED: %U"
                   ":END:")
                 :clock-keep t)
@@ -635,7 +674,7 @@ Non-nil if modifications where made."
                 (clock)
                 ,(s-unlines
                   "* %i%?"
-                  ":LOGBOOK:"
+                  ":PROPERTIES:"
                   ":CAPTURED: %U"
                   ":END:")
                 :clock-keep t
@@ -645,7 +684,7 @@ Non-nil if modifications where made."
                 (clock)
                 ,(s-unlines
                   "* %a%?"
-                  ":LOGBOOK:"
+                  ":PROPERTIES:"
                   ":CAPTURED: %U"
                   ":END:")
                 :clock-keep t
@@ -655,7 +694,7 @@ Non-nil if modifications where made."
                 (file+headline (cb-org:project-file) "Tasks")
                 ,(s-unlines
                   "* TODO %?"
-                  ":LOGBOOK:"
+                  ":PROPERTIES:"
                   ":CAPTURED: %U"
                   ":END:")
                 :clock-keep
@@ -665,7 +704,7 @@ Non-nil if modifications where made."
                 (file+headline (cb-org:project-file) "Notes")
                 ,(s-unlines
                   "* %?"
-                  ":LOGBOOK:"
+                  ":PROPERTIES:"
                   ":CAPTURED: %U"
                   ":END:")
                 :clock-keep t
