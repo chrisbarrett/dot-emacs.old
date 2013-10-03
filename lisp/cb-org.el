@@ -374,8 +374,8 @@
   (progn
 
     (setq org-pomodoro-format "• %s"
-          org-pomodoro-short-break-format "B %s"
-          org-pomodoro-long-break-format "LB %s")
+          org-pomodoro-short-break-format "Break %s"
+          org-pomodoro-long-break-format "Break %s")
     (when (equal system-type 'darwin)
       (setq org-pomodoro-audio-player (executable-find "afplay")))
 
