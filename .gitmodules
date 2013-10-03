@@ -25,3 +25,6 @@
 [submodule "lib/whizzytex"]
 	path = lib/whizzytex
 	url = https://github.com/emacsmirror/whizzytex.git
+[submodule "lib/org-pomodoro"]
+	path = lib/org-pomodoro
+	url = git@github.com:chrisbarrett/org-pomodoro.git

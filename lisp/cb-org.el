@@ -366,8 +366,8 @@
         orglink-activate-links '(angle plain)))
 
 ;; `org-pomodoro' adds Pomodoro clocking functions.
+;; I have my own fork, since the original isn't keeping up with pull requests.
 (use-package org-pomodoro
-  :ensure t
   :defer t
   :bind ("<f5>" . org-pomodoro)
   :config
@@ -375,19 +375,10 @@
 
     (setq org-pomodoro-format "• %s"
           org-pomodoro-short-break-format "Break %s"
-          org-pomodoro-long-break-format "Break %s")
-    (when (equal system-type 'darwin)
-      (setq org-pomodoro-audio-player (executable-find "afplay")))
-
-    ;; Run hook at the end of breaks.
-
-    (defvar org-pomodoro-break-finished-hook nil)
-
-    (defadvice org-pomodoro-short-break-finished (after run-hook activate)
-      (run-hooks 'org-pomodoro-break-finished-hook))
-
-    (defadvice org-pomodoro-long-break-finished (after run-hook activate)
-      (run-hooks 'org-pomodoro-break-finished-hook))
+          org-pomodoro-long-break-format "Break %s"
+          org-pomodoro-show-seconds nil
+          ;; The modeline timer is managed in `cb-modeline'.
+          org-pomodoro-show-in-mode-line nil)
 
     ;; Notifications
 
@@ -416,71 +407,11 @@
               org-pomodoro-long-break-sound snd))
 
       ;; Show growl notifications
-      (add-hook 'org-pomodoro-break-hook 'cb-org:pomodoro-growl)
+      (add-hook 'org-pomodoro-finished-hook 'cb-org:pomodoro-growl)
       (add-hook 'org-pomodoro-started-hook 'cb-org:pomodoro-growl)
       (add-hook 'org-pomodoro-killed-hook 'cb-org:pomodoro-growl)
-      (add-hook 'org-pomodoro-break-finished-hook 'cb-org:pomodoro-growl-end-break))
-
-    ;; Override functions.
-    (after 'org-pomodoro
-
-      ;; Pomodoro indicator shows only number of minutes.
-      (defun org-pomodoro-minutes ()
-        "Return the current countdown value in minutes as string."
-        ;; Round up to nearest minute.
-        (->> org-pomodoro-countdown
-          (org-timer-secs-to-hms)
-          (s-split ":")
-          (-drop 1)
-          (s-join ".")
-          (string-to-number)
-          (ceiling)))
-
-      ;; Use custom faces for breaks.
-
-      (defface org-pomodoro-mode-line-break
-        '((t (:foreground "#2aa198"))) ; cyan
-        "Face for pomodoro indicator when on a break.")
-
-      (defun org-pomodoro-update-mode-line ()
-        "Set the modeline accordingly to the current state."
-        (setq org-pomodoro-mode-line
-              (unless (eq org-pomodoro-state :none)
-                (let ((s (cl-case org-pomodoro-state
-                           (:pomodoro
-                            (propertize org-pomodoro-format
-                                        'face 'org-pomodoro-mode-line))
-                           (:short-break
-                            (propertize org-pomodoro-short-break-format
-                                        'face 'org-pomodoro-mode-line-break))
-                           (:long-break
-                            (propertize org-pomodoro-long-break-format
-                                        'face 'org-pomodoro-mode-line-break)))))
-                  (list "[" (format s (org-pomodoro-minutes)) "] "))))
-
-        (force-mode-line-update))
-
-      ;; Do not add the pomodoro to the global modeline.
-      ;; It's part of the modeline format in `cb-modeline'.
-      (defun org-pomodoro-start (&optional state)
-        "Start the `org-pomodoro` timer.
-The argument STATE is optional.  The default state is `:pomodoro`."
-        (when org-pomodoro-timer (cancel-timer org-pomodoro-timer))
-
-        (unless state (setq state :pomodoro))
-        (setq org-pomodoro-state state
-
-              org-pomodoro-countdown
-              (cl-case state
-                (:pomodoro (* 60 org-pomodoro-length))
-                (:short-break (* 60 org-pomodoro-short-break-length))
-                (:long-break (* 60 org-pomodoro-long-break-length)))
-
-              org-pomodoro-timer (run-with-timer t 1 'org-pomodoro-tick))
-
-        (when (eq org-pomodoro-state :pomodoro)
-          (run-hooks 'org-pomodoro-started-hook))
-        (org-pomodoro-update-mode-line)))))
+      (add-hook 'org-pomodoro-short-break-finished-hook 'cb-org:pomodoro-growl-end-break)
+      (add-hook 'org-pomodoro-short-break-finished-hook 'cb-org:pomodoro-growl-end-break))))
 
 ;; Define pairs for org-mode blocks.
 (after 'smartparens
