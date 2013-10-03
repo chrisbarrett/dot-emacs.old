@@ -339,8 +339,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
     (concat
      (if (equal "todo" kind) (concat "TODO " title) title)
      (when scheduled (format "\nSCHEDULED: <%s>" scheduled))
-     (when deadline (format "\nDEADLINE: <%s>" deadline)))))
-  )
+     (when deadline (format "\nDEADLINE: <%s>" deadline))))))
 
 ;; IO ()
 (defun cbom:dispatch-agenda-email ()
