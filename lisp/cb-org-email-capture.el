@@ -319,11 +319,10 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 
    ;; Messages with a URI are always captured as a link.
    (uri
-    (format "[[%s][%s]]" uri
-            (s-truncate
-             70
-             (or (cbom:maybe-download-title-at-uri uri)
-                 uri))))
+    ;; Ensure the title doesn't contain square brackets.
+    (let ((title (s-replace-all '(("[" . "(") ("]" . ")"))
+                                (or (cbom:maybe-download-title-at-uri uri) uri))))
+      (format "[[%s][%s]]" uri (s-truncate 70 title))))
 
    ;; Special diary format. The deadline is interpreted as an end time-stamp.
    ((equal "diary" kind)
