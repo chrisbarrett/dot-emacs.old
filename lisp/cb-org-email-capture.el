@@ -350,16 +350,25 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
       (org-agenda nil key))))
 
 ;; MessagePlist -> IO ()
-(cl-defun cbom:capture (str &key kind tags &allow-other-keys)
+(cl-defun cbom:capture (str &key uri kind tags &allow-other-keys)
   "Read MSG-PLIST and execute the appropriate capture behaviour."
+
   ;; Move to the capture site associated with KIND.
-  (cl-destructuring-bind (&optional key &rest rest_)
-      (-first (C (~ equal kind) s-downcase cadr)
-              org-capture-templates)
-    (org-capture-goto-target (or key "n")))
-  ;; Preprare headline.
+  (org-capture-goto-target
+   (or
+    ;; Capture links with 'link' template.
+    (and uri "l")
+    ;; Search for kind in `org-capture-templates'.
+    (cl-destructuring-bind (&optional key &rest rest_)
+        (-first (C (~ equal kind) s-downcase cadr) org-capture-templates)
+      key)
+    ;; If all else fails, capture as a note.
+    "n"))
+
+  ;; Prepare headline.
   (end-of-line)
   (org-insert-subheading '(16))     ; 16 = at end of list
+
   ;; Insert item.
   (insert str)
   (org-set-tags-to tags)
