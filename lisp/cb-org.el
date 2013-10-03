@@ -1020,10 +1020,12 @@ Switch projects and subprojects from NEXT back to TODO."
               (forward-line)
               (looking-at "-----BEGIN PGP MESSAGE-----")))))
 
-      (hook-fn 'org-ctrl-c-ctrl-c-hook
+      (defun cb-org:decrypt-entry ()
         (when (cb-org:looking-at-pgp-section?)
           (org-decrypt-entry)
-          t))))
+          t))
+
+      (add-hook 'org-ctrl-c-ctrl-c-hook 'cb-org:decrypt-entry)))
 
   ;; `org-attach' adds support for attachments to subtrees as an alternative to
   ;; plain links.
