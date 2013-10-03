@@ -407,8 +407,8 @@ Captured messages are marked as read."
        (t
         (deferred:$
           (deferred:next
-            (lambda ()
-              (apply 'cbom:format-for-insertion ',pl)))
+            `(lambda ()
+               (apply 'cbom:format-for-insertion ',pl)))
           (deferred:nextc it
             `(lambda (fmt)
                (save-excursion
