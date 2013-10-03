@@ -379,6 +379,16 @@
     (when (equal system-type 'darwin)
       (setq org-pomodoro-audio-player (executable-find "afplay")))
 
+    ;; Run hook at the end of breaks.
+
+    (defvar org-pomodoro-break-finished-hook nil)
+
+    (defadvice org-pomodoro-short-break-finished (after run-hook activate)
+      (run-hooks org-pomodoro-break-finished-hook))
+
+    (defadvice org-pomodoro-long-break-finished (after run-hook activate)
+      (run-hooks org-pomodoro-break-finished-hook))
+
     ;; Notifications
 
     (defun cb-org:pomodoro-growl ()
@@ -393,6 +403,11 @@
                (otherwise "Stopped"))
              (f-join cb:assets-dir "org-pomodoro.png")))
 
+    (defun cb-org:pomodoro-growl-end-break ()
+      (growl "Pomodoro"
+             "Break finished"
+             (f-join cb:assets-dir "org-pomodoro.png")))
+
     (when (equal system-type 'darwin)
       ;; Use system sounds for alerts.
       (let ((snd (osx-find-system-sound "purr")))
@@ -401,9 +416,10 @@
               org-pomodoro-long-break-sound snd))
 
       ;; Show growl notifications
+      (add-hook 'org-pomodoro-break-finished-hook 'cb-org:pomodoro-growl)
       (add-hook 'org-pomodoro-started-hook 'cb-org:pomodoro-growl)
       (add-hook 'org-pomodoro-killed-hook 'cb-org:pomodoro-growl)
-      (add-hook 'org-pomodoro-finished-hook 'cb-org:pomodoro-growl))
+      (add-hook 'org-pomodoro-finished-hook 'cb-org:pomodoro-growl-end-break))
 
     ;; Override functions.
     (after 'org-pomodoro
@@ -612,9 +628,7 @@ Non-nil if modifications where made."
       (-each `(("t" "Todo" entry
                 (file+headline org-default-notes-file "Tasks")
                 ,(s-unlines
-                  (concat "* TODO %^{Description}%?    "
-                          ":%^{Context|@computer|@errand|@leisure|@home|@phone|@work}:")
-                  "SCHEDULED: %^{Schedule}t"
+                  "* TODO %?"
                   ":LOGBOOK:"
                   ":CAPTURED: %U"
                   ":END:")
@@ -680,8 +694,7 @@ Non-nil if modifications where made."
                ("T" "Project Task" entry
                 (file+headline (cb-org:project-file) "Tasks")
                 ,(s-unlines
-                  "* TODO %(cb-org:read-string-with-file-ref)%?"
-                  "SCHEDULED: %^{Schedule}t"
+                  "* TODO %?"
                   ":LOGBOOK:"
                   ":CAPTURED: %U"
                   ":END:")
@@ -691,7 +704,7 @@ Non-nil if modifications where made."
                ("N" "Project Note" entry
                 (file+headline (cb-org:project-file) "Notes")
                 ,(s-unlines
-                  "* %i%?"
+                  "* %?"
                   ":LOGBOOK:"
                   ":CAPTURED: %U"
                   ":END:")
