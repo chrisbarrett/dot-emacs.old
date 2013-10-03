@@ -384,10 +384,10 @@
     (defvar org-pomodoro-break-finished-hook nil)
 
     (defadvice org-pomodoro-short-break-finished (after run-hook activate)
-      (run-hooks org-pomodoro-break-finished-hook))
+      (run-hooks 'org-pomodoro-break-finished-hook))
 
     (defadvice org-pomodoro-long-break-finished (after run-hook activate)
-      (run-hooks org-pomodoro-break-finished-hook))
+      (run-hooks 'org-pomodoro-break-finished-hook))
 
     ;; Notifications
 
