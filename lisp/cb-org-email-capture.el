@@ -354,16 +354,9 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
   "Read MSG-PLIST and execute the appropriate capture behaviour."
 
   ;; Move to the capture site associated with KIND.
-  (org-capture-goto-target
-   (or
-    ;; Capture links with 'link' template.
-    (and uri "l")
-    ;; Search for kind in `org-capture-templates'.
-    (cl-destructuring-bind (&optional key &rest rest_)
-        (-first (C (~ equal kind) s-downcase cadr) org-capture-templates)
-      key)
-    ;; If all else fails, capture as a note.
-    "n"))
+  (cl-destructuring-bind (&optional key &rest rest_)
+      (-first (C (~ equal kind) s-downcase cadr) org-capture-templates)
+    (org-capture-goto-target (or key "n")))
 
   ;; Prepare headline.
   (end-of-line)
