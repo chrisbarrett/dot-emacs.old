@@ -82,7 +82,7 @@
 
 (require 'cb-lib)
 (require 'cb-paths)
-(require 'deferred)
+(require 'async)
 (autoload 'org-insert-link "org")
 (autoload 'org-insert-time-stamp "org")
 (autoload 'org-insert-subheading "org")
@@ -350,7 +350,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
       (org-agenda nil key))))
 
 ;; MessagePlist -> IO ()
-(cl-defun cbom:capture (str &key uri kind tags &allow-other-keys)
+(cl-defun cbom:capture (str &key kind tags &allow-other-keys)
   "Read MSG-PLIST and execute the appropriate capture behaviour."
 
   ;; Move to the capture site associated with KIND.
@@ -414,15 +414,18 @@ Captured messages are marked as read."
        ;; Prepare messages for capture in another Emacs process. This keeps
        ;; the UI responsive while performing web requests, etc.
        (t
-        (deferred:$
-          (deferred:next (@ cbom:format-for-insertion) pl)
-          (deferred:nextc it
-            `(lambda (fmt)
-               (save-excursion
-                 (save-window-excursion
-                   (apply 'cbom:capture fmt ',pl)
-                   (apply 'cbom:growl ',pl)
-                   (apply 'cbom:remove-message ',pl)))))))))))
+        (async-start
+         `(lambda ()
+            (package-initialize)
+            (add-to-list 'load-path ,cb:lisp-dir)
+            (require 'cb-org-email-capture)
+            (list ',pl (apply 'cbom:format-for-insertion ',pl)))
+         (lambda+ ((pl fmt))
+           (save-excursion
+             (save-window-excursion
+               (apply 'cbom:capture fmt pl)
+               (apply 'cbom:growl pl)
+               (apply 'cbom:remove-message pl))))))))))
 
 ;;; Timer
 
