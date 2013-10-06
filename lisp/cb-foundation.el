@@ -370,7 +370,11 @@ rather than the app bundle."
 
 (bind-key "C-c C" 'indirect-region)
 
-(bind-key* "C-<backspace>" 'kill-current-buffer)
+(bind-key* "C-<backspace>"
+           (command (funcall
+                     (if (< 1 (length (window-list)))
+                         'kill-buffer-and-window
+                       'kill-buffer))))
 
 (bind-key* "C-/" 'quick-calc)
 
