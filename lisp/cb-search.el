@@ -118,6 +118,16 @@ PRED is a predicate to determine whether search method is currently available."
                (url-hexify-string q))))))
   "List of search methods.")
 
+(cl-defun cbs-define-search-method (&rest spec)
+  "Define a new search method.
+NAME is the user-facing description.
+KEY is used to select it from the menu.
+SEARCH-FUNC is a unary function that will be passed the query string.
+PRED is a predicate to determine whether search method is currently available.
+
+\(fn name key search-func &optional pred)"
+  (add-to-list 'cbs:search-methods (apply 'cbs-search-method spec)))
+
 (defun cbs-search ()
   "Submit a query to a selected search provider."
   (interactive)
