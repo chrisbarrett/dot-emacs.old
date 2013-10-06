@@ -21,7 +21,14 @@
 
 ;;; Commentary:
 
-;; My emacs configuration.
+;; Bootstraps my Emacs configuration.
+;;
+;; Initialises the Emacs package manager then loads all the files in "./lisp".
+;; Each file therein must `provide' itself as an elisp feature.
+;;
+;; This configuration will search for a feature called `personal-config'. This
+;; file can be used to set sensitive variables like passwords and configuration
+;; details. I keep this file in my "~/Dropbox" folder, for example.
 
 ;;; Code:
 
@@ -40,7 +47,7 @@
 (blink-cursor-mode -1)
 (menu-bar-mode (if (display-graphic-p) +1 -1))
 
-;; Increase GC threshold. Computers have lots of memory these days.
+;; Increase GC threshold to 20 MiB. Computers have lots of memory these days.
 (setq gc-cons-threshold 20000000)
 
 (require 'package)
