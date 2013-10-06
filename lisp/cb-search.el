@@ -30,6 +30,7 @@
 (require 'dash-functional)
 (require 's)
 (require 'cb-lib)
+(require 'cb-colour)
 (require 'bind-key)
 
 (defun cbs-search-method
@@ -47,6 +48,11 @@
                   (format "%s: " source-name))))
     (read-string prompt nil t default)))
 
+(defface cbs-key
+  `((t (:foreground ,solarized-hl-red)))
+  "Face for key highlight in search method prompt"
+  :group 'cbs)
+
 (defun cbs:select-method (methods)
   "Prompt the user for a search method."
   (save-excursion
@@ -56,7 +62,7 @@
       (erase-buffer)
       (insert (->> methods
                 (--map (format " [%s] %s"
-                               (cbs-search-method-key it)
+                               (propertize (cbs-search-method-key it) 'face 'cbs-key)
                                (cbs-search-method-name it)))
                 (s-join "\n")))
       (insert "\n")
