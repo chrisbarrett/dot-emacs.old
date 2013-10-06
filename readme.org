@@ -53,7 +53,18 @@ frame and restore the previous state when killed. This behaviour is provided for
 ** Git commands
 =git-gutter+-mode= is enabled for files in git repositories. This allows you to see modified hunks and stage them individually while you're editing.
 
-Common magit commands are available under the =g= prefix key in Evil's normal state.
+Common git commands are available under the =g= prefix key in Evil's normal state, allowing you perform most git actions directly on the buffer you're editing.
+- =g b= - branch manager
+- =g c= - commit
+- =g D= - diff
+- =g l= - log
+- =g n= - next change
+- =g p= - previous change
+- =g P= - push
+- =g r= - reflog
+- =g s= - stage hunk
+- =g x= - reset hunk
+
 ** Org
 Common org-mode commands are bound to the =C-o= global prefix. I use custom org-capture commands with support for project-specific todo files.
 - =M-O= - org agenda
