@@ -37,7 +37,14 @@
      ,@body
      (run-hook-with-args 'cb:color-theme-changed-hook ',sym)))
 
-(configuration-group :when (or (daemonp) (display-graphic-p))
+(defvar solarized-hl-yellow    "#b58900")
+(defvar solarized-hl-orange    "#cb4b16")
+(defvar solarized-hl-red       "#dc322f")
+(defvar solarized-hl-magenta   "#d33682")
+(defvar solarized-hl-violet    "#6c71c4")
+(defvar solarized-hl-blue      "#268bd2")
+(defvar solarized-hl-cyan      "#2aa198")
+(defvar solarized-hl-green     "#859900")
 
 (configuration-group
   :when (or (daemonp) (display-graphic-p))
