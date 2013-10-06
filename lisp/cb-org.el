@@ -60,7 +60,7 @@
 
 ;; Show org agenda with M-O.
 (declare-modal-executor org-agenda-fullscreen
-  :bind "M-O"
+  :bind '("M-O" "<f10>")
   :command (org-agenda-list prefix-arg nil 1))
 
 ;; If we're running in a graphical context, show the agenda on startup.
