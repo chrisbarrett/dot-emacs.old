@@ -57,12 +57,12 @@ Common magit commands are available under the =g= prefix key in Evil's normal st
 ** Org
 Common org-mode commands are bound to the =C-o= global prefix. I use custom org-capture commands with support for project-specific todo files.
 - =M-O= - org agenda
+- =C-o C-s= - search org files
+- =C-o SPC= - org todo list
 - =C-o d= - go to org diary file
-- =C-o K= - capture a task to the project's taskfile
-- =C-o k= - capture todo
 - =C-o n= - go to notes file
 - =C-o p= - go to project task file
-- =C-o t= - show todos
+- =C-o t= - show todos by keyword
 - =C-o v= - tag search
 ** Language Support
 I have sane configurations for several languages and environments:
