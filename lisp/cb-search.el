@@ -32,18 +32,13 @@
 (require 'cb-lib)
 (require 'bind-key)
 
-(defun cbs-search-method (name key search-func &optional pred)
-  "Create a new search method.
-NAME is the user-facing description.
-KEY is used to select it from the menu.
-SEARCH-FUNC is a unary function that will be passed the query string.
-PRED is a predicate to determine whether search method is currently available."
+(defun cbs-search-method
+  (name key search-func &optional pred)
   (list name key search-func pred))
-
-(defun* cbs-search-method-name ((n _ _ _)) n)
-(defun* cbs-search-method-key  ((_ k _ _)) k)
-(defun* cbs-search-method-func ((_ _ f _)) f)
-(defun* cbs-search-method-pred ((_ _ _ p)) p)
+(cl-defun cbs-search-method-name ((n _ _ _)) n)
+(cl-defun cbs-search-method-key  ((_ k _ _)) k)
+(cl-defun cbs-search-method-func ((_ _ f _)) f)
+(cl-defun cbs-search-method-pred ((_ _ _ p)) p)
 
 (defun cbs:read-query (source-name &optional default)
   "Read a query for SOURCE-NAME with an optional DEFAULT."
