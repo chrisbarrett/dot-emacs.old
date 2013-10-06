@@ -127,8 +127,7 @@
 
 ;; Enable auto-complete in haskell buffers.
 (after 'auto-complete
-  (--map (add-to-list 'ac-modes it)
-         cb:haskell-modes))
+  (-each cb:haskell-modes (~ add-to-list 'ac-modes)))
 
 ;; Define custom smart operators for haskell.
 (after 'smart-operator
