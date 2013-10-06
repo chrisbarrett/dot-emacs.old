@@ -48,49 +48,6 @@
                   (format "%s: " source-name))))
     (read-string prompt nil t default)))
 
-(defface cbs-key
-  `((t (:foreground ,solarized-hl-red)))
-  "Face for key highlight in search method prompt"
-  :group 'cbs)
-
-(defun cbs:select-method (methods)
-  "Prompt the user for a search method."
-  (save-excursion
-    (save-window-excursion
-      ;; Create a buffer containing methods.
-      (switch-to-buffer-other-window (get-buffer-create " *Select Search*"))
-      (erase-buffer)
-      (insert (->> methods
-                (--map (format " [%s] %s"
-                               (propertize (cbs-search-method-key it) 'face 'cbs-key)
-                               (cbs-search-method-name it)))
-                (s-join "\n")))
-      (insert "\n")
-      ;; Resize buffer
-      (goto-char (point-min))
-      (fit-window-to-buffer)
-      ;; Read selection from user.
-      (message "Select search method")
-      (cl-loop
-       with done = nil
-       while (not done)
-
-       for key =
-       (let ((inhibit-quit t))
-         (read-char-exclusive))
-
-       for method =
-       (-first (C (~ equal key) string-to-char cbs-search-method-key)
-               methods)
-       do
-       (cond
-        (method
-         (return method))
-        ((-contains? '(?\C-g ?q) key)
-         (setq quit-flag t))
-        (t
-         (message "Invalid key")))))))
-
 (defvar cbs:search-methods
   (list
    (cbs-search-method
@@ -132,16 +89,20 @@ PRED is a predicate to determine whether search method is currently available.
 (defun cbs-search ()
   "Submit a query to a selected search provider."
   (interactive)
+  (message "Select search method")
   (let ((default (or (current-region) (thing-at-point 'symbol)))
-        (m (cbs:select-method (->> cbs:search-methods
-                                ;; Use methods without a predicate or where the
-                                ;; predicate returns non-nil.
-                                (--filter
-                                 (-if-let (p (cbs-search-method-pred it))
-                                     (funcall p)
-                                   t))
-                                (-uniq)
-                                (-sort (-on 'string< 'cbs-search-method-key))))))
+        (m (read-option
+            " *Select Search*"
+            'cbs-search-method-key 'cbs-search-method-name
+            (->> cbs:search-methods
+              ;; Use methods without a predicate or where the
+              ;; predicate returns non-nil.
+              (--filter
+               (-if-let (p (cbs-search-method-pred it))
+                   (funcall p)
+                 t))
+              (-uniq)
+              (-sort (-on 'string< 'cbs-search-method-key))))))
     (funcall (cbs-search-method-func m)
              (cbs:read-query (cbs-search-method-name m)
                              default))))

@@ -496,6 +496,17 @@ If NO-PROPERTIES is non-nil, return the line without text properties."
            (&rest args) (apply 'ido-read-buffer)))
        ad-do-it)))
 
+(defun cb:append-buffer ()
+  "Enter insertion mode at the end of the current buffer."
+  (interactive)
+  (goto-char (point-max))
+  (if (fboundp 'evil-append-line)
+      (evil-append-line 1)
+    (end-of-line)))
+
+;;; ----------------------------------------------------------------------------
+;;; UI
+
 (cl-defun format-progress-bar (title pos length)
   "Format a progress bar with TITLE and pips up to POS along its LENGTH.
 POS should be a number between 1 and LENGTH."
@@ -546,16 +557,57 @@ In batch mode, this just prints a summary instead of progress."
         (let ((message-log-max nil))
           (message "%s" (format-progress-bar title i len))))))
 
-(defun cb:append-buffer ()
-  "Enter insertion mode at the end of the current buffer."
-  (interactive)
-  (goto-char (point-max))
-  (if (fboundp 'evil-append-line)
-      (evil-append-line 1)
-    (end-of-line)))
+(defface option-key
+  `((t (:foreground "red")))
+  "Face for key highlight in search method prompt"
+  :group 'options)
+
+(defun read-option (title key-for-option option-name options)
+  "Prompt the user to select from a list of choices.
+
+* TITLE is the name of the buffer that will be displayed.
+
+* OPTIONS is a list of items to present to the user.
+
+* KEY-FOR-OPTION is a function that returns the key (as a string)
+  to use for a given option.
+
+* OPTION-NAME is a function that returns a string describing a given option."
+  (save-excursion
+    (save-window-excursion
+      ;; Create a buffer containing methods.
+      (switch-to-buffer-other-window (get-buffer-create title))
+      (erase-buffer)
+      (insert (->> options
+                (--map (format " [%s] %s"
+                               (propertize (funcall key-for-option it) 'face 'option-key)
+                               (funcall option-name it)))
+                (s-join "\n")))
+      (insert "\n")
+      ;; Resize buffer
+      (goto-char (point-min))
+      (fit-window-to-buffer)
+      ;; Read selection from user.
+      (cl-loop
+       while t
+
+       for key =
+       (let ((inhibit-quit t))
+         (read-char-exclusive))
+
+       for method =
+       (-first (-compose (~ equal key) 'string-to-char key-for-option)
+               options)
+       do
+       (cond
+        (method
+         (return method))
+        ((-contains? '(?\C-g ?q) key)
+         (setq quit-flag t))
+        (t
+         (message "Invalid key")))))))
 
 ;;; ----------------------------------------------------------------------------
-
 ;;; Growl Notifications
 
 (defvar growl-program "growlnotify")
