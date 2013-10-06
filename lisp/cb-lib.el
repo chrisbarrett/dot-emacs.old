@@ -269,13 +269,14 @@ The original state can be restored by calling (restore) in BODY."
 
 * COMMAND is a function or sexp to evaluate.
 
-* BIND is a key binding used to globally invoke the command.
+* BIND is a key binding or list thereof used to globally invoke the command.
 
 * RESTORE-BINDINGS are key commands that will restore the buffer
 state.  If none are given, BIND will be used as the
 restore key."
   (declare (indent defun))
-  (let ((fname (intern (format "executor:%s" name))))
+  (let ((fname (intern (format "executor:%s" name)))
+        (bindings (if (listp bind) bind `'(,bind))))
     `(progn
        (defun ,fname ()
          ,(format "Auto-generated modal executor for %s" name)
@@ -287,10 +288,12 @@ restore key."
                   (t                           command))
            (delete-other-windows)
            ;; Configure restore bindings.
-           (--each (or ,restore-bindings (list ,bind))
+           (--each (or ,restore-bindings ,bindings)
              (buffer-local-set-key (kbd it) (command (bury-buffer) (restore))))))
 
-       (bind-key* ,bind ',fname))))
+       ;; Create global hotkeys
+       (--each ,bindings
+         (eval `(bind-key* ,it ',',fname))))))
 
 (defmacro true? (sym)
   "Test whether SYM is bound and non-nil."
