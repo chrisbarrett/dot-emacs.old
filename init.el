@@ -135,7 +135,6 @@
 (require 'cb-colour)
 (require 'personal-config nil t)
 
-
 ;; Load remaining config files in the lisp directory.
 ;; Each file must declare a corresponding emacs feature.
 (let* ((files (f-files cb:lisp-dir))
@@ -165,6 +164,7 @@
      (--map (eval `(lambda () (use-package ,it)))))
    :silent? (not verbose?)))
 
+;; Load special files.
 (load (f-join user-emacs-directory "custom.el") t t)
 (load (concat user-emacs-directory "site-file.el") t t)
 
