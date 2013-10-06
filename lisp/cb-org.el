@@ -37,6 +37,7 @@
 (require 'noflet)
 (require 'cb-lib)
 (require 'cb-evil)
+(require 'cb-osx)
 (autoload 'message-send-and-exit "message")
 (autoload 'projectile-project-buffer-names "projectile")
 (autoload 'projectile-project-name "projectile")
