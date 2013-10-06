@@ -96,16 +96,17 @@
     (bind-keys
       :overriding? t
       :map cb-org-map
+
+      "<f6>"    (command (org-capture nil "t"))
+      "<f7>"    'org-clock-goto
+      "<f8>"    'org-capture
+      "<f9>"    'org-agenda
+
       "C-o" 'cb-org-map
       "C-o C-l" 'org-store-link
       "C-o C-b" 'org-iswitchb
-      "C-o C-a" 'org-agenda
       "C-o C-f" 'org-search-view
-      "C-o C-j" 'org-clock-goto
-      "<f7>"    'org-clock-goto
       "C-o d" (command (find-file org-agenda-diary-file))
-      "C-o K" (command (org-capture nil "T"))
-      "C-o k" (command (org-capture nil "t"))
       "C-o n" (command (find-file org-default-notes-file))
 
       "C-o p" (command
