@@ -60,7 +60,6 @@
  x-select-enable-clipboard    t
  font-lock-maximum-decoration t
  ring-bell-function           'ignore
- initial-scratch-message      nil
  truncate-partial-width-windows     nil
  confirm-nonexistent-file-or-buffer nil
  vc-handled-backends          '(Git)
@@ -70,15 +69,12 @@
 (setq-default
  tab-width                    4
  indent-tabs-mode             nil
- fill-column                  80)
+ fill-column                  80
+ default-input-method "TeX"
+ )
 
 (add-hook 'text-mode-hook 'visual-line-mode)
 (icomplete-mode +1)
-(global-set-key (kbd "RET") 'comment-indent-new-line)
-
-;; Set TeX as default alternative input method.
-(setq-default default-input-method "TeX")
-(global-set-key (kbd "C-x C-\\") 'set-input-method)
 
 ;; Encodings
 
@@ -100,14 +96,6 @@
 
 ;;; Exiting Emacs
 
-;; Rebind to C-c k k ("kill") to prevent accidentally exiting when
-;; using Org bindings.
-(bind-keys
-  :overriding? t
-  "C-x C-c" (command (message "Type <C-c k k> to exit Emacs"))
-  "C-c k k" 'cb:exit-emacs-dwim
-  "C-c k e" 'cb:exit-emacs)
-
 (defun cb:exit-emacs ()
   (interactive)
   (when (yes-or-no-p "Kill Emacs? ")
@@ -119,20 +107,6 @@
     (if (daemonp)
         (server-save-buffers-kill-terminal nil)
       (save-buffers-kill-emacs))))
-
-;;; Help commands
-
-(define-prefix-command 'help-find-map)
-(bind-keys
-  "C-h e"   'help-find-map
-  "C-h e e" 'view-echo-area-messages
-  "C-h e f" 'find-function
-  "C-h e k" 'find-function-on-key
-  "C-h e l" 'find-library
-  "C-h e p" 'find-library
-  "C-h e v" 'find-variable
-  "C-h e a" 'apropos
-  "C-h e V" 'apropos-value)
 
 ;;; Narrowing
 
@@ -155,8 +129,6 @@
 (put 'narrow-to-page   'disabled nil)
 (put 'narrow-to-region 'disabled nil)
 
-(bind-key "C-c e e" 'toggle-debug-on-error)
-
 ;;; Editing Advice
 
 (defun* sudo-edit (&optional (file (buffer-file-name)))
@@ -175,8 +147,6 @@
      ((and (yes-or-no-p "Edit file with sudo?  ")
            (find-alternate-file (concat "/sudo:root@localhost:" file)))
       (add-hook 'kill-buffer-hook 'tramp-cleanup-this-connection nil t)))))
-
-(bind-key* "C-x e" 'sudo-edit)
 
 (hook-fn 'find-file-hook
   "Offer to create a file with sudo if necessary."
@@ -308,7 +278,6 @@
 
 ;;; Hippie-expand
 
-(bind-key "M-/" 'hippie-expand)
 (setq hippie-expand-try-functions-list
       '(try-expand-dabbrev
         try-expand-dabbrev-all-buffers
@@ -361,22 +330,54 @@
     (goto-char (point-min))
     (shrink-window-if-larger-than-buffer)))
 
-(bind-key "C-c C" 'indirect-region)
-
-(bind-key* "C-<backspace>"
-           (command (funcall
-                     (if (< 1 (length (window-list)))
-                         'kill-buffer-and-window
-                       'kill-buffer))))
-
-(bind-key* "C-/" 'quick-calc)
-
-(bind-key* "S-SPC" 'execute-extended-command)
+;;; Global keys
 
 (bind-keys
+  :overriding? t
+
+  "C-/"   'quick-calc
+  "S-SPC" 'execute-extended-command
+  "C-x e" 'sudo-edit
+  "M-/"   'hippie-expand
+
+  ;; Exiting emacs
+  ;;
+  ;; Rebind to C-c k k ("kill") to prevent accidentally exiting when
+  ;; using Org bindings.
+  "C-x C-c" (command (message "Type <C-c k k> to exit Emacs"))
+  "C-c k k" 'cb:exit-emacs-dwim
+  "C-c k e" 'cb:exit-emacs
+
+  ;; Kill buffer and delete its window.
+  "C-<backspace>"
+  (command (funcall
+            (if (< 1 (length (window-list)))
+                'kill-buffer-and-window
+              'kill-buffer))))
+
+(bind-keys
+  "C-c e e"  'toggle-debug-on-error
+  "C-x C-\\" 'set-input-method
+  "RET"      'comment-indent-new-line
+  "C-c C"    'indirect-region
+
   "C-c -" 'text-scale-set
   "C-c +" 'text-scale-set
   "C-c 0" 'text-scale-set)
+
+;;; Help commands
+
+(define-prefix-command 'help-find-map)
+(bind-keys
+  "C-h e"   'help-find-map
+  "C-h e e" 'view-echo-area-messages
+  "C-h e f" 'find-function
+  "C-h e k" 'find-function-on-key
+  "C-h e l" 'find-library
+  "C-h e p" 'find-library
+  "C-h e v" 'find-variable
+  "C-h e a" 'apropos
+  "C-h e V" 'apropos-value)
 
 (provide 'cb-foundation)
 
