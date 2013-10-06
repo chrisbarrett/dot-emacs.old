@@ -71,7 +71,7 @@
       (fit-window-to-buffer)
       ;; Read selection from user.
       (message "Select search method")
-      (loop
+      (cl-loop
        with done = nil
        while (not done)
 
@@ -80,8 +80,8 @@
          (read-char-exclusive))
 
        for method =
-       (--first (equal key (string-to-char (cbs-search-method-key it)))
-                methods)
+       (-first (C (~ equal key) string-to-char cbs-search-method-key)
+               methods)
        do
        (cond
         (method
