@@ -166,6 +166,7 @@
    :silent? (not verbose?)))
 
 (load (f-join user-emacs-directory "custom.el") t t)
+(load (concat user-emacs-directory "site-file.el") t t)
 
 ;; Local Variables:
 ;; byte-compile-warnings: (not cl-functions)

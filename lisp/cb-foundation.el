@@ -249,13 +249,6 @@
   "Buffer menu only shows files on disk."
   (Buffer-menu-toggle-files-only +1))
 
-(hook-fn 'after-init-hook
-  "Ensure the user-home-directory is used as the default path,
-rather than the app bundle."
-  (setq default-directory user-home-directory)
-
-  (load (concat user-emacs-directory "site-file.el") t t))
-
 ;;; View behaviour
 
 (declare-modal-view package-list-packages)
