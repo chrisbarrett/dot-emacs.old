@@ -106,7 +106,7 @@
       "C-o" 'cb-org-map
       "C-o C-l" 'org-store-link
       "C-o C-b" 'org-iswitchb
-      "C-o C-f" 'org-search-view
+      "C-o C-s" 'org-search-view
       "C-o d" (command (find-file org-agenda-diary-file))
       "C-o n" (command (find-file org-default-notes-file))
 
