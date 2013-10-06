@@ -29,11 +29,21 @@
 
 (require 'use-package)
 (require 's)
+(require 'cb-search)
 (autoload 'emr-blank-line? "emr")
 (autoload 'emr-line-matches? "emr")
 (autoload 'haskell-cabal-find-file "haskell-cabal")
 (autoload 'smart-insert-operator "smart-operator")
 (autoload 'smart-insert-operator-hook "smart-operator")
+
+;; Add search commands for hoogle.
+(cbs-define-search-method
+ "hoogle" "h"
+ (lambda (q)
+   (browse-url (concat "http://www.haskell.org/hoogle/?hoogle="
+                       (url-hexify-string q))))
+ (lambda ()
+   (derived-mode-p 'haskell-mode 'inf-haskell-mode)))
 
 ;; <C-c j> switches between src code and test file.
 (after 'haskell-mode
