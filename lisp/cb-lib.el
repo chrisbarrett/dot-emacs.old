@@ -146,9 +146,9 @@
      '(progn ,@body)))
 
 (cl-defmacro configuration-group (&rest
-                                body
-                                &key when unless after
-                                &allow-other-keys)
+                                  body
+                                  &key when unless after
+                                  &allow-other-keys)
   "Declare a configuration group for emacs initialisation.
 
 * WHEN and UNLESS make evaluation of the config conditional.
