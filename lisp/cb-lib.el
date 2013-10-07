@@ -709,6 +709,23 @@ timeout period will not require the password again."
          ;; required and we can call the command with sudo prefixed.
          (,fn (format "sudo %s" ,cmd) ,@args)))))
 
+;;; ----------------------------------------------------------------------------
+
+(defun openssl-generate-password (length)
+  "Generate a password with a given LENGTH."
+  (interactive (list (read-number "Password length: " 32)))
+  (let ((pass
+         (--> (%-string "openssl" "rand" "-base64" (number-to-string length))
+           ;; The encoding process will pad with '=' characters to reach a
+           ;; length divisible by 4 bytes. Drop this padding.
+           (substring it 0 length))))
+    (cond
+     ((interactive-p)
+      (kill-new pass)
+      (message "Password copied to kill ring."))
+     (t
+      pass))))
+
 (provide 'cb-lib)
 
 ;; Local Variables:
