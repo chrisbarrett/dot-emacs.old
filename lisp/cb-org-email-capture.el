@@ -227,45 +227,45 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
          (subject (cbom:message-header-value "subject" msg))
          (uri (cbom:find-uri body)))
     ;; Construct a plist of parsed values.
-     (list :uri uri
-           :subject subject
-           :title (->> lns
-                    (-remove (~ s-matches? (rx bol (or "s" "d" "t") (+ space))))
-                    (s-join "\n"))
-           :scheduled scheduled
-           :filepath path
+    (list :uri uri
+          :subject subject
+          :title (->> lns
+                   (-remove (~ s-matches? (rx bol (or "s" "d" "t") (+ space))))
+                   (s-join "\n"))
+          :scheduled scheduled
+          :filepath path
 
-           :deadline (->> lns
-                       (-keep (~ cbom:match-directive "d"))
-                       (car)
-                       (cbom:parse-date))
-           :tags
-           (->> lns
-             (-keep (~ cbom:match-directive "t"))
-             (-mapcat 's-split-words)
-             (-distinct))
-           ;; Now that the message body is entirely parsed we can determine what
-           ;; form of data we're capturing. This allows the user to get away with
-           ;; setting an empty subject most of the time.
-           :kind
-           (cond
-            (uri "link")
-            ((and (s-blank? subject) scheduled)
-             "diary")
-            ((s-blank? subject)
-             "note")
-            ((s-matches? (rx bol "book") subject)
-             "reading")
-            ((s-matches? (rx bol (or "song" "music" "album")) subject)
-             "listening")
-            ((s-matches? (rx bol (or "diary" "calendar" "appt" "appointment"))
-                         subject)
-             "diary")
-            ((s-matches? (rx bol "agenda") subject)
-             "agenda")
+          :deadline (->> lns
+                      (-keep (~ cbom:match-directive "d"))
+                      (car)
+                      (cbom:parse-date))
+          :tags
+          (->> lns
+            (-keep (~ cbom:match-directive "t"))
+            (-mapcat 's-split-words)
+            (-distinct))
+          ;; Now that the message body is entirely parsed we can determine what
+          ;; form of data we're capturing. This allows the user to get away with
+          ;; setting an empty subject most of the time.
+          :kind
+          (cond
+           (uri "link")
+           ((and (s-blank? subject) scheduled)
+            "diary")
+           ((s-blank? subject)
+            "note")
+           ((s-matches? (rx bol "book") subject)
+            "reading")
+           ((s-matches? (rx bol (or "song" "music" "album")) subject)
+            "listening")
+           ((s-matches? (rx bol (or "diary" "calendar" "appt" "appointment"))
+                        subject)
+            "diary")
+           ((s-matches? (rx bol "agenda") subject)
+            "agenda")
 
-            (t
-             (s-downcase subject))))))
+           (t
+            (s-downcase subject))))))
 
 (cl-defun cbom:validate-message-plist (&key uri kind &allow-other-keys)
   (when uri
