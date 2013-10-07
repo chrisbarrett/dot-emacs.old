@@ -388,7 +388,8 @@
       (growl "Pomodoro"
              (cl-case org-pomodoro-state
                (:pomodoro (format "Timer started (%s/%s)"
-                                  (1+ org-pomodoro-count)
+                                  (mod (1+ org-pomodoro-count)
+                                       org-pomodoro-long-break-frequency)
                                   org-pomodoro-long-break-frequency))
                (:short-break (format "Short break" org-pomodoro-short-break-length))
                (:long-break  (format "Long break" org-pomodoro-long-break-length))
