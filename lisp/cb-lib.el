@@ -652,7 +652,8 @@ as their first parameter.")
 
 (defun %-string (command &rest arguments)
   "Run COMMAND with ARGUMENTS, returning its output as a string."
-  (shell-command-to-string (concat command " " (s-join " " arguments))))
+  (s-trim-right
+   (shell-command-to-string (concat command " " (s-join " " arguments)))))
 
 (defun %-async (command &rest arguments)
   "Run COMMAND with ARGUMENTS asynchronously."
