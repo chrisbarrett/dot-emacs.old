@@ -378,6 +378,7 @@
     (setq org-pomodoro-format "• %s"
           org-pomodoro-short-break-format "Break %s"
           org-pomodoro-long-break-format "Break %s"
+          org-pomodoro-long-break-length 25
           org-pomodoro-show-seconds nil
           ;; The modeline timer is managed in `cb-modeline'.
           org-pomodoro-show-in-mode-line nil)
