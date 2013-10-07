@@ -335,6 +335,7 @@
 (bind-keys
   :overriding? t
 
+  "<f2>"  'calc
   "C-/"   'quick-calc
   "S-SPC" 'execute-extended-command
   "C-x e" 'sudo-edit
