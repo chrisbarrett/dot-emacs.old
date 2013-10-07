@@ -391,8 +391,8 @@
                                   (mod (1+ org-pomodoro-count)
                                        org-pomodoro-long-break-frequency)
                                   org-pomodoro-long-break-frequency))
-               (:short-break (format "Short break" org-pomodoro-short-break-length))
-               (:long-break  (format "Long break" org-pomodoro-long-break-length))
+               (:short-break "Short break")
+               (:long-break  "Long break")
                (otherwise "Stopped"))
              (f-join cb:assets-dir "org-pomodoro.png")))
 
