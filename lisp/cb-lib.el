@@ -453,10 +453,6 @@ Delete the buffer if it was not already visited."
                ;; Unconditionally kill the buffer.
                (kill-buffer)))))))))
 
-(defun make-uuid ()
-  "Generate a UUID using the uuid utility."
-  (s-trim (shell-command-to-string "uuidgen")))
-
 (cl-defun buffer-string-no-properties (&optional (buffer (current-buffer)))
   "Return the contents of BUFFER without text properties.
 If BUFFER is nil, the current buffer is used."
@@ -711,7 +707,7 @@ timeout period will not require the password again."
 
 ;;; ----------------------------------------------------------------------------
 
-(defun openssl-generate-password (length)
+(defun generate-password (length)
   "Generate a password with a given LENGTH."
   (interactive (list (read-number "Password length: " 32)))
   (let ((pass
@@ -725,6 +721,18 @@ timeout period will not require the password again."
       (message "Password copied to kill ring."))
      (t
       pass))))
+
+(defun make-uuid ()
+  "Generate a UUID using the uuid utility."
+  (s-trim (shell-command-to-string "uuidgen")))
+
+;;; ----------------------------------------------------------------------------
+
+(defun euro-date->iso-date (str)
+  "Convert a date STR of form dd/mm/yy to yy-mm-dd."
+  (cl-destructuring-bind (day month year)
+      (s-split "/" str)
+    (format "%s-%s-%s" year month day)))
 
 (provide 'cb-lib)
 
