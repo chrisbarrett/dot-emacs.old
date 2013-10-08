@@ -92,14 +92,11 @@ If this buffer is a member of `cb:kill-buffer-ignored-list, bury it rather than 
   (aset buffer-display-table ?\^M [])
   (aset buffer-display-table ?\^L []))
 
-(defun cb:timestamp ()
-  (format-time-string "%Y%m%d.%H%M" nil t))
-
 ;;;###autoload
 (defun insert-timestamp ()
   "Insert a package-conformant cb:timestamp, of the format YYYYMMDD.HHMM at point."
   (interactive)
-  (insert (cb:timestamp)))
+  (insert (format-time-string "%Y%m%d.%H%M" nil t)))
 
 ;;;###autoload
 (defun indent-buffer ()
@@ -183,11 +180,10 @@ With prefix argument ARG, justify text."
     (-map 'cadr)))
 
 ;;;###autoload
-(defun* show-autoloads (&optional (buffer (current-buffer)))
+(cl-defun show-autoloads (&optional (buffer (current-buffer)))
   "Find the autoloaded definitions in BUFFER"
   (interactive)
-  (-if-let (results (--map (s-append "\n" it)
-                           (cb:find-autoloads buffer)))
+  (-if-let (results (-map (~ s-append "\n") (cb:find-autoloads buffer)))
     (with-output-to-temp-buffer "*autoloads*"
       (-each results 'princ))
 
@@ -269,26 +265,6 @@ Repeated invocations toggle between the two most recently open buffers."
       (-map 'symbol-name
             (filter-atoms (-orfn 'custom-variable-p 'special-variable-p)))))))
   (insert (pp-to-string (eval variable))))
-
-;; Key bindings.
-
-(bind-keys
-  "C-c k b"  'clean-buffers
-  "C-<up>"   'move-line-up
-  "C-<down>" 'move-line-down
-  "s-f"      'cb:rotate-buffers
-  "C-x C-o"  'other-window)
-
-(define-prefix-command 'cb:insertion-map)
-(global-set-key (kbd "C-c i") 'cb:insertion-map)
-(bind-keys
-  :overriding? t
-  "C-c i f" 'insert-file
-  "C-c i v" 'insert-variable
-  "C-c i #" 'insert-shebang
-  "C-c i t" 'insert-timestamp)
-
-(define-key prog-mode-map (kbd "M-q") 'indent-dwim)
 
 (provide 'cb-commands)
 

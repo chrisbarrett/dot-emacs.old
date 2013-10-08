@@ -28,6 +28,7 @@
 
 (require 'use-package)
 (require 'cb-lib)
+(require 'cb-commands)
 (require 'cb-paths)
 (require 'noflet)
 
@@ -354,7 +355,14 @@
   (command (funcall
             (if (< 1 (length (window-list)))
                 'kill-buffer-and-window
-              'kill-buffer))))
+              'kill-buffer)))
+
+  "C-c k b"  'clean-buffers
+  "C-<up>"   'move-line-up
+  "C-<down>" 'move-line-down
+  "s-f"      'cb:rotate-buffers
+  "C-x C-o"  'other-window)
+
 
 (bind-keys
   "C-c e e"  'toggle-debug-on-error
@@ -366,7 +374,6 @@
   "C-c +" 'text-scale-set
   "C-c 0" 'text-scale-set)
 
-;;; Help commands
 
 (define-prefix-command 'help-find-map)
 (bind-keys
@@ -379,6 +386,16 @@
   "C-h e v" 'find-variable
   "C-h e a" 'apropos
   "C-h e V" 'apropos-value)
+
+(define-prefix-command 'cb:insertion-map)
+(bind-keys
+  "C-c i"   'cb:insertion-map
+  "C-c i f" 'insert-file
+  "C-c i v" 'insert-variable
+  "C-c i #" 'insert-shebang
+  "C-c i t" 'insert-timestamp)
+
+(define-key prog-mode-map (kbd "M-q") 'indent-dwim)
 
 (provide 'cb-foundation)
 
