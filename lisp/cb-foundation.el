@@ -315,9 +315,9 @@
 
 (defun indirect-region (start end)
   "Edit the current region in another buffer.
-    If the buffer-local variable `indirect-mode-name' is not set, prompt
-    for mode name to choose for the indirect buffer interactively.
-    Otherwise, use the value of said variable as argument to a funcall."
+If the buffer-local variable `indirect-mode-name' is not set, prompt
+for mode name to choose for the indirect buffer interactively.
+Otherwise, use the value of said variable as argument to a funcall."
   (interactive "r")
   (let ((buffer-name (generate-new-buffer-name "*indirect*"))
         (mode
