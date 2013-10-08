@@ -352,10 +352,11 @@
 
   ;; Kill buffer and delete its window.
   "C-<backspace>"
-  (command (funcall
-            (if (< 1 (length (window-list)))
-                'kill-buffer-and-window
-              'kill-buffer)))
+  (command (cond ((< 1 (length (window-list)))
+                  (kill-current-buffer)
+                  (delete-window))
+                 (t
+                  (kill-current-buffer))))
 
   "C-c k b"  'clean-buffers
   "C-<up>"   'move-line-up
