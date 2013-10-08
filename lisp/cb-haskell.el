@@ -154,7 +154,8 @@
   (defun cb-hs:smart-colon ()
     "Insert either a type binding colon pair or a cons colon."
     (interactive)
-    (if (s-matches? (rx bol (* space) (+ (not (any space "("))) (* space) eol)
+    (if (s-matches? (rx bol (* space) (? ",") (* space)
+                        (+ (not (any space "("))) (* space) eol)
                     (buffer-substring (line-beginning-position) (point)))
         (atomic-change-group
           (just-one-space)
