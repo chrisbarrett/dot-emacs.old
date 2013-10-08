@@ -270,12 +270,18 @@
       (url-copy-file
        "http://ulrichdesign.ca/wp-content/uploads/2011/11/YOU-LACK-discipline.jpg"
        img))
-    (insert-image (create-image img))
-    (user-error "Arrow keys are not the Emacs Way")))
-
-(--each '([up] [left] [down] [right])
-  (eval `(hook-fns '(prog-mode-hook text-mode-hook)
-           (local-set-key ,it 'you-lack-discipline))))
+    ;; Insert in a new window.
+    (let ((buf (get-buffer-create "* ADMONISHMENT *")))
+      (select-window
+       (or (display-buffer-reuse-window buf nil)
+           (display-buffer-pop-up-window buf nil)))
+      (with-current-buffer buf
+        (help-mode)
+        (read-only-mode +1)
+        (let ((inhibit-read-only t))
+          (delete-region (point-min) (point-max))
+          (insert-image (create-image img)))))
+    (message "Arrow keys are not the Emacs Way")))
 
 ;;; Hippie-expand
 
@@ -374,6 +380,14 @@
   "C-c -" 'text-scale-set
   "C-c +" 'text-scale-set
   "C-c 0" 'text-scale-set)
+
+
+(bind-keys
+  :hook '(text-mode-hook prog-mode-hook)
+  "<left>"  'you-lack-discipline
+  "<right>" 'you-lack-discipline
+  "<up>"    'you-lack-discipline
+  "<down>"  'you-lack-discipline)
 
 
 (define-prefix-command 'help-find-map)
