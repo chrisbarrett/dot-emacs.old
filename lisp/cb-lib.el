@@ -329,20 +329,30 @@ Find the first window where PRED-FORM is not nil."
 
 ;; -----------------------------------------------------------------------------
 
-(cl-defmacro bind-keys (&rest bindings &key map overriding? &allow-other-keys)
+(cl-defmacro bind-keys (&rest
+                        bindings
+                        &key map hook overriding?
+                        &allow-other-keys)
   "Variadic form of `bind-key'.
 * MAP is an optional keymap.  The bindings will only be enabled when this keymap is active.
 
 * OVERRIDING? prevents other maps from overriding the binding.  It
   uses `bind-key*' instead of the default `bind-key'.
 
+* HOOK is a hook or list of hooks in which the bindings will be activated.
+
 * BINDINGS are alternating strings and functions to use for keybindings."
   (declare (indent 0))
   (let ((bs (->> bindings (-partition-all 2) (--remove (keywordp (car it))))))
     `(progn ,@(cl-loop for (k f) in bs collect
-                       (if overriding?
-                           `(bind-key* ,k ,f)
-                         `(bind-key ,k ,f ,map))))))
+                       (cond
+                        (overriding?
+                         `(bind-key* ,k ,f))
+                        (hook
+                         `(hook-fns ,(-listify hook)
+                            (local-set-key ,k ,f)))
+                        (t
+                         `(bind-key ,k ,f ,map)))))))
 
 (defmacro define-keys (keymap &rest bindings)
   "Variadic form of `define-key'.
