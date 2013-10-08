@@ -716,7 +716,7 @@ timeout period will not require the password again."
            ;; length divisible by 4 bytes. Drop this padding.
            (substring it 0 length))))
     (cond
-     ((interactive-p)
+     ((called-interactively-p 'any)
       (kill-new pass)
       (message "Password copied to kill ring."))
      (t
