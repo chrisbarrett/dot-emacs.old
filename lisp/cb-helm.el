@@ -62,11 +62,9 @@
         :overriding? t
         "C-SPC"   'helm-mini
         "C-x C-b" 'helm-buffers-list
-        "M-a" 'helm-apropos
         "M-b" 'helm-buffers-list
         "M-i" 'helm-imenu
-        "M-f" 'helm-etags-select
-        "M-m" 'helm-man-woman))))
+        "M-f" 'helm-etags-select))))
 
 ;; `helm-adaptive'
 (use-package helm-adaptative
