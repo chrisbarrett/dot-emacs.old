@@ -30,6 +30,7 @@
 (require 'noflet)
 (require 'cb-lib)
 (require 'cb-evil)
+(require 'cb-search)
 (autoload 'sp-kill-sexp "smartparens")
 
 (defun cb:special-elisp-buffer? ()
