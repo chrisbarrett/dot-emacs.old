@@ -33,15 +33,21 @@
 (require 'cb-colour)
 (require 'bind-key)
 
-(defun cbs-search-method
-  (name key search-func &optional pred)
-  (list name key search-func pred))
+(cl-defun cbs-search-method
+   (&key name key command
+          (when (lambda () t))
+          (unless (lambda () nil)))
+  (list name key command
+        `(lambda ()
+           (and (funcall ',when)
+                (not (funcall ',unless))))))
+
 (cl-defun cbs-search-method-name ((n _ _ _)) n)
 (cl-defun cbs-search-method-key  ((_ k _ _)) k)
 (cl-defun cbs-search-method-func ((_ _ f _)) f)
 (cl-defun cbs-search-method-pred ((_ _ _ p)) p)
 
-(defun cbs:read-query (source-name &optional default)
+(defun cbs-read (source-name &optional default)
   "Read a query for SOURCE-NAME with an optional DEFAULT."
   (let ((prompt (if default
                     (format "%s (default: %s): " source-name default)
@@ -51,30 +57,52 @@
 (defvar cbs:search-methods
   (list
    (cbs-search-method
-    "Google Search" "s"
+    :name "Google Search"
+    :key "s"
+    :command
     (lambda (q)
-      (browse-url
-       (concat "http://www.google.com/search?ie=UTF-8&oe=UTF-8&q="
-               (url-hexify-string q)))))
+      (let ((helm-pattern q))
+        (helm-google-suggest))))
+
    (cbs-search-method
-    "Google Images" "i"
+    :name "Google Images"
+    :key "i"
+    :command
     (lambda (q)
       (browse-url
        (concat "https://www.google.co.nz/search?tbm=isch&q="
-               (url-hexify-string q)))))
+               (url-hexify-string (cbs-read "Google Images" q))))))
+
    (cbs-search-method
-    "YouTube" "y"
+    :name "YouTube"
+    :key "y"
+    :command
     (lambda (q)
       (browse-url
        (concat "http://www.youtube.com/results?search_query="
-               (url-hexify-string q)))))
+               (url-hexify-string (cbs-read "YouTube" q))))))
+
    (cbs-search-method
-    "Wikipedia" "w"
+    :name "Wikipedia"
+    :key "w"
+    :command
     (lambda (q)
       (browse-url
        (concat "http://en.wikipedia.org/w/index.php?search="
-               (url-hexify-string q))))))
-  "List of search methods.")
+               (url-hexify-string (cbs-read "Wikipedia" q))))))
+
+   (cbs-search-method
+    :name "Man Page"
+    :key "m"
+    :command
+    (lambda (q)
+      (let ((helm-pattern q))
+        (helm-man-woman nil)))
+    :unless
+    (lambda ()
+      (derived-mode-p 'text-mode))))
+
+  "The list of search methods used by `cbs-search'.")
 
 (cl-defun cbs-define-search-method (&rest spec)
   "Define a new search method.
@@ -83,29 +111,29 @@ KEY is used to select it from the menu.
 SEARCH-FUNC is a unary function that will be passed the query string.
 PRED is a predicate to determine whether search method is currently available.
 
-\(fn name key search-func &optional pred)"
+\(fn &key name key command when unless)"
   (add-to-list 'cbs:search-methods (apply 'cbs-search-method spec)))
 
 (defun cbs-search ()
   "Submit a query to a selected search provider."
   (interactive)
   (message "Select search method")
-  (let ((default (or (current-region) (thing-at-point 'symbol)))
-        (m (read-option
-            " *Select Search*"
-            'cbs-search-method-key 'cbs-search-method-name
-            (->> cbs:search-methods
-              ;; Use methods without a predicate or where the
-              ;; predicate returns non-nil.
-              (--filter
-               (-if-let (p (cbs-search-method-pred it))
-                   (funcall p)
-                 t))
-              (-uniq)
-              (-sort (-on 'string< 'cbs-search-method-key))))))
-    (funcall (cbs-search-method-func m)
-             (cbs:read-query (cbs-search-method-name m)
-                             default))))
+  (let ((default-search-term
+          (or (current-region) (thing-at-point 'symbol)))
+        (m
+         (read-option
+          " *Select Search*"
+          'cbs-search-method-key 'cbs-search-method-name
+          (->> cbs:search-methods
+            ;; Use methods without a predicate or where the
+            ;; predicate returns non-nil.
+            (--filter
+             (-if-let (p (cbs-search-method-pred it))
+                 (funcall p)
+               t))
+            (-uniq)
+            (-sort (-on 'string< (C s-upcase cbs-search-method-key)))))))
+    (funcall (cbs-search-method-func m) default-search-term)))
 
 (bind-key* "M-s" 'cbs-search)
 
