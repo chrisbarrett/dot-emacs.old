@@ -238,6 +238,14 @@ This directory tree will be added to the load path if ADD-PATH is non-nil."
         (t
          (--map (deep-replace target rep it) tree))))
 
+(defun assoc-in (path alist)
+  "Traverse ALIST along the given PATH of keys using `assoc'.
+Return nil if the path cannot be followed."
+  (if (and path alist)
+      (cl-destructuring-bind (cur &rest next) path
+        (assoc-in next (cdr (assoc cur alist))))
+    alist))
+
 (defmacro with-window-restore (&rest body)
   "Declare an action that will eventually restore window state.
 The original state can be restored by calling (restore) in BODY."
