@@ -38,10 +38,13 @@
 
 ;; Add search commands for hoogle.
 (cbs-define-search-method
- "hoogle" "h"
+ :name "hoogle"
+ :key "h"
+ :command
  (lambda (q)
    (browse-url (concat "http://www.haskell.org/hoogle/?hoogle="
-                       (url-hexify-string q))))
+                       (url-hexify-string (cbs-read "Hoogle" q)))))
+ :when
  (lambda ()
    (derived-mode-p 'haskell-mode 'inf-haskell-mode)))
 
