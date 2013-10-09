@@ -158,6 +158,48 @@
 
   (add-hook 'evil-find-doc-hook (C get-elisp-doc intern)))
 
+(after 'cb-search
+
+  (cbs-define-search-method
+   :name "Apropos"
+   :key "a"
+   :command
+   (lambda (_)
+     (call-interactively 'helm-apropos))
+   :when
+   (lambda ()
+     (apply 'derived-mode-p cb:elisp-modes)))
+
+  (cbs-define-search-method
+   :name "Function"
+   :key "f"
+   :command
+   (lambda (_)
+     (call-interactively 'find-function))
+   :when
+   (lambda ()
+     (apply 'derived-mode-p cb:elisp-modes)))
+
+  (cbs-define-search-method
+   :name "Library"
+   :key "l"
+   :command
+   (lambda (_)
+     (call-interactively 'find-library))
+   :when
+   (lambda ()
+     (apply 'derived-mode-p cb:elisp-modes)))
+
+  (cbs-define-search-method
+   :name "Variable"
+   :key "v"
+   :command
+   (lambda (_)
+     (call-interactively 'find-variable))
+   :when
+   (lambda ()
+     (apply 'derived-mode-p cb:elisp-modes))))
+
 (hook-fn 'minibuffer-setup-hook
   "Enable Paredit during eval-expression."
   (when (equal this-command 'eval-expression)
