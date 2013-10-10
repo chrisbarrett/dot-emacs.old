@@ -598,7 +598,7 @@ Non-nil if modifications where made."
                 :clock-keep t)
 
                ("s" "Someday" entry
-                (file+olp org-default-notes-file "Someday" "Tasks")
+                (file+olp org-default-notes-file "Someday")
                 ,(s-unlines
                   "* MAYBE %?"
                   ":PROPERTIES:"
