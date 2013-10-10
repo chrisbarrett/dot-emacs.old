@@ -347,6 +347,7 @@ Otherwise, use the value of said variable as argument to a funcall."
   "S-SPC" 'execute-extended-command
   "C-x e" 'sudo-edit
   "M-/"   'hippie-expand
+  "C-x <backspace>" 'kill-current-buffer
 
   ;; Exiting emacs
   ;;
