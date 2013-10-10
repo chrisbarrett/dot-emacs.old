@@ -80,8 +80,6 @@
         (message "Region yanked as quote."))
     (error "No region is active, so no quote could be yanked")))
 
-(global-set-key (kbd "C-o y") 'cb-org:yank-region-as-quote)
-
 ;; `org-mode' is a suite of editing and management tools centred around
 ;; human-readable text files.
 (use-package org
@@ -107,6 +105,7 @@
       "C-o C-l" 'org-store-link
       "C-o C-b" 'org-iswitchb
       "C-o C-s" 'org-search-view
+      "C-o y"   'cb-org:yank-region-as-quote
       "C-o d" (command (find-file org-agenda-diary-file))
       "C-o n" (command (find-file org-default-notes-file))
 
