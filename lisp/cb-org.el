@@ -80,7 +80,7 @@
         (message "Region yanked as quote."))
     (error "No region is active, so no quote could be yanked")))
 
-(global-set-key (kbd "C-c y") 'cb-org:yank-region-as-quote)
+(global-set-key (kbd "C-o y") 'cb-org:yank-region-as-quote)
 
 ;; `org-mode' is a suite of editing and management tools centred around
 ;; human-readable text files.
