@@ -1,13 +1,12 @@
-# -*- mode: snippet -*-
-# name: elisp file skeleton
 # key: skel
+# name: elisp file skeleton
 # --
 ;;; `(file-name-nondirectory buffer-file-name)` --- $1
 
 ;; Copyright (C) `(format-time-string "%Y")` `user-full-name`
 
 ;; Author: `user-full-name` <`user-mail-address`>
-;; Version: `(insert-timestamp)`
+;; Version: 0.1
 
 ;; This file is not part of GNU Emacs.
 
