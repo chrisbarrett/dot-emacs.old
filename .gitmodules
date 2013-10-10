@@ -28,3 +28,6 @@
 [submodule "lib/org-pomodoro"]
 	path = lib/org-pomodoro
 	url = git@github.com:chrisbarrett/org-pomodoro.git
+[submodule "lib/helm-dictionary"]
+	path = lib/helm-dictionary
+	url = git://github.com/chrisbarrett/helm-dictionary.git
