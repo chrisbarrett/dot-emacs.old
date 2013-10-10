@@ -80,6 +80,9 @@
   :bind (("M-j" . helm-projectile))
   :idle (require 'helm-projectile))
 
+(use-package helm-dictionary
+  :commands (helm-dictionary-maori))
+
 ;; `helm-files' provides file-search functions for helm.
 (use-package helm-files
   :commands (helm-find-files-1 helm-find-files)
