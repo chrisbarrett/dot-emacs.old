@@ -77,24 +77,24 @@ I have sane configurations for several languages and environments:
 - Python
 - SuperCollider
 - C
-** Chorded key bindings
+** Key bindings
 Since Evil frees up the Meta key, I use =M-/key/= to display modal views such as terminals, w3m, gnus and dired.
-- =C-j= - helm-projectile
-- =M-a= - helm-apropos
-- =M-b= - buffers list with helm
-- =M-d= - shows current file in dired
-- =M-e= - go to URL
-- =M-G= - magit status
-- =M-h= - helm-mini
-- =M-I= - find lisp config file with ido
-- =M-i= - helm-imenu
-- =M-R= - rename symbol at point  (in whole buffer)
-- =M-r= - rename symbol at point (in defun)
-- =M-s= - Search manpage, Google, YouTube, Wikipedia etc.
-- =M-T= - eshell
-- =M-W= - w3m
-- =M-w= - w3m bookmarks
-- =M-Y= - gnus
+- =C-SPC= :: helm-mini
+- =S-SPC= :: execute-extended-command (i.e. =M-x=)
+- =C-RET= :: interactively edit symbol at point
+- =M-RET= :: refactoring commands
+- =M-b= :: buffers list with helm
+- =M-d= :: shows current file in dired
+- =M-e= :: go to URL
+- =M-G= :: magit status
+- =M-I= :: find lisp config file with ido
+- =M-i= :: helm-imenu
+- =M-R= :: rename symbol at point  (in whole buffer)
+- =M-r= :: rename symbol at point (in defun)
+- =M-s= :: Search manpage, Google, YouTube, Wikipedia etc.
+- =M-T= :: eshell
+- =M-W= :: w3m
+- =M-Y= :: gnus
 ** OS X-specific
 =cmd-shift-return= runs OS X's =open= command.
 + URL at point will open in the default browser
