@@ -360,11 +360,14 @@
   :defer t
   :init
   (hook-fns '(prog-mode-hook text-mode-hook comint-mode)
+    (setq orglink-activate-links
+          (if (derived-mode-p 'sgml-mode 'nxml-mode)
+              '(plain)
+            '(angle plain)))
     (unless (derived-mode-p 'org-mode)
       (orglink-mode +1)))
   :config
-  (setq orglink-mode-lighter nil
-        orglink-activate-links '(angle plain)))
+  (setq orglink-mode-lighter nil))
 
 ;; `org-pomodoro' adds Pomodoro clocking functions.
 ;; I have my own fork, since the original isn't keeping up with pull requests.

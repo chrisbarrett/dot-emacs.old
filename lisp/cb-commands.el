@@ -266,6 +266,13 @@ Repeated invocations toggle between the two most recently open buffers."
             (filter-atoms (-orfn 'custom-variable-p 'special-variable-p)))))))
   (insert (pp-to-string (eval variable))))
 
+(defun insert-uuid ()
+  "Insert a GUID at point."
+  (interactive "*")
+  (insert (make-uuid)))
+
+(defalias 'insert-guid 'insert-uuid)
+
 (provide 'cb-commands)
 
 ;;; cb-commands.el ends here
