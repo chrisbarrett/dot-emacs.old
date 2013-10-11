@@ -576,17 +576,18 @@ In batch mode, this just prints a summary instead of progress."
   "Face for key highlight in search method prompt"
   :group 'options)
 
-(defun read-option (title key-for-option option-name options)
+(defun read-option (title option-key-fn option-name-fn options)
   "Prompt the user to select from a list of choices.
+Return the element in OPTIONS corresponding to the user's selection.
 
 * TITLE is the name of the buffer that will be displayed.
 
 * OPTIONS is a list of items to present to the user.
 
-* KEY-FOR-OPTION is a function that returns the key (as a string)
+* OPTION-KEY-FN is a function that returns the key (as a string)
   to use for a given option.
 
-* OPTION-NAME is a function that returns a string describing a given option."
+* OPTION-NAME-FN is a function that returns a string describing a given option."
   (save-excursion
     (save-window-excursion
       ;; Create a buffer containing methods.
@@ -594,8 +595,8 @@ In batch mode, this just prints a summary instead of progress."
       (erase-buffer)
       (insert (->> options
                 (--map (format " [%s] %s"
-                               (propertize (funcall key-for-option it) 'face 'option-key)
-                               (funcall option-name it)))
+                               (propertize (funcall option-key-fn it) 'face 'option-key)
+                               (funcall option-name-fn it)))
                 (s-join "\n")))
       (insert "\n")
       ;; Resize buffer
@@ -610,7 +611,7 @@ In batch mode, this just prints a summary instead of progress."
          (read-char-exclusive))
 
        for method =
-       (-first (-compose (~ equal key) 'string-to-char key-for-option)
+       (-first (-compose (~ equal key) 'string-to-char option-key-fn)
                options)
        do
        (cond
