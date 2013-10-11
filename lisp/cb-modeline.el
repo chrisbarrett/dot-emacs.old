@@ -26,6 +26,7 @@
 
 ;;; Code:
 
+(require 'cb-colour)
 (require 'cb-typefaces)
 (autoload 'vc-git-root "vc-git")
 (autoload 'tramp-dissect-file-name "tramp")
@@ -198,6 +199,14 @@
   "Face for the warning when point is past column 80."
   :group 'modeline)
 
+(defface modeline-org-notes-file-indicator
+  `((t (:foreground
+        ,solarized-hl-magenta
+        :inherit
+        'mode-line-position)))
+  "Face for the indicator showing the name of the current org notes file."
+  :group 'modeline)
+
 (defvar modeline-mail-indicator nil)
 
 (defvar modeline-custom-description-functions nil
@@ -239,6 +248,16 @@ entry in `modeline-custom-description-functions'."
    (:eval (or (and (true? org-pomodoro-mode-line)
                    (s-join "" org-pomodoro-mode-line))
               ""))
+
+   ;; Current org notes file
+   (:eval (or (and (true? org-init-notes-file)
+                   (not (equal org-init-notes-file org-default-notes-file))
+                   (propertize (concat " ["
+                                       (f-filename (f-no-ext org-default-notes-file))
+                                       "] ")
+                               'face 'modeline-org-notes-file-indicator))
+              ""))
+
    ;; --------------------------------------------------------------------------
    ;; File status.
    (:eval
