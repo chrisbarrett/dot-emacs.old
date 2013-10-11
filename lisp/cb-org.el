@@ -48,7 +48,10 @@
 (defvar org-directory (f-join user-home-directory "org"))
 (defvar org-mobile-inbox-for-pull (f-join org-directory "mobile.org"))
 (defvar org-mobile-directory (f-join user-dropbox-directory "Apps" "MobileOrg"))
-(defvar org-default-notes-file (f-join org-directory "notes.org"))
+(defvar org-init-notes-file (f-join org-directory "notes.org")
+  "Captures the original value of the `org-default-notes-file',
+which may be changed interactively by `set-org-default-notes-file'.")
+(defvar org-default-notes-file org-init-notes-file)
 (defvar org-id-locations-file (f-join cb:tmp-dir "org-id-locations"))
 (defvar org-clock-persist-file (f-join user-dropbox-directory ".org-clock-save.el"))
 (defvar org-export-publishing-directory (f-join user-home-directory "Desktop"))
