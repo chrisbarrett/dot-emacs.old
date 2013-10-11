@@ -116,7 +116,7 @@ which may be changed interactively by `set-org-default-notes-file'.")
          ))
     (funcall fn)))
 
-(bind-key* "<f8>" 'cb-org:read-action)
+(bind-key* "<f7>" 'cb-org:read-action)
 
 ;; If we're running in a graphical context, show the agenda on startup.
 (when (or (daemonp) (display-graphic-p))
