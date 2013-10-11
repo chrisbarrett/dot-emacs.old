@@ -48,7 +48,7 @@
 (defvar org-directory (f-join user-home-directory "org"))
 (defvar org-init-notes-file (f-join org-directory "notes.org")
   "Captures the original value of the `org-default-notes-file',
-which may be changed interactively by `set-org-default-notes-file'.")
+which may be changed interactively by `cb-org:set-notes-file'.")
 (defvar org-default-notes-file org-init-notes-file)
 (defvar org-id-locations-file (f-join cb:tmp-dir "org-id-locations"))
 (defvar org-clock-persist-file (f-join user-dropbox-directory ".org-clock-save.el"))
@@ -87,6 +87,16 @@ which may be changed interactively by `set-org-default-notes-file'.")
         (message "Region yanked as quote."))
     (error "No region is active, so no quote could be yanked")))
 
+(defun cb-org:set-notes-file (file)
+    "Select the notes file to use as the default.
+This is especially useful for capture tasks."
+    (interactive
+     (list
+      (let* ((fs (org-files-list))
+             (selected (ido-completing-read "File: " (-map 'f-filename fs))))
+        (-first (C (~ equal selected) f-filename) fs))))
+    (setq org-default-notes-file file))
+
 (defun cb-org:find-diary ()
   (find-file org-agenda-diary-file))
 
@@ -106,6 +116,7 @@ which may be changed interactively by `set-org-default-notes-file'.")
          ("b" "Buffers" org-iswitchb)
          ("c" "Follow Clock" org-clock-goto)
          ("d" "Go to Diary" cb-org:find-diary)
+         ("f" "Set notes file" cb-org:set-notes-file)
          ("k" "Capture" org-capture)
          ("l" "Store Link" org-store-link)
          ("s" "Search" org-search-view)
@@ -433,16 +444,6 @@ which may be changed interactively by `set-org-default-notes-file'.")
 
 ;; Configure org's sub-features only if org-mode is actually loaded.
 (after 'org
-
-  (defun set-org-default-notes-file (file)
-    "Select the notes file to use as the default.
-This is especially useful for capture tasks."
-    (interactive
-     (list
-      (let* ((fs (org-files-list))
-             (selected (ido-completing-read "File: " (-map 'f-filename fs))))
-        (-first (C (~ equal selected) f-filename) fs))))
-    (setq org-default-notes-file file))
 
   ;;; Calendaring functions
 
