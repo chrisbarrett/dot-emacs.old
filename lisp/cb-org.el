@@ -431,6 +431,16 @@
 ;; Configure org's sub-features only if org-mode is actually loaded.
 (after 'org
 
+  (defun set-org-default-notes-file (file)
+    "Select the notes file to use as the default.
+This is especially useful for capture tasks."
+    (interactive
+     (list
+      (let* ((fs (org-files-list))
+             (selected (ido-completing-read "File: " (-map 'f-filename fs))))
+        (-first (C (~ equal selected) f-filename) fs))))
+    (setq org-default-notes-file file))
+
   ;;; Calendaring functions
 
   ;; Functions for calculating Easter.
