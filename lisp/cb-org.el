@@ -105,28 +105,30 @@ This is especially useful for capture tasks."
   (interactive)
   (find-file org-default-notes-file))
 
+(defvar cb-org:widget-options
+  '((" " "Go to Notes" cb-org:find-notes)
+    ("a" "Agenda" executor:org-agenda-fullscreen)
+    ("b" "Buffers" org-iswitchb)
+    ("c" "Follow Clock" org-clock-goto)
+    ("d" "Go to Diary" cb-org:find-diary)
+    ("f" "Set notes file" cb-org:set-notes-file)
+    ("k" "Capture" org-capture)
+    ("l" "Store Link" org-store-link)
+    ("s" "Search" org-search-view)
+    ("t" "Todo List" executor:org-show-todo-list)
+    ("v" "View Tags (todos)" executor:org-tags-view-todos-fullscreen)
+    ("V" "View Tags (all)" executor:org-tags-view-all-fullscreen)
+    ("y" "Yank region as quote" cb-org:yank-region-as-quote))
+  "List of options to be displayed by the `cb-org:read-action'.
+Each element is a list of form /(key desc symbol)/.")
+
 (defun cb-org:read-action ()
   (interactive)
   (cl-destructuring-bind (_ _ fn)
-      (read-option
-       "*Org Actions*"
-       (lambda+ ((k _ _)) k)
-       (lambda+ ((_ s _)) s)
-       '(
-         (" " "Go to Notes" cb-org:find-notes)
-         ("a" "Agenda" executor:org-agenda-fullscreen)
-         ("b" "Buffers" org-iswitchb)
-         ("c" "Follow Clock" org-clock-goto)
-         ("d" "Go to Diary" cb-org:find-diary)
-         ("f" "Set notes file" cb-org:set-notes-file)
-         ("k" "Capture" org-capture)
-         ("l" "Store Link" org-store-link)
-         ("s" "Search" org-search-view)
-         ("t" "Todo List" executor:org-show-todo-list)
-         ("v" "View Tags (todos)" executor:org-tags-view-todos-fullscreen)
-         ("V" "View Tags (all)" executor:org-tags-view-all-fullscreen)
-         ("y" "Yank region as quote" cb-org:yank-region-as-quote)
-         ))
+      (read-option "*Org Actions*"
+                   (lambda+ ((k _ _)) k)
+                   (lambda+ ((_ s _)) s)
+                   cb-org:widget-options)
     (call-interactively fn)))
 
 (bind-keys
