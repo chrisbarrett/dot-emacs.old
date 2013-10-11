@@ -524,120 +524,120 @@ the date TARGET-DAY, TARGET-MONTH each year."
 
       (add-hook 'org-capture-before-finalize-hook 'indent-buffer 'append)
 
-      (-each `(("t" "Todo" entry
-                (file+headline org-default-notes-file "Tasks")
-                ,(s-unlines
-                  "* TODO %?"
-                  ":PROPERTIES:"
-                  ":CAPTURED: %U"
-                  ":END:")
-                :clock-keep t)
+      (--each `(("t" "Todo" entry
+                 (file+headline org-default-notes-file "Tasks")
+                 ,(s-unlines
+                   "* TODO %?"
+                   ":PROPERTIES:"
+                   ":CAPTURED: %U"
+                   ":END:")
+                 :clock-keep t)
 
-               ("s" "Someday" entry
-                (file+olp org-default-notes-file "Someday")
-                ,(s-unlines
-                  "* MAYBE %?"
-                  ":PROPERTIES:"
-                  ":CAPTURED: %U"
-                  ":END:")
-                :clock-keep t)
+                ("s" "Someday" entry
+                 (file+olp org-default-notes-file "Someday")
+                 ,(s-unlines
+                   "* MAYBE %?"
+                   ":PROPERTIES:"
+                   ":CAPTURED: %U"
+                   ":END:")
+                 :clock-keep t)
 
-               ("d" "Diary" entry
-                (file+datetree org-agenda-diary-file)
-                "* %?\n%^t"
-                :clock-keep t)
+                ("d" "Diary" entry
+                 (file+datetree org-agenda-diary-file)
+                 "* %?\n%^t"
+                 :clock-keep t)
 
-               ("h" "Habit" entry
-                (file+headline org-default-notes-file "Habits/Recurring")
-                ,(s-unlines
-                  (concat "* TODO %^{Description}%?    "
-                          ":%^{Context|@computer|@errand|@leisure|@home|@phone|@work}:")
-                  "SCHEDULED: %^{Schedule}t"
-                  ":PROPERTIES:"
-                  ":STYLE: habit"
-                  ":END:"
-                  ":PROPERTIES:"
-                  ":CAPTURED: %U"
-                  ":END:")
-                :clock-keep t)
+                ("h" "Habit" entry
+                 (file+headline org-default-notes-file "Habits/Recurring")
+                 ,(s-unlines
+                   (concat "* TODO %^{Description}%?    "
+                           ":%^{Context|@computer|@errand|@leisure|@home|@phone|@work}:")
+                   "SCHEDULED: %^{Schedule}t"
+                   ":PROPERTIES:"
+                   ":STYLE: habit"
+                   ":END:"
+                   ":PROPERTIES:"
+                   ":CAPTURED: %U"
+                   ":END:")
+                 :clock-keep t)
 
-               ("p" "Phone Call" entry
-                (file+olp org-default-notes-file "Calls")
-                ,(s-unlines
-                  "* %U"
-                  "- From :: %?"
-                  "- To :: ")
-                :clock-in t
-                :clock-resume t)
+                ("p" "Phone Call" entry
+                 (file+olp org-default-notes-file "Calls")
+                 ,(s-unlines
+                   "* %U"
+                   "- From :: %?"
+                   "- To :: ")
+                 :clock-in t
+                 :clock-resume t)
 
-               ("b" "Bill" entry
-                (file+olp org-default-notes-file "Finance" "Bills")
-                ,(s-unlines
-                  "* TODO %?"
-                  ":PROPERTIES:"
-                  ":CAPTURED: %U"
-                  ":END:")
-                :clock-keep t)
+                ("b" "Bill" entry
+                 (file+olp org-default-notes-file "Finance" "Bills")
+                 ,(s-unlines
+                   "* TODO %?"
+                   ":PROPERTIES:"
+                   ":CAPTURED: %U"
+                   ":END:")
+                 :clock-keep t)
 
-               ("r" "Reading" entry
-                (file+olp org-default-notes-file "Someday" "Readings")
-                ,(s-unlines
-                  "* TODO %i%?"
-                  ":PROPERTIES:"
-                  ":CAPTURED: %U"
-                  ":END:")
-                :clock-keep t)
+                ("r" "Reading" entry
+                 (file+olp org-default-notes-file "Someday" "Readings")
+                 ,(s-unlines
+                   "* TODO %i%?"
+                   ":PROPERTIES:"
+                   ":CAPTURED: %U"
+                   ":END:")
+                 :clock-keep t)
 
-               ("l" "Link" entry
-                (file+headline org-default-notes-file "Links")
-                ,(s-unlines
-                  "* %c"
-                  ":PROPERTIES:"
-                  ":CAPTURED: %U"
-                  ":END:"
-                  "%i")
-                :immediate-finish t
-                :clock-keep t)
+                ("l" "Link" entry
+                 (file+headline org-default-notes-file "Links")
+                 ,(s-unlines
+                   "* %c"
+                   ":PROPERTIES:"
+                   ":CAPTURED: %U"
+                   ":END:"
+                   "%i")
+                 :immediate-finish t
+                 :clock-keep t)
 
-               ("m" "Listening" entry
-                (file+olp org-default-notes-file "Someday" "Listening")
-                ,(s-unlines
-                  "* TODO %i%?"
-                  ":PROPERTIES:"
-                  ":CAPTURED: %U"
-                  ":END:")
-                :clock-keep t)
+                ("m" "Listening" entry
+                 (file+olp org-default-notes-file "Someday" "Listening")
+                 ,(s-unlines
+                   "* TODO %i%?"
+                   ":PROPERTIES:"
+                   ":CAPTURED: %U"
+                   ":END:")
+                 :clock-keep t)
 
-               ("n" "Note" entry
-                (file+headline org-default-notes-file "Notes")
-                ,(s-unlines
-                  "* %i%?"
-                  ":PROPERTIES:"
-                  ":CAPTURED: %U"
-                  ":END:")
-                :clock-keep t)
+                ("n" "Note" entry
+                 (file+headline org-default-notes-file "Notes")
+                 ,(s-unlines
+                   "* %i%?"
+                   ":PROPERTIES:"
+                   ":CAPTURED: %U"
+                   ":END:")
+                 :clock-keep t)
 
-               ("z" "Task Note" entry
-                (clock)
-                ,(s-unlines
-                  "* %i%?"
-                  ":PROPERTIES:"
-                  ":CAPTURED: %U"
-                  ":END:")
-                :clock-keep t
-                :kill-buffer t)
+                ("z" "Task Note" entry
+                 (clock)
+                 ,(s-unlines
+                   "* %i%?"
+                   ":PROPERTIES:"
+                   ":CAPTURED: %U"
+                   ":END:")
+                 :clock-keep t
+                 :kill-buffer t)
 
-               ("L" "Task Link" entry
-                (clock)
-                ,(s-unlines
-                  "* %a%?"
-                  ":PROPERTIES:"
-                  ":CAPTURED: %U"
-                  ":END:")
-                :clock-keep t
-                :kill-buffer t)
-               )
-             (~ add-to-list 'org-capture-templates))))
+                ("L" "Task Link" entry
+                 (clock)
+                 ,(s-unlines
+                   "* %a%?"
+                   ":PROPERTIES:"
+                   ":CAPTURED: %U"
+                   ":END:")
+                 :clock-keep t
+                 :kill-buffer t)
+                )
+        (add-to-list 'org-capture-templates it 'append))))
 
   ;; `org-agenda' provides an interactive journaling system, collecting
   ;; information from org-mode buffers.
