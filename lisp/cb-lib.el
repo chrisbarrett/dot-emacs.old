@@ -596,7 +596,8 @@ Return the element in OPTIONS corresponding to the user's selection.
           (erase-buffer)
           (insert (->> options
                     (--map (format " [%s] %s"
-                                   (propertize (funcall option-key-fn it) 'face 'option-key)
+                                   (propertize
+                                    (funcall option-key-fn it) 'face 'option-key)
                                    (funcall option-name-fn it)))
                     (s-join "\n")))
           (insert "\n")
@@ -622,6 +623,7 @@ Return the element in OPTIONS corresponding to the user's selection.
              (setq quit-flag t))
             (t
              (message "Invalid key"))))))
+
     (kill-buffer title)))
 
 ;;; ----------------------------------------------------------------------------
