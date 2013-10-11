@@ -98,9 +98,11 @@ This is especially useful for capture tasks."
     (setq org-default-notes-file file))
 
 (defun cb-org:find-diary ()
+  (interactive)
   (find-file org-agenda-diary-file))
 
 (defun cb-org:find-notes ()
+  (interactive)
   (find-file org-default-notes-file))
 
 (defun cb-org:read-action ()
