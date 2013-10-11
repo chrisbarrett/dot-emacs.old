@@ -588,39 +588,41 @@ Return the element in OPTIONS corresponding to the user's selection.
   to use for a given option.
 
 * OPTION-NAME-FN is a function that returns a string describing a given option."
-  (save-excursion
-    (save-window-excursion
-      ;; Create a buffer containing methods.
-      (switch-to-buffer-other-window (get-buffer-create title))
-      (erase-buffer)
-      (insert (->> options
-                (--map (format " [%s] %s"
-                               (propertize (funcall option-key-fn it) 'face 'option-key)
-                               (funcall option-name-fn it)))
-                (s-join "\n")))
-      (insert "\n")
-      ;; Resize buffer
-      (goto-char (point-min))
-      (fit-window-to-buffer)
-      ;; Read selection from user.
-      (cl-loop
-       while t
+  (prog1
+      (save-excursion
+        (save-window-excursion
+          ;; Create a buffer containing methods.
+          (switch-to-buffer-other-window (get-buffer-create title))
+          (erase-buffer)
+          (insert (->> options
+                    (--map (format " [%s] %s"
+                                   (propertize (funcall option-key-fn it) 'face 'option-key)
+                                   (funcall option-name-fn it)))
+                    (s-join "\n")))
+          (insert "\n")
+          ;; Resize buffer
+          (goto-char (point-min))
+          (fit-window-to-buffer)
+          ;; Read selection from user.
+          (cl-loop
+           while t
 
-       for key =
-       (let ((inhibit-quit t))
-         (read-char-exclusive))
+           for key =
+           (let ((inhibit-quit t))
+             (read-char-exclusive))
 
-       for method =
-       (-first (-compose (~ equal key) 'string-to-char option-key-fn)
-               options)
-       do
-       (cond
-        (method
-         (return method))
-        ((-contains? '(?\C-g ?q) key)
-         (setq quit-flag t))
-        (t
-         (message "Invalid key")))))))
+           for method =
+           (-first (-compose (~ equal key) 'string-to-char option-key-fn)
+                   options)
+           do
+           (cond
+            (method
+             (return method))
+            ((-contains? '(?\C-g ?q) key)
+             (setq quit-flag t))
+            (t
+             (message "Invalid key"))))))
+    (kill-buffer title)))
 
 ;;; ----------------------------------------------------------------------------
 ;;; Growl Notifications
