@@ -576,6 +576,17 @@ In batch mode, this just prints a summary instead of progress."
   "Face for key highlight in search method prompt"
   :group 'options)
 
+(defun cb-lib:maybe-columnate-lines (thresh-hold column-width lines)
+  (if (< (length lines) thresh-hold)
+      (s-join "\n" lines)
+    (let* ((mid (/ (length lines) 2))
+           (xs (cl-subseq lines 0 mid))
+           (ys (cl-subseq lines (1+ mid) (length lines))))
+      (s-join "\n"
+              (-zip-with
+               (lambda (l r) (concat (s-pad-right column-width " " l) r))
+               xs ys)))))
+
 (defun read-option (title option-key-fn option-name-fn options)
   "Prompt the user to select from a list of choices.
 Return the element in OPTIONS corresponding to the user's selection.
@@ -588,41 +599,68 @@ Return the element in OPTIONS corresponding to the user's selection.
   to use for a given option.
 
 * OPTION-NAME-FN is a function that returns a string describing a given option."
-  (prog1
+  (unwind-protect
       (save-excursion
         (save-window-excursion
           ;; Create a buffer containing methods.
           (switch-to-buffer-other-window (get-buffer-create title))
           (erase-buffer)
-          (insert (->> options
-                    (--map (format " [%s] %s"
-                                   (propertize
-                                    (funcall option-key-fn it) 'face 'option-key)
-                                   (funcall option-name-fn it)))
-                    (s-join "\n")))
-          (insert "\n")
-          ;; Resize buffer
-          (goto-char (point-min))
-          (fit-window-to-buffer)
-          ;; Read selection from user.
-          (cl-loop
-           while t
 
-           for key =
-           (let ((inhibit-quit t))
-             (read-char-exclusive))
+          ;; 1. Format the options for insertion.
 
-           for method =
-           (-first (-compose (~ equal key) 'string-to-char option-key-fn)
-                   options)
-           do
-           (cond
-            (method
-             (return method))
-            ((-contains? '(?\C-g ?q) key)
-             (setq quit-flag t))
-            (t
-             (message "Invalid key"))))))
+          (let* ((longest-key
+                  (-max (-map (-compose 'length option-key-fn) options)))
+                 ;; Transform the options list into a list of lines of
+                 ;; '[key] desc'
+                 (lines
+                  (->> options
+                    (-sort (lambda (l r)
+                             (string< (s-downcase (funcall option-key-fn l))
+                                      (s-downcase (funcall option-key-fn r)))))
+                    (--map
+                     (let ((key
+                            (propertize (funcall option-key-fn it) 'face 'option-key)))
+                       (format " %s %s"
+                               (s-pad-right
+                                (+ 2 longest-key) ; Offset by length of square brackets.
+                                " " (concat "[" key "]"))
+                               (funcall option-name-fn it)))))))
+
+            (insert
+             ;; Show small numbers of options in a single column. If the number
+             ;; of lines exceeds 3, split into 2 columns.
+             (cb-lib:maybe-columnate-lines
+              3
+              (/ (- (window-width)
+                    (fringe-columns 'left)
+                    (fringe-columns 'left)) 2)
+              lines))
+
+            ;; 2. Prepare window.
+
+            (goto-char (point-min))
+            (fit-window-to-buffer)
+
+            ;; 3. Read selection from user.
+
+            (cl-loop
+             while t
+
+             for key =
+             (let ((inhibit-quit t))
+               (read-char-exclusive))
+
+             for method =
+             (-first (-compose (~ equal key) 'string-to-char option-key-fn)
+                     options)
+             do
+             (cond
+              (method
+               (return method))
+              ((-contains? '(?\C-g ?q) key)
+               (setq quit-flag t))
+              (t
+               (message "Invalid key")))))))
 
     (kill-buffer title)))
 
