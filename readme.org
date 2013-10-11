@@ -3,7 +3,6 @@
 
 * Description
 This is my personal Emacs configuration. It is obviously very personalised and you'd be crazy to use it as-is.
-
 * Installation
 Requires GNU Make, curl and Git.
 
@@ -30,7 +29,6 @@ The load sequence will search for a file called =personal-config.el=, which is a
 
   (provide 'personal-config)
 #+END_SRC
-
 * Features
 ** Automated loading
 Elisp files in the =lisp= directory will be automatically compiled and loaded at startup. The =configuration-group= macro allows you to declare prerequisites for loading forms in these files.
@@ -54,19 +52,20 @@ frame and restore the previous state when killed. This behaviour is provided for
 =git-gutter+-mode= is enabled for files in git repositories. This allows you to see modified hunks and stage them individually while you're editing.
 
 Common git commands are available under the =g= prefix key in Evil's normal state, allowing you perform most git actions directly on the buffer you're editing.
-- =g b= - branch manager
-- =g c= - commit
-- =g D= - diff
-- =g l= - log
-- =g n= - next change
-- =g p= - previous change
-- =g P= - push
-- =g r= - reflog
-- =g s= - stage hunk
-- =g x= - reset hunk
-
+- =g b= :: branch manager
+- =g c= :: commit
+- =g D= :: diff
+- =g l= :: log
+- =g n= :: next change
+- =g p= :: previous change
+- =g P= :: push
+- =g r= :: reflog
+- =g s= :: stage hunk
+- =g x= :: reset hunk
 ** Org
 Common org commands are accessible with a picker widget bound to =<f7>=.
+
+I use my own customised fork of [[https://github.com/chrisbarrett/org-pomodoro][org-pomodoro]] for clocking.
 ** Language Support
 I have sane configurations for several languages and environments:
 - Haskell
@@ -96,6 +95,7 @@ Since Evil frees up the Meta key, I use =M-/key/= to display modal views such as
 - =M-W= :: w3m
 - =M-Y= :: gnus
 ** OS X-specific
-=cmd-shift-return= runs OS X's =open= command.
-+ URL at point will open in the default browser
-+ Files will open with the default application for their type
+- org-mode and pomodoro notifications are displayed using [[http://growl.info/][Growl]] where available
+- =cmd-shift-return= runs OS X's =open= command.
+  - URL at point will open in the default browser
+  - Files will open with the default application for their type
