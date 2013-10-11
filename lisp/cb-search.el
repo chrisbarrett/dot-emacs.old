@@ -97,10 +97,7 @@
     :command
     (lambda (q)
       (let ((helm-pattern q))
-        (helm-man-woman nil)))
-    :unless
-    (lambda ()
-      (derived-mode-p 'text-mode))))
+        (helm-man-woman nil)))))
 
   "The list of search methods used by `cbs-search'.")
 
