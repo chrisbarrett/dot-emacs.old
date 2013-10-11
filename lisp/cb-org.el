@@ -77,6 +77,9 @@ which may be changed interactively by `cb-org:set-notes-file'.")
 (declare-modal-executor org-tags-view-all-fullscreen
   :command (org-tags-view nil))
 
+(declare-modal-executor org-search-view
+  :command (call-interactively 'org-search-view))
+
 (defun cb-org:yank-region-as-quote (beg end)
   "Yank the current region as an org quote."
   (interactive "r")
@@ -114,7 +117,7 @@ This is especially useful for capture tasks."
     ("f" "Set notes file" cb-org:set-notes-file)
     ("k" "Capture" org-capture)
     ("l" "Store Link" org-store-link)
-    ("s" "Search" org-search-view)
+    ("s" "Search" executor:org-search-view)
     ("t" "Todo List" executor:org-show-todo-list)
     ("v" "View Tags (todos)" executor:org-tags-view-todos-fullscreen)
     ("V" "View Tags (all)" executor:org-tags-view-all-fullscreen)
