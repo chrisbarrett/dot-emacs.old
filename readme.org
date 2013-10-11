@@ -40,7 +40,7 @@ If you are a Mutt user, add the following to your =.muttrc= to use org-mode mess
   set editor="emacsclient -nw %s -a 'vim %s'"
 #+END_SRC
 ** Evilness
-I use *Evil-mode* so I can have vim in my Emacs so I can edit while I edit. You can restore Emacs' normal key bindings by setting =cb:use-vim-keybindings?= to nil in /init.el/. I try to remember to make my bindings test for that so people testing this config out aren't completely stuffed.
+I use [[https://gitorious.org/evil/pages/Home][Evil-mode]] so I can have vim in my Emacs so I can edit while I edit. You can restore Emacs' normal key bindings by setting =cb:use-vim-keybindings?= to nil in /init.el/. I try to remember to make my bindings test for that so people testing this config out aren't completely stuffed.
 ** Custom mode-line
 The mode-line is set up to remove clutter.
 
