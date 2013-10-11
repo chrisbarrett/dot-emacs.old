@@ -360,14 +360,12 @@
   :defer t
   :init
   (hook-fns '(prog-mode-hook text-mode-hook comint-mode)
-    (setq orglink-activate-links
-          (if (derived-mode-p 'sgml-mode 'nxml-mode)
-              '(plain)
-            '(angle plain)))
-    (unless (derived-mode-p 'org-mode)
+    (unless (derived-mode-p 'org-mode 'nxml-mode 'sgml-mode)
       (orglink-mode +1)))
   :config
-  (setq orglink-mode-lighter nil))
+  (progn
+    (setq orglink-mode-lighter nil
+          orglink-activate-links '(angle plain))))
 
 ;; `org-pomodoro' adds Pomodoro clocking functions.
 ;; I have my own fork, since the original isn't keeping up with pull requests.
@@ -514,84 +512,11 @@ the date TARGET-DAY, TARGET-MONTH each year."
           (set-face-underline-p 'org-link t))
         (iimage-mode))))
 
-  ;; Commands for formatting project file.
-
-  (defun cb-org:project-file ()
-    "Get the path to the project file for the current project."
-    (or
-     ;; If we're capturing, check if we were looking at a project when the capture
-     ;; was started. Return that file if so.
-     (let ((prev-buf (nth 1 (buffer-list))))
-       (and (equal "*Capture*" (buffer-name))
-            (s-ends-with? ".project.org" (buffer-name prev-buf))
-            (buffer-file-name prev-buf)))
-     ;; Otherwise, compute the path to a project file based on the current path.
-     (let ((name (cond
-                  ((projectile-project-p) (projectile-project-name))
-                  ((projectile-project-buffer-names) (car (projectile-project-buffer-names)))
-                  (t (error "Not in a project")))))
-       (f-join org-directory
-               (concat (s-alnum-only name) ".project.org")))))
-
-  (defun cb-org:ensure-field (kvp &optional permissive?)
-    "Insert metadata key-value pair KVP at point.
-No insertion is done if the field is already set in the current
-buffer.  When PERMISSIVE is set, allow duplicate instances of the
-given key.
-Non-nil if the field was inserted."
-    (destructuring-bind (key . val) (s-split (rx space) kvp)
-      (unless (s-matches? (rx-to-string
-                           (if permissive?
-                               `(and bol ,key (* space) ,(or (car val) ""))
-                             `(and bol ,key (* space))))
-                          (buffer-string))
-        (insert (concat kvp "\n"))
-        'inserted)))
-
-  (defun cb-org:prepare-project-file (project-name)
-    "Ensure the current project file has its metadata fields set.
-Non-nil if modifications where made."
-    ;; Make this task file show up in org buffers.
-    (if (and (f-exists? (buffer-file-name))
-             (boundp 'org-agenda-files))
-        (add-to-list 'org-agenda-files (buffer-file-name))
-      (eval `(hook-fn 'after-save-hook
-               :local t
-               (add-to-list 'org-agenda-files ,(buffer-file-name)))))
-    ;; Set metadata fields.
-    (save-excursion
-      (goto-char (point-min))
-      ;; Skip file variables.
-      (when (emr-line-matches? (rx "-*-" (* nonl) "-*-"))
-        (forward-line))
-      (beginning-of-line)
-      ;; Set fields
-      (cb-org:ensure-field (concat "#+TITLE: " project-name))
-      (cb-org:ensure-field (concat "#+AUTHOR: " user-full-name))
-      (cb-org:ensure-field "#+STARTUP: lognotestate" t)
-      (cb-org:ensure-field "#+STARTUP: lognotedone" t)
-      (cb-org:ensure-field "#+DESCRIPTION: Project-level notes and todos")
-      (cb-org:ensure-field (concat "#+CATEGORY: " project-name))
-      (cb-org:ensure-field (format "#+FILETAGS: :%s:" (s-alnum-only project-name)))))
-
-  (defun cb-org:skip-headers ()
-    "Move point past the header lines of an org document."
-    (while (and (or (emr-line-matches? (rx bol (or "#+" "-*-"))) (emr-blank-line?))
-                (not (save-excursion (forward-line) (eobp))))
-      (forward-line)))
-
   ;; `org-capture' is used to interactively read items to be inserted into
   ;; org-mode buffers.
   (use-package org-capture
     :config
     (progn
-
-      (defun* cb-org:read-string-with-file-ref
-          (&optional (prompt "TODO")
-                     (file (cb-org:project-file)))
-        "Prompt the user for string, with reference to a file."
-        (read-string (format "%s [%s]: " prompt (f-short file))
-                     nil t))
 
       ;; Enter insertion mode in capture buffer.
       (hook-fn 'org-capture-mode-hook
@@ -704,26 +629,7 @@ Non-nil if modifications where made."
                   ":END:")
                 :clock-keep t
                 :kill-buffer t)
-
-               ("T" "Project Task" entry
-                (file+headline (cb-org:project-file) "Tasks")
-                ,(s-unlines
-                  "* TODO %?"
-                  ":PROPERTIES:"
-                  ":CAPTURED: %U"
-                  ":END:")
-                :clock-keep
-                :kill-buffer t)
-
-               ("N" "Project Note" entry
-                (file+headline (cb-org:project-file) "Notes")
-                ,(s-unlines
-                  "* %?"
-                  ":PROPERTIES:"
-                  ":CAPTURED: %U"
-                  ":END:")
-                :clock-keep t
-                :kill-buffer t))
+               )
              (~ add-to-list 'org-capture-templates))))
 
   ;; `org-agenda' provides an interactive journaling system, collecting
