@@ -46,8 +46,6 @@
 ;; Declare org-related values before org-mode is loaded.
 ;; This is mainly to reduce compiler warnings.
 (defvar org-directory (f-join user-home-directory "org"))
-(defvar org-mobile-inbox-for-pull (f-join org-directory "mobile.org"))
-(defvar org-mobile-directory (f-join user-dropbox-directory "Apps" "MobileOrg"))
 (defvar org-init-notes-file (f-join org-directory "notes.org")
   "Captures the original value of the `org-default-notes-file',
 which may be changed interactively by `set-org-default-notes-file'.")
