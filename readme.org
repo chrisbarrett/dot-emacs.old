@@ -66,7 +66,7 @@ Common git commands are available under the =g= prefix key in Evil's normal stat
 - =g x= - reset hunk
 
 ** Org
-Common org commands are accessible with a picker widget bound to =<f8>=.
+Common org commands are accessible with a picker widget bound to =<f7>=.
 ** Language Support
 I have sane configurations for several languages and environments:
 - Haskell
