@@ -46,8 +46,11 @@ The mode-line is set up to remove clutter.
 
 If you set =cbm:mail-directory= to point to your maildir the modeline will display an unread mail count.
 ** Modal buffers
-Certain command display buffers in a /modal/ manner; they expand to fill the
-frame and restore the previous state when killed. This behaviour is provided for most magit commands, ansi-term, org-agenda and others. Check the implementation of =declare-modal-view= and =declare-modal-executor= in /cb-lib.el/ to see how this works.
+Certain commands display buffers in a /modal/ manner; they expand to fill the
+frame and restore the previous state when killed. This behaviour is provided for
+most magit commands, ansi-term, org-agenda and others. Check the implementation
+of =declare-modal-view= and =declare-modal-executor= in /cb-lib.el/ to see how
+this works.
 ** Git commands
 =git-gutter+-mode= is enabled for files in git repositories. This allows you to see modified hunks and stage them individually while you're editing.
 
