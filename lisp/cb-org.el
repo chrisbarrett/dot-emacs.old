@@ -125,7 +125,7 @@ This is especially useful for capture tasks."
          ("V" "View Tags (all)" executor:org-tags-view-all-fullscreen)
          ("y" "Yank region as quote" cb-org:yank-region-as-quote)
          ))
-    (funcall fn)))
+    (call-interactively fn)))
 
 (bind-key* "<f7>" 'cb-org:read-action)
 
