@@ -62,19 +62,25 @@ which may be changed interactively by `set-org-default-notes-file'.")
 ;; Add contrib directory to load-path.
 (add-to-list 'load-path (f-join cb:lib-dir "org-mode" "contrib" "lisp"))
 
-;; Show org agenda with M-O.
+;; Add executors and a global picker for common org actions.
+
 (declare-modal-executor org-agenda-fullscreen
   :bind '("M-O" "<f10>")
   :command (org-agenda-list prefix-arg nil 1))
 
-;; If we're running in a graphical context, show the agenda on startup.
-(when (or (daemonp) (display-graphic-p))
-  (hook-fn 'after-init-hook
-    (executor:org-agenda-fullscreen)))
+(declare-modal-executor org-show-todo-list
+  :command (progn
+             (org-agenda prefix-arg "t")
+             (org-agenda-filter-apply '("-someday") 'tag)))
 
-;; Add command to yank region as quote.
+(declare-modal-executor org-tags-view-todos-fullscreen
+  :command (org-tags-view t))
+
+(declare-modal-executor org-tags-view-all-fullscreen
+  :command (org-tags-view nil))
 
 (defun cb-org:yank-region-as-quote (beg end)
+  "Yank the current region as an org quote."
   (interactive "r")
   (if (region-active-p)
       (progn
@@ -82,6 +88,42 @@ which may be changed interactively by `set-org-default-notes-file'.")
         (deactivate-mark)
         (message "Region yanked as quote."))
     (error "No region is active, so no quote could be yanked")))
+
+(defun cb-org:find-diary ()
+  (find-file org-agenda-diary-file))
+
+(defun cb-org:find-notes ()
+  (find-file org-default-notes-file))
+
+(defun cb-org:read-action ()
+  (interactive)
+  (cl-destructuring-bind (_ _ fn)
+      (read-option
+       "*Org Actions*"
+       (lambda+ ((k _ _)) k)
+       (lambda+ ((_ s _)) s)
+       '(
+         (" " "Go to Notes" cb-org:find-notes)
+         ("a" "Agenda" executor:org-agenda-fullscreen)
+         ("b" "Buffers" org-iswitchb)
+         ("c" "Follow Clock" org-clock-goto)
+         ("d" "Go to Diary" cb-org:find-diary)
+         ("k" "Capture" org-capture)
+         ("l" "Store Link" org-store-link)
+         ("s" "Search" org-search-view)
+         ("t" "Todo List" executor:org-show-todo-list)
+         ("v" "View Tags (todos)" executor:org-tags-view-todos-fullscreen)
+         ("V" "View Tags (all)" executor:org-tags-view-all-fullscreen)
+         ("y" "Yank region as quote" cb-org:yank-region-as-quote)
+         ))
+    (funcall fn)))
+
+(bind-key* "<f8>" 'cb-org:read-action)
+
+;; If we're running in a graphical context, show the agenda on startup.
+(when (or (daemonp) (display-graphic-p))
+  (hook-fn 'after-init-hook
+    (executor:org-agenda-fullscreen)))
 
 ;; `org-mode' is a suite of editing and management tools centred around
 ;; human-readable text files.
@@ -98,39 +140,8 @@ which may be changed interactively by `set-org-default-notes-file'.")
     (bind-keys
       :overriding? t
       :map cb-org-map
-
       "<f6>"    (command (org-capture nil "t"))
-      "<f7>"    'org-clock-goto
-      "<f8>"    'org-capture
-      "<f9>"    'org-agenda
-
-      "C-o" 'cb-org-map
-      "C-o C-l" 'org-store-link
-      "C-o C-b" 'org-iswitchb
-      "C-o C-s" 'org-search-view
-      "C-o y"   'cb-org:yank-region-as-quote
-      "C-o d" (command (find-file org-agenda-diary-file))
-      "C-o n" (command (find-file org-default-notes-file))
-
-      "C-o C-k" 'org-capture)
-
-    (declare-modal-executor org-show-todo-list
-      :bind "C-o <SPC>"
-      :command (progn
-                 (org-agenda prefix-arg "t")
-                 (org-agenda-filter-apply '("-someday") 'tag)))
-
-    (declare-modal-executor org-show-filtered-todo-list
-      :bind "C-o t"
-      :command (org-agenda prefix-arg "T"))
-
-    (declare-modal-executor org-tags-view-todos-fullscreen
-      :bind "C-o v"
-      :command (org-tags-view t))
-
-    (declare-modal-executor org-tags-view-all-fullscreen
-      :bind "C-o C-v"
-      :command (org-tags-view nil)))
+      "C-o" 'cb-org-map))
 
   :config
   (progn
