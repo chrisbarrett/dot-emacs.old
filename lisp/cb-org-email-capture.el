@@ -392,11 +392,6 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 This is needed to prevent double-ups in the case that the timer
 repeats before all the messages are processed and removed.")
 
-(after 'org
-  (defvar cbom:notes-file org-default-notes-file
-    "The value of the `org-default-notes-file' before the user has a chance
-to interactively change it."))
-
 ;; IO ()
 (defun cbom:capture-messages ()
   "Parse and capture unread messages in `cbom:org-mail-folder'.
@@ -430,7 +425,7 @@ Captured messages are marked as read."
              (save-window-excursion
                ;; The user may have interactively changed the default notes
                ;; file, so we rebind it to the note file set at init time.
-               (let ((org-default-notes-file cbom:notes-file))
+               (let ((org-default-notes-file org-init-notes-file))
                  (apply 'cbom:capture fmt pl)
                  (apply 'cbom:growl pl)
                  (apply 'cbom:remove-message pl)))))))))))
