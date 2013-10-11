@@ -54,7 +54,7 @@
     (when (cb:special-elisp-buffer?)
       (flycheck-select-checker 'emacs-lisp)))
 
-  (setq-default flycheck-emacs-lisp-load-path (list cb:lib-dir)))
+  (setq-default flycheck-emacs-lisp-load-path (list cb:lib-dir "./")))
 
 ;; Add command to switch to corresponding unit test.
 (after 'projectile
