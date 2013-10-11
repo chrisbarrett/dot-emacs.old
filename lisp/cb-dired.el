@@ -36,7 +36,6 @@
   :init
   (hook-fn 'dired-mode-hook
     (evil-local-set-key 'normal (kbd "SPC") 'dired-hide-subdir)
-    (evil-local-set-key 'normal (kbd "S-SPC") 'dired-hide-all)
     (local-set-key (kbd "M-N") 'dired-next-subdir)
     (local-set-key (kbd "M-P") 'dired-prev-subdir)
     (setq-local auto-revert-interval 0.1)
