@@ -34,9 +34,9 @@
 (unless (or (daemonp) (display-graphic-p))
   (set-face-attribute 'mode-line nil :background "gray85"))
 
-(defun* cb:vc-state->letter (&optional (file (buffer-file-name)))
+(cl-defun cb:vc-state->letter (&optional (file (buffer-file-name)))
   "Return a single letter to represent the current version-control status."
-  (case (ignore-errors (vc-state file))
+  (cl-case (ignore-errors (vc-state file))
     ((up-to-date)           " ")
     ((edited)               (propertize "M" 'face '(:foreground "red")))
     ((needs-merge conflict) (propertize "!" 'face '(:foreground "red")))
@@ -45,13 +45,13 @@
     ((ignored)              (propertize "-" 'face 'modeline-vc-unknown-face))
     (t                      (propertize "?" 'face 'modeline-vc-unknown-face))))
 
-(defun* cb:vc-file-uptodate? (&optional (file (buffer-file-name)))
+(cl-defun cb:vc-file-uptodate? (&optional (file (buffer-file-name)))
   "Non-nil if FILE is up-to-date."
   (ignore-errors
     (vc-state-refresh file 'git)
     (equal 'up-to-date (vc-state file))))
 
-(defun* cb:shorten-directory (dir &optional (max-length 30))
+(cl-defun cb:shorten-directory (dir &optional (max-length 30))
   "Show up to MAX-LENGTH characters of a directory name DIR."
   (let ((path (reverse (split-string (abbreviate-file-name dir) "/")))
         (output ""))
@@ -66,14 +66,14 @@
       (setq output (concat "…/" output)))
     output))
 
-(defun* cb:propertize-file-directory
+(cl-defun cb:propertize-file-directory
     (&optional (filepath (file-name-directory (buffer-file-name))))
   "Separate tramp info from the given filepath."
   (cl-flet ((face
              (str face)
              (propertize str 'face face)))
 
-    (destructuring-bind (&optional method user host file &rest rs)
+    (cl-destructuring-bind (&optional method user host file &rest rs)
         (mapcar 'identity (ignore-errors
                             (tramp-dissect-file-name filepath)))
       (concat
