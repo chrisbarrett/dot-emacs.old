@@ -63,7 +63,7 @@ which may be changed interactively by `cb-org:set-notes-file'.")
 ;; Add executors and a global picker for common org actions.
 
 (declare-modal-executor org-agenda-fullscreen
-  :bind '("M-O" "<f10>")
+  :bind "<f8>"
   :command (org-agenda-list prefix-arg nil 1))
 
 (declare-modal-executor org-show-todo-list
@@ -129,7 +129,10 @@ This is especially useful for capture tasks."
          ))
     (call-interactively fn)))
 
-(bind-key* "<f7>" 'cb-org:read-action)
+(bind-keys
+  :overriding? t
+  "<f6>" (command (org-capture nil "t"))
+  "<f7>" 'cb-org:read-action)
 
 ;; If we're running in a graphical context, show the agenda on startup.
 (when (or (daemonp) (display-graphic-p))
@@ -140,20 +143,6 @@ This is especially useful for capture tasks."
 ;; human-readable text files.
 (use-package org
   :defer t
-  :init
-  (progn
-    (define-prefix-command 'cb-org-map)
-
-    (after 'evil
-      (evil-global-set-key 'normal (kbd "C-o") 'cb-org-map)
-      (evil-global-set-key 'visual (kbd "C-o") 'cb-org-map))
-
-    (bind-keys
-      :overriding? t
-      :map cb-org-map
-      "<f6>"    (command (org-capture nil "t"))
-      "C-o" 'cb-org-map))
-
   :config
   (progn
     (setq
