@@ -72,19 +72,18 @@ Common org-mode commands are bound to the =C-o= global prefix. I use custom org-
 - =C-o SPC= - org todo list
 - =C-o d= - go to org diary file
 - =C-o n= - go to notes file
-- =C-o p= - go to project task file
 - =C-o t= - show todos by keyword
 - =C-o v= - tag search
 ** Language Support
 I have sane configurations for several languages and environments:
-- Ruby/Rails
 - Haskell
-- C
-- Python
 - Elisp
 - Clojure
 - Scheme
+- Ruby/Rails
+- Python
 - SuperCollider
+- C
 ** Chorded key bindings
 Since Evil frees up the Meta key, I use =M-/key/= to display modal views such as terminals, w3m, gnus and dired.
 - =C-j= - helm-projectile
@@ -96,10 +95,9 @@ Since Evil frees up the Meta key, I use =M-/key/= to display modal views such as
 - =M-h= - helm-mini
 - =M-I= - find lisp config file with ido
 - =M-i= - helm-imenu
-- =M-m= - man page with helm
 - =M-R= - rename symbol at point  (in whole buffer)
 - =M-r= - rename symbol at point (in defun)
-- =M-s= - Search with Google, YouTube, Wikipedia etc.
+- =M-s= - Search manpage, Google, YouTube, Wikipedia etc.
 - =M-T= - eshell
 - =M-W= - w3m
 - =M-w= - w3m bookmarks
