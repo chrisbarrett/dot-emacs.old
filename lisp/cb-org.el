@@ -112,13 +112,6 @@ which may be changed interactively by `set-org-default-notes-file'.")
       "C-o d" (command (find-file org-agenda-diary-file))
       "C-o n" (command (find-file org-default-notes-file))
 
-      "C-o p" (command
-               (let ((name (projectile-project-name)))
-                 (find-file (cb-org:project-file))
-                 (cb-org:prepare-project-file name)
-                 (when (bobp)
-                   (cb-org:skip-headers))))
-
       "C-o C-k" 'org-capture)
 
     (declare-modal-executor org-show-todo-list
