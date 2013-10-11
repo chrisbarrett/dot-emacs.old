@@ -561,15 +561,23 @@ the date TARGET-DAY, TARGET-MONTH each year."
                   ":END:")
                 :clock-keep t)
 
+               ("p" "Phone Call" entry
+                (file+olp org-default-notes-file "Calls")
+                ,(s-unlines
+                  "* %U"
+                  "- From :: %?"
+                  "- To :: ")
+                :clock-in t
+                :clock-resume t)
 
                ("b" "Bill" entry
-                (file+headline org-default-notes-file "Accounts" "Bills")
+                (file+olp org-default-notes-file "Finance" "Bills")
                 ,(s-unlines
                   "* TODO %?"
                   ":PROPERTIES:"
                   ":CAPTURED: %U"
                   ":END:")
-                :clock-resume t)
+                :clock-keep t)
 
                ("r" "Reading" entry
                 (file+olp org-default-notes-file "Someday" "Readings")
