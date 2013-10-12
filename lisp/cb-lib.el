@@ -587,15 +587,34 @@ In batch mode, this just prints a summary instead of progress."
   :group 'options)
 
 (defun cb-lib:maybe-columnate-lines (thresh-hold column-width lines)
+  "Return a formatted string that may columnate the input.
+The columnation will occur if LINES exceeds THRESH-HOLD in length.
+COLUMN-WIDTH specifies the width of columns if columnation is used."
   (if (< (length lines) thresh-hold)
       (s-join "\n" lines)
+    ;; Columnate lines by splitting the lines into two lists then zipping them
+    ;; together again, such that:
+    ;;
+    ;; '("A" "B" "C" "D")
+    ;;
+    ;; becomes the string:
+    ;;
+    ;; A  C
+    ;; B  D
+    ;;
     (let* ((mid (/ (length lines) 2))
            (xs (cl-subseq lines 0 mid))
            (ys (cl-subseq lines (1+ mid) (length lines))))
-      (s-join "\n"
-              (-zip-with
-               (lambda (l r) (concat (s-pad-right column-width " " l) r))
-               xs ys)))))
+      ;; Add an extra line to YS if there is an odd number of options so
+      ;; the zip does not discard an option.
+
+      (->>
+          (if (/= (length xs) (length ys))
+              (-concat ys '(""))
+            ys)
+        (-zip-with
+         (lambda (l r) (concat (s-pad-right column-width " " l) r)) xs)
+        (s-join "\n")))))
 
 (defun read-option (title option-key-fn option-name-fn options)
   "Prompt the user to select from a list of choices.
