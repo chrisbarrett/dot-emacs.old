@@ -342,25 +342,35 @@ Find the first window where PRED-FORM is not nil."
                         &key map hook overriding?
                         &allow-other-keys)
   "Variadic form of `bind-key'.
-* MAP is an optional keymap.  The bindings will only be enabled when this keymap is active.
+* MAP is an optional keymap.  The bindings will only be enabled
+  when this keymap is active.
 
 * OVERRIDING? prevents other maps from overriding the binding.  It
   uses `bind-key*' instead of the default `bind-key'.
 
-* HOOK is a hook or list of hooks. The bindings will be made using `local-set-key'.
+* HOOK is a hook or list of hooks. The bindings will be made to
+  the specified keymap MAP, or using `local-set-key' is no keymap
+  is specified.
 
-* BINDINGS are alternating strings and functions to use for keybindings."
+* BINDINGS are alternating strings and functions to use for
+  keybindings."
   (declare (indent 0))
   (let ((bs (->> bindings (-partition-all 2) (--remove (keywordp (car it))))))
-    `(progn ,@(cl-loop for (k f) in bs collect
-                       (cond
-                        (overriding?
-                         `(bind-key* ,k ,f))
-                        (hook
-                         `(hook-fns ,(-listify hook)
-                            (local-set-key ,k ,f)))
-                        (t
-                         `(bind-key ,k ,f ,map)))))))
+    `(progn
+       ,@(cl-loop for (k f) in bs collect
+                  (cond
+                   (overriding?
+                    `(bind-key* ,k ,f))
+                   (hook
+                    `(hook-fns ,(-listify hook)
+                       ;; If there is a map specified, bind to that
+                       ;; map. Otherwise fall back on `local-set-key' for
+                       ;; bindings.
+                       (if (true? ,map)
+                           (bind-key ,k ,f ,map)
+                         (local-set-key ,k ,f))))
+                   (t
+                    `(bind-key ,k ,f ,map)))))))
 
 (defmacro define-keys (keymap &rest bindings)
   "Variadic form of `define-key'.
