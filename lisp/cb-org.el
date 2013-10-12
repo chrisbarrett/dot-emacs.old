@@ -551,6 +551,7 @@ the date TARGET-DAY, TARGET-MONTH each year."
                  (file+headline org-default-notes-file "Tasks")
                  ,(s-unlines
                    "* TODO %?"
+                   "SCHEDULED: %u"
                    ":PROPERTIES:"
                    ":CAPTURED: %U"
                    ":END:")
