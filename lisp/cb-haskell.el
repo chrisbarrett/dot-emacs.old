@@ -147,12 +147,17 @@
     (-when-let (sym (thing-at-point 'symbol))
       (s-uppercase? (substring sym 0 1))))
 
-  (defun cb-hs:smart-dot ()
-    "Insert a period. Add padding, unless this line is an import statement."
-    (interactive)
-    (if (cb-hs:looking-at-module-or-constructor?)
-        (insert ".")
-      (smart-insert-operator ".")))
+  (defun cb-hs:smart-dot (&optional arg)
+    "Insert a period. Add padding, unless this line is an import statement.
+With a prefix arg, insert a period without padding."
+    (interactive "*p")
+    (cond
+     (arg
+      (insert "."))
+     ((cb-hs:looking-at-module-or-constructor?)
+      (insert "."))
+     (t
+      (smart-insert-operator "."))))
 
   (defun cb-hs:smart-colon ()
     "Insert either a type binding colon pair or a cons colon."
@@ -186,24 +191,50 @@ Otherwise insert an arrow at the end of the line."
   (defun cb-hs:at-typedecl? ()
     (s-matches? "::" (buffer-substring (line-beginning-position) (point))))
 
-  (defun cb-hs:smart-minus ()
-    "Insert an arrow if we're in a typesig, otherwise perform a normal insertion."
-    (interactive)
-    (if (cb-hs:at-typedecl?)
-        (cb-hs:insert-arrow "->")
-      (smart-insert-operator "-")))
+  (defun cb-hs:smart-minus (&optional arg)
+    "Insert an arrow if we're in a typesig, otherwise perform a normal insertion.
+With a prefix arg, insert an arrow with padding at point."
+    (interactive "*p")
+    (cond
+     (arg
+      (just-one-space)
+      (insert "->")
+      (just-one-space))
+     ((cb-hs:at-typedecl?)
+      (cb-hs:insert-arrow "->"))
+     (t
+      (smart-insert-operator "-"))))
 
-  (defun cb-hs:smart-equals ()
-    "Insert an arrow if we're in a typesig, otherwise perform a normal insertion."
-    (interactive)
-    (if (cb-hs:at-typedecl?)
-        (cb-hs:insert-arrow "=>")
-      (smart-insert-operator "=")))
+  (defun cb-hs:smart-equals (&optional arg)
+    "Insert an arrow if we're in a typesig, otherwise perform a normal insertion.
+With a prefix arg, insert an arrow at point."
+    (interactive "*p")
+    (cond
+     (arg
+      (just-one-space)
+      (insert "=>")
+      (just-one-space))
+     ((cb-hs:at-typedecl?)
+      (cb-hs:insert-arrow "=>"))
+     (t
+      (smart-insert-operator "="))))
+
+  (defun cb-hs:smart-lt (&optional arg)
+    "Insert a less than symbol. With a prefix arg, insert an arrow at point."
+    (interactive "*p")
+    (cond
+     (arg
+      (just-one-space)
+      (insert "<-")
+      (just-one-space))
+     (t
+      (smart-insert-operator "<"))))
 
   (hook-fn 'cb:haskell-modes-hook
     (smart-insert-operator-hook)
     (local-set-key (kbd "-") 'cb-hs:smart-minus)
     (local-set-key (kbd "=") 'cb-hs:smart-equals)
+    (local-set-key (kbd "<") 'cb-hs:smart-lt)
     (local-set-key (kbd ".") 'cb-hs:smart-dot)
     (local-set-key (kbd ":") 'cb-hs:smart-colon)
     (local-set-key (kbd "|") 'cb-hs:smart-pipe)
