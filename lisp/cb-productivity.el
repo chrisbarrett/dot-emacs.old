@@ -27,6 +27,8 @@
 ;;; Code:
 
 (require 'use-package)
+(require 'cb-lib)
+(require 'cb-paths)
 
 (use-package undo-tree
   :ensure   t
@@ -116,6 +118,20 @@
   :defer t
   :config
   (setq abbrev-file-name (concat cb:tmp-dir "abbrev_defs")))
+
+(use-package multiple-cursors
+  :ensure t
+  :commands (mc/edit-lines
+             mc/mark-previous-like-this
+             mc/mark-next-like-this)
+  :config
+  (progn
+    (bind-key* "C-c m m" 'mc/edit-lines)
+    (bind-keys
+      :hook multiple-cursors-mode-hook
+      :map  multiple-cursors-map
+      "C-c m n" 'mc/mark-next-like-this
+      "C-c m p" 'mc/mark-previous-like-this)))
 
 (provide 'cb-productivity)
 
