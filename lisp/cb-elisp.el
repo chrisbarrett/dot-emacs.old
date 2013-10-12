@@ -45,6 +45,8 @@
                             "scratch"
                             "emacs-lisp"
                             "autoloads"
+                            (group "-pkg.el")
+                            (group "Pp" (* anything) "Output")
                             "dir-locals"))
                     (buffer-name)))))
 
