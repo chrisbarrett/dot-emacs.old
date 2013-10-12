@@ -109,14 +109,14 @@ This is especially useful for capture tasks."
   (find-file org-default-notes-file))
 
 (defvar cb-org:widget-options
-  '((" " "Go to Notes" cb-org:find-notes)
-    ("a" "Agenda" executor:org-agenda-fullscreen)
+  '(("a" "Agenda" executor:org-agenda-fullscreen)
     ("b" "Buffers" org-iswitchb)
     ("c" "Follow Clock" org-clock-goto)
     ("d" "Go to Diary" cb-org:find-diary)
     ("f" "Set notes file" cb-org:set-notes-file)
     ("k" "Capture" org-capture)
     ("l" "Store Link" org-store-link)
+    ("n" "Go to Notes" cb-org:find-notes)
     ("s" "Search" executor:org-search-view)
     ("t" "Todo List" executor:org-show-todo-list)
     ("v" "View Tags (todos)" executor:org-tags-view-todos-fullscreen)
