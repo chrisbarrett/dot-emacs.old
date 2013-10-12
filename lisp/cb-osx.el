@@ -164,13 +164,13 @@
       (growl (cond ((zerop mins) "Appointment (now)")
                    ((= 1 mins)   "Appointment (1 min)")
                    (t (format "Appointment (%s mins)" mins)))
-             (destructuring-bind (whole time desc)
+             (cl-destructuring-bind (whole time desc)
                  (s-match (rx bol
                               (group (+ digit) ":" (+ digit))
                               (* space)
                               (group (* nonl)))
                           title)
-               (format "%s @ %s" desc time))))
+               (format "%s @ %s" desc (1+ (string-to-number time))))))
 
     (defadvice appt-display-message (around growl-with-sound activate)
       "Play a sound and display a growl notification for appt alerts."
