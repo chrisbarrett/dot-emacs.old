@@ -362,7 +362,7 @@ Find the first window where PRED-FORM is not nil."
                    (overriding?
                     `(bind-key* ,k ,f))
                    (hook
-                    `(hook-fns ,(-listify hook)
+                    `(hook-fns ',(-listify hook)
                        ;; If there is a map specified, bind to that
                        ;; map. Otherwise fall back on `local-set-key' for
                        ;; bindings.
