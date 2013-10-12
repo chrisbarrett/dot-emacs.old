@@ -237,7 +237,15 @@ entry in `modeline-custom-description-functions'."
                 (if (>= (current-column) 80)
                     'mode-line-80col
                   'mode-line-position)))
+
    " "
+
+   ;; Evil state
+   (:eval
+    (if (and (featurep 'evil) (true? evil-mode))
+        evil-mode-line-tag
+      ""))
+
    ;; --------------------------------------------------------------------------
    ;; Mail status.
    (:eval (or (and (true? cbm:mode-line-indicator)
