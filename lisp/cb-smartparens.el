@@ -40,6 +40,7 @@
   (evil-define-state paren "Paren editing state."
     :tag "<Paren> "
     :message "-- PAREN --"
+    :suppress-keymap t
     :cursor (bar . 2))
 
   (hook-fn 'evil-paren-state-entry-hook
