@@ -41,7 +41,7 @@
     :tag "<Paren> "
     :message "-- PAREN --"
     :suppress-keymap t
-    :cursor (bar . 2))
+    :cursor 'hollow)
 
   (hook-fn 'evil-paren-state-entry-hook
     (when (equal last-command 'evil-end-of-line)
