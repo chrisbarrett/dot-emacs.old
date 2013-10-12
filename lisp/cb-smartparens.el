@@ -38,7 +38,7 @@
   ;; Define a special state for smartparens operations.
 
   (evil-define-state paren "Paren editing state."
-    :tag "<Paren> "
+    :tag " <P> "
     :message "-- PAREN --"
     :suppress-keymap t
     :cursor 'hollow)
