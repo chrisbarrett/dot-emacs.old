@@ -347,7 +347,7 @@ Find the first window where PRED-FORM is not nil."
 * OVERRIDING? prevents other maps from overriding the binding.  It
   uses `bind-key*' instead of the default `bind-key'.
 
-* HOOK is a hook or list of hooks in which the bindings will be activated.
+* HOOK is a hook or list of hooks. The bindings will be made using `local-set-key'.
 
 * BINDINGS are alternating strings and functions to use for keybindings."
   (declare (indent 0))
