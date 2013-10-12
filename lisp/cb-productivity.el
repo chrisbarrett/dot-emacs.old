@@ -121,17 +121,14 @@
 
 (use-package multiple-cursors
   :ensure t
-  :commands (mc/edit-lines
-             mc/mark-previous-like-this
-             mc/mark-next-like-this)
-  :config
-  (progn
-    (bind-key* "C-c m m" 'mc/edit-lines)
-    (bind-keys
-      :hook multiple-cursors-mode-hook
-      :map  multiple-cursors-map
-      "C-c m n" 'mc/mark-next-like-this
-      "C-c m p" 'mc/mark-previous-like-this)))
+  :defer t
+  :init
+  (bind-keys
+    :overriding? t
+    "C-c m m" 'mc/edit-lines
+    "C-c m a" 'mc/mark-all-dwim
+    "C-c m n" 'mc/mark-next-like-this
+    "C-c m p" 'mc/mark-previous-like-this))
 
 (provide 'cb-productivity)
 
