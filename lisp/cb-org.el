@@ -168,6 +168,8 @@ Each element is a list of form /(key desc symbol)/.")
      org-footnote-auto-adjust t
      org-put-time-stamp-overlays t
      org-startup-with-inline-images t
+     org-edit-src-content-indentation 0
+     org-catch-invisible-edits 'smart
 
      ;; Org habit
 
