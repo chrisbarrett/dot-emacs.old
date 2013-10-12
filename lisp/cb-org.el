@@ -204,6 +204,26 @@ Each element is a list of form /(key desc symbol)/.")
      org-stuck-projects '("+project&TODO={.+}/-DONE-CANCELLED"
                           ("NEXT" "TODO") nil "\\<IGNORE\\>")
 
+     ;; Structure keys
+     ;;
+     ;; Use lowercase versions instead
+
+     org-structure-template-alist
+     '(("s" "#+begin_src ?\n\n#+end_src" "<src lang=\"?\">\n\n</src>")
+       ("e" "#+begin_example\n?\n#+end_example" "<example>\n?\n</example>")
+       ("q" "#+begin_quote\n?\n#+end_quote" "<quote>\n?\n</quote>")
+       ("v" "#+begin_verse\n?\n#+end_verse" "<verse>\n?\n</verse>")
+       ("v" "#+begin_verbatim\n?\n#+end_verbatim" "<verbatim>\n?\n</verbatim>")
+       ("c" "#+begin_center\n?\n#+end_center" "<center>\n?\n</center>")
+       ("l" "#+begin_latex\n?\n#+end_latex" "<literal style=\"latex\">\n?\n</literal>")
+       ("l" "#+latex: " "<literal style=\"latex\">?</literal>")
+       ("h" "#+begin_html\n?\n#+end_html" "<literal style=\"html\">\n?\n</literal>")
+       ("h" "#+html: " "<literal style=\"html\">?</literal>")
+       ("a" "#+begin_ascii\n?\n#+end_ascii" "")
+       ("a" "#+ascii: " "")
+       ("i" "#+index: ?" "#+index: ?")
+       ("i" "#+include: %file ?" "<include file=%file markup=\"?\">"))
+
      ;; Tags
 
      org-tag-persistent-alist
