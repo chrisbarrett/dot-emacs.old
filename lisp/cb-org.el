@@ -1001,7 +1001,8 @@ Switch projects and subprojects from NEXT back to TODO."
   ;; plain links.
   (use-package org-attach
     :config
-    (setq org-link-abbrev-alist '(("att" . org-attach-expand-link))))
+    (setq org-link-abbrev-alist '(("att" . org-attach-expand-link))
+          org-attach-directory (f-join org-directory "data")))
 
   ;; `org-mime' provides MIME exporting functions, allowing you to export org
   ;; buffers to HTML emails.
