@@ -181,7 +181,7 @@ Each element is a list of form /(key desc symbol)/.")
 
      org-habit-preceding-days 14
      org-habit-following-days 4
-     org-habit-graph-column 50
+     org-habit-graph-column 70
 
      ;; Exporter options
 
