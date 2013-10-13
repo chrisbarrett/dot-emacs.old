@@ -205,20 +205,6 @@ With a prefix arg, insert an arrow with padding at point."
      (t
       (smart-insert-operator "-"))))
 
-  (defun cb-hs:smart-equals (&optional arg)
-    "Insert an arrow if we're in a typesig, otherwise perform a normal insertion.
-With a prefix arg, insert an arrow at point."
-    (interactive "*p")
-    (cond
-     (arg
-      (just-one-space)
-      (insert "=>")
-      (just-one-space))
-     ((cb-hs:at-typedecl?)
-      (cb-hs:insert-arrow "=>"))
-     (t
-      (smart-insert-operator "="))))
-
   (defun cb-hs:smart-lt (&optional arg)
     "Insert a less than symbol. With a prefix arg, insert an arrow at point."
     (interactive "*p")
@@ -233,7 +219,7 @@ With a prefix arg, insert an arrow at point."
   (hook-fn 'cb:haskell-modes-hook
     (smart-insert-operator-hook)
     (local-set-key (kbd "-") 'cb-hs:smart-minus)
-    (local-set-key (kbd "=") 'cb-hs:smart-equals)
+    (local-set-key (kbd "=") '(command (smart-insert-operator "=")))
     (local-set-key (kbd "<") 'cb-hs:smart-lt)
     (local-set-key (kbd ".") 'cb-hs:smart-dot)
     (local-set-key (kbd ":") 'cb-hs:smart-colon)
