@@ -566,7 +566,7 @@ the date TARGET-DAY, TARGET-MONTH each year."
                  :clock-keep t)
 
                 ("s" "Someday" entry
-                 (file+olp org-default-notes-file "Someday")
+                 (file+headline org-default-notes-file "Someday")
                  ,(s-unlines
                    "* MAYBE %?"
                    ":PROPERTIES:"
@@ -594,7 +594,7 @@ the date TARGET-DAY, TARGET-MONTH each year."
                  :clock-keep t)
 
                 ("p" "Phone Call" entry
-                 (file+olp org-default-notes-file "Calls")
+                 (file+headline org-default-notes-file "Calls")
                  ,(s-unlines
                    "* %U"
                    "- From :: %?"
