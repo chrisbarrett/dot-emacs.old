@@ -63,7 +63,6 @@ which may be changed interactively by `cb-org:set-notes-file'.")
 ;; Add executors and a global picker for common org actions.
 
 (declare-modal-executor org-agenda-fullscreen
-  :bind "<f8>"
   :command (org-agenda-list prefix-arg nil 1))
 
 (declare-modal-executor org-show-todo-list
@@ -91,14 +90,19 @@ which may be changed interactively by `cb-org:set-notes-file'.")
     (error "No region is active, so no quote could be yanked")))
 
 (defun cb-org:set-notes-file (file)
-    "Select the notes file to use as the default.
-This is especially useful for capture tasks."
-    (interactive
-     (list
-      (let* ((fs (org-files-list))
-             (selected (ido-completing-read "File: " (-map 'f-filename fs))))
-        (-first (C (~ equal selected) f-filename) fs))))
-    (setq org-default-notes-file file))
+  "Select the notes file to use as the default.
+This will set which file org-capture will capture to."
+  (interactive
+   (list
+    (let* ((fs (org-files-list))
+           (selected
+            (ido-completing-read
+             "File: "
+             (->> fs
+               (-remove (C (~ equal "org_archive") f-ext))
+               (-map 'f-filename)))))
+      (-first (C (~ equal selected) f-filename) fs))))
+  (setq org-default-notes-file file))
 
 (defun cb-org:find-diary ()
   (interactive)
