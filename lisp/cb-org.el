@@ -113,7 +113,7 @@ This will set which file org-capture will capture to."
   (find-file org-default-notes-file))
 
 (defvar cb-org:widget-options
-  '(("a" "Agenda" executor:org-agenda-fullscreen)
+  '(("a" "Agenda" org-agenda)
     ("b" "Buffers" org-iswitchb)
     ("c" "Follow Clock" org-clock-goto)
     ("d" "Go to Diary" cb-org:find-diary)
