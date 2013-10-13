@@ -284,6 +284,35 @@ With a prefix arg, insert an arrow with padding at point."
                  ;; Forward-sexp function
                  cb-hs:forward-fold)))
 
+;; Functions used by snippets
+(after 'yasnippet
+
+  (defun cbhs:haskell-modules ()
+    (->> (%-string "ghc-pkg" "dump")
+      (s-split "---")
+      (--mapcat
+       (with-temp-buffer
+         (insert it)
+         (goto-char (point-min))
+         (when (search-forward-regexp (rx bol "exposed-modules: ") nil t)
+           (let (start end)
+             (setq start (point))
+             (setq end (if (search-forward ":" nil t)
+                           (progn (beginning-of-line) (point))
+                         (point-max)))
+             (s-split " " (buffer-substring-no-properties start end) t)))))
+      (-map 's-trim)))
+
+  (defun cbhs:read-import (qualified? modid)
+    (interactive (list
+                  (helm-comp-read "Import module: "
+                                  (sort (cbhs:haskell-modules)
+                                        'string<))
+                  (y-or-n-p "Qualified import? ")))
+    (if qualified?
+        (format "import qualified %s as %s" modid (read-string "As: "))
+      (format "import %s" modid))))
+
 ;; `haskell-mode' provides a major-mode for editing haskell code.
 (use-package haskell-mode
   :ensure t
