@@ -236,13 +236,6 @@ The insertion will be repeated COUNT times."
     :config
     (progn
       (global-surround-mode +1)
-      (setq-default surround-pairs-alist
-                    (-union surround-pairs-alist
-                            '((?\( . ("(" . ")"))
-                              (?\[ . ("[" . "]"))
-                              (?<  . ("<" . ">"))
-                              (?\{ . ("{" . "}")))))
-
       (hook-fn 'cb:lisp-modes-hook
         (push '(?\` . ("`" . "'")) surround-pairs-alist))))
 
