@@ -137,7 +137,9 @@ Each element is a list of form /(key desc symbol)/.")
 (bind-keys
   :overriding? t
   "<f6>" (command (org-capture nil "t"))
-  "<f7>" 'cb-org:read-action)
+  "<f7>" 'org-capture
+  "<f8>" 'cb-org:read-action
+  "<f9>" 'executor:org-agenda-fullscreen)
 
 ;; If we're running in a graphical context, show the agenda on startup.
 (when (or (daemonp) (display-graphic-p))
