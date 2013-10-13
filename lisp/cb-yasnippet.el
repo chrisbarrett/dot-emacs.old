@@ -55,15 +55,26 @@
     (hook-fn 'snippet-mode-hook
       (setq require-final-newline nil))
 
-    (define-prefix-command 'cb:yas-map)
-    (bind-keys
-      "C-c y" 'cb:yas-map
-      "C-c y TAB" 'yas-expand
-      "C-c y n" 'yas-new-snippet
-      "C-c y f" 'yas-visit-snippet-file
-      "C-c y v" 'yas-visit-snippet-file
-      "C-c y r" (command (yas-recompile-all) (yas-reload-all))
-      "C-c y i" 'yas-insert-snippet)))
+    (defun cbyas:reload-all ()
+      (interactive)
+      (yas-recompile-all)
+      (yas-reload-all))
+
+    (defvar cbyas:options
+      '(("e" "Expand" yas-expand)
+        ("f" "Visit File" yas-visit-snippet-file)
+        ("i" "Insert" yas-insert-snippet)
+        ("n" "New" yas-new-snippet)
+        ("r" "Reload All" cbyas:reload-all)
+        ("t" "Show Tables" yas-describe-tables)))
+
+    (defun cbyas:read-option ()
+      "Read a yasnippet action interactively."
+      (interactive)
+      (cl-destructuring-bind (_ _ fn) (read-option "Yasnippet" 'car 'cadr cbyas:options)
+        (funcall fn)))
+
+    (bind-key* "C-c y" 'cbyas:read-option)))
 
 (provide 'cb-yasnippet)
 
