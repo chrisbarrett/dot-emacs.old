@@ -303,12 +303,13 @@ With a prefix arg, insert an arrow with padding at point."
              (s-split " " (buffer-substring-no-properties start end) t)))))
       (-map 's-trim)))
 
-  (defun cbhs:read-import (qualified? modid)
-    (interactive (list
-                  (helm-comp-read "Import module: "
-                                  (sort (cbhs:haskell-modules)
-                                        'string<))
-                  (y-or-n-p "Qualified import? ")))
+  (defun cbhs:read-import ()
+    (interactive)
+    (let ((modid
+           (helm-comp-read "Import module: "
+                           (sort (cbhs:haskell-modules)
+                                 'string<)))
+          (qualified? (y-or-n-p "Qualified import? "))))
     (if qualified?
         (format "import qualified %s as %s" modid (read-string "As: "))
       (format "import %s" modid))))
