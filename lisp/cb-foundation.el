@@ -376,11 +376,7 @@ Otherwise, use the value of said variable as argument to a funcall."
   "C-c e e"  'toggle-debug-on-error
   "C-x C-\\" 'set-input-method
   "RET"      'comment-indent-new-line
-  "C-c C"    'indirect-region
-
-  "C-c -" 'text-scale-set
-  "C-c +" 'text-scale-set
-  "C-c 0" 'text-scale-set)
+  "C-c C"    'indirect-region)
 
 
 (bind-keys
