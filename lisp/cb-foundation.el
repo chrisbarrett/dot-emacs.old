@@ -385,10 +385,10 @@ Otherwise, use the value of said variable as argument to a funcall."
 
 (bind-keys
   :hook (text-mode-hook prog-mode-hook)
-  "<left>"  'you-lack-discipline
-  "<right>" 'you-lack-discipline
-  "<up>"    'you-lack-discipline
-  "<down>"  'you-lack-discipline)
+  [left]  'you-lack-discipline
+  [right] 'you-lack-discipline
+  [up]    'you-lack-discipline
+  [down]  'you-lack-discipline)
 
 
 (define-prefix-command 'help-find-map)
