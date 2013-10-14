@@ -313,6 +313,13 @@ With a prefix arg, insert an arrow with padding at point."
     (if qualified?
         (format "import qualified %s as %s" modid (read-string "As: "))
       (format "import %s" modid))))
+  (-each
+   (let ((pred (lambda () (derived-mode-p 'haskell-mode))))
+     `(("i" "Haskell Import" cbhs:insert-import ,pred)
+       ("l" "Haskell Language Extension" haskell-insert-language ,pred)
+       ("p" "GHC Pragma" haskell-insert-pragma ,pred)
+       ("f" "GHC Flag" haskell-insert-flag ,pred)))
+   (~ add-to-list 'cb:insertion-commands)))
 
 ;; `haskell-mode' provides a major-mode for editing haskell code.
 (use-package haskell-mode
