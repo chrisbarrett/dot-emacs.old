@@ -284,35 +284,57 @@ With a prefix arg, insert an arrow with padding at point."
                  ;; Forward-sexp function
                  cb-hs:forward-fold)))
 
-;; Functions used by snippets
-(after 'yasnippet
+;; Add haskell insertion commands to the global picker.
+(after 'haskell-mode
+
+  (defun cbhs:parse-module (str)
+    (with-temp-buffer
+      (insert str)
+      (goto-char (point-min))
+      (when (search-forward-regexp (rx bol "exposed-modules: ") nil t)
+        (let (start end)
+          (setq start (point))
+          (setq end (if (search-forward ":" nil t)
+                        (progn (beginning-of-line) (point))
+                      (point-max)))
+          (s-split " " (buffer-substring-no-properties start end) t)))))
 
   (defun cbhs:haskell-modules ()
+    "Get a list of all Haskell modules known to GHC."
     (->> (%-string "ghc-pkg" "dump")
       (s-split "---")
-      (--mapcat
-       (with-temp-buffer
-         (insert it)
-         (goto-char (point-min))
-         (when (search-forward-regexp (rx bol "exposed-modules: ") nil t)
-           (let (start end)
-             (setq start (point))
-             (setq end (if (search-forward ":" nil t)
-                           (progn (beginning-of-line) (point))
-                         (point-max)))
-             (s-split " " (buffer-substring-no-properties start end) t)))))
+      (-mapcat 'cbhs:parse-module)
       (-map 's-trim)))
 
   (defun cbhs:read-import ()
+    "Read a module from the user and format as an import statement."
     (interactive)
     (let ((modid
            (helm-comp-read "Import module: "
-                           (sort (cbhs:haskell-modules)
-                                 'string<)))
-          (qualified? (y-or-n-p "Qualified import? "))))
-    (if qualified?
-        (format "import qualified %s as %s" modid (read-string "As: "))
-      (format "import %s" modid))))
+                           (sort (cbhs:haskell-modules) 'string<)
+                           :volatile t
+                           :must-match t))
+          (qualified? (y-or-n-p "Qualified import? ")))
+      (if qualified?
+          (format "import qualified %s as %s" modid (read-string "As: "))
+        (format "import %s" modid))))
+
+  (defun cbhs:insert-import ()
+    "Interactively insert a Haskell import statement."
+    (save-excursion
+      (goto-char (point-min))
+      (when (search-forward "module" nil t)
+        ;; Move to start of imports list.
+        (search-forward "where")
+        (forward-line)
+        (beginning-of-line)
+        (while (and (s-blank? (current-line))
+                    (not (eobp)))
+          (forward-line))
+        ;; Insert import at the start of the imports line.
+        (open-line 1)
+        (insert (cbhs:read-import)))))
+
   (-each
    (let ((pred (lambda () (derived-mode-p 'haskell-mode))))
      `(("i" "Haskell Import" cbhs:insert-import ,pred)
