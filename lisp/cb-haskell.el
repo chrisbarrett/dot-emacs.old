@@ -321,6 +321,7 @@ With a prefix arg, insert an arrow with padding at point."
 
   (defun cbhs:insert-import ()
     "Interactively insert a Haskell import statement."
+    (interactive)
     (save-excursion
       (goto-char (point-min))
       (when (search-forward "module" nil t)
