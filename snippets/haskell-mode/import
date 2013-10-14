@@ -1,7 +1,0 @@
-# -*- mode: snippet -*-
-# name: import
-# key: im
-# binding: direct-keybinding
-# type: command
-# --
-`(insert (call-interactively 'cbhs:read-import))` $0
