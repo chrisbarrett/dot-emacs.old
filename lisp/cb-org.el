@@ -400,7 +400,7 @@ Each element is a list of form /(key desc symbol)/.")
   :defer t
   :init
   (hook-fns '(prog-mode-hook text-mode-hook comint-mode)
-    (unless (derived-mode-p 'org-mode 'nxml-mode 'sgml-mode)
+    (unless (derived-mode-p 'org-mode 'nxml-mode 'sgml-mode 'snippet-mode)
       (orglink-mode +1)))
   :config
   (progn
