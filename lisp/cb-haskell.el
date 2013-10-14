@@ -322,19 +322,34 @@ With a prefix arg, insert an arrow with padding at point."
   (defun cbhs:insert-import ()
     "Interactively insert a Haskell import statement."
     (interactive)
-    (save-excursion
-      (goto-char (point-min))
-      (when (search-forward "module" nil t)
-        ;; Move to start of imports list.
-        (search-forward "where")
-        (forward-line)
-        (beginning-of-line)
-        (while (and (s-blank? (current-line))
-                    (not (eobp)))
-          (forward-line))
-        ;; Insert import at the start of the imports line.
-        (open-line 1)
-        (insert (cbhs:read-import)))))
+    (let ((import (cbhs:read-import)))
+      ;; Insert the import statement.
+      (emr-reporting-buffer-changes "Inserted import"
+        (save-excursion
+          (goto-char (point-min))
+
+          (cond
+           ;; Move directly to import statements.
+           ((search-forward-regexp (rx bol "import") nil t))
+
+           ;; Move past module declaration.
+           ((search-forward "module" nil t)
+            (search-forward "where")
+            (forward-line)
+            (beginning-of-line)
+            (while (and (s-blank? (current-line))
+                        (not (eobp)))
+              (forward-line)))
+
+           ;; Otherwise insert on first blank line.
+           (t
+            (until (or (eobp) (s-blank? (current-line)))
+              (forward-line))))
+
+          ;; Insert import statement.
+          (beginning-of-line)
+          (open-line 1)
+          (insert import)))))
 
   (-each
    (let ((pred (lambda () (derived-mode-p 'haskell-mode))))
