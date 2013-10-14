@@ -314,10 +314,10 @@ Rewrap in an org-style quote block."
   "Return the number of unread messages in all folders in your maildir."
   (->> (f-directories cbm:mail-directory)
     (-mapcat 'f-directories)
-    (-remove (~ s-matches? (rx (or "low" "archive" "draft" "org"
-                                   "deleted" "trash" "sent"))))
     (-mapcat 'f-directories)
     (-filter (~ s-ends-with? "new"))
+    (-remove (~ s-matches? (rx (or "low" "archive" "draft" "org"
+                                   "deleted" "trash" "sent"))))
     (-map (C length f-files))
     (-sum)))
 
