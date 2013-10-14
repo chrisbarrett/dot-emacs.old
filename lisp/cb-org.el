@@ -244,7 +244,7 @@ Each element is a list of form /(key desc symbol)/.")
        (:endgroup . nil)
        ;; Context tags
        (:startgroup . nil)
-       ("@computer" . ?a)
+       ("@computer" . ?c)
        ("@errand" . ?e)
        ("@home" . ?h)
        ("@leisure" . ?l)
