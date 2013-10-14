@@ -403,13 +403,31 @@ Otherwise, use the value of said variable as argument to a funcall."
   "C-h e a" 'apropos
   "C-h e V" 'apropos-value)
 
-(define-prefix-command 'cb:insertion-map)
-(bind-keys
-  "C-c i"   'cb:insertion-map
-  "C-c i f" 'insert-file
-  "C-c i v" 'insert-variable
-  "C-c i #" 'insert-shebang
-  "C-c i t" 'insert-timestamp)
+;;; Insertion picker
+
+(defvar cb:insertion-commands
+  '(("F" "File" insert-file)
+    ("V" "Lisp Variable" insert-variable)
+    ("#" "Shebang" insert-shebang)
+    ("T" "Timestamp" insert-timestamp)
+    ("U" "UUID" insert-uuid))
+  "A list of commands, of the form (key desc command [pred]).
+If a PRED is supplied the command will only be available if PRED
+evaluates to non-nil.")
+
+(defun cb:insert-option ()
+  (interactive)
+  (let ((opts
+         (--filter (or (equal 3 (length it))
+                       (funcall (elt it 3)))
+                   cb:insertion-commands)))
+    (cl-destructuring-bind (_ _ fn &optional _)
+        (read-option "Insert" 'car 'cadr opts)
+      (if (interactive-form fn)
+          (call-interactively fn)
+        (funcall fn)))))
+
+(bind-key* "C-c i" 'cb:insert-option)
 
 (define-key prog-mode-map (kbd "M-q") 'indent-dwim)
 
