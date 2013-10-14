@@ -384,7 +384,7 @@ Otherwise, use the value of said variable as argument to a funcall."
 
 
 (bind-keys
-  :hook '(text-mode-hook prog-mode-hook)
+  :hook (text-mode-hook prog-mode-hook)
   "<left>"  'you-lack-discipline
   "<right>" 'you-lack-discipline
   "<up>"    'you-lack-discipline
