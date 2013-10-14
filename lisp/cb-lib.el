@@ -211,6 +211,14 @@ in BODY.
      (cl-destructuring-bind ,arglist args
        ,@body)))
 
+(defmacro until (test &rest body)
+  "If TEST yields nil, eval BODY... and repeat.
+The order of execution is thus TEST, BODY, TEST, BODY and so on
+until TEST returns non-nil."
+  (declare (indent 1))
+  `(while (not ,test)
+     ,@body))
+
 ;;; ----------------------------------------------------------------------------
 
 (defun cb:prepare-load-dir (dir add-path)
