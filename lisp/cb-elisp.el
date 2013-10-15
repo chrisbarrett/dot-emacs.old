@@ -161,6 +161,7 @@
 
   (add-hook 'evil-find-doc-hook (C get-elisp-doc intern)))
 
+;; Add elisp functions to global search picker.
 (after 'cb-search
 
   (cbs-define-search-method
