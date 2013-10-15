@@ -597,7 +597,8 @@ the date TARGET-DAY, TARGET-MONTH each year."
                  ,(s-unlines
                    "* %U"
                    "- From :: %?"
-                   "- To :: ")
+                   "- To :: "
+                   "- Subject :: ")
                  :clock-in t
                  :clock-resume t)
 
