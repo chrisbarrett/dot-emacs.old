@@ -142,6 +142,18 @@
                        ac-source-variables
                        ac-source-symbols))))
 
+;; Configure hideshow for IELM.
+(hook-fn 'ielm-mode-hook
+  (with-current-buffer "*ielm*"
+    (message "Setting commnent vars")
+    (setq-local comment-start ";")
+    (setq-local comment-end "")
+    (hs-minor-mode +1)))
+
+(after 'hideshow
+  (add-to-list 'hs-special-modes-alist
+               '(inferior-emacs-lisp-mode "(" ")" ";.*$" nil nil)))
+
 ;; Add evil documentation lookup for elisp.
 (after 'cb-evil
 
