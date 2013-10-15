@@ -96,6 +96,7 @@ Creates STATE bindings for DEFS. DEFS are comprised of alternating string-symbol
           (call-interactively (key-binding (this-command-keys)))))
 
       (define-keys evil-normal-state-map
+        "TAB" 'indent-according-to-mode
         "M-z" 'evil-emacs-state
         "C-z" 'evil-undefine
         "SPC" 'evil-toggle-fold
