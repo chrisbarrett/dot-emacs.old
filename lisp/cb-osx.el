@@ -200,12 +200,12 @@
     "Pass OPEN-ARG to OS X's open command.
 When used interactively, makes a guess at what to pass."
     (interactive
-     (list (-if-let (url (or (visual-url-at-point)
-                             (when (boundp 'w3m-current-url) w3m-current-url)
-                             (when (derived-mode-p 'dired-mode) (dired-get-file-for-visit))
-                             (buffer-file-name)))
-               (read-string (format "Open (%s): " url) nil t url)
-             (read-string "Open: " nil t))))
+     (list (-if-let (url (or
+                          (visual-url-at-point)
+                          (and (boundp 'w3m-current-url) w3m-current-url)
+                          (and (derived-mode-p 'dired-mode) (dired-get-file-for-visit))))
+               (ido-read-file-name "Open: " url)
+             (ido-read-file-name "Open: " nil (buffer-file-name)))))
     (shell-command (format "open '%s'" open-arg)))
 
   (bind-key* "S-s-<return>" 'mac-open-dwim)
