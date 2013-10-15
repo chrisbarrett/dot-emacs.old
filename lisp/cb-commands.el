@@ -273,6 +273,21 @@ Repeated invocations toggle between the two most recently open buffers."
 
 (defalias 'insert-guid 'insert-uuid)
 
+(defun insert-lorem-ipsum (n-paragraphs paragraph-length)
+  "Insert N-PARAGRAPHS of lorem ipsum text into the current buffer.
+PARAGRAPH-LENGTH is one of short, medium, long or verylong."
+  (interactive
+   (list (read-number "Number of paragraphs: " 3)
+         (ido-completing-read "Paragraph length: "
+                              '("short" "medium" "long" "verylong"))))
+  (let ((url (format "http://loripsum.net/api/%s/%s/plaintext"
+                     n-paragraphs paragraph-length)))
+    (insert (with-current-buffer (url-retrieve-synchronously url)
+              ;; Skip HTTP header.
+              (goto-char (point-min))
+              (search-forward "\n\n")
+              (s-trim (buffer-substring (point) (point-max)))))))
+
 (provide 'cb-commands)
 
 ;;; cb-commands.el ends here
