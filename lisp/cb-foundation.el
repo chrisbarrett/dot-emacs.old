@@ -405,6 +405,7 @@ Otherwise, use the value of said variable as argument to a funcall."
   '(("F" "File" insert-file)
     ("V" "Lisp Variable" insert-variable)
     ("#" "Shebang" insert-shebang)
+    ("L" "Lorem Ipsum" insert-lorem-ipsum)
     ("T" "Timestamp" insert-timestamp)
     ("U" "UUID" insert-uuid))
   "A list of commands, of the form (key desc command [pred]).
