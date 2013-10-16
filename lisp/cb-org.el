@@ -558,7 +558,7 @@ the date TARGET-DAY, TARGET-MONTH each year."
       (--each `(("t" "Todo" entry
                  (file+headline org-default-notes-file "Tasks")
                  ,(s-unlines
-                   "* TODO %?                             @computer"
+                   "* TODO %?"
                    "SCHEDULED: %t"
                    ":PROPERTIES:"
                    ":CAPTURED: %U"
@@ -582,7 +582,7 @@ the date TARGET-DAY, TARGET-MONTH each year."
                 ("h" "Habit" entry
                  (file+headline org-default-notes-file "Habits/Recurring")
                  ,(s-unlines
-                   "* TODO %?                              @computer"
+                   "* TODO %?"
                    "SCHEDULED: %t"
                    ":PROPERTIES:"
                    ":STYLE: habit"
