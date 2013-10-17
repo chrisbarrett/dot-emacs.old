@@ -94,10 +94,7 @@
 
 (use-package ace-jump-mode
   :ensure t
-  :bind
-  (("C-x j l" . ace-jump-line-mode)
-   ("C-x j w" . ace-jump-word-mode)
-   ("C-x j j" . ace-jump-word-mode))
+  :bind ("S-<return>" . ace-jump-word-mode)
   :init
   (hook-fn 'evil-mode-hook
     (require 'ace-jump-mode))
