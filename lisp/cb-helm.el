@@ -58,9 +58,9 @@
       (define-key helm-map (kbd "C-[") 'helm-keyboard-quit))
 
     (after 'evil
+      (bind-key "C-SPC" 'helm-mini)
       (bind-keys
         :overriding? t
-        "C-SPC"   'helm-mini
         "C-x C-b" 'helm-buffers-list
         "M-b" 'helm-buffers-list
         "M-i" 'helm-imenu
