@@ -198,15 +198,20 @@
 
   (defun mac-open-dwim (open-arg)
     "Pass OPEN-ARG to OS X's open command.
-When used interactively, makes a guess at what to pass."
+When used interactively, makes a guess at what to pass.
+When called with a prefix arg, open the current directory in the Finder."
     (interactive
-     (list (-if-let (url (or
-                          (visual-url-at-point)
-                          (and (boundp 'w3m-current-url) w3m-current-url)
-                          (and (derived-mode-p 'dired-mode) (dired-get-file-for-visit))))
-               (ido-read-file-name "Open: " url)
-             (ido-read-file-name "Open: " nil (buffer-file-name)))))
-    (shell-command (format "open '%s'" open-arg)))
+     (list
+      (or
+       current-prefix-arg
+       (-if-let (url (or
+                      (visual-url-at-point)
+                      (and (boundp 'w3m-current-url) w3m-current-url)
+                      (and (derived-mode-p 'dired-mode) (dired-get-file-for-visit))))
+           (ido-read-file-name "Open: " url)
+         (ido-read-file-name "Open: " nil (buffer-file-name))))))
+
+    (shell-command (format "open '%s'" (if (equal '(4) open-arg) "." open-arg))))
 
   (bind-key* "S-s-<return>" 'mac-open-dwim)
 
