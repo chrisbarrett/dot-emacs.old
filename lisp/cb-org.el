@@ -1030,8 +1030,42 @@ Switch projects and subprojects from NEXT back to TODO."
   ;; plain links.
   (use-package org-attach
     :config
-    (setq org-link-abbrev-alist '(("att" . org-attach-expand-link))
-          org-attach-directory (f-join org-directory "data")))
+    (progn
+      (setq org-link-abbrev-alist '(("att" . org-attach-expand-link))
+            org-attach-directory (f-join org-directory "data"))
+
+      ;; HACK: Redefine `org-attach-attach' to use helm to read files.
+      (after 'org-attach
+        (defun org-attach-attach (file &optional visit-dir method)
+          "Move/copy/link FILE into the attachment directory of the current task.
+If VISIT-DIR is non-nil, visit the directory with dired.
+METHOD may be `cp', `mv', `ln', or `lns' default taken from
+`org-attach-method'."
+          (interactive
+           (list
+            (helm-read-file-name "File to keep as an attachment: ")
+            current-prefix-arg))
+          (setq method (or method org-attach-method))
+          (let ((basename (file-name-nondirectory file)))
+            (when (and org-attach-file-list-property (not org-attach-inherited))
+              (org-entry-add-to-multivalued-property
+               (point) org-attach-file-list-property basename))
+            (let* ((attach-dir (org-attach-dir t))
+                   (fname (expand-file-name basename attach-dir)))
+              (cond
+               ((eq method 'mv)	(rename-file file fname))
+               ((eq method 'cp)	(copy-file file fname))
+               ((eq method 'ln) (add-name-to-file file fname))
+               ((eq method 'lns) (make-symbolic-link file fname)))
+              (org-attach-commit)
+              (org-attach-tag)
+              (cond ((eq org-attach-store-link-p 'attached)
+                     (org-attach-store-link fname))
+                    ((eq org-attach-store-link-p t)
+                     (org-attach-store-link file)))
+              (if visit-dir
+                  (dired attach-dir)
+                (message "File \"%s\" is now a task attachment." basename))))))))
 
   ;; `org-mime' provides MIME exporting functions, allowing you to export org
   ;; buffers to HTML emails.
