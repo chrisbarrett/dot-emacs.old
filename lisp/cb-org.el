@@ -827,6 +827,7 @@ Return nil if there are no items to display."
       ;; Key bindings
 
       (hook-fn 'org-agenda-mode-hook
+        (local-set-key (kbd "C") 'org-agenda-capture)
         (local-set-key (kbd "g") 'org-agenda-goto-date)
         (local-set-key (kbd "j") 'org-agenda-next-item)
         (local-set-key (kbd "k") 'org-agenda-previous-item))
