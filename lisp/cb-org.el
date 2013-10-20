@@ -826,11 +826,19 @@ Return nil if there are no items to display."
 
       ;; Key bindings
 
-      (hook-fn 'org-agenda-mode-hook
-        (local-set-key (kbd "C") 'org-agenda-capture)
-        (local-set-key (kbd "g") 'org-agenda-goto-date)
-        (local-set-key (kbd "j") 'org-agenda-next-item)
-        (local-set-key (kbd "k") 'org-agenda-previous-item))
+      (after 'org-agenda-mode
+
+        (after 'evil-mode
+          (define-key org-agenda-mode-map (kbd "L") 'org-agenda-log-mode)
+          (define-key org-agenda-mode-map (kbd "l") 'evil-forward-char)
+          (define-key org-agenda-mode-map (kbd "h") 'evil-backward-char)
+          (define-key org-agenda-mode-map (kbd "C-f") 'evil-scroll-page-down)
+          (define-key org-agenda-mode-map (kbd "C-b") 'evil-scroll-page-up))
+
+        (define-key org-agenda-mode-map (kbd "C") 'org-agenda-capture)
+        (define-key org-agenda-mode-map (kbd "g") 'org-agenda-goto-date)
+        (define-key org-agenda-mode-map (kbd "j") 'org-agenda-next-item)
+        (define-key org-agenda-mode-map (kbd "k") 'org-agenda-previous-item))
 
       (after 'smartparens
         (hook-fn 'org-agenda-mode-hook
