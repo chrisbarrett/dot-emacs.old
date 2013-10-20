@@ -743,7 +743,7 @@ See `cb-org:show-agenda-idle-delay'.")
       ;; Commands for a custom agenda task that will email the current day's
       ;; items to `user-mail-address'.
 
-      (defun* cb-org:printable-agenda-string ()
+      (defun cb-org:printable-agenda-string ()
         "Return a formatted string of the agenda suitable for printing or emailing.
 Return nil if there are no items to display."
         (let ((date (calendar-gregorian-from-absolute (org-today))))
@@ -790,7 +790,7 @@ Return nil if there are no items to display."
                          (-sort 'string< (-map 'cadr (cdr it)))))
             ;; Create an org-formatted string where the category is the headers and its
             ;; items are an unordered list.
-            (--map (destructuring-bind (category &rest items) it
+            (--map (cl-destructuring-bind (category &rest items) it
                      (concat "* " category "\n"
                              (s-join "\n" (--map (s-prepend "- " it) items)))))
             ;; Recombine.
