@@ -67,10 +67,8 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
 
   (use-package evil
     :ensure   t
-    :commands evil-mode
-    :init
+    :config
     (progn
-      (add-hook 'after-init-hook 'evil-mode)
 
       (defmacro evil-define-keys (state keymap &rest defs)
         "Variadic version of `evil-define-key'.
@@ -86,9 +84,7 @@ Creates STATE bindings for DEFS. DEFS are comprised of alternating string-symbol
         (declare (indent 1))
         `(after 'evil
            ,@(--map `(evil-global-set-key ,state (kbd ,(car it)) ,(cadr it))
-                    (-partition-all 2 defs)))))
-    :config
-    (progn
+                    (-partition-all 2 defs))))
 
       (defun evil-undefine ()
         (interactive)
@@ -132,16 +128,17 @@ Creates STATE bindings for DEFS. DEFS are comprised of alternating string-symbol
       ;; Evil commands should respect visual-line mode and operate on the visible
       ;; line endings rather than logical lines.
 
-      (loop for (key cmd) in
-            '(("j" evil-next-visual-line)
-              ("k" evil-previous-visual-line)
-              ("$" evil-end-of-visual-line)
-              ("^" evil-first-non-blank-of-visual-line)
-              ("0" evil-beginning-of-visual-line))
-            for state in '(motion normal)
-            for hook in  '(prog-mode-hook text-mode-hook)
-            do (eval `(hook-fn ',hook
-                        (evil-local-set-key ',state ,key ',cmd))))
+      (cl-loop
+       for (key cmd) in
+       '(("j" evil-next-visual-line)
+         ("k" evil-previous-visual-line)
+         ("$" evil-end-of-visual-line)
+         ("^" evil-first-non-blank-of-visual-line)
+         ("0" evil-beginning-of-visual-line))
+       for state in '(motion normal)
+       for hook in  '(prog-mode-hook text-mode-hook)
+       do (eval `(hook-fn ',hook
+                   (evil-local-set-key ',state ,key ',cmd))))
 
       (evil-define-text-object evil-line (count &rest _)
         "Move COUNT - 1 lines down."
@@ -231,9 +228,6 @@ The insertion will be repeated COUNT times."
 
   (use-package surround
     :ensure t
-    :defer  t
-    :idle   (require 'surround)
-    :init   (after 'evil (require 'surround))
     :config
     (progn
       (global-surround-mode +1)
