@@ -281,6 +281,15 @@ Remove horizontal whitespace if the insertion results in a ++."
     (define-path cb:clang-complete-dir "lib/clang-complete-async/")
     (setq ac-clang-complete-executable (concat cb:clang-complete-dir "clang-complete"))))
 
+(use-package ac-c-headers
+  :ensure t
+  :defer t
+  :init
+  (hook-fn 'c-mode-hook
+    (require 'ac-c-headers)
+    (add-to-list 'ac-sources 'ac-source-c-headers)
+    (add-to-list 'ac-sources 'ac-source-c-header-symbols t)))
+
 (use-package c-eldoc
   :ensure   t
   :commands c-turn-on-eldoc-mode
