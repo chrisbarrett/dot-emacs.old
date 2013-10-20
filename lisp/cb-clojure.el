@@ -27,6 +27,7 @@
 ;;; Code:
 
 (require 'use-package)
+(require 'cb-lib)
 
 (use-package clojure-mode
   :ensure t
@@ -35,30 +36,30 @@
   :config
   (progn
 
-    (defun cb:switch-to-nrepl ()
-      "Start nrepl or switch to an existing nrepl buffer."
+    (defun cb:switch-to-cider ()
+      "Start cider or switch to an existing cider buffer."
       (interactive)
-      (-if-let (buf (get-buffer "*nrepl*"))
-        (nrepl-switch-to-repl-buffer buf)
-        (nrepl-jack-in)))
+      (-if-let (buf (get-buffer "*cider*"))
+        (cider-switch-to-repl-buffer buf)
+        (cider-jack-in)))
 
     (hook-fn 'clojure-mode-hook
       (subword-mode +1)
-      (local-set-key (kbd "C-c C-z") 'cb:switch-to-nrepl))))
+      (local-set-key (kbd "C-c C-z") 'cb:switch-to-cider))))
 
-(use-package nrepl
+(use-package cider
   :ensure   t
   :commands nrepl-jack-in
   :config
   (progn
 
-    (defadvice nrepl-switch-to-repl-buffer (after insert-at-end-of-nrepl-line activate)
-      "Enter insertion mode at the end of the line when switching to nrepl."
+    (defadvice cider-switch-to-repl-buffer (after insert-at-end-of-cider-line activate)
+      "Enter insertion mode at the end of the line when switching to cider."
       (cb:append-buffer))
 
-    (defadvice back-to-indentation (around move-to-nrepl-bol activate)
-      "Move to position after prompt in nREPL."
-      (if (equal major-mode 'nrepl-mode)
+    (defadvice back-to-indentation (around move-to-cider-bol activate)
+      "Move to position after prompt in cider."
+      (if (equal major-mode 'cider-mode)
           (nrepl-bol)
         ad-do-it))
 
@@ -73,23 +74,22 @@
       (interactive)
       (-when-let (buf (--first-buffer (derived-mode-p 'clojure-mode)))
         (with-current-buffer buf
-          (nrepl-eval-buffer))))
+          (cider-eval-buffer))))
 
     (setq
-     nrepl-popup-stacktraces    nil
+     cider-popup-stacktraces    nil
      nrepl-hide-special-buffers t)
 
-    (set-face-attribute 'nrepl-error-highlight-face t :inherit 'error)
-    (set-face-underline 'nrepl-error-highlight-face nil)
+    (set-face-attribute 'cider-error-highlight-face t :inherit 'error)
+    (set-face-underline 'cider-error-highlight-face nil)
 
     (hook-fn 'clojure-mode-hook
-      (local-set-key (kbd "C-c C-z") 'cb:switch-to-nrepl)
-      (local-set-key (kbd "C-c C-h") 'nrepl-doc)
-      (local-set-key (kbd "C-c C-f") 'nrepl-eval-buffer))
+      (local-set-key (kbd "C-c C-z") 'cb:switch-to-cider)
+      (local-set-key (kbd "C-c C-h") 'cider-doc)
+      (local-set-key (kbd "C-c C-f") 'cider-eval-buffer))
 
-    (hook-fns '(nrepl-mode-hook nrepl-interaction-mode-hook)
-      (nrepl-turn-on-eldoc-mode)
-      (subword-mode +1)
+    (hook-fns '(cider-mode-hook cider-interaction-mode-hook)
+      (cider-turn-on-eldoc-mode)
       (local-set-key (kbd "C-l") 'nrepl-clear-buffer)
       (local-set-key (kbd "C-c C-z") 'cb:switch-to-clojure)
       (local-set-key (kbd "C-c C-f") 'cb:eval-last-clj-buffer))))
@@ -101,12 +101,12 @@
    ac-nrepl-doc)
   :init
   (progn
-    (add-hook 'nrepl-mode-hook 'ac-nrepl-setup)
-    (add-hook 'nrepl-interaction-mode-hook 'ac-nrepl-setup)
+    (add-hook 'cider-mode-hook 'ac-cider-setup)
+    (add-hook 'cider-interaction-mode-hook 'ac-cider-setup)
     (after 'auto-complete
-      (add-to-list 'ac-modes 'nrepl-mode)))
+      (add-to-list 'ac-modes 'cider-mode)))
   :config
-  (define-key nrepl-interaction-mode-map (kbd "C-c C-d") 'ac-nrepl-popup-doc))
+  (define-key nrepl-cider-mode-map (kbd "C-c C-d") 'ac-nrepl-popup-doc))
 
 (use-package midje-mode
   :ensure   t
