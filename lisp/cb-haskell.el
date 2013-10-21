@@ -219,7 +219,7 @@ With a prefix arg, insert an arrow with padding at point."
   (hook-fn 'cb:haskell-modes-hook
     (smart-insert-operator-hook)
     (local-set-key (kbd "-") 'cb-hs:smart-minus)
-    (local-set-key (kbd "=") '(command (smart-insert-operator "=")))
+    (local-set-key (kbd "=") (command (smart-insert-operator "=")))
     (local-set-key (kbd "<") 'cb-hs:smart-lt)
     (local-set-key (kbd ".") 'cb-hs:smart-dot)
     (local-set-key (kbd ":") 'cb-hs:smart-colon)
