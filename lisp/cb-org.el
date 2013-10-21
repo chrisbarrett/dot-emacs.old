@@ -550,8 +550,8 @@ the date TARGET-DAY, TARGET-MONTH each year."
 
       ;; Enter insertion mode in capture buffer.
       (hook-fn 'org-capture-mode-hook
-        (when (fboundp 'evil-append-line)
-          (evil-append-line 1)))
+        (when (fboundp 'evil-insert-state)
+          (evil-insert-state)))
 
       (add-hook 'org-capture-before-finalize-hook 'indent-buffer 'append)
 
