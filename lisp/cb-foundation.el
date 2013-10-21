@@ -66,6 +66,7 @@
  vc-handled-backends          '(Git)
  system-uses-terminfo         nil
  bookmark-default-file        (concat cb:tmp-dir "bookmarks")
+ sentence-end-double-space nil
  )
 (setq-default
  tab-width                    4
