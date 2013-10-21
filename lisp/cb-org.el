@@ -828,17 +828,21 @@ Return nil if there are no items to display."
 
       (after 'org-agenda
 
-        (after 'evil-mode
-          (define-key org-agenda-mode-map (kbd "L") 'org-agenda-log-mode)
-          (define-key org-agenda-mode-map (kbd "l") 'evil-forward-char)
-          (define-key org-agenda-mode-map (kbd "h") 'evil-backward-char)
-          (define-key org-agenda-mode-map (kbd "C-f") 'evil-scroll-page-down)
-          (define-key org-agenda-mode-map (kbd "C-b") 'evil-scroll-page-up))
+        (bind-keys
+          :map org-agenda-mode-map
+          "C" 'org-agenda-capture
+          "g" 'org-agenda-goto-date
+          "j" 'org-agenda-next-item
+          "k" 'org-agenda-previous-item)
 
-        (define-key org-agenda-mode-map (kbd "C") 'org-agenda-capture)
-        (define-key org-agenda-mode-map (kbd "g") 'org-agenda-goto-date)
-        (define-key org-agenda-mode-map (kbd "j") 'org-agenda-next-item)
-        (define-key org-agenda-mode-map (kbd "k") 'org-agenda-previous-item))
+        (after 'evil-mode
+          (bind-keys
+            :map org-agenda-mode-map
+            "L"   'org-agenda-log-mode
+            "l"   'evil-forward-char
+            "h"   'evil-backward-char
+            "C-f" 'evil-scroll-page-down
+            "C-b" 'evil-scroll-page-up)))
 
       (after 'smartparens
         (hook-fn 'org-agenda-mode-hook
