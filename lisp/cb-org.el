@@ -826,7 +826,7 @@ Return nil if there are no items to display."
 
       ;; Key bindings
 
-      (after 'org-agenda-mode
+      (after 'org-agenda
 
         (after 'evil-mode
           (define-key org-agenda-mode-map (kbd "L") 'org-agenda-log-mode)
