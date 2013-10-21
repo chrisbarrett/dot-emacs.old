@@ -116,7 +116,8 @@ PRED is a predicate to determine whether search method is currently available.
   (interactive)
   (message "Select search method")
   (let ((default-search-term
-          (or (current-region) (thing-at-point 'symbol)))
+          (-when-let (s (or (current-region) (thing-at-point 'symbol)))
+            (substring-no-properties s)))
         (m
          (read-option
           " *Select Search*"
