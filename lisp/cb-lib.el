@@ -648,12 +648,10 @@ Return the element in OPTIONS corresponding to the user's selection.
           (let* ((longest-key
                   (-max (-map (-compose 'length option-key-fn) options)))
                  ;; Transform the options list into a list of lines of
-                 ;; '[key] desc'
+                 ;; "[key] desc"
                  (lines
                   (->> options
-                    (-sort (lambda (l r)
-                             (string< (s-downcase (funcall option-key-fn l))
-                                      (s-downcase (funcall option-key-fn r)))))
+                    (-sort (-on 'string< (-compose 's-downcase option-key-fn)))
                     (--map
                      (let ((key
                             (propertize (funcall option-key-fn it) 'face 'option-key)))
