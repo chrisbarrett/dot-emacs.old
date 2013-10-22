@@ -194,7 +194,7 @@ Otherwise insert an arrow at the end of the line."
   (defun cb-hs:smart-minus (&optional arg)
     "Insert an arrow if we're in a typesig, otherwise perform a normal insertion.
 With a prefix arg, insert an arrow with padding at point."
-    (interactive "*p")
+    (interactive "*P")
     (cond
      (arg
       (just-one-space)
