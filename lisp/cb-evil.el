@@ -70,14 +70,6 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
     :config
     (progn
 
-      (defmacro evil-define-keys (state keymap &rest defs)
-        "Variadic version of `evil-define-key'.
-Creates STATE bindings for keymap. DEFS are alternating keys and functions."
-        (declare (indent 2))
-        `(after 'evil
-           ,@(--map `(evil-define-key ,state ,keymap (kbd ,(car it)) ,(cadr it))
-                    (-partition-all 2 defs))))
-
       (defmacro evil-global-set-keys (state &rest defs)
         "Variadic version of `evil-global-set-key'
 Creates STATE bindings for DEFS. DEFS are comprised of alternating string-symbol pairs."

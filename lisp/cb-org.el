@@ -258,7 +258,7 @@ Each element is a list of form /(key desc symbol)/.")
                    ,(concat "1:00 2:00 3:00 4:00 5:00 6:00 7:00 8:00 9:00 "
                             "0:05 0:10 0:30")))
 
-    (evil-define-keys 'normal org-mode-map
+    (evil-define-key 'normal org-mode-map
       "<return>" 'org-return
       "M-P" 'outline-previous-visible-heading
       "M-N" 'outline-next-visible-heading

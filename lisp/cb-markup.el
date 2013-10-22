@@ -109,7 +109,7 @@
       (sp-with-modes '(markdown-mode)
         (sp-local-pair "```" "```")))
 
-    (evil-define-keys 'normal markdown-mode-map
+    (evil-define-key 'normal markdown-mode-map
       "M-P" 'outline-previous-visible-heading
       "M-N" 'outline-next-visible-heading)
 
