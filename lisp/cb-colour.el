@@ -161,14 +161,7 @@
   (defun cbcl:save-theme-settings (theme)
     "Save THEME to a file at `cbcl:saved-theme-file'."
     (when after-init-time
-      (message "Saving theme...")
-      (async-start
-       `(lambda ()
-          (package-initialize)
-          (require 'f)
-          (f-write-text (prin1-to-string '(,theme)) 'utf-8
-                        ,cbcl:saved-theme-file))
-       (lambda (x) (message "Saving theme...done")))))
+      (f-write (format "(%s)" theme) 'utf-8 cbcl:saved-theme-file)))
 
   (add-hook 'cb:color-theme-changed-hook 'cbcl:save-theme-settings)
 
