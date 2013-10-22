@@ -31,10 +31,121 @@
 (require 's)
 (require 'cb-search)
 (autoload 'emr-blank-line? "emr")
+(autoload 'smart-insert-operator "smart-operator")
 (autoload 'emr-line-matches? "emr")
 (autoload 'haskell-cabal-find-file "haskell-cabal")
 (autoload 'smart-insert-operator "smart-operator")
 (autoload 'smart-insert-operator-hook "smart-operator")
+
+;;; ----------------------------------------------------------------------------
+;;; Define custom smart operators for haskell.
+
+(defun cbhs:smart-comma ()
+  (interactive)
+  (cond
+   ((s-matches? (rx bol (* space) eol)
+                (buffer-substring (line-beginning-position) (point)))
+    (insert ", ")
+    (hi2-indent-line))
+   (t
+    (insert ","))))
+
+(defun cbhs:smart-pipe ()
+  "Insert a pipe operator. Add padding, unless we're inside a list."
+  (interactive)
+  (if (s-matches? (rx "[" (* (any "|" alnum)) eol)
+                  (buffer-substring (line-beginning-position) (point)))
+      (insert "|")
+    (smart-insert-operator "|")))
+
+(defun cbhs:looking-at-module-or-constructor? ()
+  (-when-let (sym (thing-at-point 'symbol))
+    (s-uppercase? (substring sym 0 1))))
+
+(defun cbhs:smart-dot (&optional arg)
+  "Insert a period. Add padding, unless this line is an import statement.
+With a prefix arg, insert a period without padding."
+  (interactive "*P")
+  (cond
+   (arg
+    (insert "."))
+   ((cbhs:looking-at-module-or-constructor?)
+    (insert "."))
+   (t
+    (smart-insert-operator "."))))
+
+(defun cbhs:smart-colon ()
+  "Insert either a type binding colon pair or a cons colon."
+  (interactive)
+  (if (s-matches? (rx bol (* space) (? ",") (* space)
+                      (+ (not (any space "("))) (* space) eol)
+                  (buffer-substring (line-beginning-position) (point)))
+      (atomic-change-group
+        (just-one-space)
+        (insert "::")
+        (just-one-space))
+    (insert ":")))
+
+(defun cbhs:insert-arrow (arrow)
+  "If point is inside a tuple, insert an arrow inside.
+Otherwise insert an arrow at the end of the line."
+  (atomic-change-group
+    (cl-destructuring-bind (&key beg end op &allow-other-keys)
+        (sp-get-sexp t)
+      ;; Check whether point is inside a tuple.
+      (if (and (equal op "(")
+               (> (point) beg)
+               (< (point) end))
+          (sp-end-of-sexp)
+        (end-of-line)))
+    ;; Insert arrow.
+    (just-one-space)
+    (insert arrow)
+    (just-one-space)))
+
+(defun cbhs:at-typedecl? ()
+  (s-matches? "::" (buffer-substring (line-beginning-position) (point))))
+
+(defun cbhs:smart-minus (&optional arg)
+  "Insert an arrow if we're in a typesig, otherwise perform a normal insertion.
+With a prefix arg, insert an arrow with padding at point."
+  (interactive "*P")
+  (cond
+   (arg
+    (just-one-space)
+    (insert "->")
+    (just-one-space))
+   ((cbhs:at-typedecl?)
+    (cbhs:insert-arrow "->"))
+   (t
+    (smart-insert-operator "-"))))
+
+(defun cbhs:smart-lt (&optional arg)
+  "Insert a less than symbol. With a prefix arg, insert an arrow at point."
+  (interactive "*P")
+  (cond
+   (arg
+    (just-one-space)
+    (insert "<-")
+    (just-one-space))
+   (t
+    (smart-insert-operator "<"))))
+
+(bind-keys
+  :hook cb:haskell-modes-hook
+  "," 'cbhs:smart-comma
+  "-" 'cbhs:smart-minus
+  "=" (command (smart-insert-operator "="))
+  "<" 'cbhs:smart-lt
+  "." 'cbhs:smart-dot
+  ":" 'cbhs:smart-colon
+  "|" 'cbhs:smart-pipe
+  "?" (command (smart-insert-operator "?"))
+  "$" (command (smart-insert-operator "$")))
+
+(add-hook 'cb:haskell-modes-hook 'smart-insert-operator-hook)
+
+;;; ----------------------------------------------------------------------------
 
 ;; Add search commands for hoogle.
 (cbs-define-search-method
@@ -142,116 +253,6 @@
 ;; Enable auto-complete in haskell buffers.
 (after 'auto-complete
   (-each cb:haskell-modes (~ add-to-list 'ac-modes)))
-
-;; Define custom smart operators for haskell.
-(after 'smart-operator
-
-  (defun cbhs:smart-comma ()
-    (interactive)
-    (cond
-     ((s-matches? (rx bol (* space) eol)
-                  (buffer-substring (line-beginning-position) (point)))
-      (insert ", ")
-      (hi2-indent-line))
-     (t
-      (insert ","))))
-
-  (defun cbhs:smart-pipe ()
-    "Insert a pipe operator. Add padding, unless we're inside a list."
-    (interactive)
-    (if (s-matches? (rx "[" (* (any "|" alnum)) eol)
-                    (buffer-substring (line-beginning-position) (point)))
-        (insert "|")
-      (smart-insert-operator "|")))
-
-  (defun cbhs:looking-at-module-or-constructor? ()
-    (-when-let (sym (thing-at-point 'symbol))
-      (s-uppercase? (substring sym 0 1))))
-
-  (defun cbhs:smart-dot (&optional arg)
-    "Insert a period. Add padding, unless this line is an import statement.
-With a prefix arg, insert a period without padding."
-    (interactive "*P")
-    (cond
-     (arg
-      (insert "."))
-     ((cbhs:looking-at-module-or-constructor?)
-      (insert "."))
-     (t
-      (smart-insert-operator "."))))
-
-  (defun cbhs:smart-colon ()
-    "Insert either a type binding colon pair or a cons colon."
-    (interactive)
-    (if (s-matches? (rx bol (* space) (? ",") (* space)
-                        (+ (not (any space "("))) (* space) eol)
-                    (buffer-substring (line-beginning-position) (point)))
-        (atomic-change-group
-          (just-one-space)
-          (insert "::")
-          (just-one-space))
-      (insert ":")))
-
-  (defun cbhs:insert-arrow (arrow)
-    "If point is inside a tuple, insert an arrow inside.
-Otherwise insert an arrow at the end of the line."
-    (atomic-change-group
-      (cl-destructuring-bind (&key beg end op &allow-other-keys)
-          (sp-get-sexp t)
-        ;; Check whether point is inside a tuple.
-        (if (and (equal op "(")
-                 (> (point) beg)
-                 (< (point) end))
-            (sp-end-of-sexp)
-          (end-of-line)))
-      ;; Insert arrow.
-      (just-one-space)
-      (insert arrow)
-      (just-one-space)))
-
-  (defun cbhs:at-typedecl? ()
-    (s-matches? "::" (buffer-substring (line-beginning-position) (point))))
-
-  (defun cbhs:smart-minus (&optional arg)
-    "Insert an arrow if we're in a typesig, otherwise perform a normal insertion.
-With a prefix arg, insert an arrow with padding at point."
-    (interactive "*P")
-    (cond
-     (arg
-      (just-one-space)
-      (insert "->")
-      (just-one-space))
-     ((cbhs:at-typedecl?)
-      (cbhs:insert-arrow "->"))
-     (t
-      (smart-insert-operator "-"))))
-
-  (defun cbhs:smart-lt (&optional arg)
-    "Insert a less than symbol. With a prefix arg, insert an arrow at point."
-    (interactive "*P")
-    (cond
-     (arg
-      (just-one-space)
-      (insert "<-")
-      (just-one-space))
-     (t
-      (smart-insert-operator "<"))))
-
-  (after 'haskell-mode
-    (bind-keys
-      :map haskell-mode-map
-      "," 'cbhs:smart-comma
-      "-" 'cbhs:smart-minus
-      "=" (command (smart-insert-operator "="))
-      "<" 'cbhs:smart-lt
-      "." 'cbhs:smart-dot
-      ":" 'cbhs:smart-colon
-      "|" 'cbhs:smart-pipe
-      "?" (command (smart-insert-operator "?"))
-      "$" (command (smart-insert-operator "$"))))
-
-  (hook-fn 'cb:haskell-modes-hook
-    (smart-insert-operator-hook)))
 
 ;; Configure Smartparens.
 (after 'smartparens
