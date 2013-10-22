@@ -364,6 +364,7 @@ Find the first window where PRED-FORM is not nil."
 * BINDINGS are alternating strings and functions to use for
   keybindings."
   (declare (indent 0))
+  (cl-assert (not (and map overriding?)))
   (let ((bs (->> bindings (-partition-all 2) (--remove (keywordp (car it))))))
     `(progn
        ,@(cl-loop for (k f) in bs collect
