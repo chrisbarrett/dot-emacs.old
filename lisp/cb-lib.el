@@ -38,8 +38,9 @@
 (defalias 'K '-const)
 (defalias 'I 'identity)
 
-(defun cblib:quote-if-fn (fn)
-  (if (symbolp fn) `',fn fn))
+(eval-and-compile
+  (defun cblib:quote-if-fn (fn)
+    (if (symbolp fn) `',fn fn)))
 
 (defmacro N (fn)
   "Like `-not', but does not require FN to be quoted."
