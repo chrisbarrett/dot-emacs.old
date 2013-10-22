@@ -247,6 +247,11 @@ The insertion will be repeated COUNT times."
 
   )
 
+(use-package vimrc-mode
+  :ensure t
+  :commands vimrc-mode
+  :mode ("vimrc$" . vimrc-mode))
+
 (provide 'cb-evil)
 
 ;; Local Variables:
