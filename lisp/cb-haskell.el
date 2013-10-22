@@ -123,10 +123,21 @@
 
   (add-hook 'cb:haskell-modes-hook 'cbhs:apply-unicode))
 
-;; Use ghc flymake checker because the cabal checker doesn't work for standalone files.
+;; Use hdevtools checker for projects and ghc checker for standalone files.
 (after 'flycheck
-  (hook-fn 'haskell-mode-hook
-    (flycheck-select-checker 'haskell-ghc)))
+
+  (defun cbhs:configure-flycheck ()
+    (flycheck-select-checker
+     (if (and
+          (buffer-file-name)
+          (locate-dominating-file
+           (f-dirname (buffer-file-name))
+           (C (~ -any? (~ s-matches? "\\.cabal$")) f-files)))
+
+         'haskell-hdevtools
+       'haskell-ghc)))
+
+  (add-hook 'haskell-mode-hook 'cbhs:configure-flycheck))
 
 ;; Enable auto-complete in haskell buffers.
 (after 'auto-complete
