@@ -125,7 +125,9 @@
     "C-c m m" 'mc/edit-lines
     "C-c m a" 'mc/mark-all-dwim
     "C-c m n" 'mc/mark-next-like-this
-    "C-c m p" 'mc/mark-previous-like-this))
+    "C-c m p" 'mc/mark-previous-like-this)
+  :config
+  (setq mc/list-file (f-join cb:tmp-dir "multiple-cursors-list.el")))
 
 (provide 'cb-productivity)
 
