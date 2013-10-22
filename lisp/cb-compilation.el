@@ -72,6 +72,11 @@
     (add-to-list 'compilation-finish-functions 'cb:compile-autoclose)
     (add-hook 'compilation-filter-hook 'cb:ansi-colourise-compilation)))
 
+(use-package ispell
+  :config
+  (defadvice ispell-pdict-save (around always-save activate)
+    (noflet ((y-or-n-p () t)) ad-do-it)))
+
 (use-package flyspell
   :diminish flyspell-mode
   :init (unless noninteractive (require 'flyspell))
