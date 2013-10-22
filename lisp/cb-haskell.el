@@ -135,6 +135,14 @@
 ;; Define custom smart operators for haskell.
 (after 'smart-operator
 
+  (defun cbhs:smart-comma ()
+    (cond
+     ((s-matches? (rx bol (* space) eol) (current-line))
+      (insert ",")
+      (hi2-indent-line))
+     (t
+      (insert ","))))
+
   (defun cb-hs:smart-pipe ()
     "Insert a pipe operator. Add padding, unless we're inside a list."
     (interactive)
@@ -150,7 +158,7 @@
   (defun cb-hs:smart-dot (&optional arg)
     "Insert a period. Add padding, unless this line is an import statement.
 With a prefix arg, insert a period without padding."
-    (interactive "*p")
+    (interactive "*P")
     (cond
      (arg
       (insert "."))
@@ -207,7 +215,7 @@ With a prefix arg, insert an arrow with padding at point."
 
   (defun cb-hs:smart-lt (&optional arg)
     "Insert a less than symbol. With a prefix arg, insert an arrow at point."
-    (interactive "*p")
+    (interactive "*P")
     (cond
      (arg
       (just-one-space)
