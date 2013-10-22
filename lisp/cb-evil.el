@@ -40,8 +40,8 @@ Each handler should take the search string as an argument.")
   :when (true? cb:use-vim-keybindings?)
 
   (defun cbevil:error-backward-search-start-pos (pos)
-    "Wrap the search to the beginning of the buffer if there are no
-errors forward of POS."
+    "Wrap the search to the end of the buffer if there are no
+errors before POS."
     (if (and (eq (current-buffer) flyspell-old-buffer-error)
              (eq pos flyspell-old-pos-error))
         (cond
