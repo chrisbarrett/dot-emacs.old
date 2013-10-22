@@ -303,9 +303,7 @@ The insertion will be repeated COUNT times."
     (after 'evil
       (define-keys evil-normal-state-map
         "C--" 'evil-numbers/dec-at-pt
-        "C-+" 'evil-numbers/inc-at-pt)))
-
-  )
+        "C-+" 'evil-numbers/inc-at-pt))))
 
 (use-package vimrc-mode
   :ensure t
