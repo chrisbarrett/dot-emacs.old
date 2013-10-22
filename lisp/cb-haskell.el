@@ -224,16 +224,24 @@ With a prefix arg, insert an arrow with padding at point."
      (t
       (smart-insert-operator "<"))))
 
+  (after 'haskell-mode
+    (--each (list haskell-mode-map
+                  inferior-haskell-mode-map
+                  haskell-c-mode-map)
+      (bind-keys
+        :map it
+        "," 'cbhs:smart-comma
+        "-" 'cb-hs:smart-minus
+        "=" (command (smart-insert-operator "="))
+        "<" 'cb-hs:smart-lt
+        "." 'cb-hs:smart-dot
+        ":" 'cb-hs:smart-colon
+        "|" 'cb-hs:smart-pipe
+        "?" (command (smart-insert-operator "?"))
+        "$" (command (smart-insert-operator "$")))))
+
   (hook-fn 'cb:haskell-modes-hook
-    (smart-insert-operator-hook)
-    (local-set-key (kbd "-") 'cb-hs:smart-minus)
-    (local-set-key (kbd "=") (command (smart-insert-operator "=")))
-    (local-set-key (kbd "<") 'cb-hs:smart-lt)
-    (local-set-key (kbd ".") 'cb-hs:smart-dot)
-    (local-set-key (kbd ":") 'cb-hs:smart-colon)
-    (local-set-key (kbd "|") 'cb-hs:smart-pipe)
-    (local-set-key (kbd "?") (command (smart-insert-operator "?")))
-    (local-set-key (kbd "$") (command (smart-insert-operator "$")))))
+    (smart-insert-operator-hook)))
 
 ;; Configure Smartparens.
 (after 'smartparens
