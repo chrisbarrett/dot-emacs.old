@@ -61,8 +61,10 @@
     :key "s"
     :command
     (lambda (q)
-      (let ((helm-pattern q))
-        (helm-google-suggest))))
+      (require 'helm-net)
+      (helm :sources helm-source-google-suggest
+            :buffer "*helm google*"
+            :input q)))
 
    (cbs-search-method
     :name "Google Images"
@@ -96,8 +98,10 @@
     :key "m"
     :command
     (lambda (q)
-      (let ((helm-pattern q))
-        (helm-man-woman nil)))))
+      (require 'helm-man)
+      (helm :sources 'helm-source-man-pages
+            :buffer "*Helm man woman*"
+            :input q))))
 
   "The list of search methods used by `cbs-search'.")
 
