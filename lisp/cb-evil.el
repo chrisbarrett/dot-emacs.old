@@ -164,7 +164,7 @@ Creates STATE bindings for DEFS. DEFS are comprised of alternating string-symbol
       (define-key evil-emacs-state-map  (kbd "M-z") 'evil-normal-state)
       (define-key evil-visual-state-map (kbd "C-z") 'evil-undefine)
 
-    ;;;; Emacs-state window management
+      ;;; Emacs-state window management
 
       ;; Make window-management the same as evil in emacs state.
 
@@ -183,7 +183,7 @@ Creates STATE bindings for DEFS. DEFS are comprised of alternating string-symbol
         "C-w o" 'delete-other-windows
         "C-w c" 'delete-window)
 
-    ;;;; Visual line fixes
+      ;;; Visual line fixes
 
       ;; Evil commands should respect visual-line mode and operate on the visible
       ;; line endings rather than logical lines.
@@ -246,7 +246,7 @@ The insertion will be repeated COUNT times."
                                             vcount)))
         (evil-insert-state 1))
 
-    ;;; General config
+      ;;; General config
 
       (evil-add-hjkl-bindings tar-mode-map)
       (evil-add-hjkl-bindings occur-mode-map)
