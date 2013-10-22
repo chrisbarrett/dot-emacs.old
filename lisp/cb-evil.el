@@ -39,6 +39,12 @@ Each handler should take the search string as an argument.")
 (configuration-group
   :when (true? cb:use-vim-keybindings?)
 
+  (defun evil-mark-word-as-locally-good (word)
+    (interactive (list (thing-at-point 'word)))
+    (when word
+      (ispell-add-per-file-word-list word)
+      (message "%s added to local word list" (s-upcase word))))
+
   (defun cbevil:error-backward-search-start-pos (pos)
     "Wrap the search to the end of the buffer if there are no
 errors before POS."
@@ -157,8 +163,10 @@ Creates STATE bindings for DEFS. DEFS are comprised of alternating string-symbol
         "K"   'cbevil:get-documentation
         "u"   'undo-tree-undo
         "C-R" 'undo-tree-redo
-        "[s"  'evil-next-spelling-error
-        "]s"  'evil-previous-spelling-error)
+        "[s"  'evil-previous-spelling-error
+        "]s"  'evil-next-spelling-error
+        "z G" 'evil-mark-word-as-locally-good
+        "z =" 'ispell-word)
 
       (define-key evil-insert-state-map (kbd "C-z") 'evil-undefine)
       (define-key evil-emacs-state-map  (kbd "M-z") 'evil-normal-state)
