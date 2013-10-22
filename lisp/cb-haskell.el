@@ -136,6 +136,7 @@
 (after 'smart-operator
 
   (defun cbhs:smart-comma ()
+    (interactive)
     (cond
      ((s-matches? (rx bol (* space) eol) (current-line))
       (insert ",")
