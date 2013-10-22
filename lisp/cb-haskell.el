@@ -81,7 +81,7 @@
 ;; Use font lock to display unicode symbols in haskell buffers.
 (after 'haskell-mode
 
-  (defun cb-hs:apply-font-lock (pat rep)
+  (defun cbhs:apply-font-lock (pat rep)
     "Call SUBSTITUTE-PATTERN-WITH-UNICODE repeatedly."
     (font-lock-add-keywords
      nil `((,pat
@@ -89,10 +89,10 @@
                                       ,(string-to-char rep) 'decompose-region)
                       nil))))))
 
-  (defun cb-hs:font-lock (patterns)
+  (defun cbhs:font-lock (patterns)
     (--each patterns
       (destructuring-bind (pat rep) it
-        (cb-hs:apply-font-lock
+        (cbhs:apply-font-lock
          (rx-to-string `(and (not (any "\""))
                              (? "`")
                              (group  symbol-start ,pat symbol-end)
@@ -100,10 +100,10 @@
                              (not (any "\""))))
          rep))))
 
-  (defun cb-hs:apply-unicode ()
-    (cb-hs:apply-font-lock
+  (defun cbhs:apply-unicode ()
+    (cbhs:apply-font-lock
      "\\s ?(?\\(\\\\\\)\\s *\\(\\w\\|_\\|(.*)\\).*?\\s *->" "λ")
-    (cb-hs:font-lock '(("<-"     "←")
+    (cbhs:font-lock '(("<-"     "←")
                        ("->"     "→")
                        ("=>"     "⇒")
                        ("."      "•")
@@ -121,7 +121,7 @@
                        ("!!"     "‼")
                        ("::"     "∷"))))
 
-  (add-hook 'cb:haskell-modes-hook 'cb-hs:apply-unicode))
+  (add-hook 'cb:haskell-modes-hook 'cbhs:apply-unicode))
 
 ;; Use ghc flymake checker because the cabal checker doesn't work for standalone files.
 (after 'flycheck
@@ -144,7 +144,7 @@
      (t
       (insert ","))))
 
-  (defun cb-hs:smart-pipe ()
+  (defun cbhs:smart-pipe ()
     "Insert a pipe operator. Add padding, unless we're inside a list."
     (interactive)
     (if (s-matches? (rx "[" (* (any "|" alnum)) eol)
@@ -152,23 +152,23 @@
         (insert "|")
       (smart-insert-operator "|")))
 
-  (defun cb-hs:looking-at-module-or-constructor? ()
+  (defun cbhs:looking-at-module-or-constructor? ()
     (-when-let (sym (thing-at-point 'symbol))
       (s-uppercase? (substring sym 0 1))))
 
-  (defun cb-hs:smart-dot (&optional arg)
+  (defun cbhs:smart-dot (&optional arg)
     "Insert a period. Add padding, unless this line is an import statement.
 With a prefix arg, insert a period without padding."
     (interactive "*P")
     (cond
      (arg
       (insert "."))
-     ((cb-hs:looking-at-module-or-constructor?)
+     ((cbhs:looking-at-module-or-constructor?)
       (insert "."))
      (t
       (smart-insert-operator "."))))
 
-  (defun cb-hs:smart-colon ()
+  (defun cbhs:smart-colon ()
     "Insert either a type binding colon pair or a cons colon."
     (interactive)
     (if (s-matches? (rx bol (* space) (? ",") (* space)
@@ -180,7 +180,7 @@ With a prefix arg, insert a period without padding."
           (just-one-space))
       (insert ":")))
 
-  (defun cb-hs:insert-arrow (arrow)
+  (defun cbhs:insert-arrow (arrow)
     "If point is inside a tuple, insert an arrow inside.
 Otherwise insert an arrow at the end of the line."
     (atomic-change-group
@@ -197,10 +197,10 @@ Otherwise insert an arrow at the end of the line."
       (insert arrow)
       (just-one-space)))
 
-  (defun cb-hs:at-typedecl? ()
+  (defun cbhs:at-typedecl? ()
     (s-matches? "::" (buffer-substring (line-beginning-position) (point))))
 
-  (defun cb-hs:smart-minus (&optional arg)
+  (defun cbhs:smart-minus (&optional arg)
     "Insert an arrow if we're in a typesig, otherwise perform a normal insertion.
 With a prefix arg, insert an arrow with padding at point."
     (interactive "*P")
@@ -209,12 +209,12 @@ With a prefix arg, insert an arrow with padding at point."
       (just-one-space)
       (insert "->")
       (just-one-space))
-     ((cb-hs:at-typedecl?)
-      (cb-hs:insert-arrow "->"))
+     ((cbhs:at-typedecl?)
+      (cbhs:insert-arrow "->"))
      (t
       (smart-insert-operator "-"))))
 
-  (defun cb-hs:smart-lt (&optional arg)
+  (defun cbhs:smart-lt (&optional arg)
     "Insert a less than symbol. With a prefix arg, insert an arrow at point."
     (interactive "*P")
     (cond
@@ -232,12 +232,12 @@ With a prefix arg, insert an arrow with padding at point."
       (bind-keys
         :map it
         "," 'cbhs:smart-comma
-        "-" 'cb-hs:smart-minus
+        "-" 'cbhs:smart-minus
         "=" (command (smart-insert-operator "="))
-        "<" 'cb-hs:smart-lt
-        "." 'cb-hs:smart-dot
-        ":" 'cb-hs:smart-colon
-        "|" 'cb-hs:smart-pipe
+        "<" 'cbhs:smart-lt
+        "." 'cbhs:smart-dot
+        ":" 'cbhs:smart-colon
+        "|" 'cbhs:smart-pipe
         "?" (command (smart-insert-operator "?"))
         "$" (command (smart-insert-operator "$")))))
 
@@ -254,7 +254,7 @@ With a prefix arg, insert an arrow with padding at point."
 ;; Configure hideshow to collapse regions such as functions, imports and datatypes.
 (after 'hideshow
 
-  (defun cb-hs:next-separator-pos ()
+  (defun cbhs:next-separator-pos ()
     (save-excursion
       (when (search-forward-regexp (rx bol "---") nil t)
         (ignore-errors (forward-line -1))
@@ -264,7 +264,7 @@ With a prefix arg, insert an arrow with padding at point."
         (end-of-line)
         (point))))
 
-  (defun cb-hs:next-decl-pos ()
+  (defun cbhs:next-decl-pos ()
     (save-excursion
       (haskell-ds-forward-decl)
       ;; Skip infix and import groups.
@@ -277,9 +277,9 @@ With a prefix arg, insert an arrow with padding at point."
           (forward-line -1)))
       (point)))
 
-  (defun cb-hs:forward-fold (&rest _)
-    (let ((sep (cb-hs:next-separator-pos))
-          (decl (cb-hs:next-decl-pos)))
+  (defun cbhs:forward-fold (&rest _)
+    (let ((sep (cbhs:next-separator-pos))
+          (decl (cbhs:next-decl-pos)))
       (goto-char (min (or sep (point-max))
                       (or decl (point-max))))))
 
@@ -299,7 +299,7 @@ With a prefix arg, insert an arrow with padding at point."
                  ;; Comment start
                  ,(rx "{-")
                  ;; Forward-sexp function
-                 cb-hs:forward-fold)))
+                 cbhs:forward-fold)))
 
 ;; Add haskell insertion commands to the global picker.
 (after 'haskell-mode
