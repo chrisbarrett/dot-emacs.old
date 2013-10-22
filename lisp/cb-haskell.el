@@ -139,7 +139,7 @@
     (interactive)
     (cond
      ((s-matches? (rx bol (* space) eol) (current-line))
-      (insert ",")
+      (insert ", ")
       (hi2-indent-line))
      (t
       (insert ","))))
