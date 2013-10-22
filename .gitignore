@@ -13,7 +13,6 @@ flycheck-*
 # ignore individual items
 
 TAGS
-custom.el
 .DS_Store
 auto-save-list
 repl-port
@@ -24,7 +23,6 @@ site-file.el
 ede-projects.el
 semanticdb
 .yas-compiled-snippets.el
-.mc-lists.el
 !/eshell/alias
 
 # ignore directories
