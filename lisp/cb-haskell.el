@@ -138,7 +138,8 @@
   (defun cbhs:smart-comma ()
     (interactive)
     (cond
-     ((s-matches? (rx bol (* space) eol) (current-line))
+     ((s-matches? (rx bol (* space) eol)
+                  (buffer-substring (line-beginning-position) (point)))
       (insert ", ")
       (hi2-indent-line))
      (t
