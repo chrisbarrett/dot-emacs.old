@@ -159,6 +159,8 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
     (error
      (user-error "No documentation available"))))
 
+;;; Configure packages.
+
 (use-package evil
   :ensure   t
   :if (true? cb:use-vim-keybindings?)
