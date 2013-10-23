@@ -47,7 +47,7 @@
       (local-set-key (kbd "s-v") 'cb:ansi-term-paste)
 
       (when (true? evil-mode)
-        (evil-define-key 'normal term-mode-map "p" 'cb:ansi-term-paste))
+        (evil-define-key 'normal term-mode-map (kbd "p") 'cb:ansi-term-paste))
 
       (define-key term-raw-map (kbd "M-T") 'cb:term-cycle)
       ;; Yasnippet causes tab-completion to fail.

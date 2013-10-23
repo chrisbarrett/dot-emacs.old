@@ -110,8 +110,8 @@
         (sp-local-pair "```" "```")))
 
     (evil-define-key 'normal markdown-mode-map
-      "M-P" 'outline-previous-visible-heading
-      "M-N" 'outline-next-visible-heading)
+      (kbd "M-P") 'outline-previous-visible-heading
+      (kbd "M-N") 'outline-next-visible-heading)
 
     ;; Customise faces.
     (set-face-font markdown-inline-code-face (monospace-font))
