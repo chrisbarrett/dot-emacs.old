@@ -72,35 +72,6 @@
     (add-to-list 'compilation-finish-functions 'cb:compile-autoclose)
     (add-hook 'compilation-filter-hook 'cb:ansi-colourise-compilation)))
 
-(use-package ispell
-  :config
-  (setq ispell-program-name "aspell"
-        ispell-dictionary "en_GB"
-        ispell-silently-savep t))
-
-(use-package flyspell
-  :diminish flyspell-mode
-  :init (unless noninteractive (require 'flyspell))
-  :config
-  (progn
-
-    (define-key flyspell-mouse-map [down-mouse-3] 'flyspell-correct-word)
-    (define-key flyspell-mouse-map [mouse-3] 'undefined)
-    (bind-key* "C-'" 'flyspell-auto-correct-word)
-
-    (hook-fn 'after-init-hook
-      "Enable flyspell after Emacs has started up."
-      (add-hook 'text-mode-hook 'flyspell-mode)
-      (add-hook 'prog-mode-hook 'flyspell-prog-mode)
-      (hook-fn 'cb:xml-modes-hook
-        (unless (derived-mode-p 'markdown-mode)
-          (flyspell-prog-mode))))))
-
-(use-package flyspell-lazy
-  :ensure  t
-  :defer   t
-  :init (add-hook 'flyspell-mode-hook 'flyspell-lazy-mode))
-
 (use-package flycheck
   :ensure t
   :commands
