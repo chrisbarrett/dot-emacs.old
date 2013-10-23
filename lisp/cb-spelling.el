@@ -44,6 +44,7 @@
 
 (use-package flyspell
   :diminish flyspell-mode
+  :defer t
   :init (unless noninteractive (require 'flyspell))
   :config
   (progn
