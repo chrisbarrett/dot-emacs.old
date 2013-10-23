@@ -193,7 +193,7 @@ Creates STATE bindings for DEFS. DEFS are comprised of alternating string-symbol
       "z g" 'evil-mark-word-as-good
       "z G" 'evil-mark-word-as-locally-good
       "z =" 'evil-correct-word
-      "z SPC" 'flyspell-auto-correct-word)
+      "z u" 'flyspell-auto-correct-word)
 
     (define-key evil-insert-state-map (kbd "C-z") 'evil-undefine)
     (define-key evil-emacs-state-map  (kbd "M-z") 'evil-normal-state)
