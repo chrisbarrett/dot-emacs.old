@@ -39,6 +39,13 @@ Each handler should take the search string as an argument.")
 (configuration-group
   :when (true? cb:use-vim-keybindings?)
 
+  ;;; Spelling commands.
+
+  (defun evil-mark-word-as-good ()
+    "Add the word at point to the ispell dictionary."
+    (interactive)
+    (ispell-add-to-dict (thing-at-point 'word)))
+
   (defun evil-correct-word (arg)
     "Corect the word at point with ispell.
 With a number ARG, select the nth replacement."
@@ -120,6 +127,8 @@ errors forward of POS."
       (when (= pos (point-max))
         (message "No more spelling errors"))))
 
+  ;;; Mode-appropriate documentation search with K.
+
   (defun get-manpage (candidate)
     "Show the manpage for CANDIDATE."
     (let ((wfiles (mapcar 'car (woman-file-name-all-completions candidate))))
@@ -174,6 +183,7 @@ Creates STATE bindings for DEFS. DEFS are comprised of alternating string-symbol
         "C-R" 'undo-tree-redo
         "[s"  'evil-previous-spelling-error
         "]s"  'evil-next-spelling-error
+        "z g" 'evil-mark-word-as-good
         "z G" 'evil-mark-word-as-locally-good
         "z =" 'evil-correct-word
         "z SPC" 'flyspell-auto-correct-word)
