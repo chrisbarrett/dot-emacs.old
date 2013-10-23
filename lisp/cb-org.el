@@ -258,20 +258,6 @@ Each element is a list of form /(key desc symbol)/.")
                    ,(concat "1:00 2:00 3:00 4:00 5:00 6:00 7:00 8:00 9:00 "
                             "0:05 0:10 0:30")))
 
-    (evil-define-key 'normal org-mode-map
-      "<return>" 'org-return
-      "M-P" 'outline-previous-visible-heading
-      "M-N" 'outline-next-visible-heading
-      "SPC" 'org-cycle
-      "z m" (command (save-excursion
-                       (goto-char (point-min))
-                       (org-global-cycle 1)
-                       (recenter)))
-      "z r" (command (save-excursion
-                       (goto-char (point-min))
-                       (org-global-cycle 3)
-                       (recenter))))
-
     (defun cb-org:ctrl-c-ctrl-k (&optional n)
       "Kill subtrees, unless we're in a special buffer where it should cancel."
       (interactive "p")
@@ -548,11 +534,6 @@ the date TARGET-DAY, TARGET-MONTH each year."
     :config
     (progn
 
-      ;; Enter insertion mode in capture buffer.
-      (hook-fn 'org-capture-mode-hook
-        (when (fboundp 'evil-insert-state)
-          (evil-insert-state)))
-
       (add-hook 'org-capture-before-finalize-hook 'indent-buffer 'append)
 
       (--each `(("t" "Todo" entry
@@ -827,22 +808,12 @@ Return nil if there are no items to display."
       ;; Key bindings
 
       (after 'org-agenda
-
         (bind-keys
           :map org-agenda-mode-map
           "C" 'org-agenda-capture
           "g" 'org-agenda-goto-date
           "j" 'org-agenda-next-item
-          "k" 'org-agenda-previous-item)
-
-        (after 'evil-mode
-          (bind-keys
-            :map org-agenda-mode-map
-            "L"   'org-agenda-log-mode
-            "l"   'evil-forward-char
-            "h"   'evil-backward-char
-            "C-f" 'evil-scroll-page-down
-            "C-b" 'evil-scroll-page-up)))
+          "k" 'org-agenda-previous-item))
 
       (after 'smartparens
         (hook-fn 'org-agenda-mode-hook
@@ -1114,6 +1085,51 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
   (hook-fn 'org-mode-hook
     (setq-local ac-sources nil)
     (auto-complete-mode -1)))
+
+;; Configure evil-mode key bindings.
+(after 'evil
+
+  (defadvice org-return (around newlines-only-in-insert-state activate)
+    "Only insert newlines if we're in insert state."
+    (noflet ((newline (&rest args)
+                      (when (evil-insert-state-p)
+                        (funcall this-fn args))))
+      ad-do-it))
+
+  (defun cborg-evil-fold ()
+    (interactive)
+    (save-excursion
+      (goto-char (point-min))
+      (org-global-cycle 1)
+      (recenter)))
+
+  (defun cborg-evil-reveal ()
+    (interactive)
+    (save-excursion
+      (goto-char (point-min))
+      (org-global-cycle 3)
+      (recenter)))
+
+  (evil-define-key 'normal org-mode-map
+    (kbd "<return>") 'org-return
+    (kbd "M-P") 'outline-previous-visible-heading
+    (kbd "M-N") 'outline-next-visible-heading
+    (kbd "SPC") 'org-cycle
+    (kbd "z m") 'cborg-evil-fold
+    (kbd "z r") 'cborg-evil-reveal)
+
+  (after 'org-agenda
+    (bind-keys
+      :map org-agenda-mode-map
+      "L"   'org-agenda-log-mode
+      "l"   'evil-forward-char
+      "h"   'evil-backward-char
+      "C-f" 'evil-scroll-page-down
+      "C-b" 'evil-scroll-page-up))
+
+  ;; Enter insertion mode in capture buffer.
+  (hook-fn 'org-capture-mode-hook
+    (evil-insert-state)))
 
 (provide 'cb-org)
 
