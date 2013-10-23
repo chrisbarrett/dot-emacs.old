@@ -43,10 +43,11 @@ Each handler should take the search string as an argument.")
 
 ;;; Spelling commands.
 
-(defun evil-mark-word-as-good ()
-  "Add the word at point to the Ispell dictionary."
-  (interactive)
-  (ispell-add-to-dict (thing-at-point 'word)))
+(defun evil-mark-word-as-good (word)
+  "Add WORD at point to the Ispell dictionary."
+  (interactive (list (thing-at-point 'word)))
+  (ispell-add-to-dict word)
+  (message "%s added to dictionary" (s-upcase word)))
 
 (defun evil-correct-word (arg)
   "Corect the word at point with Ispell.
