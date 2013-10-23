@@ -49,6 +49,8 @@
   :config
   (progn
 
+    (setq flyspell-delay 1)
+
     (define-key flyspell-mouse-map [down-mouse-3] 'flyspell-correct-word)
     (define-key flyspell-mouse-map [mouse-3] 'undefined)
 
