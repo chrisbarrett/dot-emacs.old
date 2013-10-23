@@ -39,6 +39,15 @@ Each handler should take the search string as an argument.")
 (configuration-group
   :when (true? cb:use-vim-keybindings?)
 
+  (defun evil-correct-word (arg)
+    "Corect the word at point with ispell.
+With a number ARG, select the nth replacement."
+    (interactive "*P")
+    (if (numberp arg)
+        (dotimes (_ (1+ arg))
+          (flyspell-auto-correct-word))
+      (ispell-word)))
+
   (defun evil-mark-word-as-locally-good (word)
     (interactive (list (thing-at-point 'word)))
     (when word
@@ -166,7 +175,8 @@ Creates STATE bindings for DEFS. DEFS are comprised of alternating string-symbol
         "[s"  'evil-previous-spelling-error
         "]s"  'evil-next-spelling-error
         "z G" 'evil-mark-word-as-locally-good
-        "z =" 'ispell-word)
+        "z =" 'evil-correct-word
+        "z SPC" 'flyspell-auto-correct-word)
 
       (define-key evil-insert-state-map (kbd "C-z") 'evil-undefine)
       (define-key evil-emacs-state-map  (kbd "M-z") 'evil-normal-state)
