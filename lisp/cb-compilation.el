@@ -74,8 +74,9 @@
 
 (use-package ispell
   :config
-  (defadvice ispell-pdict-save (around always-save activate)
-    (noflet ((y-or-n-p () t)) ad-do-it)))
+  (setq ispell-program-name "aspell"
+        ispell-dictionary "en_GB"
+        ispell-silently-savep t))
 
 (use-package flyspell
   :diminish flyspell-mode
@@ -86,9 +87,6 @@
     (define-key flyspell-mouse-map [down-mouse-3] 'flyspell-correct-word)
     (define-key flyspell-mouse-map [mouse-3] 'undefined)
     (bind-key* "C-'" 'flyspell-auto-correct-word)
-
-    (setq ispell-program-name "aspell"
-          ispell-dictionary "en_GB")
 
     (hook-fn 'after-init-hook
       "Enable flyspell after Emacs has started up."
