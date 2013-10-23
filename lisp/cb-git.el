@@ -176,7 +176,8 @@
     (hook-fns '(find-file-hook after-save-hook)
       (when (vc-git-root (buffer-file-name))
         (require 'magit)
-        (git-gutter+-mode +1)))
+        (ignore-errors
+          (git-gutter+-mode +1))))
 
     (hook-fn 'after-save-hook
       (when (true? git-gutter+-mode)
