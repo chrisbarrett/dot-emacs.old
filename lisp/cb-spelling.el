@@ -56,6 +56,8 @@
     (define-key flyspell-mouse-map [down-mouse-3] 'flyspell-correct-word)
     (define-key flyspell-mouse-map [mouse-3] 'undefined)
 
+    (define-key flyspell-mode-map (kbd "C-c $") nil)
+
     (hook-fn 'after-init-hook
       "Enable flyspell after Emacs has started up."
       (add-hook 'text-mode-hook 'flyspell-mode)
