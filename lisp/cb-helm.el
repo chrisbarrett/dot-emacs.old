@@ -101,13 +101,19 @@
       (bind-key* "M-I" 'helm-find-in-lisp-dir)))
 
   :config
-  (after 'helm-files
-    (define-key helm-find-files-map
-      (kbd "~")
-      (command
-       (if (looking-back "/")
-           (helm-insert-in-minibuffer "~/" t)
-         (call-interactively 'self-insert-command))))))
+  (progn
+
+    (add-to-list 'helm-boring-file-regexp-list "\\.elc$")
+
+    (setq helm-ff-skip-boring-files t)
+
+    (after 'helm-files
+      (define-key helm-find-files-map
+        (kbd "~")
+        (command
+         (if (looking-back "/")
+             (helm-insert-in-minibuffer "~/" t)
+           (call-interactively 'self-insert-command)))))))
 
 (provide 'cb-helm)
 
