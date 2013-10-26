@@ -34,7 +34,9 @@
   "Add WORD to the user's dictionary."
   (ispell-send-string (concat "*" word "\n"))
   (setq ispell-pdict-modified-p '(t))
-  (ispell-pdict-save ispell-silently-savep))
+  (ispell-pdict-save ispell-silently-savep)
+  (when (true? flyspell-mode)
+    (flyspell-lazy-check-buffer)))
 
 (use-package ispell
   :config
