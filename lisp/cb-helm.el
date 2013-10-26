@@ -103,7 +103,8 @@
   :config
   (progn
 
-    (add-to-list 'helm-boring-file-regexp-list "\\.elc$")
+    (-each '("\\.DS_Store" "\\.elc$")
+           (~ add-to-list 'helm-boring-file-regexp-list))
 
     (setq helm-ff-skip-boring-files t)
 
