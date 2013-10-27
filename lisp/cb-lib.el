@@ -618,6 +618,8 @@ COLUMN-WIDTH specifies the width of columns if columnation is used."
       ;; Add an extra line to YS if there is an odd number of options so
       ;; the zip does not discard an option.
       (->>
+          ;; Add an extra line to YS if there is an odd number of options so
+          ;; the zip does not discard an option.
           (if (/= (length xs) (length ys))
               (-concat ys '(""))
             ys)
