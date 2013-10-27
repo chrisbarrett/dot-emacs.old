@@ -613,10 +613,8 @@ COLUMN-WIDTH specifies the width of columns if columnation is used."
     ;; B  D
     ;;
     (let* ((mid (floor (/ (length lines) 2.0)))
-           (xs (cl-subseq lines 0 mid))
-           (ys (cl-subseq lines (1+ mid) (length lines))))
-      ;; Add an extra line to YS if there is an odd number of options so
-      ;; the zip does not discard an option.
+           (xs (-slice lines 0 mid))
+           (ys (-slice lines mid (length lines))))
       (->>
           ;; Add an extra line to YS if there is an odd number of options so
           ;; the zip does not discard an option.
