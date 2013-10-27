@@ -594,7 +594,7 @@ the date TARGET-DAY, TARGET-MONTH each year."
                  :clock-keep t)
 
                 ("r" "Reading" entry
-                 (file+olp org-default-notes-file "Someday" "Readings")
+                 (file+olp org-default-notes-file "Someday" "Reading")
                  ,(s-unlines
                    "* TODO %i%?"
                    ":PROPERTIES:"
