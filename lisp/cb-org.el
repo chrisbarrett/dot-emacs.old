@@ -265,6 +265,13 @@ Each element is a list of form /(key desc symbol)/.")
           (org-kill-note-or-show-branches)
         (org-cut-subtree n)))
 
+    (defun cb-org:ctrl-c-ret ()
+      "Call `org-table-hline-and-move' or `org-insert-todo-heading' dep. on context."
+      (interactive)
+      (cond
+       ((org-at-table-p) (call-interactively 'org-table-hline-and-move))
+       (t (call-interactively 'org-insert-todo-heading))))
+
     (define-keys org-mode-map
       "C-c C-k" 'cb-org:ctrl-c-ctrl-k
       "C-c C-." 'org-time-stamp-inactive
@@ -272,6 +279,7 @@ Each element is a list of form /(key desc symbol)/.")
       "M-p" 'org-metaup
       "M-n" 'org-metadown
       "C-c c" 'org-columns
+      "C-c RET" 'cb-org:ctrl-c-ret
       ;; disable annoying comment toggle key
       "C-c ;" nil)
 
