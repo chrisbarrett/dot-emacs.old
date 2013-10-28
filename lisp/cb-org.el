@@ -38,6 +38,7 @@
 (require 'cb-lib)
 (require 'cb-evil)
 (require 'cb-osx)
+(require 'cb-search)
 (autoload 'message-send-and-exit "message")
 (autoload 'projectile-project-buffer-names "projectile")
 (autoload 'projectile-project-name "projectile")
