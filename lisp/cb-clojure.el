@@ -106,7 +106,8 @@
     (after 'auto-complete
       (add-to-list 'ac-modes 'cider-mode)))
   :config
-  (define-key nrepl-cider-mode-map (kbd "C-c C-d") 'ac-nrepl-popup-doc))
+  (after 'cider
+    (define-key cider-mode-map (kbd "C-c C-d") 'ac-nrepl-popup-doc)))
 
 (use-package midje-mode
   :ensure   t
