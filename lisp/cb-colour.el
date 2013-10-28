@@ -137,6 +137,8 @@
       (set-face-foreground  'sp-show-pair-match-face "#002b36")
       (set-face-background  'sp-show-pair-match-face "white")
       (set-face-bold        'sp-show-pair-match-face t))
+    (after 'iedit
+      (set-face-attribute 'iedit-occurrence nil :underline solarized-hl-orange))
     (after 'org
       (set-face-underline  'org-block-begin-line t)
       (set-face-attribute  'org-block-end-line nil :overline t)
