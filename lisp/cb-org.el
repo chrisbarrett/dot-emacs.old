@@ -153,7 +153,7 @@ Each element is a list of form /(key desc symbol)/.")
 
 ;; Add `org-search-view' to search methods picker.
 (cbs-define-search-method
- :name "org"
+ :name "Org Files"
  :key "o"
  :command (lambda (_)
             (call-interactively 'org-search-view)))
