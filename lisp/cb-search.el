@@ -57,17 +57,16 @@
 (defvar cbs:search-methods
   (list
    (cbs-search-method
-    :name "Google Search"
+    :name "Web Search"
     :key "s"
     :command
     (lambda (q)
-      (require 'helm-net)
-      (helm :sources helm-source-google-suggest
-            :buffer "*helm google*"
-            :input q)))
+      (browse-url
+       (concat "https://duckduckgo.com/?q="
+               (url-hexify-string (cbs-read "Duck Duck Go" q))))))
 
    (cbs-search-method
-    :name "Google Images"
+    :name "Image Search"
     :key "i"
     :command
     (lambda (q)
