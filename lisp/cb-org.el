@@ -150,6 +150,13 @@ Each element is a list of form /(key desc symbol)/.")
   (hook-fn 'after-init-hook
     (executor:org-agenda-fullscreen)))
 
+;; Add `org-search-view' to search methods picker.
+(cbs-define-search-method
+ :name "org"
+ :key "o"
+ :command (lambda (_)
+            (call-interactively 'org-search-view)))
+
 ;; `org-mode' is a suite of editing and management tools centred around
 ;; human-readable text files.
 (use-package org
