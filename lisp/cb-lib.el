@@ -631,16 +631,16 @@ COLUMN-WIDTH specifies the width of columns if columnation is used."
 
 (defun read-option (title option-key-fn option-name-fn options)
   "Prompt the user to select from a list of choices.
-Return the element in OPTIONS corresponding to the user's selection.
+Return the element in a list of options corresponding to the user's selection.
 
 * TITLE is the name of the buffer that will be displayed.
-
-* OPTIONS is a list of items to present to the user.
 
 * OPTION-KEY-FN is a function that returns the key (as a string)
   to use for a given option.
 
-* OPTION-NAME-FN is a function that returns a string describing a given option."
+* OPTION-NAME-FN is a function that returns a string describing a given option.
+
+* OPTIONS is a list of items to present to the user."
   (unwind-protect
       (save-excursion
         (save-window-excursion
