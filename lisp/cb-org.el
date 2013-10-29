@@ -48,8 +48,9 @@
 ;; This is mainly to reduce compiler warnings.
 (defvar org-directory (f-join user-home-directory "org"))
 (defvar org-init-notes-file (f-join org-directory "notes.org")
-  "Captures the original value of the `org-default-notes-file',
-which may be changed interactively by `cb-org:set-notes-file'.")
+  "Captures the original value of the `org-default-notes-file'.
+`org-default-notes-file' may be changed interactively by
+`cb-org:set-notes-file', and is needed for some functions.")
 (defvar org-default-notes-file org-init-notes-file)
 (defvar org-id-locations-file (f-join cb:tmp-dir "org-id-locations"))
 (defvar org-clock-persist-file (f-join user-dropbox-directory ".org-clock-save.el"))
