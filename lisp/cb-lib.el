@@ -280,7 +280,7 @@ The original state can be restored by calling (restore) in BODY."
      (with-window-restore
        ad-do-it
        (delete-other-windows)
-       (local-set-key (kbd ,quit-key) (command (kill-buffer) (restore))))))
+       (buffer-local-set-key (kbd ,quit-key) (command (kill-buffer) (restore))))))
 
 (cl-defmacro declare-modal-executor
     (name &optional &key command bind restore-bindings)
@@ -834,6 +834,24 @@ timeout period will not require the password again."
   (cl-destructuring-bind (day month year)
       (s-split "/" date-string)
     (format "%s-%s-%s" year month day)))
+
+(defvar date nil
+  "Dynamic var bound to current date by calendaring functions.")
+
+(defun calendar-nearest-to (target-dayname target-day target-month)
+  "Non-nil if the current date is a certian weekday close to an anniversary.
+
+TARGET-DAYNAME is the day of the week that we want to match,
+ while TARGET-DAY and TARGET-MONTH are the anniversary."
+  (interactive)
+  (let* ((dayname (calendar-day-of-week date))
+         (target-date (list target-month target-day (calendar-extract-year
+                                                     date)))
+         (days-diff (abs (- (calendar-day-number date)
+                            (calendar-day-number target-date)))))
+    (and (= dayname target-dayname)
+         (< days-diff 4))))
+
 
 (provide 'cb-lib)
 
