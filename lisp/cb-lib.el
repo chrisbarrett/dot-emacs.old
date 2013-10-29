@@ -824,7 +824,7 @@ timeout period will not require the password again."
 
 (defun make-uuid ()
   "Generate a UUID using the uuid utility."
-  (s-trim (shell-command-to-string "uuidgen")))
+  (%-string "uuidgen"))
 
 ;;; ----------------------------------------------------------------------------
 ;;; Calendaring functions
