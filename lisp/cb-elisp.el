@@ -342,9 +342,7 @@
 
 (use-package litable
   :ensure   t
-  :commands litable-mode
-  :init
-  (defvar litable-list-file (f-join cb:tmp-dir "litable-lists.el")))
+  :commands litable-mode)
 
 (provide 'cb-elisp)
 
