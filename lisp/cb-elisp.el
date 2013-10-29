@@ -187,7 +187,7 @@
      (apply 'derived-mode-p cb:elisp-modes)))
 
   (cbs-define-search-method
-   :name "Function"
+   :name "Lisp Function"
    :key "f"
    :command
    (lambda (_)
@@ -197,7 +197,7 @@
      (apply 'derived-mode-p cb:elisp-modes)))
 
   (cbs-define-search-method
-   :name "Library"
+   :name "Lisp Library"
    :key "l"
    :command
    (lambda (_)
@@ -207,7 +207,7 @@
      (apply 'derived-mode-p cb:elisp-modes)))
 
   (cbs-define-search-method
-   :name "Variable"
+   :name "Lisp Variable"
    :key "v"
    :command
    (lambda (_)
