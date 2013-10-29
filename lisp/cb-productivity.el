@@ -69,6 +69,7 @@
         (iedit-done)))
 
     (bind-keys
+      "C-c r" 'iedit-mode
       "M-r" 'rename-symbol-in-defun
       "M-R" 'rename-symbol-in-buffer))
 
@@ -82,9 +83,10 @@
         ("l" "Restrict (line)" iedit-restrict-current-line)
         ("n" "Expand (down)" iedit-expand-down-a-line)
         ("p" "Expand (up)" iedit-expand-up-a-line)
-        ("q" "Done" iedit-done)
+        ("k" "Delete Matches" iedit-delete-occurrences)
+        ("d" "Done" iedit-done)
         ("r" "Restrict (region)" iedit-restrict-region)
-        ("t" "Toggle Match at Point" iedit-toggle-selection))
+        ("t" "Toggle at Point" iedit-toggle-selection))
       "The list of options used for the iedit option picker.")
 
     (defun cbiedit:read-option ()
