@@ -66,7 +66,11 @@ Common git commands are available under the =g= prefix key in Evil's normal stat
 - =g s= :: stage hunk
 - =g x= :: reset hunk
 ** Org
-Common org commands are accessible with a picker widget bound to =<f7>=.
+Common org commands are accessible with a picker widget bound to =<f8>=.
+
+I use a Rube Goldberg machine, implemented in Elisp, to capture links, todos,
+notes and other information by sending myself emails. See the documentation in
+`cb-org-email-capture.el` for details.
 
 I use my own customised fork of [[https://github.com/chrisbarrett/org-pomodoro][org-pomodoro]] for clocking.
 ** Language Support
