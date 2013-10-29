@@ -716,15 +716,15 @@ Return the element in OPTIONS corresponding to the user's selection.
 The notification will have the given TITLE and MESSAGE."
   (message "%s. %s" title message)
   (when (executable-find growl-program)
-    (start-process "growl" " growl"
-                   growl-program
-                   title
-                   "-n" "Emacs"
-                   "-a" "Emacs"
-                   "--image" icon)
-    (process-send-string " growl" message)
-    (process-send-string " growl" "\n")
-    (process-send-eof " growl")))
+    (let ((proc (start-process "growl" nil
+                               growl-program
+                               title
+                               "-n" "Emacs"
+                               "-a" "Emacs"
+                               "--image" icon)))
+      (process-send-string proc message)
+      (process-send-string proc "\n")
+      (process-send-eof proc))))
 
 ;;; ----------------------------------------------------------------------------
 
