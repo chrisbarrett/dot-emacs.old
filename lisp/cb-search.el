@@ -93,6 +93,13 @@
                (url-hexify-string (cbs-read "Wikipedia" q))))))
 
    (cbs-search-method
+    :name "BBDB"
+    :key "b"
+    :command
+    (lambda (_)
+      (call-interactively 'bbdb)))
+
+   (cbs-search-method
     :name "Man Page"
     :key "m"
     :command
