@@ -827,6 +827,7 @@ timeout period will not require the password again."
   (s-trim (shell-command-to-string "uuidgen")))
 
 ;;; ----------------------------------------------------------------------------
+;;; Calendaring functions
 
 (defun euro-date->iso-date (str)
   "Convert a date STR of form dd/mm/yy to yy-mm-dd."
