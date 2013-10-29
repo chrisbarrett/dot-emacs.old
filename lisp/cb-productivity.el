@@ -52,22 +52,26 @@
    iedit-replace-occurrences
    iedit-done)
   :init
-  (hook-fn 'after-init-hook
+  (progn
 
-    (defun cb:rename-symbol-in-defun (replacement)
-      (interactive "sReplace in function: ")
+    (defun cb:rename-symbol-in-defun ()
+      (interactive)
       (iedit-mode 0)
-      (iedit-replace-occurrences replacement)
-      (iedit-done))
+      (unwind-protect
+          (iedit-replace-occurrences (read-string "Replace in function: "))
+        (iedit-done)))
 
-    (defun cb:rename-symbol-in-buffer (replacement)
-      (interactive "sReplace in buffer: ")
+    (defun cb:rename-symbol-in-buffer ()
+      (interactive)
       (iedit-mode)
-      (iedit-replace-occurrences replacement)
-      (iedit-done))
+      (unwind-protect
+          (iedit-replace-occurrences (read-string "Replace in buffer: "))
+        (iedit-done)))
 
-    (bind-key "M-r" 'cb:rename-symbol-in-defun)
-    (bind-key "M-R" 'cb:rename-symbol-in-buffer))
+    (bind-keys
+      "M-r" 'cb:rename-symbol-in-defun
+      "M-R" 'cb:rename-symbol-in-buffer))
+
   :config
   (after 'iedit
 
