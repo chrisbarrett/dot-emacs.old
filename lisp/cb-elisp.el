@@ -343,8 +343,8 @@
 (use-package litable
   :ensure   t
   :commands litable-mode
-  :config
-  (setq litable-list-file (f-join cb:tmp-dir "litable-lists.el")))
+  :init
+  (defvar litable-list-file (f-join cb:tmp-dir "litable-lists.el")))
 
 (provide 'cb-elisp)
 
