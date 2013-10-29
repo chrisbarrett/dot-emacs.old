@@ -835,61 +835,6 @@ timeout period will not require the password again."
       (s-split "/" str)
     (format "%s-%s-%s" year month day)))
 
-;; Functions for calculating Easter.
-
-(defun calendar-easter-date (year)
-  "Calculate the date for Easter Sunday in YEAR. Returns the date in the
-Gregorian calendar, ie (MM DD YY) format."
-  (let* ((century (1+ (/ year 100)))
-         (shifted-epact (% (+ 14 (* 11 (% year 19))
-                              (- (/ (* 3 century) 4))
-                              (/ (+ 5 (* 8 century)) 25)
-                              (* 30 century))
-                           30))
-         (adjusted-epact (if (or (= shifted-epact 0)
-                                 (and (= shifted-epact 1)
-                                      (< 10 (% year 19))))
-                             (1+ shifted-epact)
-                           shifted-epact))
-         (paschal-moon (- (calendar-absolute-from-gregorian
-                           (list 4 19 year))
-                          adjusted-epact)))
-    (calendar-dayname-on-or-before 0 (+ paschal-moon 7))))
-
-(defun calendar-easter-gregorian (year)
-  (calendar-gregorian-from-absolute (calendar-easter-date year)))
-
-(defun calendar-days-from-easter ()
-  "When used in a diary sexp, this function will calculate how many days
-are between the current date (DATE) and Easter Sunday."
-  (- (calendar-absolute-from-gregorian date)
-     (calendar-easter-date (calendar-extract-year date))))
-
-;; Functions for calculating NZ holidays.
-
-(defun calendar-nearest-to (target-dayname target-day target-month)
-  "Recurring event that occurs in the nearest TARGET-DAYNAME to
-the date TARGET-DAY, TARGET-MONTH each year."
-  (interactive)
-  (let* ((dayname (calendar-day-of-week date))
-         (target-date (list target-month target-day (calendar-extract-year
-                                                     date)))
-         (days-diff (abs (- (calendar-day-number date)
-                            (calendar-day-number target-date)))))
-    (and (= dayname target-dayname)
-         (< days-diff 4))))
-
-(defun calendar-mondayised-date (target-day target-month)
-  "Event that occurs on the closest Monday if it falls on a weekend."
-  (interactive)
-  ;; If the date falls on a Sat or Sun, return the coming Mon.
-  (if (memq (calendar-day-of-week date) '(0 6))
-      ;; FIXME: Doesn't seem to work here.
-      (calendar-nearest-to 1 target-day target-month)
-    ;; Return the evaluated date.  The entry does not have a starting date so
-    ;; we just use the start of the UNIX epoch.
-    (org-anniversary 1970 target-month target-day)))
-
 (provide 'cb-lib)
 
 ;; Local Variables:
