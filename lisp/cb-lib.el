@@ -140,11 +140,15 @@
      ,@(--map `(hook-fn ',it ,@args)
               (eval hooks))))
 
-(defmacro after (feature &rest body)
-  "Like `eval-after-load' - once FEATURE is loaded, execute the BODY."
+(defmacro after (features &rest body)
+  "Like `eval-after-load' - once all FEATURES are loaded, execute the BODY.
+FEATURES may be a symbol or list of symbols."
   (declare (indent 1))
-  `(eval-after-load ,feature
-     '(progn ,@body)))
+  ;; Wrap body in a descending list of `eval-after-load' forms.
+  (->> (-listify (eval features))
+    (--map `(eval-after-load ',it))
+    (--reduce-from `(,@it ,acc)
+                   `'(progn ,@body))))
 
 (cl-defmacro configuration-group (&rest
                                   body
