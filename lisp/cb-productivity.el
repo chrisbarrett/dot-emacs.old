@@ -54,14 +54,14 @@
   :init
   (progn
 
-    (defun cb:rename-symbol-in-defun ()
+    (defun rename-symbol-in-defun ()
       (interactive)
       (iedit-mode 0)
       (unwind-protect
           (iedit-replace-occurrences (read-string "Replace in function: "))
         (iedit-done)))
 
-    (defun cb:rename-symbol-in-buffer ()
+    (defun rename-symbol-in-buffer ()
       (interactive)
       (iedit-mode)
       (unwind-protect
@@ -69,8 +69,8 @@
         (iedit-done)))
 
     (bind-keys
-      "M-r" 'cb:rename-symbol-in-defun
-      "M-R" 'cb:rename-symbol-in-buffer))
+      "M-r" 'rename-symbol-in-defun
+      "M-R" 'rename-symbol-in-buffer))
 
   :config
   (after 'iedit
