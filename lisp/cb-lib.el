@@ -829,10 +829,10 @@ timeout period will not require the password again."
 ;;; ----------------------------------------------------------------------------
 ;;; Calendaring functions
 
-(defun euro-date->iso-date (str)
-  "Convert a date STR of form dd/mm/yy to yy-mm-dd."
+(defun euro-date->iso-date (date-string)
+  "Convert DATE-STRING of form dd/mm/yy to yy-mm-dd."
   (cl-destructuring-bind (day month year)
-      (s-split "/" str)
+      (s-split "/" date-string)
     (format "%s-%s-%s" year month day)))
 
 (provide 'cb-lib)
