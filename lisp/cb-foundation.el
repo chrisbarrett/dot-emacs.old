@@ -46,6 +46,10 @@
       (f-join cb:src-dir (format "emacs-%s.%s" emacs-major-version emacs-minor-version)))
 (setenv "INFOPATH" (f-join source-directory "info/"))
 
+;; Use ~ as the default directory.
+(setq default-directory user-home-directory)
+(setq-default default-directory user-home-directory)
+
 
 (setq
  redisplay-dont-pause         t
@@ -72,7 +76,6 @@
  indent-tabs-mode             nil
  fill-column                  80
  default-input-method "TeX"
- default-directory user-home-directory
  )
 
 (add-hook 'text-mode-hook 'visual-line-mode)
