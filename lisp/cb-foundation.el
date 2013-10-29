@@ -42,10 +42,9 @@
    auto-fill-mode))
 
 ;; Use the version of emacs in /src for info and source.
-(setq source-directory (format "%s/emacs-%s.%s" cb:src-dir
-                               emacs-major-version
-                               emacs-minor-version))
-(setenv "INFOPATH" (concat source-directory "/info/"))
+(setq source-directory
+      (f-join cb:src-dir (format "emacs-%s.%s" emacs-major-version emacs-minor-version)))
+(setenv "INFOPATH" (f-join source-directory "info/"))
 
 
 (setq
@@ -65,7 +64,7 @@
  confirm-nonexistent-file-or-buffer nil
  vc-handled-backends          '(Git)
  system-uses-terminfo         nil
- bookmark-default-file        (concat cb:tmp-dir "bookmarks")
+ bookmark-default-file        (f-join cb:tmp-dir "bookmarks")
  sentence-end-double-space nil
  )
 (setq-default
