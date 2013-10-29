@@ -67,7 +67,29 @@
       (iedit-done))
 
     (bind-key "M-r" 'cb:rename-symbol-in-defun)
-    (bind-key "M-R" 'cb:rename-symbol-in-buffer)))
+    (bind-key "M-R" 'cb:rename-symbol-in-buffer))
+  :config
+  (after 'iedit
+
+    (defvar cbiedit:options
+      '(("c" "Toggle Case-Sensitivity" iedit-toggle-case-sensitive)
+        ("e" "Expand" iedit-expand-by-a-line)
+        ("f" "Restrict (function)" iedit-restrict-function)
+        ("l" "Restrict (line)" iedit-restrict-current-line)
+        ("n" "Expand (down)" iedit-expand-down-a-line)
+        ("p" "Expand (up)" iedit-expand-up-a-line)
+        ("q" "Done" iedit-done)
+        ("r" "Restrict (region)" iedit-restrict-region)
+        ("t" "Toggle Match at Point" iedit-toggle-selection))
+      "The list of options used for the iedit option picker.")
+
+    (defun cbiedit:read-option ()
+      "Read an iedit action interactively."
+      (interactive)
+      (cl-destructuring-bind (_ _ fn) (read-option "iedit" 'car 'cadr cbiedit:options)
+        (funcall fn)))
+
+    (bind-key "C-<return>" 'cbiedit:read-option iedit-mode-keymap)))
 
 (use-package info-lookmore
   :commands info-lookmore-elisp-cl
