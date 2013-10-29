@@ -443,77 +443,10 @@ Each element is a list of form /(key desc symbol)/.")
       (add-hook 'org-pomodoro-short-break-finished-hook 'cb-org:pomodoro-growl-end-break)
       (add-hook 'org-pomodoro-short-break-finished-hook 'cb-org:pomodoro-growl-end-break))))
 
-;; Define pairs for org-mode blocks.
-(after 'smartparens
-  (sp-with-modes '(org-mode)
-    (sp-local-pair "#+BEGIN_SRC" "#+END_SRC")
-    (sp-local-pair "#+begin_src" "#+end_src")
-    (sp-local-pair "#+BEGIN_EXAMPLE" "#+END_EXAMPLE")
-    (sp-local-pair "#+begin_example" "#+end_example")
-    (sp-local-pair "#+BEGIN_VERSE" "#+END_VERSE")
-    (sp-local-pair "#+begin_verse" "#+end_verse")))
+;;; Configure org-mode sub-features only if org-mode is actually loaded.
 
-;; Configure org's sub-features only if org-mode is actually loaded.
+;; Use `iimage' to display inline images in org buffers.
 (after 'org
-
-  ;;; Calendaring functions
-
-  ;; Functions for calculating Easter.
-
-  (defun calendar-easter-date (year)
-    "Calculate the date for Easter Sunday in YEAR. Returns the date in the
-Gregorian calendar, ie (MM DD YY) format."
-    (let* ((century (1+ (/ year 100)))
-           (shifted-epact (% (+ 14 (* 11 (% year 19))
-                                (- (/ (* 3 century) 4))
-                                (/ (+ 5 (* 8 century)) 25)
-                                (* 30 century))
-                             30))
-           (adjusted-epact (if (or (= shifted-epact 0)
-                                   (and (= shifted-epact 1)
-                                        (< 10 (% year 19))))
-                               (1+ shifted-epact)
-                             shifted-epact))
-           (paschal-moon (- (calendar-absolute-from-gregorian
-                             (list 4 19 year))
-                            adjusted-epact)))
-      (calendar-dayname-on-or-before 0 (+ paschal-moon 7))))
-
-  (defun calendar-easter-gregorian (year)
-    (calendar-gregorian-from-absolute (calendar-easter-date year)))
-
-  (defun calendar-days-from-easter ()
-    "When used in a diary sexp, this function will calculate how many days
-are between the current date (DATE) and Easter Sunday."
-    (- (calendar-absolute-from-gregorian date)
-       (calendar-easter-date (calendar-extract-year date))))
-
-  ;; Functions for calculating NZ holidays.
-
-  (defun calendar-nearest-to (target-dayname target-day target-month)
-    "Recurring event that occurs in the nearest TARGET-DAYNAME to
-the date TARGET-DAY, TARGET-MONTH each year."
-    (interactive)
-    (let* ((dayname (calendar-day-of-week date))
-           (target-date (list target-month target-day (calendar-extract-year
-                                                       date)))
-           (days-diff (abs (- (calendar-day-number date)
-                              (calendar-day-number target-date)))))
-      (and (= dayname target-dayname)
-           (< days-diff 4))))
-
-  (defun calendar-mondayised-date (target-day target-month)
-    "Event that occurs on the closest Monday if it falls on a weekend."
-    (interactive)
-    ;; If the date falls on a Sat or Sun, return the coming Mon.
-    (if (memq (calendar-day-of-week date) '(0 6))
-        ;; FIXME: Doesn't seem to work here.
-        (calendar-nearest-to 1 target-day target-month)
-      ;; Return the evaluated date.  The entry does not have a starting date so
-      ;; we just use the start of the UNIX epoch.
-      (org-anniversary 1970 target-month target-day)))
-
-  ;; Toggle inline images in org buffers.
   (use-package iimage
     :config
     (progn
@@ -522,15 +455,16 @@ the date TARGET-DAY, TARGET-MONTH each year."
                                  "\\)\\]")  1))
 
       (defun org-toggle-iimage-in-org ()
-        "display images in your org file"
+        "Display images in the current orgmode buffer."
         (interactive)
         (if (face-underline-p 'org-link)
             (set-face-underline-p 'org-link nil)
           (set-face-underline-p 'org-link t))
-        (iimage-mode))))
+        (iimage-mode)))))
 
-  ;; `org-capture' is used to interactively read items to be inserted into
-  ;; org-mode buffers.
+;; `org-capture' is used to interactively read items to be inserted into
+;; org-mode buffers.
+(after 'org
   (use-package org-capture
     :config
     (progn
@@ -651,10 +585,11 @@ the date TARGET-DAY, TARGET-MONTH each year."
                  :clock-keep t
                  :kill-buffer t)
                 )
-        (add-to-list 'org-capture-templates it 'append))))
+        (add-to-list 'org-capture-templates it 'append)))))
 
-  ;; `org-agenda' provides an interactive journaling system, collecting
-  ;; information from org-mode buffers.
+;; `org-agenda' provides an interactive journaling system, collecting
+;; information from org-mode buffers.
+(after 'org
   (use-package org-agenda
     :config
     (progn
@@ -840,14 +775,16 @@ Return nil if there are no items to display."
                     (org-agenda-redo t))))))))
 
       (hook-fn 'org-mode-hook
-        (add-hook 'after-save-hook 'cb-org:refresh-agenda nil 'local))))
+        (add-hook 'after-save-hook 'cb-org:refresh-agenda nil 'local)))))
 
-  ;; `org-protocol' allows other applications to connect to Emacs and prompt
-  ;; org-mode to perform certain actions, including saving links.
-  (use-package org-protocol)
+;; `org-protocol' allows other applications to connect to Emacs and prompt
+;; org-mode to perform certain actions, including saving links.
+(after 'org
+  (use-package org-protocol))
 
-  ;; `appt' is emacs' generic scheduling system for calendar. Configure it to
-  ;; hook into org-mode.
+;; `appt' is emacs' generic scheduling system for calendar. Configure it to
+;; hook into org-mode.
+(after 'org
   (use-package appt
     :config
     (progn
@@ -864,10 +801,11 @@ Return nil if there are no items to display."
             :local t
             (save-window-excursion
               (org-agenda-to-appt t)
-              (appt-check 'force)))))))
+              (appt-check 'force))))))))
 
-  ;; `org-clock' provides time-keeping and clocking features for tasks in
-  ;; org-mode.
+;; `org-clock' provides time-keeping and clocking features for tasks in
+;; org-mode.
+(after 'org
   (use-package org-clock
     :config
     (progn
@@ -954,9 +892,10 @@ Switch projects and subprojects from NEXT back to TODO."
 
       (hook-fns '(org-after-todo-state-change-hook org-clock-in-hook)
         :append t
-        (cb-org:mark-next-parent-tasks-todo))))
+        (cb-org:mark-next-parent-tasks-todo)))))
 
-  ;; `org-archive' provides archiving features for org-mode.
+;; `org-archive' provides archiving features for org-mode.
+(after 'org
   (use-package org-archive
     :config
     (progn
@@ -978,9 +917,10 @@ Switch projects and subprojects from NEXT back to TODO."
       (defadvice org-archive-subtree
         (before add-inherited-tags-before-org-archive-subtree activate)
         "Add inherited tags before org-archive-subtree."
-        (org-set-tags-to (org-get-tags-at)))))
+        (org-set-tags-to (org-get-tags-at))))))
 
-  ;; `org-crypt' provides encryption functions for org buffers.
+;; `org-crypt' provides encryption functions for org buffers.
+(after 'org
   (use-package org-crypt
     :config
     (progn
@@ -1009,10 +949,11 @@ Switch projects and subprojects from NEXT back to TODO."
           (org-decrypt-entry)
           t))
 
-      (add-hook 'org-ctrl-c-ctrl-c-hook 'cb-org:decrypt-entry)))
+      (add-hook 'org-ctrl-c-ctrl-c-hook 'cb-org:decrypt-entry))))
 
-  ;; `org-attach' adds support for attachments to subtrees as an alternative to
-  ;; plain links.
+;; `org-attach' adds support for attachments to subtrees as an alternative to
+;; plain links.
+(after 'org
   (use-package org-attach
     :config
     (progn
@@ -1050,10 +991,11 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
                      (org-attach-store-link file)))
               (if visit-dir
                   (dired attach-dir)
-                (message "File \"%s\" is now a task attachment." basename))))))))
+                (message "File \"%s\" is now a task attachment." basename)))))))))
 
-  ;; `org-mime' provides MIME exporting functions, allowing you to export org
-  ;; buffers to HTML emails.
+;; `org-mime' provides MIME exporting functions, allowing you to export org
+;; buffers to HTML emails.
+(after 'org
   (use-package org-mime
     :config
     (progn
@@ -1070,9 +1012,10 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
         (org-mime-change-element-style
          "blockquote" "border-left: 2px solid #B0B0B0; padding-left: 4px;")
         (org-mime-change-element-style
-         "pre" "border-left: 2px solid #B0B0B0; padding-left: 4px;"))))
+         "pre" "border-left: 2px solid #B0B0B0; padding-left: 4px;")))))
 
-  ;; `ox-koma-letter' adds TeX formal letter exporting using KOMA.
+;; `ox-koma-letter' adds TeX formal letter exporting using KOMA.
+(after 'org
   (use-package ox-koma-letter
     :config
     (add-to-list 'org-latex-classes
@@ -1080,6 +1023,16 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
                    ,(concat "\\documentclass\{scrlttr2\} "
                             "\\usepackage[english]{babel} "
                             "\[NO-DEFAULT-PACKAGES] \[NO-PACKAGES] \[EXTRA]")))))
+
+;; Define pairs for org-mode blocks.
+(after 'smartparens
+  (sp-with-modes '(org-mode)
+    (sp-local-pair "#+BEGIN_SRC" "#+END_SRC")
+    (sp-local-pair "#+begin_src" "#+end_src")
+    (sp-local-pair "#+BEGIN_EXAMPLE" "#+END_EXAMPLE")
+    (sp-local-pair "#+begin_example" "#+end_example")
+    (sp-local-pair "#+BEGIN_VERSE" "#+END_VERSE")
+    (sp-local-pair "#+begin_verse" "#+end_verse")))
 
 ;; Disable auto-complete in org-mode buffers.
 (after 'auto-complete
