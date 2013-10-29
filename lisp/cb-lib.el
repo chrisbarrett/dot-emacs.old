@@ -712,19 +712,22 @@ Return the element in a list of options corresponding to the user's selection.
 (cl-defun growl (title
                  message
                  &optional (icon "/Applications/Emacs.app/Contents/Resources/Emacs.icns"))
-  "Display a message and a growl notification on localhost.
+  "Display a growl notification.
+Fall back to `message' if `growl-program' is not installed.
 The notification will have the given TITLE and MESSAGE."
-  (message "%s. %s" title message)
-  (when (executable-find growl-program)
-    (let ((proc (start-process "growl" nil
-                               growl-program
-                               title
-                               "-n" "Emacs"
-                               "-a" "Emacs"
-                               "--image" icon)))
-      (process-send-string proc message)
-      (process-send-string proc "\n")
-      (process-send-eof proc))))
+  (if (executable-find growl-program)
+      ;; Call growl
+      (let ((proc (start-process "growl" nil
+                                 growl-program
+                                 title
+                                 "-n" "Emacs"
+                                 "-a" "Emacs"
+                                 "--image" icon)))
+        (process-send-string proc message)
+        (process-send-string proc "\n")
+        (process-send-eof proc))
+    ;; Fall back to message.
+    (message "%s. %s" title message)))
 
 ;;; ----------------------------------------------------------------------------
 
