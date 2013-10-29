@@ -73,6 +73,7 @@
  indent-tabs-mode             nil
  fill-column                  80
  default-input-method "TeX"
+ default-directory user-home-directory
  )
 
 (add-hook 'text-mode-hook 'visual-line-mode)
