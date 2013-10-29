@@ -6,19 +6,19 @@ This is my personal Emacs configuration. It is obviously very personalised and y
 * Installation
 Requires GNU Make, curl and Git.
 
-#+BEGIN_SRC sh
+#+begin_src sh
   cd
   mv .emacs.d .emacs.d.backup
   git clone git@github.com:chrisbarrett/dot-emacs.git .emacs.d
   cd .emacs.d
   make
-#+END_SRC
+#+end_src
 
 Additional features can be installed using =make all=, or using the individual tasks in the makefile (e.g. =make ruby=). I pretty much only test on my machine, so YMMV.
 
 The load sequence will search for a file called =personal-config.el=, which is a good place to put things like your gnus server configuration, email address, etc.
 
-#+BEGIN_SRC elisp
+#+begin_src elisp
   (setq user-full-name    "Jane Coder"
         user-mail-address "foo@bar.com")
 
@@ -28,7 +28,7 @@ The load sequence will search for a file called =personal-config.el=, which is a
         smtpmail-smtp-server "smtp.foo.bar.com")
 
   (provide 'personal-config)
-#+END_SRC
+#+end_src
 * Features
 ** Automated loading
 Elisp files in the =lisp= directory will be automatically compiled and loaded at startup. The =configuration-group= macro allows you to declare prerequisites for loading forms in these files.
@@ -36,9 +36,9 @@ Elisp files in the =lisp= directory will be automatically compiled and loaded at
 =C-x m= will open an org-mode buffer for sending HTML emails, giving you access to all the good stuff like rich formatting, tables and code blocks.
 
 If you are a Mutt user, add the following to your =.muttrc= to use org-mode message editing:
-#+BEGIN_SRC sh
+#+begin_src sh
   set editor="emacsclient -nw %s -a 'vim %s'"
-#+END_SRC
+#+end_src
 ** Evilness
 I use [[https://gitorious.org/evil/pages/Home][Evil-mode]] so I can have vim in my Emacs so I can edit while I edit. You can restore Emacs' normal key bindings by setting =cb:use-vim-keybindings?= to nil in /init.el/. I try to remember to make my bindings test for that so people testing this config out aren't completely stuffed.
 ** Custom mode-line
