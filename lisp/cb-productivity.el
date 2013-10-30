@@ -76,49 +76,33 @@
   :config
   (after 'iedit
 
+    (defun cbiedit:replace-read ()
+      (iedit-replace-occurrences (read-string "Replace in buffer: ")))
+
+    (defun cbiedit:restrict-to-region ()
+      (iedit-restrict-region (region-beginning) (region-end) t))
+
+    (defun cbiedit:replace-in-region ()
+      (cbiedit:restrict-to-region)
+      (cbiedit:replace-read))
+
     (define-command-picker iedit-picker
       :title "*iedit*"
       :options
-      '(("c" "Toggle Case-Sensitivity" iedit-toggle-case-sensitive -true-fn)
+      '(("e" "Expand"              iedit-expand-by-a-line         :unless region-active-p)
+        ("p" "Expand (up)"         iedit-expand-up-a-line         :unless region-active-p)
+        ("n" "Expand (down)"       iedit-expand-down-a-line       :unless region-active-p)
+        ("R" "Replace (in region)" cbiedit:replace-in-region      :when region-active-p)
+        ("R" "Replace"             cbiedit:replace-read           :unless region-active-p)
+        ("k" "Delete Matches"      iedit-delete-occurrences       :unless region-active-p)
+        ("l" "Restrict (line)"     iedit-restrict-current-line    :unless region-active-p)
+        ("r" "Restrict (region)"   cbiedit:restrict-to-region     :when region-active-p)
+        ("f" "Restrict (function)" iedit-restrict-function        :when (lambda () (thing-at-point 'defun)))
+        ("c" "Toggle Case-Sensitivity" iedit-toggle-case-sensitive)
+        ("t" "Toggle at Point"     iedit-toggle-selection)
+        ("d" "Done"                iedit-done)))
 
-        ("e" "Expand" iedit-expand-by-a-line
-         (lambda () (not (region-active-p))))
-
-        ("f" "Restrict (function)" iedit-restrict-function
-         (lambda () (thing-at-point 'defun)))
-
-        ("l" "Restrict (line)" iedit-restrict-current-line
-         (lambda () (not (region-active-p))))
-
-        ("n" "Expand (down)" iedit-expand-down-a-line
-         (lambda () (not (region-active-p))))
-
-        ("p" "Expand (up)" iedit-expand-up-a-line
-         (lambda () (not (region-active-p))))
-
-        ("k" "Delete Matches" iedit-delete-occurrences
-         (lambda () (not (region-active-p))))
-
-        ("d" "Done" iedit-done -true-fn)
-
-        ("R" "Replace"
-         (lambda ()
-           (iedit-replace-occurrences (read-string "Replace in buffer: ")))
-         (lambda () (not (region-active-p))))
-
-        ("R" "Replace (in region)"
-         (lambda ()
-           (iedit-restrict-region (region-beginning) (region-end) t)
-           (iedit-replace-occurrences (read-string "Replace in buffer: ")))
-         region-active-p)
-
-        ("r" "Restrict (region)"
-         (lambda () (iedit-restrict-region (region-beginning) (region-end) t))
-         region-active-p)
-
-        ("t" "Toggle at Point" iedit-toggle-selection -true-fn)))
-
-    (bind-key "C-<return>" 'cbiedit:read-option iedit-mode-keymap)))
+    (bind-key "C-<return>" 'iedit-picker iedit-mode-keymap)))
 
 (use-package info-lookmore
   :commands info-lookmore-elisp-cl
