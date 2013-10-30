@@ -410,12 +410,12 @@ Otherwise, use the value of said variable as argument to a funcall."
 (define-command-picker narrowing-picker
   :title "*Narrowing*"
   :options
-  '(("d" "Defun" narrow-to-defun :when (lambda () (derived-mode-p 'prog-mode)))
+  '(("d" "Defun" narrow-to-defun :modes prog-mode)
     ("r" "Region" narrow-to-region :when region-active-p)
     ("w" "Widen" widen :when buffer-narrowed-p)
-    ("b" "Block (org)" org-narrow-to-block :when (lambda () (derived-mode-p 'org-mode)))
-    ("e" "Element (org)" org-narrow-to-element :when (lambda () (derived-mode-p 'org-mode)))
-    ("s" "Subtree (org)" org-narrow-to-subtree :when (lambda () (derived-mode-p 'org-mode)))))
+    ("b" "Block (org)" org-narrow-to-block :modes org-mode)
+    ("e" "Element (org)" org-narrow-to-element :modes org-mode)
+    ("s" "Subtree (org)" org-narrow-to-subtree :modes org-mode)))
 
 (bind-key* "C-x n" 'narrowing-picker)
 
