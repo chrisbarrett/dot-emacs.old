@@ -66,7 +66,6 @@
  confirm-nonexistent-file-or-buffer nil
  vc-handled-backends          '(Git)
  system-uses-terminfo         nil
- bookmark-default-file        (f-join cb:tmp-dir "bookmarks")
  sentence-end-double-space nil
  )
 (setq-default
@@ -78,6 +77,15 @@
 
 (add-hook 'text-mode-hook 'visual-line-mode)
 (icomplete-mode +1)
+
+(after 'bookmark
+  (setq bookmark-default-file (f-join cb:tmp-dir "bookmarks")))
+
+;; Disable backups for files edited with tramp.
+(after 'backup-dir
+  (add-to-list 'bkup-backup-directory-info
+               (list tramp-file-name-regexp ""))
+  (setq tramp-bkup-backup-directory-info nil))
 
 ;; Encodings
 
@@ -119,7 +127,7 @@
 
 ;;; Editing Advice
 
-(defun* sudo-edit (&optional (file (buffer-file-name)))
+(cl-defun sudo-edit (&optional (file (buffer-file-name)))
   "Edit FILE with sudo if permissions require it."
   (interactive)
   (when file
@@ -177,7 +185,7 @@
   (delete-trailing-whitespace))
 
 (defadvice indent-sexp (around ignore-errors activate)
-  "Suppress errors in indent-sexp."
+  "Suppress errors in `indent-sexp'."
   (ignore-errors ad-do-it))
 
 ;;; Basic hooks
@@ -211,17 +219,13 @@
 
 (declare-modal-view package-list-packages)
 
-;; Disable backups for files edited with tramp.
-(after 'backup-dir
-  (add-to-list 'bkup-backup-directory-info
-               (list tramp-file-name-regexp ""))
-  (setq tramp-bkup-backup-directory-info nil))
-
 ;;; Comint
 
 ;; Make comint read-only. This will stop the prompts from being editable
 ;; in inferior language modes.
-(setq comint-prompt-read-only t)
+
+(after 'comint
+  (setq comint-prompt-read-only t))
 
 (defun cb:clear-scrollback ()
   "Erase all but the last line of the current buffer."
@@ -301,7 +305,7 @@
   "Mode to set for indirect buffers.")
 
 (defun indirect-region (start end)
-  "Edit the current region in another buffer.
+  "Edit the current region from START to END in another buffer.
 If the buffer-local variable `indirect-mode-name' is not set, prompt
 for mode name to choose for the indirect buffer interactively.
 Otherwise, use the value of said variable as argument to a funcall."
