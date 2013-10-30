@@ -114,7 +114,9 @@ This will set which file org-capture will capture to."
   (interactive)
   (find-file org-default-notes-file))
 
-(defvar cb-org:widget-options
+(define-command-picker org-action-picker
+  :title "*Org Commands*"
+  :options
   '(("a" "Agenda" org-agenda)
     ("b" "Buffers" org-iswitchb)
     ("c" "Follow Clock" org-clock-goto)
@@ -127,24 +129,13 @@ This will set which file org-capture will capture to."
     ("t" "Todo List" executor:org-show-todo-list)
     ("v" "View Tags (todos)" executor:org-tags-view-todos-fullscreen)
     ("V" "View Tags (all)" executor:org-tags-view-all-fullscreen)
-    ("y" "Yank region as quote" cb-org:yank-region-as-quote))
-  "List of options to be displayed by the `cb-org:read-action'.
-Each element is a list of form /(key desc symbol)/.")
-
-(defun cb-org:read-action ()
-  (interactive)
-  (cl-destructuring-bind (_ _ fn)
-      (read-option "*Org Actions*"
-                   (lambda+ ((k _ _)) k)
-                   (lambda+ ((_ s _)) s)
-                   cb-org:widget-options)
-    (call-interactively fn)))
+    ("y" "Yank region as quote" cb-org:yank-region-as-quote :when region-active-p)))
 
 (bind-keys
   :overriding? t
   "<f6>" (command (org-capture nil "t"))
   "<f7>" 'org-capture
-  "<f8>" 'cb-org:read-action
+  "<f8>" 'org-action-picker
   "<f9>" 'executor:org-agenda-fullscreen)
 
 ;; If we're running in a graphical context, show the agenda on startup.
