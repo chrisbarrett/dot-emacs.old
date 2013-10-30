@@ -69,6 +69,7 @@
         len))
 
    (lambda (len)
+     (package-initialize)
      (if (zerop len)
          (growl "Updates Finished"
                 "No packages needed to be updated."
