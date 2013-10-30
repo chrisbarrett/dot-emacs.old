@@ -395,59 +395,29 @@ Otherwise, use the value of said variable as argument to a funcall."
 ;;;
 ;;; Show a picker widget for certain types of command.
 
-;;; Insertion picker
-
-(defvar cb:insertion-commands
+(define-command-picker insertion-picker
+  :title "*Insert*"
+  :options
   '(("F" "File" insert-file)
     ("V" "Lisp Variable" insert-variable)
     ("#" "Shebang" insert-shebang)
     ("L" "Lorem Ipsum" insert-lorem-ipsum)
     ("T" "Timestamp" insert-timestamp)
-    ("U" "UUID" insert-uuid))
-  "A list of commands, of the form (key desc command [pred]).
-If a PRED is supplied the command will only be available if PRED
-evaluates to non-nil.")
+    ("U" "UUID" insert-uuid)))
 
-(defun cb:insert-option ()
-  (interactive)
-  (let ((opts
-         (--filter (or (equal 3 (length it))
-                       (funcall (elt it 3)))
-                   cb:insertion-commands)))
-    (cl-destructuring-bind (_ _ fn &optional _)
-        (read-option "Insert" 'car 'cadr opts)
-      (if (interactive-form fn)
-          (call-interactively fn)
-        (funcall fn)))))
+(bind-key* "C-c i" 'insertion-picker)
 
-(bind-key* "C-c i" 'cb:insert-option)
+(define-command-picker narrowing-picker
+  :title "*Narrowing*"
+  :options
+  '(("d" "Defun" narrow-to-defun :when (lambda () (derived-mode-p 'prog-mode)))
+    ("r" "Region" narrow-to-region :when region-active-p)
+    ("w" "Widen" widen :when buffer-narrowed-p)
+    ("b" "Block (org)" org-narrow-to-block :when (lambda () (derived-mode-p 'org-mode)))
+    ("e" "Element (org)" org-narrow-to-element :when (lambda () (derived-mode-p 'org-mode)))
+    ("s" "Subtree (org)" org-narrow-to-subtree :when (lambda () (derived-mode-p 'org-mode)))))
 
-;;; Narrowing picker
-
-(defvar cb:narrowing-commands
-  '(
-    ;; General
-    ("d" "Defun" narrow-to-defun (lambda () (derived-mode-p 'prog-mode)))
-    ("r" "Region" narrow-to-region region-active-p)
-    ("w" "Widen" widen buffer-narrowed-p)
-    ;; Org
-    ("b" "Block (org)" org-narrow-to-block (lambda () (derived-mode-p 'org-mode)))
-    ("e" "Element (org)" org-narrow-to-element (lambda () (derived-mode-p 'org-mode)))
-    ("s" "Subtree (org)" org-narrow-to-subtree (lambda () (derived-mode-p 'org-mode)))
-    )
-  "The list of narrowing commands to be shown by the narrowing picker.")
-
-(defun cb:narrowing-picker ()
-  (interactive)
-  (cl-destructuring-bind (_ _ f _)
-      ;; Find available narrowing options (where the predicate returns non-nil).
-      (->> cb:narrowing-commands
-        (-filter (C funcall (~ nth 3)))
-        (read-option "Narrow" 'car 'cadr))
-    ;; Call selected narrowing command.
-    (call-interactively f)))
-
-(bind-key* "C-x n" 'cb:narrowing-picker)
+(bind-key* "C-x n" 'narrowing-picker)
 
 (provide 'cb-foundation)
 
