@@ -76,7 +76,9 @@
   :config
   (after 'iedit
 
-    (defvar cbiedit:options
+    (define-command-picker iedit-picker
+      :title "*iedit*"
+      :options
       '(("c" "Toggle Case-Sensitivity" iedit-toggle-case-sensitive -true-fn)
 
         ("e" "Expand" iedit-expand-by-a-line
@@ -114,19 +116,7 @@
          (lambda () (iedit-restrict-region (region-beginning) (region-end) t))
          region-active-p)
 
-        ("t" "Toggle at Point" iedit-toggle-selection -true-fn))
-
-      "The list of options used for the iedit option picker.")
-
-    (defun cbiedit:read-option ()
-      "Read an iedit action interactively."
-      (interactive)
-      (cl-destructuring-bind (_ _ fn _)
-          (read-option "iedit" 'car 'cadr
-                       (-filter (lambda+ ((_ _ _ pred)) (funcall pred))
-                                cbiedit:options))
-
-        (funcall fn)))
+        ("t" "Toggle at Point" iedit-toggle-selection -true-fn)))
 
     (bind-key "C-<return>" 'cbiedit:read-option iedit-mode-keymap)))
 
