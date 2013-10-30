@@ -858,6 +858,10 @@ timeout period will not require the password again."
 (defvar date nil
   "Dynamic var bound to current date by calendaring functions.")
 
+(autoload 'calendar-extract-year "calendar")
+(autoload 'calendar-day-number "calendar")
+(autoload 'calendar-day-of-week "calendar")
+
 (defun calendar-nearest-to (target-dayname target-day target-month)
   "Non-nil if the current date is a certian weekday close to an anniversary.
 
@@ -865,8 +869,7 @@ TARGET-DAYNAME is the day of the week that we want to match,
  while TARGET-DAY and TARGET-MONTH are the anniversary."
   (interactive)
   (let* ((dayname (calendar-day-of-week date))
-         (target-date (list target-month target-day (calendar-extract-year
-                                                     date)))
+         (target-date (list target-month target-day (calendar-extract-year date)))
          (days-diff (abs (- (calendar-day-number date)
                             (calendar-day-number target-date)))))
     (and (= dayname target-dayname)
