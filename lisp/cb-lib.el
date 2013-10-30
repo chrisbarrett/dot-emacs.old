@@ -553,6 +553,8 @@ If NO-PROPERTIES is non-nil, return the line without text properties."
 ;;; ----------------------------------------------------------------------------
 ;;; UI
 
+;;; Progress bars
+
 (cl-defun format-progress-bar (title pos length)
   "Format a progress bar with TITLE and pips up to POS along its LENGTH.
 POS should be a number between 1 and LENGTH."
