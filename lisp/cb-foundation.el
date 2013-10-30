@@ -46,10 +46,8 @@
       (f-join cb:src-dir (format "emacs-%s.%s" emacs-major-version emacs-minor-version)))
 (setenv "INFOPATH" (f-join source-directory "info/"))
 
-;; Use ~ as the default directory.
+;; Use ~ as the default directory at startup.
 (setq default-directory user-home-directory)
-(setq-default default-directory user-home-directory)
-
 
 (setq
  redisplay-dont-pause         t
