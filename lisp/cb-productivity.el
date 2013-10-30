@@ -77,22 +77,55 @@
   (after 'iedit
 
     (defvar cbiedit:options
-      '(("c" "Toggle Case-Sensitivity" iedit-toggle-case-sensitive)
-        ("e" "Expand" iedit-expand-by-a-line)
-        ("f" "Restrict (function)" iedit-restrict-function)
-        ("l" "Restrict (line)" iedit-restrict-current-line)
-        ("n" "Expand (down)" iedit-expand-down-a-line)
-        ("p" "Expand (up)" iedit-expand-up-a-line)
-        ("k" "Delete Matches" iedit-delete-occurrences)
-        ("d" "Done" iedit-done)
-        ("r" "Restrict (region)" iedit-restrict-region)
-        ("t" "Toggle at Point" iedit-toggle-selection))
+      '(("c" "Toggle Case-Sensitivity" iedit-toggle-case-sensitive -true-fn)
+
+        ("e" "Expand" iedit-expand-by-a-line
+         (lambda () (not (region-active-p))))
+
+        ("f" "Restrict (function)" iedit-restrict-function
+         (lambda () (thing-at-point 'defun)))
+
+        ("l" "Restrict (line)" iedit-restrict-current-line
+         (lambda () (not (region-active-p))))
+
+        ("n" "Expand (down)" iedit-expand-down-a-line
+         (lambda () (not (region-active-p))))
+
+        ("p" "Expand (up)" iedit-expand-up-a-line
+         (lambda () (not (region-active-p))))
+
+        ("k" "Delete Matches" iedit-delete-occurrences
+         (lambda () (not (region-active-p))))
+
+        ("d" "Done" iedit-done -true-fn)
+
+        ("R" "Replace"
+         (lambda ()
+           (iedit-replace-occurrences (read-string "Replace in buffer: ")))
+         (lambda () (not (region-active-p))))
+
+        ("R" "Replace (in region)"
+         (lambda ()
+           (iedit-restrict-region (region-beginning) (region-end) t)
+           (iedit-replace-occurrences (read-string "Replace in buffer: ")))
+         region-active-p)
+
+        ("r" "Restrict (region)"
+         (lambda () (iedit-restrict-region (region-beginning) (region-end) t))
+         region-active-p)
+
+        ("t" "Toggle at Point" iedit-toggle-selection -true-fn))
+
       "The list of options used for the iedit option picker.")
 
     (defun cbiedit:read-option ()
       "Read an iedit action interactively."
       (interactive)
-      (cl-destructuring-bind (_ _ fn) (read-option "iedit" 'car 'cadr cbiedit:options)
+      (cl-destructuring-bind (_ _ fn _)
+          (read-option "iedit" 'car 'cadr
+                       (-filter (lambda+ ((_ _ _ pred)) (funcall pred))
+                                cbiedit:options))
+
         (funcall fn)))
 
     (bind-key "C-<return>" 'cbiedit:read-option iedit-mode-keymap)))
