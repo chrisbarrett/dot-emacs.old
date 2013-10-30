@@ -31,7 +31,7 @@
 (require 'package)
 (require 'cb-osx)
 
-(defvar cbpkg:package-icon (f-join cb:assets-dir "cask.png"))
+(defvar cbpkg:package-icon (f-join cb:assets-dir "package.png"))
 
 (hook-fn 'package-background-installation-finished-hook
   :arglist (pkg)
