@@ -603,6 +603,8 @@ In batch mode, this just prints a summary instead of progress."
         (let ((message-log-max nil))
           (message "%s" (format-progress-bar title i len))))))
 
+;;; Option picker
+
 (defface option-key
   `((t (:foreground "red")))
   "Face for key highlight in search method prompt"
@@ -725,17 +727,23 @@ Return the element in a list of options corresponding to the user's selection.
   "Define a command that will display an option picker for the user.
 
 * NAME is the name of the command.
+
 * TITLE is the name of the options buffer to display.
+
 * OPTIONS is a list of options.
 
-Each option is a list of the form (KEY LABEL COMMAND [PREDICATE]), where:
+Each option is a list of the form (KEY LABEL COMMAND [&key WHEN UNLESS]), where:
 
 * KEY is a string representing the key sequence for the option
-* LABEL is a string describing the option
-* COMMAND is the command that will be called if this option is selected
-* The optional PREDICATE must return non-nil for the option to be shown.
 
-If the PREDICATE is omitted the option will always be shown."
+* LABEL is a string describing the option
+
+* COMMAND is the command that will be called if this option is selected
+
+* The optional predicates WHEN and UNLESS control whether an
+  option should be displayed.
+
+If the predicates are omitted the option will always be shown."
   (cl-assert (not (null options)))
   (cl-assert (stringp title))
   (let ((varname (intern (format "%s-options" name))))
@@ -747,15 +755,13 @@ If the PREDICATE is omitted the option will always be shown."
        (defun ,name ()
          "Auto-generated option picker."
          (interactive)
-         (cl-destructuring-bind (_ _ fn &optional _)
+         (cl-destructuring-bind (_ _ fn &rest rst)
              (read-option ,title 'car 'cadr
-                          ;; Call the predicate for each option to determine
-                          ;; whether to display it. If none is supplied the option
-                          ;; should always be shown.
-                          (-filter (lambda+ ((_ _ _ &optional pred))
-                                     (if pred
-                                         (funcall pred)
-                                       t))
+                          ;; Call the predicates for each option to determine
+                          ;; whether to display it.
+                          (-filter (lambda+ ((&key (when '-true-fn) (unless '-nil-fn) &allow-other-keys))
+                                     (and (funcall when)
+                                          (not (funcall unless))))
                                    ,varname))
            ;; Call the option selected by the user.
            (if (commandp fn)
