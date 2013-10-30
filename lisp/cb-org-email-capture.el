@@ -83,6 +83,7 @@
 (require 'cb-lib)
 (require 'cb-paths)
 (require 'async)
+(require 'cb-org)
 (autoload 'org-insert-link "org")
 (autoload 'org-insert-time-stamp "org")
 (autoload 'org-insert-subheading "org")
@@ -416,10 +417,11 @@ Captured messages are marked as read."
        (t
         (async-start
          `(lambda ()
+            ,(async-inject-variables "^pl$")
+            ,(async-inject-variables "load-path")
             (package-initialize)
-            (add-to-list 'load-path ,cb:lisp-dir)
             (require 'cb-org-email-capture)
-            (list ',pl (apply 'cbom:format-for-insertion ',pl)))
+            (list pl (apply 'cbom:format-for-insertion pl)))
          (lambda+ ((pl fmt))
            (save-excursion
              (save-window-excursion
