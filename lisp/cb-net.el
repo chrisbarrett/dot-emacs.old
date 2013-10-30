@@ -139,6 +139,7 @@
 ;; `w3m' bindings for Emacs. w3m is a command-line web browser.
 (use-package w3m
   :ensure   t
+  :disabled t
   :if (executable-find "w3m")
   :commands
   (w3m
