@@ -78,6 +78,14 @@
   "Like `-applify', but does not require FN to be quoted."
   `(-applify ,(cblib:quote-if-fn fn)))
 
+(defun -true-fn (&rest _)
+  "Always return t."
+  t)
+
+(defun -nil-fn (&rest _)
+  "Always return nil."
+  nil)
+
 ;; Aliases for compatibility
 
 (defalias 'make-local-hook 'ignore)
