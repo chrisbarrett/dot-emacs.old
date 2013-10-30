@@ -33,18 +33,24 @@
 
 (defvar cbpkg:package-icon (f-join cb:assets-dir "cask.png"))
 
-(hook-fn 'package-updated-in-background-hook
+(hook-fn 'package-background-installation-finished-hook
   :arglist (pkg)
-  (growl "Package Updated"
-         (format "%s updated successfully." pkg)
+  (growl "Package Installed"
+         (format "%s installed successfully." pkg)
          cbpkg:package-icon))
 
-(hook-fn 'package-background-updates-started-hook
+(hook-fn 'package-background-installation-started-hook
   :arglist (pkgs)
   (-when-let (len (and pkgs (length pkgs)))
-    (growl "Installing Updates"
-           (format "%s package%s will be updated." len (if (= 1 len) "" "s"))
+    (growl "Installing Packages"
+           (format "%s package%s will be installed or updated." len (if (= 1 len) "" "s"))
            cbpkg:package-icon)))
+
+(defun cbpkg:install-packages (pkgs)
+  (run-hook-with-args 'package-background-installation-started-hook pkgs)
+  (--each pkgs
+    (package-install it)
+    (run-hook-with-args 'package-background-installation-finished-hook it)))
 
 (defun update-packages ()
   "Update all installed packages in the background."
@@ -60,13 +66,9 @@
       (require 'cb-package)
       (package-refresh-contents)
       (package-initialize)
-      (let* ((pkgs (cbpkg:updateable-packages))
-             (len (length pkgs)))
-        (run-hook-with-args 'package-background-updates-started-hook pkgs)
-        (--each pkgs
-          (package-install it)
-          (run-hook-with-args 'package-updated-in-background-hook it))
-        len))
+      (let ((pkgs (cbpkg:updateable-packages)))
+        (cbpkg:install-packages pkgs)
+        (length pkgs)))
 
    (lambda (len)
      (package-initialize)
