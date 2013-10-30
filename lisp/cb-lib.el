@@ -637,6 +637,30 @@ COLUMN-WIDTH specifies the width of columns if columnation is used."
          (lambda (l r) (concat (s-pad-right column-width " " l) r)) xs)
         (s-join "\n")))))
 
+(defun cb-lib:option-read-loop (option-key-fn options)
+  "Read an option from the user.
+Returns the option matching the key event, or ignores. C-g will
+abort the loop. The \"q\" key will also abort the loop if there
+is no option bound to \"q\"."
+  (cl-loop
+   while t
+
+   for key =
+   (let ((inhibit-quit t))
+     (read-char-exclusive))
+
+   for method =
+   (-first (-compose (~ equal key) 'string-to-char option-key-fn)
+           options)
+   do
+   (cond
+    (method
+     (cl-return method))
+    ((-contains? '(?\C-g ?q) key)
+     (setq quit-flag t))
+    (t
+     (message "Invalid key")))))
+
 (defun read-option (title option-key-fn option-name-fn options)
   "Prompt the user to select from a list of choices.
 Return the element in a list of options corresponding to the user's selection.
@@ -649,12 +673,14 @@ Return the element in a list of options corresponding to the user's selection.
 * OPTION-NAME-FN is a function that returns a string describing a given option.
 
 * OPTIONS is a list of items to present to the user."
-  (unwind-protect
-      (save-excursion
-        (save-window-excursion
-          ;; Create a buffer containing methods.
-          (switch-to-buffer-other-window (get-buffer-create title))
-          (erase-buffer)
+  (save-excursion
+    (save-window-excursion
+      ;; Split the window and create a buffer containing the options.
+
+      (let ((win (split-window-below)))
+        (select-window win)
+        (with-current-buffer (get-buffer-create title)
+          (set-window-buffer win (current-buffer))
 
           ;; 1. Format the options for insertion.
 
@@ -674,6 +700,7 @@ Return the element in a list of options corresponding to the user's selection.
                                 " " (concat "[" key "]"))
                                (funcall option-name-fn it)))))))
 
+            (erase-buffer)
             (insert
              ;; Show small numbers of options in a single column. If the number
              ;; of lines exceeds 3, split into 2 columns.
@@ -690,27 +717,9 @@ Return the element in a list of options corresponding to the user's selection.
             (fit-window-to-buffer)
 
             ;; 3. Read selection from user.
-
-            (cl-loop
-             while t
-
-             for key =
-             (let ((inhibit-quit t))
-               (read-char-exclusive))
-
-             for method =
-             (-first (-compose (~ equal key) 'string-to-char option-key-fn)
-                     options)
-             do
-             (cond
-              (method
-               (return method))
-              ((-contains? '(?\C-g ?q) key)
-               (setq quit-flag t))
-              (t
-               (message "Invalid key")))))))
-
-    (kill-buffer title)))
+            (unwind-protect
+                (cb-lib:option-read-loop option-key-fn options)
+              (kill-buffer title))))))))
 
 ;;; ----------------------------------------------------------------------------
 ;;; Growl Notifications
