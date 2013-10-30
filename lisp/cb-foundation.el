@@ -113,21 +113,6 @@
 
 ;;; Narrowing
 
-(defun cb:narrow-dwim ()
-  "Perform a context-sensitive narrowing command."
-  (interactive)
-  (cond ((buffer-narrowed-p)
-         (widen)
-         (recenter))
-
-        ((region-active-p)
-         (narrow-to-region (region-beginning)
-                           (region-end)))
-        (t
-         (narrow-to-defun))))
-
-(when (true? cb:use-vim-keybindings?)
-  (bind-key "M-n" 'cb:narrow-dwim))
 (put 'narrow-to-defun  'disabled nil)
 (put 'narrow-to-page   'disabled nil)
 (put 'narrow-to-region 'disabled nil)
@@ -388,6 +373,7 @@ Otherwise, use the value of said variable as argument to a funcall."
   [up]    'you-lack-discipline
   [down]  'you-lack-discipline)
 
+(define-key prog-mode-map (kbd "M-q") 'indent-dwim)
 
 (define-prefix-command 'help-find-map)
 (bind-keys
@@ -400,6 +386,10 @@ Otherwise, use the value of said variable as argument to a funcall."
   "C-h e v" 'find-variable
   "C-h e a" 'apropos
   "C-h e V" 'apropos-value)
+
+;;; Pickers
+;;;
+;;; Show a picker widget for certain types of command.
 
 ;;; Insertion picker
 
@@ -428,7 +418,32 @@ evaluates to non-nil.")
 
 (bind-key* "C-c i" 'cb:insert-option)
 
-(define-key prog-mode-map (kbd "M-q") 'indent-dwim)
+;;; Narrowing picker
+
+(defvar cb:narrowing-commands
+  '(
+    ;; General
+    ("d" "Defun" narrow-to-defun (lambda () (derived-mode-p 'prog-mode)))
+    ("r" "Region" narrow-to-region region-active-p)
+    ("w" "Widen" widen buffer-narrowed-p)
+    ;; Org
+    ("b" "Block (org)" org-narrow-to-block (lambda () (derived-mode-p 'org-mode)))
+    ("e" "Element (org)" org-narrow-to-element (lambda () (derived-mode-p 'org-mode)))
+    ("s" "Subtree (org)" org-narrow-to-subtree (lambda () (derived-mode-p 'org-mode)))
+    )
+  "The list of narrowing commands to be shown by the narrowing picker.")
+
+(defun cb:narrowing-picker ()
+  (interactive)
+  (cl-destructuring-bind (_ _ f _)
+      ;; Find available narrowing options (where the predicate returns non-nil).
+      (->> cb:narrowing-commands
+        (-filter (C funcall (~ nth 3)))
+        (read-option "Narrow" 'car 'cadr))
+    ;; Call selected narrowing command.
+    (call-interactively f)))
+
+(bind-key* "C-x n" 'cb:narrowing-picker)
 
 (provide 'cb-foundation)
 
