@@ -734,7 +734,7 @@ Return the element in a list of options corresponding to the user's selection.
 
 * OPTIONS is a list of options.
 
-Each option is a list of the form (KEY LABEL COMMAND [&key WHEN UNLESS]), where:
+Each option is a list of the form (KEY LABEL COMMAND [&key MODES WHEN UNLESS]), where:
 
 * KEY is a string representing the key sequence for the option
 
@@ -742,8 +742,10 @@ Each option is a list of the form (KEY LABEL COMMAND [&key WHEN UNLESS]), where:
 
 * COMMAND is the command that will be called if this option is selected
 
-* The optional predicates WHEN and UNLESS control whether an
-  option should be displayed.
+* The optional predicates MODES, WHEN and UNLESS control whether
+  an option should be displayed. MODES is a symbol or list of
+  symbols naming the modes in which the option is available. WHEN
+  and UNLESS are nullary functions.
 
 If the predicates are omitted the option will always be shown."
   (cl-assert (not (null options)))
@@ -761,9 +763,17 @@ If the predicates are omitted the option will always be shown."
              (read-option ,title 'car 'cadr
                           ;; Call the predicates for each option to determine
                           ;; whether to display it.
-                          (-filter (lambda+ ((&key (when '-true-fn) (unless '-nil-fn) &allow-other-keys))
-                                     (and (funcall when)
-                                          (not (funcall unless))))
+                          (-filter (lambda+
+                                     ((&key modes
+                                            (when '-true-fn)
+                                            (unless '-nil-fn)
+                                            &allow-other-keys))
+                                     (and
+                                      (if modes
+                                          (apply 'derived-mode-p (-listify modes))
+                                        t)
+                                      (funcall when)
+                                      (not (funcall unless))))
                                    ,varname))
            ;; Call the option selected by the user.
            (if (commandp fn)
