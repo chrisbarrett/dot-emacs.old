@@ -60,7 +60,9 @@
       (yas-recompile-all)
       (yas-reload-all))
 
-    (defvar cbyas:options
+    (define-command-picker yasnippet-picker
+      :title "*Yasnippet Commands*"
+      :options
       '(("e" "Expand" yas-expand)
         ("f" "Visit File" yas-visit-snippet-file)
         ("i" "Insert" yas-insert-snippet)
@@ -68,13 +70,7 @@
         ("r" "Reload All" cbyas:reload-all)
         ("t" "Show Tables" yas-describe-tables)))
 
-    (defun cbyas:read-option ()
-      "Read a yasnippet action interactively."
-      (interactive)
-      (cl-destructuring-bind (_ _ fn) (read-option "Yasnippet" 'car 'cadr cbyas:options)
-        (funcall fn)))
-
-    (bind-key* "C-c y" 'cbyas:read-option)))
+    (bind-key* "C-c y" 'yasnippet-picker)))
 
 (provide 'cb-yasnippet)
 
