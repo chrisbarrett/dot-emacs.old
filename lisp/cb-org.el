@@ -1062,7 +1062,7 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
     (interactive)
     (save-excursion
       (goto-char (point-min))
-      (org-global-cycle 3)
+      (org-global-cycle 16)
       (recenter)))
 
   (evil-define-key 'normal org-mode-map
