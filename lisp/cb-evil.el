@@ -286,6 +286,7 @@ The insertion will be repeated COUNT times."
     (evil-add-hjkl-bindings tar-mode-map)
     (evil-add-hjkl-bindings occur-mode-map)
     (evil-add-hjkl-bindings archive-mode-map)
+    (evil-add-hjkl-bindings package-menu-mode-map)
 
     (after 'man
       (evil-declare-key 'normal Man-mode-map (kbd "q") 'Man-kill))
