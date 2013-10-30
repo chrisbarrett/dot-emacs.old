@@ -721,6 +721,47 @@ Return the element in a list of options corresponding to the user's selection.
                 (cb-lib:option-read-loop option-key-fn options)
               (kill-buffer title))))))))
 
+(cl-defmacro define-command-picker (name &key title options)
+  "Define a command that will display an option picker for the user.
+
+* NAME is the name of the command.
+* TITLE is the name of the options buffer to display.
+* OPTIONS is a list of options.
+
+Each option is a list of the form (KEY LABEL COMMAND [PREDICATE]), where:
+
+* KEY is a string representing the key sequence for the option
+* LABEL is a string describing the option
+* COMMAND is the command that will be called if this option is selected
+* The optional PREDICATE must return non-nil for the option to be shown.
+
+If the PREDICATE is omitted the option will always be shown."
+  (cl-assert (not (null options)))
+  (cl-assert (stringp title))
+  (let ((varname (intern (format "%s-options" name))))
+    `(progn
+
+       (defvar ,varname nil ,(format "The list of options shown by `%s'" name))
+       (setq ,varname ,options)
+
+       (defun ,name ()
+         "Auto-generated option picker."
+         (interactive)
+         (cl-destructuring-bind (_ _ fn &optional _)
+             (read-option ,title 'car 'cadr
+                          ;; Call the predicate for each option to determine
+                          ;; whether to display it. If none is supplied the option
+                          ;; should always be shown.
+                          (-filter (lambda+ ((_ _ _ &optional pred))
+                                     (if pred
+                                         (funcall pred)
+                                       t))
+                                   ,varname))
+           ;; Call the option selected by the user.
+           (if (commandp fn)
+               (call-interactively fn)
+             (funcall fn)))))))
+
 ;;; ----------------------------------------------------------------------------
 ;;; Growl Notifications
 
