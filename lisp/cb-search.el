@@ -130,7 +130,7 @@ PRED is a predicate to determine whether search method is currently available.
             (substring-no-properties s)))
         (m
          (read-option
-          " *Select Search*"
+          "*Select Search*"
           'cbs-search-method-key 'cbs-search-method-name
           (->> cbs:search-methods
             ;; Use methods without a predicate or where the
@@ -139,7 +139,9 @@ PRED is a predicate to determine whether search method is currently available.
              (-if-let (p (cbs-search-method-pred it))
                  (funcall p)
                t))
-            (-uniq)
+            ;; Drop duplicated options.
+            (-uniq-by (π cbs-search-method-name cbs-search-method-key))
+            ;; Sort by key.
             (-sort (-on 'string< (C s-upcase cbs-search-method-key)))))))
     (funcall (cbs-search-method-func m) default-search-term)))
 
