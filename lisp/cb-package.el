@@ -33,24 +33,21 @@
 
 (defvar cbpkg:package-icon (f-join cb:assets-dir "package.png"))
 
-(hook-fn 'package-background-installation-finished-hook
-  :arglist (pkg)
-  (growl "Package Installed"
-         (format "%s installed successfully." pkg)
-         cbpkg:package-icon))
-
-(hook-fn 'package-background-installation-started-hook
-  :arglist (pkgs)
+(defun cbpkg:install-packages (pkgs)
+  ;; Show summary of packages to be installed.
   (-when-let (len (and pkgs (length pkgs)))
     (growl "Installing Packages"
-           (format "%s package%s will be installed or updated." len (if (= 1 len) "" "s"))
-           cbpkg:package-icon)))
-
-(defun cbpkg:install-packages (pkgs)
-  (run-hook-with-args 'package-background-installation-started-hook pkgs)
+           (format "%s package%s will be installed or updated:\n%s"
+                   len
+                   (if (= 1 len) "" "s")
+                   (pp-to-string pkgs))
+           cbpkg:package-icon))
+  ;; Perform installation.
   (--each pkgs
     (package-install it)
-    (run-hook-with-args 'package-background-installation-finished-hook it)))
+    (growl "Package Installed"
+           (format "%s installed successfully." it)
+           cbpkg:package-icon)))
 
 (defun update-packages ()
   "Update all installed packages in the background."
