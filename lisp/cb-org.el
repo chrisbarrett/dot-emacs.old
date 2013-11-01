@@ -121,7 +121,7 @@ This will set which file org-capture will capture to."
     ("b" "Buffers" org-iswitchb)
     ("c" "Follow Clock" org-clock-goto)
     ("d" "Go to Diary" cb-org:find-diary)
-    ("f" "Set notes file" cb-org:set-notes-file)
+    ("f" "Set Notes File" cb-org:set-notes-file)
     ("g" "Go to Subtree" ,(command (org-refile 'goto)))
     ("k" "Capture" org-capture)
     ("l" "Store Link" org-store-link)
@@ -130,7 +130,7 @@ This will set which file org-capture will capture to."
     ("t" "Todo List" executor:org-show-todo-list)
     ("v" "View Tags (todos)" executor:org-tags-view-todos-fullscreen)
     ("V" "View Tags (all)" executor:org-tags-view-all-fullscreen)
-    ("y" "Yank region as quote" cb-org:yank-region-as-quote :when region-active-p)))
+    ("y" "Yank Region as Quote" cb-org:yank-region-as-quote :when region-active-p)))
 
 (bind-keys
   :overriding? t
