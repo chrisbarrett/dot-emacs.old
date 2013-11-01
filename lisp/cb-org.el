@@ -1016,6 +1016,14 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
                             "\\usepackage[english]{babel} "
                             "\[NO-DEFAULT-PACKAGES] \[NO-PACKAGES] \[EXTRA]")))))
 
+;; `org-src' provides source editing functions.
+(after 'org
+  (use-package 'org-src
+    :config
+    ;; Do not add a final newline to org source buffers.
+    (hook-fn 'org-src-mode-hook
+      (setq-local require-final-newline nil))))
+
 ;; Define pairs for org-mode blocks.
 (after 'smartparens
   (sp-with-modes '(org-mode)
