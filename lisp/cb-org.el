@@ -117,11 +117,12 @@ This will set which file org-capture will capture to."
 (define-command-picker org-action-picker
   :title "*Org Commands*"
   :options
-  '(("a" "Agenda" org-agenda)
+  `(("a" "Agenda" org-agenda)
     ("b" "Buffers" org-iswitchb)
     ("c" "Follow Clock" org-clock-goto)
     ("d" "Go to Diary" cb-org:find-diary)
     ("f" "Set notes file" cb-org:set-notes-file)
+    ("g" "Go to Subtree" ,(command (org-refile 'goto)))
     ("k" "Capture" org-capture)
     ("l" "Store Link" org-store-link)
     ("n" "Go to Notes" cb-org:find-notes)
