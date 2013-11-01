@@ -30,6 +30,7 @@
 (require 'cb-lib)
 (require 'cb-paths)
 
+;; `undo-tree' provides a graphical view of the undo history.
 (use-package undo-tree
   :ensure   t
   :idle     (require 'undo-tree)
@@ -38,11 +39,13 @@
   :init     (hook-fn 'find-file-hook (require 'undo-tree))
   :config (global-undo-tree-mode +1))
 
+;; `scratch' lets you quickly create scratch buffers.
 (use-package scratch
   :ensure   t
   :commands scratch
   :bind     ("C-c e s" . scratch))
 
+;; `iedit' provides commands for transforming all occurrences of a symbol in the buffer.
 (use-package iedit
   :ensure   t
   :bind
@@ -104,14 +107,17 @@
 
     (bind-key "C-<return>" 'iedit-picker iedit-mode-keymap)))
 
+;; `info-lookmore' adds support for searching the CL Hyperspec.
 (use-package info-lookmore
   :commands info-lookmore-elisp-cl
   :init     (after 'info-look (info-lookmore-elisp-cl)))
 
+;; `proced' provides a UI for managing system processes.
 (use-package proced
   :defer t
   :bind ("C-x p" . proced))
 
+;; `ack-and-a-half' provides an Elisp interface to the ack search utility.
 (use-package ack-and-a-half
   :ensure t
   :commands
@@ -119,14 +125,19 @@
    ack-and-a-half-find-file
    ack-and-a-half-find-file-same))
 
+;; `smooth-scrolling' changes the default scrolling behaviour to keep point away
+;; from the top or bottom of the window in order to show scrolling context.
 (use-package smooth-scrolling
   :ensure t)
 
+;; `midnight' runs a hook at midnight. By default it will clean unused buffers.
 (use-package midnight
   :ensure t
   :defer  t
   :idle (require 'midnight))
 
+;; `ace-jump-mode' provides commands for quickly moving around the visible part
+;; of the buffer.
 (use-package ace-jump-mode
   :ensure t
   :bind ("S-<return>" . ace-jump-word-mode)
@@ -141,16 +152,21 @@
     (hook-fns '(ace-jump-line-mode ace-jump-word-mode ace-jump-char-mode)
       (local-set-key (kbd "ESC") 'keyboard-quit))))
 
+;; `hideshow' provides code folding.
 (use-package hideshow
   :diminish hs-minor-mode
   :commands hs-minor-mode
   :defer    t)
 
+;; `abbrev' lets you declare abbreviations that will be automatically expanded
+;; when typed.
 (use-package abbrev
   :defer t
   :config
   (setq abbrev-file-name (concat cb:tmp-dir "abbrev_defs")))
 
+;; `multiple-cursors' lets you perform editing commands on different lines
+;; simultaneously.
 (use-package multiple-cursors
   :ensure t
   :defer t
@@ -164,6 +180,7 @@
   :config
   (setq mc/list-file (f-join cb:tmp-dir "multiple-cursors-list.el")))
 
+;; `dictionary' provides dictionary search functions.
 (use-package dictionary
   :ensure t
   :commands
