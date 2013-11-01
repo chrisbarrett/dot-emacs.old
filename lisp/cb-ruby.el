@@ -393,7 +393,6 @@ an irb error message."
                          (cb-rb:apply-font-lock (car (reverse lines))))))))
       str)
 
-    (inf-ruby-setup-keybindings)
     (define-keys ruby-mode-map
       "C-c C-c" 'cb-rb:eval-dwim
       "C-c C-z" 'cb-rb:switch-to-ruby)
