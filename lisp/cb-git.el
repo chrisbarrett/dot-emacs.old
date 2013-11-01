@@ -72,6 +72,7 @@
       "g l" 'magit-log
       "g r" 'magit-reflog
       "g D" 'magit-diff-working-tree
+      "g B" 'magit-blame-mode
       "g b" (command
              (with-window-restore
                (magit-branch-manager)
