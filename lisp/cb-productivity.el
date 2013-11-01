@@ -167,16 +167,8 @@
 (use-package dictionary
   :ensure t
   :commands
-  (dictionary-mode
-   dictionary
-   dictionary-search
-   dictionary-lookup-definition
-   dictionary-match-words
-   dictionary-mouse-popup-matching-words
-   dictionary-popup-matching-words
-   dictionary-tooltip-mode
-   dictionary-tooltip-mode
-   global-dictionary-tooltip-mode))
+  (dictionary
+   dictionary-search))
 
 (provide 'cb-productivity)
 
