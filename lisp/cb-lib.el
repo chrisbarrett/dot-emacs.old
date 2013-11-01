@@ -479,6 +479,22 @@ Return the elements of the default obarray that match PREDICATE."
       x
     (list x)))
 
+(defun -uniq-by (selector-fn list)
+  "Remove duplicates in the given sequence using a function.
+* SELECTOR-FN takes the current element and returns the item to compare.
+* LIST is the sequence to transform."
+  ;; Cache the items compared using selector-fn for later comparisons. This
+  ;; alleviates the need for an additional traversal.
+  (let (transformed)
+    (--reduce-r-from
+     (let ((cur (funcall selector-fn it)))
+       (if (-contains? transformed cur)
+           acc
+         (push cur transformed)
+         (cons it acc)))
+     nil
+     list)))
+
 ;; -----------------------------------------------------------------------------
 
 (defmacro with-open-file (file &rest body)
