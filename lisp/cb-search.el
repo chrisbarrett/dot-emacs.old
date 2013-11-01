@@ -155,6 +155,14 @@ PRED is a predicate to determine whether search method is currently available.
          :buffer "*Helm man woman*"
          :input q)))
 
+(cbs-define-search-method
+ :name "Notmuch (mail)"
+ :key "n"
+ :when (lambda () (executable-find "notmuch"))
+ :command
+ (lambda (q)
+   (notmuch-search (cbs-read "Mail" q))))
+
 (provide 'cb-search)
 
 ;; Local Variables:
