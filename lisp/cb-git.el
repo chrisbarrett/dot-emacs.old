@@ -142,6 +142,22 @@
     ;; HACK: Fix internal functions that call this as a variable.
     (defvar magit-read-top-dir 'magit-read-top-dir)
 
+    ;; HACK: Fix broken close buffer function.
+    (after 'git-gutter+
+      (defun git-gutter+-close-commit-edit-buffer ()
+        "Abort edits and discard commit message being composed."
+        (interactive)
+        (remove-hook 'kill-buffer-hook 'server-kill-buffer t)
+        (remove-hook 'kill-buffer-query-functions 'git-commit-kill-buffer-noop t)
+        (let ((clients (git-commit-buffer-clients)))
+          (if clients
+              (dolist (client clients)
+                (server-send-string client "-error Commit aborted by user")
+                (delete-process client))
+            (kill-buffer)))
+
+        (set-window-configuration git-gutter+-pre-commit-window-config)))
+
     (defun cb-git:add ()
       "Run 'git add' on the file for the current buffer."
       (interactive)
