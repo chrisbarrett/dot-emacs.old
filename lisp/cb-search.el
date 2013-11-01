@@ -54,61 +54,7 @@
                   (format "%s: " source-name))))
     (read-string prompt nil t default)))
 
-(defvar cbs:search-methods
-  (list
-   (cbs-search-method
-    :name "Web Search"
-    :key "s"
-    :command
-    (lambda (q)
-      (browse-url
-       (concat "https://duckduckgo.com/?q="
-               (url-hexify-string (cbs-read "Duck Duck Go" q))))))
-
-   (cbs-search-method
-    :name "Image Search"
-    :key "i"
-    :command
-    (lambda (q)
-      (browse-url
-       (concat "https://www.google.co.nz/search?tbm=isch&q="
-               (url-hexify-string (cbs-read "Google Images" q))))))
-
-   (cbs-search-method
-    :name "YouTube"
-    :key "y"
-    :command
-    (lambda (q)
-      (browse-url
-       (concat "http://www.youtube.com/results?search_query="
-               (url-hexify-string (cbs-read "YouTube" q))))))
-
-   (cbs-search-method
-    :name "Wikipedia"
-    :key "w"
-    :command
-    (lambda (q)
-      (browse-url
-       (concat "http://en.wikipedia.org/w/index.php?search="
-               (url-hexify-string (cbs-read "Wikipedia" q))))))
-
-   (cbs-search-method
-    :name "BBDB"
-    :key "b"
-    :command
-    (lambda (_)
-      (call-interactively 'bbdb)))
-
-   (cbs-search-method
-    :name "Man Page"
-    :key "m"
-    :command
-    (lambda (q)
-      (require 'helm-man)
-      (helm :sources 'helm-source-man-pages
-            :buffer "*Helm man woman*"
-            :input q))))
-
+(defvar cbs:search-methods nil
   "The list of search methods used by `cbs-search'.")
 
 (cl-defun cbs-define-search-method (&rest spec)
@@ -146,6 +92,68 @@ PRED is a predicate to determine whether search method is currently available.
     (funcall (cbs-search-method-func m) default-search-term)))
 
 (bind-key* "M-s" 'cbs-search)
+
+;;; Search methods
+
+(cbs-define-search-method
+ :name "Dictionary"
+ :key "d"
+ :command
+ (lambda (q)
+   (dictionary-search (cbs-read "Dictionary" q))))
+
+(cbs-define-search-method
+ :name "Web Search"
+ :key "s"
+ :command
+ (lambda (q)
+   (browse-url
+    (concat "https://duckduckgo.com/?q="
+            (url-hexify-string (cbs-read "Duck Duck Go" q))))))
+
+(cbs-define-search-method
+ :name "Image Search"
+ :key "i"
+ :command
+ (lambda (q)
+   (browse-url
+    (concat "https://www.google.co.nz/search?tbm=isch&q="
+            (url-hexify-string (cbs-read "Google Images" q))))))
+
+(cbs-define-search-method
+ :name "YouTube"
+ :key "y"
+ :command
+ (lambda (q)
+   (browse-url
+    (concat "http://www.youtube.com/results?search_query="
+            (url-hexify-string (cbs-read "YouTube" q))))))
+
+(cbs-define-search-method
+ :name "Wikipedia"
+ :key "w"
+ :command
+ (lambda (q)
+   (browse-url
+    (concat "http://en.wikipedia.org/w/index.php?search="
+            (url-hexify-string (cbs-read "Wikipedia" q))))))
+
+(cbs-define-search-method
+ :name "BBDB"
+ :key "b"
+ :command
+ (lambda (_)
+   (call-interactively 'bbdb)))
+
+(cbs-define-search-method
+ :name "Man Page"
+ :key "m"
+ :command
+ (lambda (q)
+   (require 'helm-man)
+   (helm :sources 'helm-source-man-pages
+         :buffer "*Helm man woman*"
+         :input q)))
 
 (provide 'cb-search)
 
