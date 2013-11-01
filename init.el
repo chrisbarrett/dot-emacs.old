@@ -155,14 +155,10 @@
   ;; Byte-compile lisp files. Skip this step if all config files have a
   ;; corresponding elc file.
   (unless (--all? (-contains? files (concat it "c")) config-files)
-    (run-with-progress-bar
-     "Byte-compiling configuration"
-     (--map (eval `(lambda ()
-                     (let ((inhibit-redisplay t))
-                       (save-window-excursion
-                         (byte-recompile-file ,it nil 0)))))
-            config-files)
-     :silent? (not verbose?)))
+    (--each config-files
+      (let ((inhibit-redisplay t))
+        (save-window-excursion
+          (byte-recompile-file it nil 0)))))
   ;; Load files.
   (run-with-progress-bar
    "Loading configuration"
