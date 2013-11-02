@@ -81,6 +81,9 @@
 
 ;; Customise font-locking for elisp.
 (after 'lisp-mode
+
+  (dash-enable-font-lock)
+
   (--each cb:elisp-modes
     (font-lock-add-keywords
      it
