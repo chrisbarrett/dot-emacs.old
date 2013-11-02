@@ -32,7 +32,7 @@
 ;; `eshell' is a terminal emulator written in elisp.
 (use-package eshell
   :commands eshell
-  :bind ("M-T" . cb:term-cycle)
+  :bind ("<f1>" . cb:term-cycle)
   :config
   (progn
 
