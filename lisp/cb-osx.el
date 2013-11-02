@@ -56,7 +56,10 @@
             explicit-shell-file-name shell-file-name)
       (setenv "SHELL"  shell-file-name)))
    (t
-    (let ((path (s-split ":" (shell-command-to-string "echo $PATH"))))
+    (let ((path (->> (list "~/bin" "~/scripts" (%-string "echo $PATH"))
+                  (s-join ":")
+                  (s-split ":")
+                  (-map 'f-expand))))
       (setq exec-path (-union path exec-path))
       (setenv "PATH" (s-join ":" exec-path)))))
 
