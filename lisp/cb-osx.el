@@ -63,9 +63,8 @@
       (setq exec-path (-union path exec-path))
       (setenv "PATH" (s-join ":" exec-path)))))
 
-  ;; Use gnutils version of ls if available.
-  (setq insert-directory-program (or (executable-find "gls")
-                                     "ls"))
+  ;; Use gnu coreutils version of ls if available.
+  (setq insert-directory-program (or (executable-find "gls") "ls"))
 
   ;; Enable mouse support in terminal.
   (use-package mouse
