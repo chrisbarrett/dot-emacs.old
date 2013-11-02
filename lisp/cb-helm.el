@@ -92,13 +92,29 @@
 
     (bind-key* "C-x SPC" 'helm-find-files)
 
-    (defun helm-find-in-lisp-dir (arg)
-      (interactive "P")
-      (let ((default-directory cb:lisp-dir))
-        (helm-find-files arg)))
+    (defun cbhelm:config-files ()
+      (->> (cons user-emacs-directory load-path)
+        ;; Find elisp files in the home directory, except package files.
+        (-filter (& (C (~ s-starts-with? user-home-directory) f-expand)
+                    (N (C (~ s-starts-with? (f-expand package-user-dir)) f-expand))
+                    f-directory?))
+        ;; Remove .elc files, backup files, etc.
+        (--mapcat (f-entries it (&
+                                 (C (~ equal "el") f-ext)
+                                 (N (| (C (~ s-ends-with? "~") f-filename)
+                                       (C (~ s-starts-with? "flycheck") f-filename)
+                                       (C (~ s-starts-with? ".") f-filename))))))))
+
+    (defun helm-find-config-files ()
+      (interactive)
+      (helm :prompt "File: "
+            :sources '((name . "Lisp Files")
+                       (candidates . cbhelm:config-files)
+                       (action . find-file)
+                       (volatile))))
 
     (when cb:use-vim-keybindings?
-      (bind-key* "M-I" 'helm-find-in-lisp-dir)))
+      (bind-key* "M-I" 'helm-find-config-files)))
 
   :config
   (progn
