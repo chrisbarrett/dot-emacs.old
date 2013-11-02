@@ -26,6 +26,8 @@
 
 ;;; Code:
 
+(require 'cb-paths)
+(require 'cb-lib)
 (require 'use-package)
 (autoload 'helm-read-file-name "helm-mode")
 
@@ -52,6 +54,7 @@
   :ensure t
   :defer  t
   :idle   (require 'helm)
+  :commands (helm)
   :init
   (progn
     (after 'helm
@@ -113,7 +116,7 @@
                        (action . find-file)
                        (volatile))))
 
-    (when cb:use-vim-keybindings?
+    (when (true? cb:use-vim-keybindings?)
       (bind-key* "M-I" 'helm-find-config-files)))
 
   :config
