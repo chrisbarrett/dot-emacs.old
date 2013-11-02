@@ -207,6 +207,7 @@ Prompt for a command CMD if one cannot be guessed."
   (interactive
    (list (or (cb:filename->interpreter buffer-file-name)
           (read-string "Command name: " nil t))))
+  (require 'emr)
   (emr-reporting-buffer-changes "Inserted shebang"
     (save-excursion
       (goto-char (point-min))

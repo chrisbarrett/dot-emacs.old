@@ -351,6 +351,7 @@ With a prefix arg, insert an arrow with padding at point."
     (interactive)
     (let ((import (cbhs:read-import)))
       ;; Insert the import statement.
+      (require 'emr)
       (emr-reporting-buffer-changes "Inserted import"
         (save-excursion
           (goto-char (point-min))
