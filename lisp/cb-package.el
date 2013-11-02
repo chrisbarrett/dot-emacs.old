@@ -40,14 +40,10 @@
            (format "%s package%s will be installed or updated:\n%s"
                    len
                    (if (= 1 len) "" "s")
-                   (pp-to-string pkgs))
-           cbpkg:package-icon))
-  ;; Perform installation.
-  (--each pkgs
-    (package-install it)
-    (growl "Package Installed"
-           (format "%s installed successfully." it)
-           cbpkg:package-icon)))
+                   (s-join "\n" (-map 'pp-to-string pkgs)))
+           cbpkg:package-icon)
+    ;; Perform installation.
+    (-each pkgs 'package-install)))
 
 (defun update-packages ()
   "Update all installed packages in the background."
