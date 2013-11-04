@@ -42,6 +42,9 @@
   (evil-define-key 'normal scala-mode-map
     "J" 'scala-indent:join-line))
 
+(after 'auto-complete
+  (add-to-list 'ac-modes 'scala-mode))
+
 (provide 'cb-scala)
 
 ;; Local Variables:
