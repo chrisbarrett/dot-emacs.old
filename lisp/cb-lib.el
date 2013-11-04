@@ -644,9 +644,9 @@ COLUMN-WIDTH specifies the width of columns if columnation is used."
     ;; A  C
     ;; B  D
     ;;
-    (let* ((mid (floor (/ (length lines) 2.0)))
+    (let* ((mid (ceiling (/ (length lines) 2.0)))
            (xs (-slice lines 0 mid))
-           (ys (-slice lines mid (length lines))))
+           (ys (-slice lines mid)))
       (->>
           ;; Add an extra line to YS if there is an odd number of options so
           ;; the zip does not discard an option.
