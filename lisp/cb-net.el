@@ -49,7 +49,7 @@
      `(lambda ()
         (require 'smtpmail)
         (with-temp-buffer
-          (insert ,(buffer-substring-no-properties (point-min) (point-max)))
+          (insert ,(buffer-string-no-properties))
           ;; Pass in the variable environment for smtpmail
           ,(async-inject-variables "\\`\\(smtpmail\\|\\(user-\\)?mail\\)-")
           (smtpmail-send-it)))
