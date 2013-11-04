@@ -92,9 +92,19 @@
   (progn
     (define-key makefile-mode-map (kbd "C-c C-c") nil)
     (add-to-list 'ac-modes 'makefile-mode)
+
+    (defun convert-leading-spaces-to-tabs ()
+      "Convert sequences of spaces at the beginning of a line to tabs."
+      (interactive)
+      (save-excursion
+        (goto-char (point-min))
+        (while (search-forward-regexp (rx bol (group (>= 4 space))) nil t)
+          (replace-match "\t"))))
+
     (hook-fn 'makefile-mode-hook
       (auto-complete-mode t)
-      (setq indent-tabs-mode t))))
+      (setq indent-tabs-mode t)
+      (add-hook 'before-save-hook 'convert-leading-spaces-to-tabs nil t))))
 
 (provide 'cb-compilation)
 
