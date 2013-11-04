@@ -172,8 +172,9 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
 Creates STATE bindings for DEFS. DEFS are comprised of alternating string-symbol pairs."
       (declare (indent 1))
       `(after 'evil
-         ,@(--map `(evil-global-set-key ,state (kbd ,(car it)) ,(cadr it))
-                  (-partition-all 2 defs))))
+         ,@(-map (lambda+ ((key fn))
+                   `(evil-global-set-key ,state (kbd ,key) ,fn))
+                 (-partition-all 2 defs))))
 
     (defun evil-undefine ()
       (interactive)
