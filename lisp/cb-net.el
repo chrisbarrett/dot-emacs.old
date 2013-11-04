@@ -51,7 +51,7 @@
         (with-temp-buffer
           (insert ,(buffer-string-no-properties))
           ;; Pass in the variable environment for smtpmail.
-          ,(async-inject-variables "\\`\\(smtpmail\\|\\(user-\\)?mail\\)-")
+          ,(async-inject-variables (rx (or "user" "mail")))
           (smtpmail-send-it)))
      `(lambda (&optional ignore)
         (message "Delivering message to %s...done" ,to)
