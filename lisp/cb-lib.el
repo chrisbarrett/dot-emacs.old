@@ -153,10 +153,11 @@
 FEATURES may be a symbol or list of symbols."
   (declare (indent 1))
   ;; Wrap body in a descending list of `eval-after-load' forms.
-  (->> (-listify (eval features))
-    (--map `(eval-after-load ',it))
-    (--reduce-from `(,@it ,acc)
-                   `'(progn ,@body))))
+  ;; The last form is eval'd to remove its quote.
+  (eval (->> (-listify (eval features))
+          (--map `(eval-after-load ',it))
+          (--reduce-from `'(,@it ,acc)
+                         `'(progn ,@body)))))
 
 (cl-defmacro configuration-group (&rest
                                   body
