@@ -164,7 +164,9 @@
    "Loading configuration"
    (->> config-files
      (-map (C intern f-no-ext f-filename))
-     (--map (eval `(lambda () (use-package ,it)))))
+     (--map (eval `(lambda ()
+                     (with-demoted-errors
+                       (use-package ,it))))))
    :silent? (not verbose?)))
 
 ;; Load special files.
