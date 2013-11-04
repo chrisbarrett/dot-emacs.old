@@ -567,6 +567,12 @@ If NO-PROPERTIES is non-nil, return the line without text properties."
       (evil-append-line 1)
     (end-of-line)))
 
+(cl-defun f-append (path text &optional (coding 'utf-8))
+  "Open the file at PATH and append TEXT on a new line.
+CODING is the text encoding of the file."
+  (let ((orig (f-read path coding)))
+    (f-write (concat orig "\n" text) coding path)))
+
 ;;; ----------------------------------------------------------------------------
 ;;; UI
 
