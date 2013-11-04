@@ -38,6 +38,13 @@
         scala-indent:align-parameters t
         scala-indent:default-run-on-strategy 'eager))
 
+;; `ensime' adds IDE-like features to scala-mode.
+(use-package ensime
+  :ensure t
+  :defer t
+  :init
+  (add-hook 'scala-mode-hook 'ensime-scala-mode-hook))
+
 (after '(evil scala-mode2)
   (evil-define-key 'normal scala-mode-map
     "J" 'scala-indent:join-line))
