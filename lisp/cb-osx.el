@@ -200,23 +200,26 @@
 
   (defun mac-open-dwim (open-arg)
     "Pass OPEN-ARG to OS X's open command.
-When used interactively, makes a guess at what to pass.
-When called with a prefix arg, open the current directory in the Finder."
+When used interactively, makes a guess at what to pass."
     (interactive
      (list
-      (or
-       current-prefix-arg
-       (-if-let (url (or
-                      (visual-url-at-point)
-                      (and (boundp 'w3m-current-url) w3m-current-url)
-                      (and (derived-mode-p 'dired-mode) (dired-get-file-for-visit))))
-           (ido-read-file-name "Open: " url)
-         (ido-read-file-name "Open: " nil (buffer-file-name))))))
+      (-if-let (url (or
+                     (visual-url-at-point)
+                     (and (boundp 'w3m-current-url) w3m-current-url)
+                     (and (derived-mode-p 'dired-mode) (dired-get-file-for-visit))))
+          (ido-read-file-name "Open: " url)
+        (ido-read-file-name "Open: " nil (buffer-file-name)))))
+    (%-sh (format "open '%s'" open-arg)))
 
-    (shell-command (format "open '%s'" (if (equal '(4) open-arg) "." open-arg))))
+  (defun mac-reveal-in-finder ()
+    "Open the current directory in the Finder."
+    (interactive)
+    (%-sh "open ."))
 
   (bind-key* "S-s-<return>" 'mac-open-dwim)
-  (evil-global-set-key 'normal (kbd "g o") 'mac-open-dwim)
+  (evil-global-set-keys 'normal
+    "g o" 'mac-open-dwim
+    "g O" 'mac-reveal-in-finder)
 
   ;; Use gnutls when sending emails.
   (setq starttls-gnutls-program (executable-find "gnutls-cli")
