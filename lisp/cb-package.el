@@ -40,7 +40,7 @@
            (format "%s package%s will be installed or updated:\n%s"
                    len
                    (if (= 1 len) "" "s")
-                   (s-join "\n" (-map 'pp-to-string pkgs)))
+                   (s-join ", " (-map 'pp-to-string pkgs)))
            cbpkg:package-icon)
     ;; Perform installation.
     (-each pkgs 'package-install)))
