@@ -72,7 +72,9 @@
 
        (growl "Updates Finished"
               (concat
-               (format "%s package%s were updated " len (if (= 1 len) "" "s"))
+               (format "%s package%s %s updated " len
+                       (if (= 1 len) "" "s")
+                       (if (= 1 len) "was" "were"))
                "and will be loaded next time Emacs is started.")
               cbpkg:package-icon)))))
 
