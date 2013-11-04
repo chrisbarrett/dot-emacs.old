@@ -28,6 +28,7 @@
 
 (require 'use-package)
 (require 'cb-lib)
+(require 'cb-paths)
 
 (use-package auto-complete
   :ensure   t
@@ -52,7 +53,6 @@
     (add-to-list 'ac-dictionary-directories
                  (concat user-emacs-directory "ac-dict"))
 
-    (--each cb:lisp-modes (add-to-list 'ac-modes it))
     (setq
      ac-auto-show-menu t
      ac-dwim t

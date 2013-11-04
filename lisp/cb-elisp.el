@@ -133,9 +133,9 @@
 (after 'smartparens
   (add-hook 'ielm-mode-hook 'smartparens-strict-mode))
 
-;; Configure auto-complete for IELM.
+;; Configure auto-complete for Lisp modes.
 (after 'auto-complete
-  (add-to-list 'ac-modes 'ielm-mode)
+  (-each cb:lisp-modes (~ add-to-list 'ac-modes))
   (hook-fn 'ielm-mode-hook
     (auto-complete-mode +1)
     (setq ac-sources '(ac-source-features
