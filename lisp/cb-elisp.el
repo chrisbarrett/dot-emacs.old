@@ -102,8 +102,7 @@
                             "evil-global-set-keys"
                             "flycheck-declare-checker"
                             "flycheck-define-checker")
-                        symbol-end)
-             word-end)
+                        symbol-end))
         (1 font-lock-keyword-face))
 
        ;; Identifiers after keywords
