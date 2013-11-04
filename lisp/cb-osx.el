@@ -216,6 +216,7 @@ When called with a prefix arg, open the current directory in the Finder."
     (shell-command (format "open '%s'" (if (equal '(4) open-arg) "." open-arg))))
 
   (bind-key* "S-s-<return>" 'mac-open-dwim)
+  (evil-global-set-key 'normal (kbd "g o") 'mac-open-dwim)
 
   ;; Use gnutls when sending emails.
   (setq starttls-gnutls-program (executable-find "gnutls-cli")
