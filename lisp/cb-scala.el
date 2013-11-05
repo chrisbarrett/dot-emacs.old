@@ -104,7 +104,9 @@ point to the position of the join."
       (if (search-backward-regexp
            (rx (or
                 (and bol (* space)
-                     "abstract" (+ space) "class" (+ space) (group-n 1 (+ alnum)))
+                     (or (and (? "abstract" (+ space)) "class")
+                         "trait")
+                     (+ space) (group-n 1 (+ alnum)))
                 (and bol (* space)
                      "case" (+ space) "class" (* anything) space
                      "extends" (+ space) (group-n 1 (+ alnum)) (* space) eol)))
