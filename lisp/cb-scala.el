@@ -36,7 +36,7 @@
   :config
   (setq scala-indent:align-forms t
         scala-indent:align-parameters t
-        scala-indent:default-run-on-strategy 'eager))
+        scala-indent:default-run-on-strategy scala-indent:eager-strategy))
 
 ;; `ensime' adds IDE-like features to scala-mode.
 (use-package ensime
