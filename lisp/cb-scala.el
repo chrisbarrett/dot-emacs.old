@@ -50,7 +50,27 @@
     "J" 'scala-indent:join-line))
 
 (after 'auto-complete
-  (add-to-list 'ac-modes 'scala-mode))
+
+  (defconst cbscala:scala-keywords
+    '("abstract" "case" "catch" "class" "def" "do" "else" "extends" "false" "final"
+      "finally" "for" "forSome" "if" "implicit" "import" "lazy" "match" "new" "null"
+      "object" "override" "package" "private" "protected" "return" "sealed" "super"
+      "this" "throw" "trait" "try" "true" "type" "val" "var" "while" "with" "yield"
+      "-" ":" "=" "=>" "<-" "<:" "<%" ">:" "#" "@")
+    "List of keywords reserved by the scala language.")
+
+  (ac-define-source scala-keywords
+    '((symbol . "k")
+      (candidates . cbscala:scala-keywords)
+      (action . just-one-space)))
+
+  (add-to-list 'ac-modes 'scala-mode)
+  (hook-fn 'ensime-mode-hook
+    (setq ac-auto-start 2)
+    (-each '(ac-source-yasnippet
+             ac-source-scala-keywords
+             ac-source-ensime-completions)
+           (~ add-to-list 'ac-sources))))
 
 (provide 'cb-scala)
 
