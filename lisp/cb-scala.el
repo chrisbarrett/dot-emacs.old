@@ -55,7 +55,7 @@
 joining the current line with the previous one. The vimmy way is
 to join the current line with the next.
 
-Try to move the to the subsequent line and then join. Manually move
+Try to move to the subsequent line and then join. Then manually move
 point to the position of the join."
     (interactive)
     (let (join-pos)
