@@ -1021,9 +1021,18 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
 (after 'org
   (use-package org-src
     :config
-    ;; Do not add a final newline to org source buffers.
-    (hook-fn 'org-src-mode-hook
-      (setq-local require-final-newline nil))))
+    (progn
+
+      (defvar org-edit-src-before-exit-hook nil
+        "Hook run before exiting a code block.")
+      (defadvice org-edit-src-exit (before run-hook activate)
+        (run-hooks 'org-edit-src-before-exit-hook))
+
+      ;; Do not add a final newline to org source buffers.
+      (hook-fn 'org-src-mode-hook
+       (setq-local require-final-newline nil))
+      ;; Remove trailing spaces when exiting org code blocks.
+      (add-hook 'org-edit-src-before-exit-hook 'delete-trailing-whitespace))))
 
 ;; Define pairs for org-mode blocks.
 (after 'smartparens
