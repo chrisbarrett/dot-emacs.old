@@ -161,6 +161,7 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
 
 ;;; Configure packages.
 
+;; `evil' adds vim command emulation to Emacs.
 (use-package evil
   :ensure   t
   :if (true? cb:use-vim-keybindings?)
@@ -324,6 +325,7 @@ The insertion will be repeated COUNT times."
 
     (evil-mode +1)))
 
+;; `surround' adds commands manipulate braces and XML tags.
 (use-package surround
   :ensure t
   :if (true? cb:use-vim-keybindings?)
@@ -333,6 +335,7 @@ The insertion will be repeated COUNT times."
     (hook-fn 'cb:lisp-modes-hook
       (push '(?\` . ("`" . "'")) surround-pairs-alist))))
 
+;; `evil-numbers' adds commands to increment and decrement numbers at point.
 (use-package evil-numbers
   :ensure t
   :if (true? cb:use-vim-keybindings?)
@@ -345,6 +348,7 @@ The insertion will be repeated COUNT times."
       "C--" 'evil-numbers/dec-at-pt
       "C-+" 'evil-numbers/inc-at-pt)))
 
+;; `vimrc' modes adds a language mode for vimscript.
 (use-package vimrc-mode
   :ensure t
   :commands vimrc-mode
