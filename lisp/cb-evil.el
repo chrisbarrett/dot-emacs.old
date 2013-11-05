@@ -332,7 +332,25 @@ The insertion will be repeated COUNT times."
   :config
   (progn
     (global-surround-mode +1)
-    (hook-fn 'cb:lisp-modes-hook
+    (setq surround-pairs-alist
+          '((?\( . ("(" . ")"))
+            (?\[ . ("[" . "]"))
+            (?\{ . ("{" . "}"))
+
+            (?\) . ("(" . ")"))
+            (?\] . ("[" . "]"))
+            (?\} . ("{" . "}"))
+
+            (?# . ("#{" . "}"))
+            (?b . ("(" . ")"))
+            (?B . ("{" . "}"))
+            (?> . ("<" . ">"))
+            (?t . surround-read-tag)
+            (?< . surround-read-tag)
+            (?f . surround-function)))
+
+    (hook-fn 'cb:elisp-modes-hook
+      (make-local-variable 'surround-pairs-alist)
       (push '(?\` . ("`" . "'")) surround-pairs-alist))))
 
 ;; `evil-numbers' adds commands to increment and decrement numbers at point.
