@@ -1097,7 +1097,7 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
 
 
 ;; Ignore encrypted regions and src blocks in flyspell.
-(after '(flyspell org-mode)
+(after '(flyspell org)
 
   (defvar cb-org:pgp-start-re
     (rx bol (* space) (+ "-") "BEGIN PGP MESSAGE" (+ "-")))
