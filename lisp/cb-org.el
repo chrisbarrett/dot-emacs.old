@@ -1095,7 +1095,8 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
   (hook-fn 'org-capture-mode-hook
     (evil-insert-state)))
 
-;; Ignore encrypted regions in flyspell.
+
+;; Ignore encrypted regions and src blocks in flyspell.
 (after '(flyspell org-mode)
 
   (defvar cb-org:pgp-start-re
@@ -1103,8 +1104,10 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
   (defvar cb-org:pgp-end-re
     (rx bol (* space) (+ "-") "END PGP MESSAGE" (+ "-")))
 
-  (add-to-list 'ispell-skip-region-alist
-               (cons cb-org:pgp-start-re cb-org:pgp-end-re))
+  (add-to-list 'ispell-skip-region-alist (cons cb-org:pgp-start-re cb-org:pgp-end-re))
+
+  (defun cb-org:inside-src-block? ()
+    (org-in-block-p '("src" "example" "latex" "html")))
 
   (defun cb-org:inside-pgp-section? ()
     "Non-nil if point is inside PGP-encrypted text block."
@@ -1119,7 +1122,8 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
 
   (defun cb-org:flyspell-verify ()
     (and (org-mode-flyspell-verify)
-         (not (cb-org:inside-pgp-section?))))
+         (not (cb-org:inside-pgp-section?))
+         (not (cb-org:inside-src-block?))))
 
   (put 'org-mode 'flyspell-mode-predicate 'cb-org:flyspell-verify))
 
