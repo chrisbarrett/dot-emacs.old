@@ -1,0 +1,8 @@
+# -*- mode: snippet; indent-tabs-mode: t; -*-
+# name: phony
+# key: .PHONY
+# binding: direct-keybinding
+# expand-env: ((yas/indent-line 'fixed))
+# --
+.PHONY: $1
+	$1 : $0
