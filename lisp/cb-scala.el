@@ -124,13 +124,13 @@ point to the position of the join."
   (smart-insert-operator ":")
   (just-one-space))
 
-(after '(smart-operator scala-mode2)
+(hook-fn 'scala-mode-hook
+  (smart-insert-operator-hook)
+  (local-unset-key (kbd "."))
   (bind-keys
     :map scala-mode-map
     "=" 'cbscala:equals
     ":" 'cbscala:colon))
-
-(add-hook 'scala-mode-hook 'smart-insert-operator-hook)
 
 (provide 'cb-scala)
 
