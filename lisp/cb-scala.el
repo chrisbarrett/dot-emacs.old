@@ -49,7 +49,14 @@
 (after '(evil scala-mode2)
 
   (defun cbscala:join-line ()
-    "Adapt `scala-indent:join-line' to behave more like evil's line join."
+    "Adapt `scala-indent:join-line' to behave more like evil's line join.
+
+`scala-indent:join-line' acts like the vanilla `join-line',
+joining the current line with the previous one. The vimmy way is
+to join the current line with the next.
+
+Try to move the to the subsequent line and then join. Manually move
+point to the position of the join."
     (interactive)
     (let (join-pos)
       (save-excursion
@@ -58,7 +65,9 @@
           (forward-line)
           (call-interactively 'scala-indent:join-line)
           (setq join-pos (point))))
-      (goto-char join-pos)))
+
+      (when join-pos
+        (goto-char join-pos))))
 
   (evil-define-key 'normal scala-mode-map
     "J" 'cbscala:join-line))
