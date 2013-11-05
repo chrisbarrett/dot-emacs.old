@@ -67,7 +67,6 @@ Changes the selected buffer."
     "*shell*" "*eshell*" "*ansi-term*"
     "diary.org" "notes.org"))
 
-;;;###autoload
 (defun kill-current-buffer ()
   "Kill the current buffer.
 If this buffer is a member of `cb:kill-buffer-ignored-list, bury it rather than killing it."
@@ -76,7 +75,6 @@ If this buffer is a member of `cb:kill-buffer-ignored-list, bury it rather than 
       (bury-buffer)
     (kill-buffer (current-buffer))))
 
-;;;###autoload
 (defun clean-buffers ()
   "Close all buffers not in the ignore list."
   (interactive)
@@ -86,19 +84,11 @@ If this buffer is a member of `cb:kill-buffer-ignored-list, bury it rather than 
                    (get-buffer-process it))))
          'kill-buffer))
 
-(hook-fn 'find-file-hook
-  "Hide DOS EOL chars."
-  (setq buffer-display-table (make-display-table))
-  (aset buffer-display-table ?\^M [])
-  (aset buffer-display-table ?\^L []))
-
-;;;###autoload
 (defun insert-timestamp ()
   "Insert a package-conformant cb:timestamp, of the format YYYYMMDD.HHMM at point."
   (interactive)
   (insert (format-time-string "%Y%m%d.%H%M" nil t)))
 
-;;;###autoload
 (defun indent-buffer ()
   "Indent the whole buffer."
   (interactive)
@@ -106,7 +96,6 @@ If this buffer is a member of `cb:kill-buffer-ignored-list, bury it rather than 
     (save-excursion
      (indent-region (point-min) (point-max)))))
 
-;;;###autoload
 (defun indent-dwim (&optional arg)
   "Perform a context-sensitive indentation action.
 With prefix argument ARG, justify text."
@@ -135,7 +124,6 @@ With prefix argument ARG, justify text."
     (indent-buffer)
     (message "Indented buffer."))))
 
-;;;###autoload
 (defun rename-buffer-and-file ()
   "Rename the current buffer and file it is visiting."
   (interactive)
@@ -151,10 +139,8 @@ With prefix argument ARG, justify text."
           (set-visited-file-name new-name)
           (set-buffer-modified-p nil)))))))
 
-;;;###autoload
 (defalias 'rename-file-and-buffer 'rename-buffer-and-file)
 
-;;;###autoload
 (defun delete-buffer-and-file ()
   "Delete a file and its associated buffer."
   (interactive)
@@ -168,7 +154,6 @@ With prefix argument ARG, justify text."
         (kill-buffer buffer)
         (message "File '%s' successfully removed" filename)))))
 
-;;;###autoload
 (defalias 'delete-file-and-buffer 'delete-buffer-and-file)
 
 (defun cb:find-autoloads (buffer)
@@ -179,7 +164,6 @@ With prefix argument ARG, justify text."
                              (group (+ (not space)))))
     (-map 'cadr)))
 
-;;;###autoload
 (cl-defun show-autoloads (&optional (buffer (current-buffer)))
   "Find the autoloaded definitions in BUFFER"
   (interactive)
@@ -200,7 +184,6 @@ With prefix argument ARG, justify text."
             ("rb" . "ruby")
             ("sh" . "bash")))))
 
-;;;###autoload
 (defun insert-shebang (cmd)
   "Insert a shebang line at the top of the current buffer.
 Prompt for a command CMD if one cannot be guessed."
@@ -214,7 +197,6 @@ Prompt for a command CMD if one cannot be guessed."
       (open-line 2)
       (insert (concat "#!/usr/bin/env " cmd)))))
 
-;;;###autoload
 (defun move-line-up ()
   "Move the current line up."
   (interactive)
@@ -225,7 +207,6 @@ Prompt for a command CMD if one cannot be guessed."
     (forward-line -2)
     (indent-according-to-mode)))
 
-;;;###autoload
 (defun move-line-down ()
   "Move the current line up."
   (interactive)
@@ -237,7 +218,6 @@ Prompt for a command CMD if one cannot be guessed."
     (forward-line -1)
     (indent-according-to-mode)))
 
-;;;###autoload
 (defun goto-first-occurence ()
   "Move to the first occurence the symbol at point."
   (interactive)
@@ -248,14 +228,12 @@ Prompt for a command CMD if one cannot be guessed."
        (rx symbol-start ,(thing-at-point 'symbol) symbol-end))
       (beginning-of-thing 'symbol))))
 
-;;;###autoload
 (defun swap-with-previous-buffer ()
   "Switch to previously open buffer.
 Repeated invocations toggle between the two most recently open buffers."
   (interactive)
   (switch-to-buffer (other-buffer (current-buffer) 1)))
 
-;;;###autoload
 (defun insert-variable (variable)
   "Insert the value of VARIABLE at point."
   (interactive

@@ -95,6 +95,12 @@
 (set-selection-coding-system 'utf-8)
 (prefer-coding-system        'utf-8)
 
+(hook-fn 'find-file-hook
+  "Hide DOS EOL chars."
+  (setq buffer-display-table (make-display-table))
+  (aset buffer-display-table ?\^M [])
+  (aset buffer-display-table ?\^L []))
+
 ;; File-handling
 
 (auto-compression-mode +1)
