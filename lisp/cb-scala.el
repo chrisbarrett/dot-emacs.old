@@ -49,6 +49,7 @@
   (evil-define-key 'normal scala-mode-map
     "J" 'scala-indent:join-line))
 
+;; Add ac sources for Scala keywords.
 (after 'auto-complete
 
   (defconst cbscala:scala-keywords
