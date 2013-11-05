@@ -289,6 +289,13 @@ PARAGRAPH-LENGTH is one of short, medium, long or verylong."
               (search-forward "\n\n")
               (s-trim (buffer-substring (point) (point-max)))))))
 
+(defun outdent ()
+  "Remove indentation on the current line."
+  (interactive "*")
+  (save-excursion
+    (goto-char (line-beginning-position))
+    (delete-horizontal-space)))
+
 (provide 'cb-commands)
 
 ;;; cb-commands.el ends here

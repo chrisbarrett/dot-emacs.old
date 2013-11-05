@@ -339,6 +339,7 @@ Otherwise, use the value of said variable as argument to a funcall."
   "C-x e" 'sudo-edit
   "M-/"   'hippie-expand
   "C-x <backspace>" 'kill-current-buffer
+  "<backtab>" 'outdent
 
   ;; Exiting emacs
   ;;
