@@ -41,9 +41,9 @@
 ;; `ensime' adds IDE-like features to scala-mode.
 (use-package ensime
   :ensure t
-  :defer t
+  :commands ensime-mode
   :init
-  (add-hook 'scala-mode-hook 'ensime-scala-mode-hook))
+  (hook-fn 'scala-mode-hook (ensime-mode +1)))
 
 (after '(evil scala-mode2)
   (evil-define-key 'normal scala-mode-map
