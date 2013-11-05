@@ -183,6 +183,7 @@ Creates STATE bindings for DEFS. DEFS are comprised of alternating string-symbol
 
     (define-keys evil-normal-state-map
       "TAB" 'indent-according-to-mode
+      "<backtab>" 'outdent
       "M-z" 'evil-emacs-state
       "C-z" 'evil-undefine
       "SPC" 'evil-toggle-fold
