@@ -73,6 +73,22 @@
              ac-source-ensime-completions)
            (~ add-to-list 'ac-sources))))
 
+;; Auxiliary functions for Scala snippets.
+(after 'yasnippet
+
+  (defun cbscala:find-case-class-parent ()
+    (save-excursion
+      (if (search-backward-regexp
+           (rx (or
+                (and bol (* space)
+                     "abstract" (+ space) "class" (+ space) (group-n 1 (+ alnum)))
+                (and bol (* space)
+                     "case" (+ space) "class" (* anything) space
+                     "extends" (+ space) (group-n 1 (+ alnum)) (* space) eol)))
+           nil t)
+          (match-string 1)
+        ""))))
+
 (provide 'cb-scala)
 
 ;; Local Variables:
