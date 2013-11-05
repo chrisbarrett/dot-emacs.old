@@ -334,6 +334,7 @@ This will set which file org-capture will capture to."
                                  (ditaa . t)
                                  (sh . t)
                                  (calc . t)
+                                 (scala . t)
                                  (emacs-lisp . t)
                                  (ruby . t)
                                  (clojure . t)
