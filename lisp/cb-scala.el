@@ -45,9 +45,23 @@
   :init
   (hook-fn 'scala-mode-hook (ensime-mode +1)))
 
+;; Configue `evil-mode' commands for Scala.
 (after '(evil scala-mode2)
+
+  (defun cbscala:join-line ()
+    "Adapt `scala-indent:join-line' to behave more like evil's line join."
+    (interactive)
+    (let (join-pos)
+      (save-excursion
+        (goto-char (line-end-position))
+        (unless (eobp)
+          (forward-line)
+          (call-interactively 'scala-indent:join-line)
+          (setq join-pos (point))))
+      (goto-char join-pos)))
+
   (evil-define-key 'normal scala-mode-map
-    "J" 'scala-indent:join-line))
+    "J" 'cbscala:join-line))
 
 ;; Add ac sources for Scala keywords.
 (after 'auto-complete
