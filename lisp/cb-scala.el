@@ -45,7 +45,7 @@
   :init
   (hook-fn 'scala-mode-hook (ensime-mode +1)))
 
-;; Configue `evil-mode' commands for Scala.
+;; Configure `evil-mode' commands for Scala.
 (after '(evil scala-mode2)
 
   (defun cbscala:join-line ()
