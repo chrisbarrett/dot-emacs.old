@@ -76,13 +76,12 @@ I use my own customised fork of [[https://github.com/chrisbarrett/org-pomodoro][
 ** Language Support
 I have sane configurations for several languages and environments:
 - Haskell
-- Elisp
 - Clojure
-- Scheme
-- Ruby/Rails
+- Scala
 - Python
-- SuperCollider
-- C
+- Ruby/Rails
+- Elisp
+- Scheme
 ** Key bindings
 Since Evil frees up the Meta key, I use =M-/key/= to display modal views such as terminals, w3m, gnus and dired.
 - =C-SPC= :: helm-mini
