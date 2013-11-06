@@ -1096,36 +1096,20 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
     (evil-insert-state)))
 
 
-;; Ignore encrypted regions and src blocks in flyspell.
-(after '(flyspell org)
+;; Prevent flyspell from incorrectly flagging common org-mode content such as
+;; code blocks and encrypted regions.
+(defun cb-org:flyspell-verify ()
+  "Prevent common flyspell false positives in org-mode."
+  (and (ignore-errors
+         (org-mode-flyspell-verify))
+       (not (or
+             (org-at-encrypted-entry-p)
+             (org-in-src-block-p)
+             (org-at-TBLFM-p)
+             (org-in-block-p '("src" "example" "latex" "html"))
+             (org-in-verbatim-emphasis)))))
 
-  (defvar cb-org:pgp-start-re
-    (rx bol (* space) (+ "-") "BEGIN PGP MESSAGE" (+ "-")))
-  (defvar cb-org:pgp-end-re
-    (rx bol (* space) (+ "-") "END PGP MESSAGE" (+ "-")))
-
-  (add-to-list 'ispell-skip-region-alist (cons cb-org:pgp-start-re cb-org:pgp-end-re))
-
-  (defun cb-org:inside-src-block? ()
-    (org-in-block-p '("src" "example" "latex" "html")))
-
-  (defun cb-org:inside-pgp-section? ()
-    "Non-nil if point is inside PGP-encrypted text block."
-    (save-excursion
-      (widen)
-      (let ((p (point)))
-        (and (re-search-backward cb-org:pgp-start-re nil t)
-             (> p (point))
-             ;; If there is no end line then assume we're still in it.
-             (or (not (re-search-forward cb-org:pgp-end-re nil t))
-                 (< p (point)))))))
-
-  (defun cb-org:flyspell-verify ()
-    (and (org-mode-flyspell-verify)
-         (not (cb-org:inside-pgp-section?))
-         (not (cb-org:inside-src-block?))))
-
-  (put 'org-mode 'flyspell-mode-predicate 'cb-org:flyspell-verify))
+(put 'org-mode 'flyspell-mode-predicate 'cb-org:flyspell-verify)
 
 (provide 'cb-org)
 
