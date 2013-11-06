@@ -28,6 +28,9 @@
 
 (require 'cb-lib)
 (require 'use-package)
+(require 'thingatpt)
+(autoload 'smart-insert-operator "smart-operator")
+(autoload 'smart-insert-operator-hook "smart-operator")
 
 ;; `scala-mode2' provides support for the Scala language.
 (use-package scala-mode2
@@ -126,13 +129,38 @@ point to the position of the join."
   (smart-insert-operator ":")
   (just-one-space))
 
+(defmacro define-scala-variance-op-command (sym op)
+
+  "Define command named SYM to insert a variance operator OP."
+  `(defun ,sym ()
+     "Insert a variance operator.
+Pad in normal expressions. Do not insert padding in variance annotations."
+     (interactive "*")
+     (cond
+      ;; No padding at the start of type parameter.
+      ((thing-at-point-looking-at (rx "[" (* space)))
+       (delete-horizontal-space)
+       (insert ,op))
+      ;; Leading padding after a comma, e.g. for a type parameter or function call.
+      ((thing-at-point-looking-at (rx "," (* space)))
+       (just-one-space)
+       (insert ,op))
+      ;; Otherwise leading and trailing padding.
+      (t
+       (smart-insert-operator ,op)))))
+
+(define-scala-variance-op-command cbscala:plus "+")
+(define-scala-variance-op-command cbscala:minus "-")
+
 (hook-fn 'scala-mode-hook
   (smart-insert-operator-hook)
   (local-unset-key (kbd "."))
   (bind-keys
     :map scala-mode-map
     "=" 'cbscala:equals
-    ":" 'cbscala:colon))
+    ":" 'cbscala:colon
+    "+" 'cbscala:plus
+    "-" 'cbscala:minus))
 
 (provide 'cb-scala)
 
