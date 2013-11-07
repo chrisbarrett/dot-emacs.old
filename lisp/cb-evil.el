@@ -331,23 +331,25 @@ The insertion will be repeated COUNT times."
   :if (true? cb:use-vim-keybindings?)
   :config
   (progn
+    ;; Remove padding spaces in surround pairs.
+    (defvar surround-pairs-alist
+      '((?\( . ("(" . ")"))
+        (?\[ . ("[" . "]"))
+        (?\{ . ("{" . "}"))
+
+        (?\) . ("(" . ")"))
+        (?\] . ("[" . "]"))
+        (?\} . ("{" . "}"))
+
+        (?# . ("#{" . "}"))
+        (?b . ("(" . ")"))
+        (?B . ("{" . "}"))
+        (?> . ("<" . ">"))
+        (?t . surround-read-tag)
+        (?< . surround-read-tag)
+        (?f . surround-function)))
+
     (global-surround-mode +1)
-    (setq surround-pairs-alist
-          '((?\( . ("(" . ")"))
-            (?\[ . ("[" . "]"))
-            (?\{ . ("{" . "}"))
-
-            (?\) . ("(" . ")"))
-            (?\] . ("[" . "]"))
-            (?\} . ("{" . "}"))
-
-            (?# . ("#{" . "}"))
-            (?b . ("(" . ")"))
-            (?B . ("{" . "}"))
-            (?> . ("<" . ">"))
-            (?t . surround-read-tag)
-            (?< . surround-read-tag)
-            (?f . surround-function)))
 
     (hook-fn 'cb:elisp-modes-hook
       (make-local-variable 'surround-pairs-alist)
