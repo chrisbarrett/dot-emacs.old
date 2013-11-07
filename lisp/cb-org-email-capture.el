@@ -73,10 +73,11 @@
 ;;
 ;; IMPORTANT: You should ensure that any messages in this maildir folder that
 ;; you do not want parsed and captured have subjects beginning with '[org]'
-;; (without the quotes). This is to allow for other org commands to send messages
-;; to your own address. For instance, my 'email' agenda command will send an email
-;; to my own address and I don't want my agenda captured to a note!
-;;
+;; (without the quotes). This is to allow for other org commands to send
+;; messages to your own address. For instance, my 'email' agenda command will
+;; send an email to my own address and I don't want my agenda captured to a
+;; note! I have a server-side rule that moves such messages into a separate
+;; folder called 'org-messages'.
 
 ;;; Code:
 
