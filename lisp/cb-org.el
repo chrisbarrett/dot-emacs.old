@@ -1103,11 +1103,11 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
   (and (ignore-errors
          (org-mode-flyspell-verify))
        (not (or
-             (org-at-encrypted-entry-p)
-             (org-in-src-block-p)
-             (org-at-TBLFM-p)
-             (org-in-block-p '("src" "example" "latex" "html"))
-             (org-in-verbatim-emphasis)))))
+             (ignore-errors (org-at-encrypted-entry-p))
+             (ignore-errors (org-in-src-block-p))
+             (ignore-errors (org-at-TBLFM-p))
+             (ignore-errors (org-in-block-p '("src" "example" "latex" "html")))
+             (ignore-errors (org-in-verbatim-emphasis))))))
 
 (put 'org-mode 'flyspell-mode-predicate 'cb-org:flyspell-verify)
 
