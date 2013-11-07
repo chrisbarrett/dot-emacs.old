@@ -48,6 +48,7 @@
   :init
   (hook-fn 'scala-mode-hook (ensime-mode +1)))
 
+;; Add a command, `configure-ensime', to configure SBT for use with ENSIME.
 (after 'ensime
 
   (defvar ensime-version "0.1.2")
