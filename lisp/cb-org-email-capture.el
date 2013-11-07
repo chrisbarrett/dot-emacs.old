@@ -430,12 +430,16 @@ repeats before all the messages are processed and removed.")
 Captures messages subjects match one of the values in `org-capture-templates'.
 Captured messages are marked as read."
   (interactive)
-  (atomic-change-group
-    (dolist (pl (->> (AP cbom:org-mail-folder)
-                  (cbom:unprocessed-messages)
-                  (-remove (C (~ -contains? cbom:processed-messages) cdr))
-                  (-map 'cbom:parse-message)))
-      (add-to-list 'cbom:processed-messages (plist-get pl :filepath))
+  ;; Get a list of unprocessed messages. Check for membership in the processed
+  ;; messages list to prevent double-ups.
+  (let ((msgs (->> (AP cbom:org-mail-folder)
+                (cbom:unprocessed-messages)
+                (-remove (C (~ -contains? cbom:processed-messages) cdr))
+                (-map 'cbom:parse-message))))
+    (--each msgs (add-to-list 'cbom:processed-messages (plist-get it :filepath)))
+
+    ;; Capture each message.
+    (dolist (pl msgs)
       ;; Capture according to kind.
       (cond
        ;; If a message contains a URI, capture using the link template.
