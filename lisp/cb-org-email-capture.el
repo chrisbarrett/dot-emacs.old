@@ -222,6 +222,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
                    (cbom:multipart-body-plaintext-section msg)
                  (cdr (cbom:split-message-head-and-body msg))))
          (lns (-remove 's-blank? (-map 's-trim (s-lines body))))
+         (content (-remove (~ s-matches? (rx bol (or "s" "d" "t") (+ space))) lns))
          (scheduled (->> lns
                       (-keep (~ cbom:match-directive "s"))
                       (car)
@@ -231,9 +232,8 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
     ;; Construct a plist of parsed values.
     (list :uri uri
           :subject subject
-          :title (->> lns
-                   (-remove (~ s-matches? (rx bol (or "s" "d" "t") (+ space))))
-                   (s-join "\n"))
+          :title (car content)
+          :notes (cdr content)
           :scheduled scheduled
           :filepath path
 
@@ -326,9 +326,18 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
   (-when-let (first-word (car (s-split-words str)))
     (-contains? (cbom:todo-keywords) (s-upcase first-word))))
 
+;; [String] -> String
+(defun cbom:format-notes (notes)
+  (cond
+   ((null notes) "")
+   ((= (length notes) 1)
+    (format "\n%s" (car notes))))
+  (t
+   (format "\n%s" (s-join "\n- " notes))))
+
 ;; MessagePlist -> Env String
 (cl-defun cbom:format-for-insertion
-    (&key kind uri title scheduled deadline &allow-other-keys)
+    (&key kind uri title scheduled deadline notes &allow-other-keys)
   "Format a parsed message according to its kind."
   (cond
 
@@ -341,13 +350,14 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 
    ;; Special diary format. The deadline is interpreted as an end time-stamp.
    ((equal "diary" kind)
-    (cond
-     ((and scheduled deadline)
-      (format "%s\n<%s>--<%s>" title scheduled deadline))
-     (scheduled
-      (format "%s\n<%s>" title scheduled))
-     (t
-      title)))
+    (concat (cond
+             ((and scheduled deadline)
+              (format "%s\n<%s>--<%s>" title scheduled deadline))
+             (scheduled
+              (format "%s\n<%s>" title scheduled))
+             (t
+              title))
+            (cbom:format-notes notes)))
 
    ;; All other types can follow a standard style.
    (t
@@ -359,7 +369,8 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
       (t
        title))
      (when scheduled (format "\nSCHEDULED: <%s>" scheduled))
-     (when deadline (format "\nDEADLINE: <%s>" deadline))))))
+     (when deadline (format "\nDEADLINE: <%s>" deadline))
+     (cbom:format-notes notes)))))
 
 ;; IO ()
 (defun cbom:dispatch-agenda-email ()
