@@ -403,13 +403,14 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 
 ;; MessagePlist -> IO ()
 (cl-defun cbom:remove-message (&key filepath &allow-other-keys)
-  ;; Create filepath to the destination dir, with filename tags that mark
-  ;; the message as read.
-  (let* ((dest-file (format "%s:2,S" (car (s-split ":" (f-filename filepath)))))
-         (dest-filepath (f-join (funcall cbom:org-processed-mail-folder)
-                                "cur"
-                                dest-file)))
-    (f-move filepath dest-filepath)))
+  (when (f-exists? filepath)
+    ;; Create filepath to the destination dir, with filename tags that mark
+    ;; the message as read.
+    (let* ((dest-file (format "%s:2,S" (car (s-split ":" (f-filename filepath)))))
+           (dest-filepath (f-join (funcall cbom:org-processed-mail-folder)
+                                  "cur"
+                                  dest-file)))
+      (f-move filepath dest-filepath))))
 
 ;; MessagePlist -> IO ()
 (cl-defun cbom:growl (&key kind title &allow-other-keys)
