@@ -313,7 +313,20 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
           (cadr (s-match (rx "<title>" (group (* nonl)) "</title>")
                          (buffer-string))))))))
 
-;; MessagePlist -> String
+;; Env [String]
+(defun cbom:todo-keywords ()
+  (->> org-todo-keywords
+    (-flatten)
+    (-filter 'stringp)
+    (-keep (C cadr (~ s-match (rx bol (group (+ word))))))
+    (-map 's-upcase)))
+
+;; String -> Env Bool
+(defun cbom:starts-with-todo-keyword? (str)
+  (-when-let (first-word (car (s-split-words str)))
+    (-contains? (cbom:todo-keywords) (s-upcase first-word))))
+
+;; MessagePlist -> Env String
 (cl-defun cbom:format-for-insertion
     (&key kind uri title scheduled deadline &allow-other-keys)
   "Format a parsed message according to its kind."
@@ -339,7 +352,12 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
    ;; All other types can follow a standard style.
    (t
     (concat
-     (if (equal "todo" kind) (concat "TODO " title) title)
+     (cond
+      ;; If this is a todo, ensure the headline starts with a todo keyword.
+      ((and (equal "todo" kind) (not (cbom:starts-with-todo-keyword? title)))
+       (concat "TODO " title))
+      (t
+       title))
      (when scheduled (format "\nSCHEDULED: <%s>" scheduled))
      (when deadline (format "\nDEADLINE: <%s>" deadline))))))
 
