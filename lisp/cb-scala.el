@@ -48,6 +48,32 @@
   :init
   (hook-fn 'scala-mode-hook (ensime-mode +1)))
 
+(after 'ensime
+
+  (defvar ensime-version "0.1.2")
+
+  (defun cbscala:latest-sbt-dir ()
+    "Return the path to the latest sbt version in '~/.sbt'."
+    (->> (f-directories "~/.sbt")
+      (-filter (C (~ s-matches? (rx (+ (any digit ".")))) f-filename))
+      (-max-by (C string< f-filename))))
+
+  (defun configure-ensime ()
+    "Add ensime to the sbt plugins file at PROJECT-ROOT."
+    (interactive)
+    (let ((plugins (f-join (cbscala:latest-sbt-dir) "plugins" "plugins.sbt")))
+      ;; Create plugins dir if necessary.
+      (f-mkdir (f-dirname plugins))
+      (f-touch plugins)
+      ;; Add the ensime plugin.
+      (if (s-contains? "org.ensime" (f-read plugins))
+          (message "Plugins file '%s' appears to be configured" plugins)
+        (f-append plugins
+                  (format "addSbtPlugin(\"org.ensime\" %% \"ensime-sbt-cmd\" %% \"%s\")"
+                          ensime-version))
+        (message "Updated '%s'. Start sbt and run 'ensime generate' to finish setup."
+                 plugins)))))
+
 ;; Configure `evil-mode' commands for Scala.
 (after '(evil scala-mode2)
 
