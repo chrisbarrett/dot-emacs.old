@@ -44,11 +44,10 @@
 ;; `ensime' adds IDE-like features to scala-mode.
 (use-package ensime
   :ensure t
-  :commands ensime-mode
-  :init
-  (hook-fn 'scala-mode-hook (ensime-mode +1)))
+  :commands ensime-mode)
 
-;; Add a command, `configure-ensime', to configure SBT for use with ENSIME.
+;; Add a command, `configure-ensime', to configure SBT for use with ENSIME. This
+;; will be run whenever a scala session is started to ensure ensime is ready.
 (after 'ensime
 
   (defvar ensime-version "0.1.2")
@@ -65,7 +64,18 @@
           (car vers)
         (ido-completing-read "Configure SBT Version: " vers))))
 
-  (defun configure-ensime (sbt-version)
+  (defun create-ensime-file (project-root)
+    "Interactively create a .ENSIME file at PROJECT-ROOT."
+    (interactive (list (or (projectile-project-p)
+                           (ido-read-directory-name "Project root: "))))
+    (let ((path (f-join project-root ".ensime"))
+          (plist (list :root-dir project-root
+                       :name
+                       (read-string "Project Name: " (f-filename project-root)))))
+      (f-write (pp-to-string plist) 'utf-8 path)
+      (message "Wrote %s" path)))
+
+  (defun install-ensime (sbt-version)
     "Add ENSIME to the list of global plugins for SBT-VERSION."
     (interactive (list (cbscala:read-installed-sbt-version)))
     (let ((plugins (f-short (f-join "~/.sbt" sbt-version "plugins" "plugins.sbt"))))
@@ -79,7 +89,22 @@
                   (format "addSbtPlugin(\"org.ensime\" %% \"ensime-sbt-cmd\" %% \"%s\")"
                           ensime-version))
         (message "Updated '%s'. Start sbt and run 'ensime generate' to finish setup."
-                 plugins)))))
+                 plugins))))
+
+  (defun cbscala:ensime-config-exists? ()
+    (-when-let (root (projectile-project-p))
+      (f-exists? (f-join root ".ensime"))))
+
+  (defun configure-ensime ()
+    "Configure the ensime plugin and initialise this project."
+    (interactive)
+    (and (not (cbscala:ensime-config-exists?))
+         (not (true? org-src-mode))
+         (y-or-n-p "Create a .ensime file for this project? ")
+         (call-interactively 'create-ensime-file)
+         (call-interactively 'ensime)))
+
+  (add-hook 'scala-mode-hook 'configure-ensime))
 
 ;; Configure `evil-mode' commands for Scala.
 (after '(evil scala-mode2)
