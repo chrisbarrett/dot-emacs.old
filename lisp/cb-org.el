@@ -1098,6 +1098,14 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
 
 ;; Prevent flyspell from incorrectly flagging common org-mode content such as
 ;; code blocks and encrypted regions.
+
+(defun cb-org:in-no-spellcheck-zone? ()
+    (thing-at-point-looking-at (rx "#+begin_nospell" (*? anything ) "#+end_nospell")))
+
+;; Define a skeleton for non-spell-checked regions.
+(after 'org
+  (add-to-list 'org-structure-template-alist '("n" "#+begin_nospell\n?\n#+end_nospell" "?")))
+
 (defun cb-org:flyspell-verify ()
   "Prevent common flyspell false positives in org-mode."
   (and (ignore-errors
@@ -1107,7 +1115,9 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
              (ignore-errors (org-in-src-block-p))
              (ignore-errors (org-at-TBLFM-p))
              (ignore-errors (org-in-block-p '("src" "example" "latex" "html")))
-             (ignore-errors (org-in-verbatim-emphasis))))))
+             (ignore-errors (org-in-verbatim-emphasis))
+             (ignore-errors (org-in-drawer-p))
+             (cb-org:in-no-spellcheck-zone?)))))
 
 (put 'org-mode 'flyspell-mode-predicate 'cb-org:flyspell-verify)
 
