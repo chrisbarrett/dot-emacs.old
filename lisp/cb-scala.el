@@ -44,67 +44,78 @@
 ;; `ensime' adds IDE-like features to scala-mode.
 (use-package ensime
   :ensure t
-  :commands ensime-mode)
+  :commands (ensime ensime-mode)
 
-;; Add a command, `configure-ensime', to configure SBT for use with ENSIME. This
-;; will be run whenever a scala session is started to ensure ensime is ready.
-(after 'ensime
+  ;; Add a command, `configure-ensime', to configure SBT for use with ENSIME. This
+  ;; will be run whenever a scala session is started to ensure ensime is ready.
 
-  (defvar ensime-version "0.1.2")
+  :init
+  (progn
+    (defun configure-ensime ()
+      "Configure the ENSIME plugin and initialise this project."
+      (interactive)
+      ;; Load supporting functions.
+      (require 'ensime)
+      (unless (true? org-src-mode)
+        ;; Create ensime file if necessary.
+        (when (and (not (cbscala:ensime-config-exists?))
+                   (y-or-n-p "Create a .ensime file for this project? "))
+          (call-interactively 'create-ensime-file))
+        ;; Start ENSIME.
+        (let ((ensime-prefer-noninteractive t))
+          (unless (ensime-connected-p)
+            (ensime))
+          (ensime-mode +1))))
 
-  (defun cbscala:sbt-installed-versions ()
-    "Return the sbt versions installed in '~/.sbt'."
-    (->> (f-directories "~/.sbt")
-      (-filter (C (~ s-matches? (rx (+ (any digit ".")))) f-filename))
-      (-map 'f-filename)))
+    (add-hook 'scala-mode-hook 'configure-ensime))
 
-  (defun cbscala:read-installed-sbt-version ()
-    (let ((vers (cbscala:sbt-installed-versions)))
-      (if (= (length vers) 1)
-          (car vers)
-        (ido-completing-read "Configure SBT Version: " vers))))
+  :config
+  (progn
 
-  (defun create-ensime-file (project-root)
-    "Interactively create a .ENSIME file at PROJECT-ROOT."
-    (interactive (list (or (projectile-project-p)
-                           (ido-read-directory-name "Project root: "))))
-    (let ((path (f-join project-root ".ensime"))
-          (plist (list :root-dir project-root
-                       :name
-                       (read-string "Project Name: " (f-filename project-root)))))
-      (f-write (pp-to-string plist) 'utf-8 path)
-      (message "Wrote %s" path)))
+    (defvar ensime-version "0.1.2")
 
-  (defun install-ensime (sbt-version)
-    "Add ENSIME to the list of global plugins for SBT-VERSION."
-    (interactive (list (cbscala:read-installed-sbt-version)))
-    (let ((plugins (f-short (f-join "~/.sbt" sbt-version "plugins" "plugins.sbt"))))
-      ;; Create plugins dir if necessary.
-      (f-mkdir (f-dirname plugins))
-      (f-touch plugins)
-      ;; Add the ensime plugin.
-      (if (s-contains? "org.ensime" (f-read plugins))
-          (message "Already configured: %s" plugins)
-        (f-append plugins
-                  (format "addSbtPlugin(\"org.ensime\" %% \"ensime-sbt-cmd\" %% \"%s\")"
-                          ensime-version))
-        (message "Updated '%s'. Start sbt and run 'ensime generate' to finish setup."
-                 plugins))))
+    (defun cbscala:sbt-installed-versions ()
+      "Return the sbt versions installed in '~/.sbt'."
+      (->> (f-directories "~/.sbt")
+        (-filter (C (~ s-matches? (rx (+ (any digit ".")))) f-filename))
+        (-map 'f-filename)))
 
-  (defun cbscala:ensime-config-exists? ()
-    (-when-let (root (projectile-project-p))
-      (f-exists? (f-join root ".ensime"))))
+    (defun cbscala:read-installed-sbt-version ()
+      (let ((vers (cbscala:sbt-installed-versions)))
+        (if (= (length vers) 1)
+            (car vers)
+          (ido-completing-read "Configure SBT Version: " vers))))
 
-  (defun configure-ensime ()
-    "Configure the ensime plugin and initialise this project."
-    (interactive)
-    (and (not (cbscala:ensime-config-exists?))
-         (not (true? org-src-mode))
-         (y-or-n-p "Create a .ensime file for this project? ")
-         (call-interactively 'create-ensime-file)
-         (call-interactively 'ensime)))
+    (defun create-ensime-file (project-root)
+      "Interactively create a .ENSIME file at PROJECT-ROOT."
+      (interactive (list (or (projectile-project-p)
+                             (ido-read-directory-name "Project root: "))))
+      (let ((path (f-join project-root ".ensime"))
+            (plist (list :root-dir project-root
+                         :name
+                         (read-string "Project Name: " (f-filename project-root)))))
+        (f-write (pp-to-string plist) 'utf-8 path)
+        (message "Wrote %s" path)))
 
-  (add-hook 'scala-mode-hook 'configure-ensime))
+    (defun install-ensime (sbt-version)
+      "Add ENSIME to the list of global plugins for SBT-VERSION."
+      (interactive (list (cbscala:read-installed-sbt-version)))
+      (let ((plugins (f-short (f-join "~/.sbt" sbt-version "plugins" "plugins.sbt"))))
+        ;; Create plugins dir if necessary.
+        (f-mkdir (f-dirname plugins))
+        (f-touch plugins)
+        ;; Add the ensime plugin.
+        (if (s-contains? "org.ensime" (f-read plugins))
+            (message "Already configured: %s" plugins)
+          (f-append plugins
+                    (format "addSbtPlugin(\"org.ensime\" %% \"ensime-sbt-cmd\" %% \"%s\")"
+                            ensime-version))
+          (message "Updated '%s'. Start sbt and run 'ensime generate' to finish setup."
+                   plugins))))
+
+    (defun cbscala:ensime-config-exists? ()
+      (-when-let (root (projectile-project-p))
+        (f-exists? (f-join root ".ensime"))))))
 
 ;; Configure `evil-mode' commands for Scala.
 (after '(evil scala-mode2)
