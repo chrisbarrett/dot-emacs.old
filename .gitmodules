@@ -19,9 +19,6 @@
 [submodule "lib/org-mode"]
 	path = lib/org-mode
 	url = git://orgmode.org/org-mode.git
-[submodule "lib/apel"]
-	path = lib/apel
-	url = https://github.com/wanderlust/apel.git
 [submodule "lib/whizzytex"]
 	path = lib/whizzytex
 	url = https://github.com/emacsmirror/whizzytex.git
