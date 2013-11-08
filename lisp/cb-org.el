@@ -1011,11 +1011,18 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
 (after 'org
   (use-package ox-koma-letter
     :config
-    (add-to-list 'org-latex-classes
-                 `("koma-letter"
-                   ,(concat "\\documentclass\{scrlttr2\} "
-                            "\\usepackage[english]{babel} "
-                            "\[NO-DEFAULT-PACKAGES] \[NO-PACKAGES] \[EXTRA]")))))
+    (add-to-list 'org-latex-classes '("koma-letter" "
+\\documentclass[paper=A4,pagesize,fromalign=left,
+               fromrule=aftername,fromphone,fromemail,
+               version=last]{scrlttr2}
+\\usepackage[english]{babel}
+\\usepackage[utf8]{inputenc}
+\\usepackage[normalem]{ulem}
+\\usepackage{booktabs}
+\\usepackage{graphicx}
+[NO-DEFAULT-PACKAGES]
+[EXTRA]
+[PACKAGES]"))))
 
 ;; `org-src' provides source editing functions.
 (after 'org
