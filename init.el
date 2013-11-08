@@ -56,10 +56,11 @@
 
 ;;;; Basic paths.
 
-(setq user-emacs-directory (expand-file-name user-emacs-directory))
-(setq custom-file (concat user-emacs-directory "custom.el"))
-(add-to-list 'load-path (concat (getenv "HOME") "/Dropbox/"))
-(add-to-list 'load-path (concat user-emacs-directory "lisp"))
+(eval-and-compile
+  (setq user-emacs-directory (expand-file-name user-emacs-directory))
+  (setq custom-file (concat user-emacs-directory "custom.el"))
+  (add-to-list 'load-path (concat (getenv "HOME") "/Dropbox/"))
+  (add-to-list 'load-path (concat user-emacs-directory "lisp")))
 
 ;; Load submodules.
 
@@ -87,8 +88,10 @@
                       )
          initially (unless package-archive-contents (package-refresh-contents))
          unless (package-installed-p pkg)
-         do (package-install pkg)
-         do (require pkg))
+         do (package-install pkg))
+
+(require 'use-package)
+(require 'dash)
 
 (auto-compile-on-save-mode +1)
 (auto-compile-on-load-mode +1)
@@ -98,39 +101,6 @@
 (-when-let (org (--first (s-matches? (rx "/org-" (+ num) eol) it)
                          (f-directories package-user-dir)))
   (cl-delete org load-path))
-
-;; Configure el-get
-
-(defvar el-get-sources '(wanderlust))
-(defvar cb:el-get-dir (concat user-emacs-directory "el-get/"))
-(add-to-list 'load-path (concat cb:el-get-dir "el-get"))
-(unless (file-exists-p cb:el-get-dir)
-  (with-current-buffer
-      (url-retrieve-synchronously
-       "https://raw.github.com/dimitri/el-get/master/el-get-install.el")
-    (let (el-get-master-branch)
-      (goto-char (point-max))
-      (eval-print-last-sexp))))
-
-(use-package el-get
-  :defer t
-  :commands (el-get
-             el-get-install
-             el-get-update
-             el-get-list-packages)
-  :init
-  (defvar el-get-sources nil)
-
-  :config
-  (progn
-    (defun el-get-read-status-file ()
-      (mapcar #'(lambda (entry)
-                  (cons (plist-get entry :symbol)
-                        `(status "installed" recipe ,entry)))
-              el-get-sources))
-
-    (defalias 'el-get-init 'ignore
-      "Don't use el-get for making packages available for use.")))
 
 ;; Load order-dependent core features.
 
@@ -152,6 +122,7 @@
        ;; Show use-package's debug messages if `use-package-verbose' is set.
        (verbose? (and (true? use-package-verbose)
                       (not after-init-time))))
+
   ;; Byte-compile lisp files. Skip this step if all config files have a
   ;; corresponding elc file.
   (unless (--all? (-contains? files (concat it "c")) config-files)
@@ -159,19 +130,25 @@
       (let ((inhibit-redisplay t))
         (save-window-excursion
           (byte-recompile-file it nil 0)))))
+
   ;; Load files.
   (run-with-progress-bar
    "Loading configuration"
-   (->> config-files
-     (-map (C intern f-no-ext f-filename))
-     (--map (eval `(lambda ()
-                     (with-demoted-errors
-                       (use-package ,it))))))
+
+   (-concat
+    ;; Load config files
+    (->> config-files
+      (-map (C intern f-no-ext f-filename))
+      (--map (eval `(lambda ()
+                      (with-demoted-errors
+                        (use-package ,it))))))
+    ;; Load special files.
+    (list
+     (lambda () (load (f-join user-emacs-directory "custom.el") t t))
+     (lambda () (load (concat user-emacs-directory "site-file.el") t t))))
    :silent? (not verbose?)))
 
 ;; Load special files.
-(load (f-join user-emacs-directory "custom.el") t t)
-(load (concat user-emacs-directory "site-file.el") t t)
 
 ;; Local Variables:
 ;; byte-compile-warnings: (not cl-functions)
