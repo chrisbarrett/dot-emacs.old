@@ -42,7 +42,7 @@
   :init
   (progn
     (add-hook 'prog-mode-hook 'yas-minor-mode)
-    (add-hook 'sgml-mode-hook 'yas-minor-mode))
+    (add-hook 'text-mode-hook 'yas-minor-mode))
   :config
   (progn
 
