@@ -1117,6 +1117,7 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
              (ignore-errors (org-in-block-p '("src" "example" "latex" "html")))
              (ignore-errors (org-in-verbatim-emphasis))
              (ignore-errors (org-in-drawer-p))
+             (thing-at-point-looking-at (rx bol "#+" (* nonl) eol))
              (cb-org:in-no-spellcheck-zone?)))))
 
 (put 'org-mode 'flyspell-mode-predicate 'cb-org:flyspell-verify)
