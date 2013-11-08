@@ -42,10 +42,10 @@
 
 ;;; Disable intrusive GUI elements.
 
-(scroll-bar-mode   -1)
-(tool-bar-mode     -1)
-(blink-cursor-mode -1)
-(menu-bar-mode (if (display-graphic-p) +1 -1))
+(when (fboundp 'scroll-bar-mode)   (scroll-bar-mode -1))
+(when (fboundp 'tool-bar-mode)     (tool-bar-mode -1))
+(when (fboundp 'blink-cursor-mode) (blink-cursor-mode -1))
+(when (fboundp 'menu-bar-mode)     (menu-bar-mode (if (display-graphic-p) +1 -1)))
 
 ;; Increase GC threshold to 20 MiB. Computers have lots of memory these days.
 (setq gc-cons-threshold 20000000)
