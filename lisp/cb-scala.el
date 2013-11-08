@@ -54,9 +54,10 @@
     (defun configure-ensime ()
       "Configure the ENSIME plugin and initialise this project."
       (interactive)
-      ;; Load supporting functions.
-      (require 'ensime)
-      (unless (true? org-src-mode)
+      (unless (or (true? org-src-mode)
+                  (s-starts-with? "*Org" (buffer-name)))
+        ;; Load supporting functions.
+        (require 'ensime)
         ;; Create ensime file if necessary.
         (when (and (not (cbscala:ensime-config-exists?))
                    (y-or-n-p "Create a .ensime file for this project? "))
