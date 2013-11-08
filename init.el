@@ -88,16 +88,19 @@
                       )
          initially (unless package-archive-contents (package-refresh-contents))
          unless (package-installed-p pkg)
-         do (package-install pkg))
+         do (package-install pkg)
+         do (require pkg))
 
+;; Add some explicit requirements to prevent warnings.
 (require 'use-package)
 (require 'dash)
-
+(require 'f)
+(require 'auto-compile)
 (auto-compile-on-save-mode +1)
 (auto-compile-on-load-mode +1)
 (setq use-package-verbose nil)
 
-;; As a special case, remove elpa version of org-mode from load-path.
+;; As a special case, remove the ELPA version of org-mode from load-path.
 (-when-let (org (--first (s-matches? (rx "/org-" (+ num) eol) it)
                          (f-directories package-user-dir)))
   (cl-delete org load-path))
