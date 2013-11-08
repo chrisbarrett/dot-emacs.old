@@ -30,6 +30,7 @@
 (require 'dash)
 (require 'cb-lib)
 (require 's)
+(require 'cb-mode-groups)
 
 (after 'evil
   (evil-global-set-key 'normal "(" 'sp-backward-up-sexp)
