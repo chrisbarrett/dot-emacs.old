@@ -44,6 +44,7 @@
 ;; `ensime' adds IDE-like features to scala-mode.
 (use-package ensime
   :ensure t
+  :disabled t ; doesn't work on my machine. :(
   :commands (ensime ensime-mode)
 
   ;; Add a command, `configure-ensime', to configure SBT for use with ENSIME. This
