@@ -19,9 +19,8 @@ emacs_version = $(shell $(emacs) -Q --batch --exec \
 default : $(modules) el-get tags $(emacs_src)
 
 .PHONY: all
-all : $(modules) el-get tags \
+all : $(modules) el-get $(emacs_src) tags \
 	  ruby supercollider python clang haskell gnus \
-	  $(emacs_src)
 
 .PHONY: src
 src : $(emacs_src)
