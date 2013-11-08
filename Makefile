@@ -23,6 +23,9 @@ all : $(modules) el-get tags \
 	  ruby supercollider python clang haskell gnus \
 	  $(emacs_src)
 
+.PHONY: src
+src : $(emacs_src)
+
 .PHONY: tags
 tags :
 	$(emacs_exec) 'build-ctags'
