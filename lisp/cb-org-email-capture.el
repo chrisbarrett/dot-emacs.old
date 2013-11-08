@@ -452,11 +452,11 @@ Captured messages are marked as read."
        (t
         (async-start
          `(lambda ()
-            ,(async-inject-variables "^pl$")
             ,(async-inject-variables "load-path")
-            (package-initialize)
-            (require 'cb-org-email-capture)
-            (list pl (apply 'cbom:format-for-insertion pl)))
+            (let ((pl ',pl))
+              (package-initialize)
+              (require 'cb-org-email-capture)
+              (list pl (apply 'cbom:format-for-insertion pl))))
          (lambda+ ((pl fmt))
            (save-excursion
              (save-window-excursion
