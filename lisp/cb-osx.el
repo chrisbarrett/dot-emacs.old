@@ -172,7 +172,7 @@
                               (* space)
                               (group (* nonl)))
                           title)
-               (format "%s @ %s" desc (1+ (string-to-number time))))))
+               desc)))
 
     (defadvice appt-display-message (around growl-with-sound activate)
       "Play a sound and display a growl notification for appt alerts."
