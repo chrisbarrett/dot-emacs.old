@@ -1012,7 +1012,7 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
   (use-package ox-koma-letter
     :config
     (add-to-list 'org-latex-classes '("koma-letter" "
-\\documentclass[paper=A4,pagesize,fromalign=left,
+\\documentclass[paper=A4,pagesize,fromalign=right,
                fromrule=aftername,fromphone,fromemail,
                version=last]{scrlttr2}
 \\usepackage[english]{babel}
