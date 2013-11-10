@@ -78,6 +78,8 @@
 (add-hook 'text-mode-hook 'visual-line-mode)
 (icomplete-mode +1)
 
+(put 'downcase-region  'disabled nil)
+
 (after 'bookmark
   (setq bookmark-default-file (f-join cb:tmp-dir "bookmarks")))
 
