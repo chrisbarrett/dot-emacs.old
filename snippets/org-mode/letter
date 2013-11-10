@@ -4,7 +4,7 @@
 # --
 #+TITLE: ${1:Untitled Letter}
 #+LATEX_CLASS: koma-letter
-#+LCO: CBFormalLetter CBBank CBSigned
+#+LCO: CBLetter CBAddress UScommercial9
 #+DATE: `(format-time-string "%B %-d, %Y")`
 
 #+TO_ADDRESS: ${2:Name}\\\\
