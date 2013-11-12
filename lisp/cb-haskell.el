@@ -113,10 +113,10 @@ With a prefix arg, insert an arrow with padding at point."
   (cond
    (arg
     (just-one-space)
-    (insert "→")
+    (insert "->")
     (just-one-space))
    ((cbhs:at-typedecl?)
-    (cbhs:insert-arrow "→"))
+    (cbhs:insert-arrow "->"))
    (t
     (smart-insert-operator "-"))))
 
@@ -126,7 +126,7 @@ With a prefix arg, insert an arrow with padding at point."
   (cond
    (arg
     (just-one-space)
-    (insert "←")
+    (insert "<-")
     (just-one-space))
    (t
     (smart-insert-operator "<"))))
