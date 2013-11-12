@@ -295,14 +295,7 @@ If this is the trailing colon for a hash key, insert padding."
   (inf-ruby-mode
    ruby-send-region)
   :config
-  (defadvice ruby-switch-to-inf (around start-inf-ruby activate)
-    "Start an inferior ruby if one is not running."
-    (condition-case _
-        ad-do-it
-      (wrong-type-argument
-       (run-ruby))))
-  :init
-  (after 'ruby-mode
+  (progn
 
     (defun cb-rb:inf-ruby-window ()
       (-when-let (buf (get-buffer inf-ruby-buffer))
@@ -393,16 +386,29 @@ an irb error message."
                          (cb-rb:apply-font-lock (car (reverse lines))))))))
       str)
 
-    (define-keys ruby-mode-map
-      "C-c C-c" 'cb-rb:eval-dwim
-      "C-c C-z" 'cb-rb:switch-to-ruby)
-    (define-key inf-ruby-mode-map (kbd "C-c C-z") 'cb-rb:switch-to-ruby)
-    (define-key inf-ruby-minor-mode-map (kbd "C-c C-z") 'cb-rb:switch-to-ruby)
-
     (hook-fn 'inf-ruby-mode-hook
       (add-hook 'comint-preoutput-filter-functions 'cb-rb:filter-irb-output)
       ;; Stop IRB from echoing input.
-      (setq comint-process-echoes t))))
+      (setq comint-process-echoes t))
+
+    ;; Configure Keys
+
+    (after 'ruby-mode
+      (define-keys ruby-mode-map
+        "C-c C-c" 'cb-rb:eval-dwim
+        "C-c C-z" 'cb-rb:switch-to-ruby))
+
+    (after 'inf-ruby
+      (define-key inf-ruby-mode-map (kbd "C-c C-z") 'cb-rb:switch-to-ruby)
+      (define-key inf-ruby-minor-mode-map (kbd "C-c C-z") 'cb-rb:switch-to-ruby))
+
+    (after 'inf-ruby
+      (defadvice ruby-switch-to-inf (around start-inf-ruby activate)
+        "Start an inferior ruby if one is not running."
+        (condition-case _
+            ad-do-it
+          (wrong-type-argument
+           (run-ruby)))))))
 
 (use-package ruby-tools
   :ensure   t
