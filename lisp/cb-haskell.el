@@ -71,6 +71,8 @@ With a prefix arg, insert a period without padding."
     (insert "."))
    ((cbhs:looking-at-module-or-constructor?)
     (insert "."))
+   ((thing-at-point-looking-at (rx (or "(" "{" "[") (* space)))
+    (insert "."))
    (t
     (smart-insert-operator "."))))
 
