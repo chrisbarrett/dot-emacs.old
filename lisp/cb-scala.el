@@ -201,7 +201,6 @@ point to the position of the join."
   (just-one-space))
 
 (defmacro define-scala-variance-op-command (sym op)
-
   "Define command named SYM to insert a variance operator OP."
   `(defun ,sym ()
      "Insert a variance operator.
