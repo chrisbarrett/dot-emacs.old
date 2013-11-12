@@ -1128,6 +1128,8 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
              (cb-org:in-no-spellcheck-zone?)))))
 
 (put 'org-mode 'flyspell-mode-predicate 'cb-org:flyspell-verify)
+(hook-fn 'org-mode-hook
+  (setq-local flyspell-generic-check-word-predicate 'cb-org:flyspell-verify))
 
 (provide 'cb-org)
 
