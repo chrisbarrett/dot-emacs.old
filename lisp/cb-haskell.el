@@ -202,7 +202,7 @@ With a prefix arg, insert an arrow with padding at point."
 
   (defun cbhs:font-lock (patterns)
     (--each patterns
-      (destructuring-bind (pat rep) it
+      (cl-destructuring-bind (pat rep) it
         (cbhs:apply-font-lock
          (rx-to-string `(and (not (any "\""))
                              (? "`")
