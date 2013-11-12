@@ -297,6 +297,17 @@ If this is the trailing colon for a hash key, insert padding."
   :config
   (progn
 
+    (defun set-ruby-interpreter (cmd)
+      "Set the default ruby interpreter to CMD."
+      (interactive
+       (list
+        (ido-completing-read
+         "Inferior Ruby Program: "
+         (->> inf-ruby-implementations
+           (-map 'car)
+           (-filter 'executable-find)))))
+      (setq inf-ruby-default-implementation cmd))
+
     (defun cb-rb:inf-ruby-window ()
       (-when-let (buf (get-buffer inf-ruby-buffer))
         (--first-window (equal (window-buffer it) buf))))
