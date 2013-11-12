@@ -285,8 +285,6 @@ This will set which file org-capture will capture to."
       (org-table-map-tables 'org-table-align 'quiet)
       ;; Realign tags.
       (org-set-tags 4 t)
-      ;; Recalculate progress cookies.
-      (org-update-statistics-cookies 'all)
       ;; Remove empty properties drawers.
       (save-excursion
         (goto-char (point-min))
