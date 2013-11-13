@@ -616,6 +616,8 @@ See `cb-org:show-agenda-idle-delay'.")
             org-agenda-skip-deadline-prewarning-if-scheduled t
             ;; Searches include archives
             org-agenda-text-search-extra-files '(agenda-archives)
+            ;; Searches are boolean, like a Google search.
+            org-agenda-search-view-always-boolean t
             ;; Ensure the agenda shows the whole coming week.
             org-agenda-start-on-weekday nil
             org-agenda-ndays 7)
