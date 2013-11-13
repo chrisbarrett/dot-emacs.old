@@ -265,6 +265,7 @@ This will set which file org-capture will capture to."
       "M-n" 'org-metadown
       "C-c c" 'org-columns
       "C-c RET" 'cb-org:ctrl-c-ret
+      "C-c C-j" (command (org-refile 'goto))
       ;; disable annoying comment toggle key
       "C-c ;" nil)
 
