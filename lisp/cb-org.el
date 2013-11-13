@@ -114,6 +114,13 @@ This will set which file org-capture will capture to."
   (interactive)
   (find-file org-default-notes-file))
 
+(defun cb-org:capture ()
+  "Adapt `org-capture' to my own selection widget."
+  (interactive)
+  (let ((k (car (read-option "*Org Capture*" 'car 'cadr
+                             org-capture-templates))))
+    (org-capture nil k)))
+
 (define-command-picker org-action-picker
   :title "*Org Commands*"
   :options
@@ -123,7 +130,7 @@ This will set which file org-capture will capture to."
     ("d" "Go to Diary" cb-org:find-diary)
     ("f" "Set Notes File" cb-org:set-notes-file)
     ("g" "Go to Subtree" ,(command (org-refile 'goto)))
-    ("k" "Capture" org-capture)
+    ("k" "Capture" cb-org:capture)
     ("l" "Store Link" org-store-link)
     ("n" "Go to Notes" cb-org:find-notes)
     ("s" "Search" executor:org-search-view)
@@ -135,7 +142,7 @@ This will set which file org-capture will capture to."
 (bind-keys
   :overriding? t
   "<f6>" (command (org-capture nil "t"))
-  "<f7>" 'org-capture
+  "<f7>" 'cb-org:capture
   "<f8>" 'org-action-picker
   "<f9>" 'executor:org-agenda-fullscreen)
 
