@@ -117,14 +117,19 @@
 
 ;;; Internal
 
+;; FilePath -> Bool
+(defun cbom:unread-message? (filepath)
+  (not (s-ends-with? ":2,S" (f-filename filepath))))
+
 ;; [FilePath] -> IO [(String, FilePath)]
 (defun cbom:unprocessed-messages (dir)
   "The unprocessed mail in DIR.
 DIR should be an IMAP maildir folder containing a subdir called 'new'."
   (let ((new (f-join dir "new")))
     (when (f-exists? new)
-      (-map (π f-read-text I)
-            (f-files new)))))
+      (->> (f-files new)
+        (-filter 'cbom:unread-message?)
+        (-map (π f-read-text I))))))
 
 ;;; Message parsing
 
@@ -418,12 +423,6 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
          (s-truncate 40 title)
          cbom:icon))
 
-;; IO [FilePath]
-(defvar cbom:processed-messages nil
-  "A list of messages that have already been processed.
-This is needed to prevent double-ups in the case that the timer
-repeats before all the messages are processed and removed.")
-
 ;; IO ()
 (defun cbom:capture-messages ()
   "Parse and capture unread messages in `cbom:org-mail-folder'.
@@ -434,9 +433,9 @@ Captured messages are marked as read."
   ;; messages list to prevent double-ups.
   (let ((msgs (->> (AP cbom:org-mail-folder)
                 (cbom:unprocessed-messages)
-                (-remove (C (~ -contains? cbom:processed-messages) cdr))
                 (-map 'cbom:parse-message))))
-    (--each msgs (add-to-list 'cbom:processed-messages (plist-get it :filepath)))
+    (--each msgs
+      (cbom:remove-message it))
 
     ;; Capture each message.
     (dolist (pl msgs)
@@ -464,8 +463,7 @@ Captured messages are marked as read."
                ;; file, so we rebind it to the note file set at init time.
                (let ((org-default-notes-file org-init-notes-file))
                  (apply 'cbom:capture fmt pl)
-                 (apply 'cbom:growl pl)
-                 (apply 'cbom:remove-message pl)))))))))))
+                 (apply 'cbom:growl pl)))))))))))
 
 ;;; Timer
 
