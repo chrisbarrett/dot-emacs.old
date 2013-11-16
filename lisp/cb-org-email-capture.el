@@ -407,7 +407,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
      (org-insert-time-stamp (current-time) t 'inactive))))
 
 ;; MessagePlist -> IO ()
-(cl-defun cbom:remove-message (&key filepath &allow-other-keys)
+(cl-defun cbom:remove-message ((&key filepath &allow-other-keys))
   (when (f-exists? filepath)
     ;; Create filepath to the destination dir, with filename tags that mark
     ;; the message as read.
@@ -434,9 +434,7 @@ Captured messages are marked as read."
   (let ((msgs (->> (AP cbom:org-mail-folder)
                 (cbom:unprocessed-messages)
                 (-map 'cbom:parse-message))))
-    (--each msgs
-      (cbom:remove-message it))
-
+    (-each msgs 'cbom:remove-message )
     ;; Capture each message.
     (dolist (pl msgs)
       ;; Capture according to kind.
