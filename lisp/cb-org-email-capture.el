@@ -274,24 +274,6 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
            (t
             (s-downcase subject))))))
 
-;; Org capture
-;;
-;; Because capture templates may be interactive, we can't use them
-;; directly. We do it a roundabout way instead, inspecting `org-capture-templates'
-;; to find the insertion site corresponding to each parsed message.
-;; This means the captured is unlikely to follow the exact format
-;; specified by the capture template.
-;;
-
-
-;; IO [String]
-(defun cbom:capture-keywords ()
-  (-map (C s-downcase cadr) org-capture-templates))
-
-;; MessagePlist -> IO Bool
-(cl-defun cbom:capture-candidate? (&key kind &allow-other-keys)
-  (-contains? (cbom:capture-keywords) kind))
-
 ;; FilePath
 (defconst cbom:icon (f-join user-emacs-directory "assets" "org_unicorn.png"))
 
