@@ -274,10 +274,6 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
            (t
             (s-downcase subject))))))
 
-(cl-defun cbom:validate-message-plist (&key uri kind &allow-other-keys)
-  (when uri
-    (cl-assert (equal "link" kind))))
-
 ;; Org capture
 ;;
 ;; Because capture templates may be interactive, we can't use them
