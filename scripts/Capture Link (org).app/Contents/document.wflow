@@ -59,13 +59,13 @@
 				<key>ActionParameters</key>
 				<dict>
 					<key>COMMAND_STRING</key>
-					<string>/usr/local/bin/macruby ~/.emacs.d/scripts/org_capture_browser_mac.rb</string>
+					<string>/usr/local/bin/macruby -- ~/.emacs.d/scripts/org_capture_browser_mac.rb</string>
 					<key>CheckedForUserDefaultShell</key>
 					<true/>
 					<key>inputMethod</key>
 					<integer>0</integer>
 					<key>shell</key>
-					<string>/bin/sh</string>
+					<string>/bin/bash</string>
 					<key>source</key>
 					<string></string>
 				</dict>
@@ -84,7 +84,7 @@
 				<key>Class Name</key>
 				<string>RunShellScriptAction</string>
 				<key>InputUUID</key>
-				<string>29FABF94-2253-4DF8-87CD-4BF7C84540AD</string>
+				<string>04AE88F4-7CAC-42AB-9981-C6CB0D96AA73</string>
 				<key>Keywords</key>
 				<array>
 					<string>Shell</string>
@@ -94,9 +94,9 @@
 					<string>Unix</string>
 				</array>
 				<key>OutputUUID</key>
-				<string>0775C72F-23F5-408B-8F5C-0FA8A6786CD6</string>
+				<string>AEAF7D99-1771-4136-8B73-B1DF73E1A1CD</string>
 				<key>UUID</key>
-				<string>A972BCFC-B8EF-4F04-ADD7-36CEF22A3E54</string>
+				<string>86D316BF-4A5C-4C22-BD62-E2C92613586B</string>
 				<key>UnlocalizedApplications</key>
 				<array>
 					<string>Automator</string>
@@ -172,7 +172,7 @@
 				<key>isViewVisible</key>
 				<true/>
 				<key>location</key>
-				<string>447.500000:476.000000</string>
+				<string>447.500000:541.000000</string>
 				<key>nibPath</key>
 				<string>/System/Library/Automator/Run Shell Script.action/Contents/Resources/English.lproj/main.nib</string>
 			</dict>
@@ -184,18 +184,8 @@
 	<dict/>
 	<key>workflowMetaData</key>
 	<dict>
-		<key>serviceApplicationBundleID</key>
-		<string></string>
-		<key>serviceApplicationPath</key>
-		<string></string>
-		<key>serviceInputTypeIdentifier</key>
-		<string>com.apple.Automator.nothing</string>
-		<key>serviceOutputTypeIdentifier</key>
-		<string>com.apple.Automator.nothing</string>
-		<key>serviceProcessesInput</key>
-		<integer>0</integer>
 		<key>workflowTypeIdentifier</key>
-		<string>com.apple.Automator.servicesMenu</string>
+		<string>com.apple.Automator.application</string>
 	</dict>
 </dict>
 </plist>

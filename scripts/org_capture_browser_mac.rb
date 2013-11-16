@@ -38,7 +38,8 @@ end
 # Capture URL and TITLE with emacsclient.
 def capture(url, title)
   template_key = 'l'
-  `emacsclient org-protocol:/capture:/#{template_key}/'#{escape url}'/'#{escape title}'/''`
+  ec = '/usr/local/bin/emacsclient'
+  `#{ec} org-protocol:/capture:/#{template_key}/'#{escape url}'/'#{escape title}'/''`
 end
 
 # Perform capture.
