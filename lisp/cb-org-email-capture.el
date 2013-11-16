@@ -342,7 +342,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 
 ;; MessagePlist -> Env String
 (cl-defun cbom:format-for-insertion
-    (&key kind uri title scheduled deadline notes &allow-other-keys)
+    ((&key kind uri title scheduled deadline notes &allow-other-keys))
   "Format a parsed message according to its kind."
   (cond
 
@@ -385,10 +385,8 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
                       (car)))
       (org-agenda nil key))))
 
-;; MessagePlist -> IO ()
-(cl-defun cbom:capture (str &key kind tags &allow-other-keys)
-  "Read MSG-PLIST and execute the appropriate capture behaviour."
-
+;; String -> MessagePlist -> IO ()
+(cl-defun cbom:capture (str (&key kind tags &allow-other-keys))
   ;; Move to the capture site associated with KIND.
   (cl-destructuring-bind (&optional key &rest rest_)
       (-first (C (~ equal kind) s-downcase cadr) org-capture-templates)
@@ -418,7 +416,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
       (f-move filepath dest-filepath))))
 
 ;; MessagePlist -> IO ()
-(cl-defun cbom:growl (&key kind title &allow-other-keys)
+(cl-defun cbom:growl ((&key kind title &allow-other-keys))
   (growl (format "%s Captured" (s-capitalize kind))
          (s-truncate 40 title)
          cbom:icon))
@@ -453,15 +451,15 @@ Captured messages are marked as read."
             (let ((pl ',pl))
               (package-initialize)
               (require 'cb-org-email-capture)
-              (list pl (apply 'cbom:format-for-insertion pl))))
+              (list pl (cbom:format-for-insertion pl))))
          (lambda+ ((pl fmt))
            (save-excursion
              (save-window-excursion
                ;; The user may have interactively changed the default notes
                ;; file, so we rebind it to the note file set at init time.
                (let ((org-default-notes-file org-init-notes-file))
-                 (apply 'cbom:capture fmt pl)
-                 (apply 'cbom:growl pl)))))))))))
+                 (cbom:capture fmt pl)
+                 (cbom:growl pl)))))))))))
 
 ;;; Timer
 
