@@ -1,3 +1,5 @@
+alias ge git exec $*
+alias gh cd ${git rev-parse --show-toplevel}
 alias l ls $*
 alias clear recenter 0
 alias w3m w3m-find-file $1
