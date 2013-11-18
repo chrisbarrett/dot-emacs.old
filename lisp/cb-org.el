@@ -508,13 +508,23 @@ This will set which file org-capture will capture to."
                   ":END:")
                 :clock-keep t)
 
-               ("p" "Phone Call" entry
+               ("p" "Phone Call (in)" entry
                 (file+headline org-default-notes-file "Calls")
                 ,(s-unlines
                   "* %U"
                   "- From :: %?"
                   "- To :: "
                   "- Subject :: ")
+                :clock-in t
+                :clock-resume t)
+
+               ("o" "Phone Call (out)" entry
+                (file+headline org-default-notes-file "Calls")
+                ,(s-unlines
+                  "* %U"
+                  "- To :: %^{To}"
+                  "- Subject :: %^{Subject}"
+                  "%?")
                 :clock-in t
                 :clock-resume t)
 
@@ -530,7 +540,7 @@ This will set which file org-capture will capture to."
                ("r" "Reading" entry
                 (file+olp org-default-notes-file "Someday" "Reading")
                 ,(s-unlines
-                  "* TODO %i%?"
+                  "* TODO Read %i%?"
                   ":PROPERTIES:"
                   ":CAPTURED: %U"
                   ":END:")
