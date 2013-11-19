@@ -32,6 +32,10 @@
 (require 's)
 (require 'cb-mode-groups)
 
+(defvar sp-minibuffer-enabled-commands
+  '(eval-expression calc-algebraic-entry quick-calc)
+  "Commands that take input in the minibuffer for which smartparens should be used.")
+
 (after 'evil
   (evil-global-set-key 'normal "(" 'sp-backward-up-sexp)
   (evil-global-set-key 'normal ")" 'sp-forward-sexp)
@@ -125,11 +129,11 @@
 
     (setq sp-autoinsert-if-followed-by-word t)
 
-    ;; Do not use smartparens in minibuffer unless the last command was
-    ;; `eval-expression'.
+    ;; Only enable smartparens in the minibuffer for certain commands.
     (hook-fns '(minibuffer-setup-hook minibuffer-inactive-mode-hook)
       :append t
-      (smartparens-mode (if (equal this-command 'eval-expression) +1 -1)))
+      (smartparens-mode (if (-contains? sp-minibuffer-enabled-commands this-command)
+                            +1 -1)))
 
     ;; Close paren keys move up sexp.
     (setq sp-navigate-close-if-unbalanced t)
