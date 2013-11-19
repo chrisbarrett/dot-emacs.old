@@ -361,7 +361,6 @@ With prefix, goes to the REPL buffer afterwards (as
 (provide 'cb-scheme)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-scheme.el ends here

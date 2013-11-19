@@ -271,7 +271,6 @@
 (provide 'cb-git)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-git.el ends here

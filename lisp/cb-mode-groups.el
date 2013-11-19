@@ -132,7 +132,6 @@
 (provide 'cb-mode-groups)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-mode-groups.el ends here

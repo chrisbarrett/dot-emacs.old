@@ -263,7 +263,6 @@ After updating the group"
 (provide 'cb-gnus)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-gnus.el ends here

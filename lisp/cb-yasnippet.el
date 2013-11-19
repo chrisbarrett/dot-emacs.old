@@ -75,7 +75,6 @@
 (provide 'cb-yasnippet)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-yasnippet.el ends here

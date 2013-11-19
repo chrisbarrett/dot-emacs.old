@@ -70,7 +70,6 @@
 (provide 'cb-typefaces)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-typefaces.el ends here

@@ -455,7 +455,6 @@ Otherwise, use the value of said variable as argument to a funcall."
 (provide 'cb-foundation)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-foundation.el ends here

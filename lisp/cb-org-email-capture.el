@@ -451,7 +451,6 @@ Captured messages are marked as read."
 (provide 'cb-org-email-capture)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; LocalWords:  MessagePlist
 ;; End:
 

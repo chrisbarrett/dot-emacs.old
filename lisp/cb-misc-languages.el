@@ -76,7 +76,6 @@
 (provide 'cb-misc-languages)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-misc-languages.el ends here

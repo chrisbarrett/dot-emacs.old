@@ -138,7 +138,6 @@
 (provide 'cb-helm)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-helm.el ends here

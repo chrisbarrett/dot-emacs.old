@@ -323,7 +323,6 @@ entry in `modeline-custom-description-functions'."
 (provide 'cb-modeline)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-modeline.el ends here

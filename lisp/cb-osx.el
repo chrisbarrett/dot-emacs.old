@@ -245,7 +245,6 @@ When used interactively, makes a guess at what to pass."
 (provide 'cb-osx)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-osx.el ends here

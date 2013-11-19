@@ -80,7 +80,6 @@
 (provide 'cb-backups)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-backups.el ends here

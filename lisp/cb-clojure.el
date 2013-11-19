@@ -118,7 +118,6 @@
 (provide 'cb-clojure)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-clojure.el ends here

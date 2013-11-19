@@ -65,7 +65,6 @@
 (provide 'cb-overtone)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-overtone.el ends here

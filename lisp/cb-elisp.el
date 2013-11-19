@@ -349,7 +349,6 @@
 (provide 'cb-elisp)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-elisp.el ends here

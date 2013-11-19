@@ -109,7 +109,6 @@
 (provide 'cb-ctags)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-ctags.el ends here

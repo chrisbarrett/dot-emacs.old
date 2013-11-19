@@ -89,7 +89,6 @@
 (provide 'cb-twittering)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-twittering.el ends here

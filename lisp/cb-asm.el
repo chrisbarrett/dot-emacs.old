@@ -73,7 +73,6 @@
 (provide 'cb-asm)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-asm.el ends here

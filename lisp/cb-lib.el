@@ -961,7 +961,6 @@ TARGET-DAYNAME is the day of the week that we want to match,
 (provide 'cb-lib)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-lib.el ends here

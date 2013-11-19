@@ -91,7 +91,6 @@
 (provide 'cb-window-management)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; byte-compile-warnings: (not obsolete)
 ;; End:
 

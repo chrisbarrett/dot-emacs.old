@@ -177,7 +177,6 @@ Any packages marked for installation or updating will be processed in the backgr
 (provide 'cb-package)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-package.el ends here

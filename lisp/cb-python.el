@@ -172,7 +172,6 @@
 (provide 'cb-python)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-python.el ends here

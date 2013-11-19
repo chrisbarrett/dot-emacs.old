@@ -181,7 +181,6 @@
 (provide 'cb-smartparens)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-smartparens.el ends here

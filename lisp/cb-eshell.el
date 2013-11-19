@@ -125,7 +125,6 @@
 (provide 'cb-eshell)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-eshell.el ends here

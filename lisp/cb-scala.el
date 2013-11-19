@@ -235,7 +235,6 @@ Pad in normal expressions. Do not insert padding in variance annotations."
 (provide 'cb-scala)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-scala.el ends here

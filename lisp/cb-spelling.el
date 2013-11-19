@@ -72,7 +72,6 @@
 (provide 'cb-spelling)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-spelling.el ends here

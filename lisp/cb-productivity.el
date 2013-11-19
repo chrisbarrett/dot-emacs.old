@@ -190,7 +190,6 @@
 (provide 'cb-productivity)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-productivity.el ends here

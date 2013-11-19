@@ -48,7 +48,6 @@
 (provide 'cb-paths)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-paths.el ends here

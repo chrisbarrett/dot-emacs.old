@@ -71,7 +71,6 @@
 (provide 'cb-shell)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-shell.el ends here

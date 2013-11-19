@@ -229,7 +229,6 @@
 (provide 'cb-net)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-net.el ends here

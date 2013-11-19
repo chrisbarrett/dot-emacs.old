@@ -1153,7 +1153,6 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
 (provide 'cb-org)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-org.el ends here

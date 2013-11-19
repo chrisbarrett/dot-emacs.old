@@ -117,7 +117,6 @@
 (provide 'cb-lisp)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-lisp.el ends here

@@ -67,7 +67,6 @@
 (provide 'cb-popwin)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-popwin.el ends here

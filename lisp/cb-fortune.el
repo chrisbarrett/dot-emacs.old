@@ -52,7 +52,6 @@
 (provide 'cb-fortune)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-fortune.el ends here

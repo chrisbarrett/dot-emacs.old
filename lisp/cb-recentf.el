@@ -79,7 +79,6 @@
 (provide 'cb-recentf)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-recentf.el ends here

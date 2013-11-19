@@ -377,7 +377,6 @@ The insertion will be repeated COUNT times."
 (provide 'cb-evil)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-evil.el ends here

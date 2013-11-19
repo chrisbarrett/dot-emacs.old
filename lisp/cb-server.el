@@ -76,7 +76,6 @@
 (provide 'cb-server)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-server.el ends here

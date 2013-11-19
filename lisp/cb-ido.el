@@ -150,7 +150,6 @@
 (provide 'cb-ido)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-ido.el ends here

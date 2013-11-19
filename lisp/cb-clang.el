@@ -298,7 +298,6 @@ Remove horizontal whitespace if the insertion results in a ++."
 (provide 'cb-clang)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-clang.el ends here

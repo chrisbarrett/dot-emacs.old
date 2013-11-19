@@ -343,7 +343,6 @@ Rewrap in an org-style quote block."
 (provide 'cb-mail)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-mail.el ends here

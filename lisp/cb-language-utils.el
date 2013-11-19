@@ -120,7 +120,6 @@
 (provide 'cb-language-utils)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-language-utils.el ends here

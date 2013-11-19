@@ -153,7 +153,6 @@
 (provide 'cb-markup)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-markup.el ends here

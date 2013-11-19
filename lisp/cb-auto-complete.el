@@ -76,7 +76,6 @@
 (provide 'cb-auto-complete)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-auto-complete.el ends here

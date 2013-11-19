@@ -447,7 +447,6 @@ an irb error message."
 (provide 'cb-ruby)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-ruby.el ends here

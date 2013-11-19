@@ -166,7 +166,6 @@ PRED is a predicate to determine whether search method is currently available.
 (provide 'cb-search)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-search.el ends here

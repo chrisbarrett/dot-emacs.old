@@ -116,7 +116,6 @@
 (provide 'cb-dired)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-dired.el ends here

@@ -60,7 +60,6 @@
 (provide 'cb-cosmetic)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-cosmetic.el ends here

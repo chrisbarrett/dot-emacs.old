@@ -109,7 +109,6 @@
 (provide 'cb-compilation)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-compilation.el ends here

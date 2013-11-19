@@ -113,7 +113,6 @@
 (provide 'cb-tex)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-tex.el ends here

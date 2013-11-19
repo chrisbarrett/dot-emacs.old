@@ -71,7 +71,6 @@
 (provide 'cb-supercollider)
 
 ;; Local Variables:
-;; lexical-binding: t
 ;; End:
 
 ;;; cb-supercollider.el ends here
