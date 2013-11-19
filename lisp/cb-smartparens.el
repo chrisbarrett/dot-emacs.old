@@ -154,7 +154,8 @@
                                    'shell-script-mode
                                    'makefile-mode
                                    'conf-mode))
-      (sp-local-pair "'" "'"
+      (sp-local-pair
+       "'" "'"
        :bind "M-'"
        :actions '(:add insert)
        :when '(:add sp-in-code-p)
@@ -176,7 +177,14 @@
 
     ;; Use bind-key for keys that tend to be overridden.
     (bind-key "C-M-," 'sp-backward-down-sexp sp-keymap)
-    (bind-key "C-M-." 'sp-next-sexp sp-keymap)))
+    (bind-key "C-M-." 'sp-next-sexp sp-keymap)
+
+    ;; Close paren keys move up sexp.
+    (setq sp-navigate-close-if-unbalanced t)
+    (cl-loop for key in '(")" "]" "}")
+             for map in (list smartparens-mode-map smartparens-strict-mode-map)
+             do (define-key map (kbd key)
+                  (eval `(command (sp-insert-or-up ,key _arg)))))))
 
 (provide 'cb-smartparens)
 
