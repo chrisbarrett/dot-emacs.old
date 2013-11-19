@@ -408,7 +408,9 @@ Otherwise, use the value of said variable as argument to a funcall."
           (let ((opt (read-option
                       "Calc Grab" 'car 'cadr
                       '(("v" "Grab as Vector" calc-grab-region)
-                        ("m" "Grab as Matrix" calc-grab-rectangle)))))
+                        ("m" "Grab as Matrix" calc-grab-rectangle)
+                        ("c" "Sum Cols" calc-grab-sum-down)
+                        ("r" "Sum Rows" calc-grab-sum-across)))))
             (call-interactively (nth 2 opt)))
 
         (error
