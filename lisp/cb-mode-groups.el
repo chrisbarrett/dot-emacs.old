@@ -64,7 +64,7 @@
 
   (define-mode-group cb:elisp-modes
     '(emacs-lisp-mode
-      ielm-mode))
+      inferior-emacs-lisp-mode))
 
   (define-mode-group cb:slime-modes
     '(slime-mode
