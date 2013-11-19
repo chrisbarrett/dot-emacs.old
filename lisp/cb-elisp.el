@@ -275,8 +275,11 @@
       (recenter -1)
       (switch-to-elisp))
 
-    (hook-fn 'ielm-mode-hook
-      (local-set-key (kbd "C-c C-z") 'switch-to-elisp))
+    (after 'ielm
+      (define-keys ielm-map
+        "C-c C-z" 'switch-to-elisp
+        "M-RET" 'newline-and-indent
+        "C-j" 'newline-and-indent))
 
     (define-keys emacs-lisp-mode-map
       "C-c C-c" 'send-to-ielm
