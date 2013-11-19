@@ -341,8 +341,6 @@ Otherwise, use the value of said variable as argument to a funcall."
 (bind-keys
   :overriding? t
 
-  "<f2>"  'calc
-  "C-/"   'quick-calc
   "S-SPC" 'execute-extended-command
   "C-x e" 'sudo-edit
   "M-/"   'hippie-expand
@@ -399,6 +397,29 @@ Otherwise, use the value of said variable as argument to a funcall."
   "C-h e v" 'find-variable
   "C-h e a" 'apropos
   "C-h e V" 'apropos-value)
+
+;;; Calc
+
+(defun calc-dwim ()
+  "Run calc or grab the current region."
+  (interactive)
+  (if (region-active-p)
+      (condition-case err
+          (let ((opt (read-option
+                      "Calc Grab" 'car 'cadr
+                      '(("v" "Grab as Vector" calc-grab-region)
+                        ("m" "Grab as Matrix" calc-grab-rectangle)))))
+            (call-interactively (nth 2 opt)))
+
+        (error
+         (message "Malformed region. %s" (error-message-string err))))
+
+    (call-interactively 'calc)))
+
+(bind-keys
+  :overriding? t
+  "<f2>" 'calc-dwim
+  "C-/"  'quick-calc)
 
 ;;; Pickers
 ;;;
