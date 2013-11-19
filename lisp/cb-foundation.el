@@ -57,7 +57,7 @@
  shift-select-mode            nil
  require-final-newline        t
  delete-by-moving-to-trash    nil
- initial-major-mode           'fundamental-mode
+ initial-major-mode           'org-mode
  initial-scratch-message      nil
  x-select-enable-clipboard    t
  font-lock-maximum-decoration t
@@ -69,9 +69,10 @@
  sentence-end-double-space nil
  )
 (setq-default
- tab-width                    4
- indent-tabs-mode             nil
- fill-column                  80
+ major-mode       'org-mode
+ tab-width        4
+ indent-tabs-mode nil
+ fill-column      80
  default-input-method "TeX"
  )
 
