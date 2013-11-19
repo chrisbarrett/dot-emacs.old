@@ -22,7 +22,10 @@
 
 ;;; Commentary:
 
-;; Extensions to package.el
+;; Extensions to package.el that allow packages to be installed asynchronously.
+;;
+;; This uses the async package to spin up another Emacs process that performs
+;; the installation.
 
 ;;; Code:
 
