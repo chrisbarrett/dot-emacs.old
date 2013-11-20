@@ -135,11 +135,6 @@
       (smartparens-mode (if (-contains? sp-minibuffer-enabled-commands this-command)
                             +1 -1)))
 
-    ;; Close paren keys move up sexp.
-    (setq sp-navigate-close-if-unbalanced t)
-    (cl-loop for key in '(")" "]" "}")
-             do (eval `(bind-key* ,key (command (sp-insert-or-up ,key _arg)))))
-
     ;; Bind Paredit-style wrapping commands.
     (sp-pair "(" ")" :bind "M-(")
     (sp-pair "{" "}" :bind "M-{")
