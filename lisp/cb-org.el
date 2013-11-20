@@ -1060,6 +1060,13 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
       ;; Remove trailing spaces when exiting org code blocks.
       (add-hook 'org-edit-src-before-exit-hook 'delete-trailing-whitespace))))
 
+;; `org-reveal' provides a Reveal.js exporter for making presentations.
+(after 'org
+  (use-package ox-reveal
+    :ensure t
+    :config
+    (setq org-reveal-root (concat "file://" (f-join cb:lib-dir "reveal.js")))))
+
 ;; Define pairs for org-mode blocks.
 (after 'smartparens
   (sp-with-modes '(org-mode)

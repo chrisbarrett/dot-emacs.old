@@ -28,3 +28,6 @@
 [submodule "lib/helm-dictionary"]
 	path = lib/helm-dictionary
 	url = git://github.com/chrisbarrett/helm-dictionary.git
+[submodule "lib/reveal.js"]
+	path = lib/reveal.js
+	url = https://github.com/hakimel/reveal.js.git
