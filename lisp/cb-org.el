@@ -1065,7 +1065,29 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
   (use-package ox-reveal
     :ensure t
     :config
-    (setq org-reveal-root (concat "file://" (f-join cb:lib-dir "reveal.js")))))
+    (progn
+      (setq org-reveal-root (concat "file://" (f-join cb:lib-dir "reveal.js")))
+
+      ;; Auxiliary functions used by snippets.
+
+      (defun cb-org:reveal-read-transition ()
+        (popup-menu*
+         (-map 'popup-make-item
+               '("Cube" "Page" "Concave" "Zoom" "Linear" "Fade" "None" "Default"))
+         :isearch t))
+
+      (defun cb-org:reveal-read-theme ()
+        (popup-menu*
+         (-map 'popup-make-item
+               '("Default" "Sky" "Beige" "Simple" "Serif" "Night Moon" "Simple" "Solarized"))
+         :isearch t))
+
+      (defun cb-org:reveal-read-frag-style ()
+        (popup-menu*
+         (-map 'popup-make-item
+               '("grow" "shrink" "roll-in" "fade-out"
+                 "highlight-red" "highlight-green" "highlight-blue"))
+         :isearch t)))))
 
 ;; Define pairs for org-mode blocks.
 (after 'smartparens
