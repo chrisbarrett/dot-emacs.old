@@ -274,6 +274,13 @@ Remove horizontal whitespace if the insertion results in a ++."
     (sp-local-pair "{" "}" :post-handlers '(:add cb-c:format-after-brace))
     (sp-local-pair "(" ")" :post-handlers '(:add cb-c:format-after-paren))))
 
+(defun cbclang:flyspell-verify ()
+  (not (s-matches? (rx bol (* space) "#include ") (current-line))))
+
+;; Ignore includes for flyspell.
+(hook-fns '(c-mode-hook c++-mode-hook)
+  (setq-local flyspell-generic-check-word-predicate 'cbclang:flyspell-verify))
+
 (use-package google-c-style
   :ensure   t
   :defer    t
