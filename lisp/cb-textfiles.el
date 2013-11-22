@@ -27,6 +27,8 @@
 ;;; Code:
 
 (require 'use-package)
+(require 'cb-colour)
+(require 'cb-lib)
 
 (use-package csv-mode
   :ensure t
@@ -34,7 +36,10 @@
   :mode  ("\\.csv$" . csv-mode)
   :init
   ;; Override broken var
-  (defconst csv-mode-line-help-echo ""))
+  (defconst csv-mode-line-help-echo "")
+  :config
+  (after 'csv-mode
+    (set-face-foreground csv-separator-face solarized-hl-orange)))
 
 (provide 'cb-textfiles)
 
