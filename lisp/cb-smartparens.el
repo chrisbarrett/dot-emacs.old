@@ -177,13 +177,21 @@
     ;; Close paren keys move up sexp.
     (setq sp-navigate-close-if-unbalanced t)
 
-    (cl-loop for key in '(")" "]" "}")
-             for map in '(smartparens-mode-map smartparens-strict-mode-map)
-             do (eval `(bind-key
-                        (kbd key)
-                        (command (with-demoted-errors
-                                   (sp-insert-or-up ,key _arg)))
-                        ,map)))))
+    ;; HACK: There seems to be a race condition that clobbers customisations to
+    ;; the SP maps. Manually set custom bindings in a hook.
+
+    (defun cbsp:hacky-set-sp-bindings ()
+      (cl-loop for key in '(")" "]" "}")
+               for map in '(smartparens-mode-map smartparens-strict-mode-map)
+               do (eval `(bind-key
+                          (kbd key)
+                          (command (with-demoted-errors
+                                     (sp-insert-or-up ,key _arg)))
+                          ,map))))
+
+    (hook-fns '(smartparens-mode-hook smartparens-strict-mode-hook)
+      :append t
+      (cbsp:hacky-set-sp-bindings))))
 
 (provide 'cb-smartparens)
 
