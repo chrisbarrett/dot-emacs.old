@@ -140,9 +140,15 @@
 (defmacro hook-fns (hooks &rest args)
   "A sequence wrapper for `hook-fn'.
 
-* HOOKS is a list of hooks
+* HOOKS is a list of hooks.
 
-* ARGS are applied to each call to `hook-fn'."
+* BODY is a list of forms to evaluate when the hooks are run.
+
+* APPEND and LOCAL are passed to the underlying calls to `add-hook'.
+
+* ARGLIST overrides the default arglist for the function.
+
+\(fn hooks &rest body &key local append arglist)"
   (declare (indent 1) (doc-string 2))
   `(progn
      ,@(--map `(hook-fn ',it ,@args)
