@@ -34,6 +34,26 @@
 (autoload 'smartparens-mode-map "smartparens")
 (autoload 'beginning-of-sexp "thingatpt")
 
+;; Insert header includes on C-c i i
+(after 'emr
+
+  (defun helm-insert-c-header ()
+    (interactive)
+    (helm :sources
+          `((name . "C Headers")
+            (candidates . ,(-concat emr-c:standard-headers (emr-c:headers-in-project)))
+            (action .
+                    (lambda (c)
+                      (emr-c-insert-include
+                       (format (if (-contains? emr-c:standard-headers c) "<%s>" "\"%s\"")
+                               c))))
+            (volatile))
+          :prompt "Header: "
+          :buffer "*Helm C Headers*"))
+
+  (add-to-list 'insertion-picker-options
+               '("i" "Header Include" helm-insert-c-header :modes (c-mode c++-mode))))
+
 (after 'cc-mode
 
   ;; Use clang as the cc compiler.
