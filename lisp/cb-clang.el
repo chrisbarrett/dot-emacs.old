@@ -139,6 +139,7 @@
     (beginning-of-sexp)
     (thing-at-point-looking-at (rx (or "{" " " "(" ",") "."))))
 
+;; Add special smart ops for C/C++
 (after 'smart-operator
 
   (defun c-insert-smart-op (str)
@@ -231,6 +232,7 @@ Remove horizontal whitespace if the insertion results in a ++."
     (local-set-key (kbd "-") 'c-insert-smart-minus)
     (local-set-key (kbd "*") 'c-insert-smart-star)))
 
+;; Automatically format curly braces on insertion.
 (after 'smartparens
 
   (defun cb-c:format-after-brace (_id action contexxt)
