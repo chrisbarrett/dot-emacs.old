@@ -28,6 +28,7 @@
 
 (require 'use-package)
 (require 'cb-lib)
+(require 'cb-typefaces)
 
 (after 'smart-operator
   (hook-fn 'cb:markup-modes-hook
@@ -109,9 +110,10 @@
       (sp-with-modes '(markdown-mode)
         (sp-local-pair "```" "```")))
 
-    (evil-define-key 'normal markdown-mode-map
-      (kbd "M-P") 'outline-previous-visible-heading
-      (kbd "M-N") 'outline-next-visible-heading)
+    (after 'evil
+      (evil-define-key 'normal markdown-mode-map
+        (kbd "M-P") 'outline-previous-visible-heading
+        (kbd "M-N") 'outline-next-visible-heading))
 
     ;; Customise faces.
     (set-face-attribute markdown-header-face-1 nil :height 200)
