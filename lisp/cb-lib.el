@@ -105,10 +105,11 @@
 
 * BODY is a list of forms to evaluate when the hook is run.
 
-* APPEND and LOCAL are passed to the underlying call to
-  `add-hook'.
+* APPEND and LOCAL are passed to the underlying call to `add-hook'.
 
-* ARGLIST overrides the default arglist for the hook's function."
+* ARGLIST overrides the default arglist for the hook's function.
+
+\(fn hook &rest body &key local append arglist)"
   (declare (indent 1) (doc-string 2))
 
   (cl-assert (symbolp (eval hook)))
@@ -138,15 +139,7 @@
        ,hook)))
 
 (defmacro hook-fns (hooks &rest args)
-  "A sequence wrapper for `hook-fn'.
-
-* HOOKS is a list of hooks.
-
-* BODY is a list of forms to evaluate when the hooks are run.
-
-* APPEND and LOCAL are passed to the underlying calls to `add-hook'.
-
-* ARGLIST overrides the default arglist for the function.
+  "A wrapper for `hook-fn', where HOOKS is a list of hooks.
 
 \(fn hooks &rest body &key local append arglist)"
   (declare (indent 1) (doc-string 2))
