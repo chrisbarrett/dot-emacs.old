@@ -613,14 +613,14 @@ This will set which file org-capture will capture to."
 
       ;; Show today's agenda after a period of inactivity.
 
-      (defvar cb-org:show-agenda-idle-delay (* 10 60)
+      (defvar cb-org:show-agenda-idle-delay (* 30 60)
         "The delay in seconds after which to pop up today's agenda.")
 
       (defvar cb-org:show-agenda-idle-timer
         (unless noninteractive
           (run-with-idle-timer cb-org:show-agenda-idle-delay t
-                               (lambda () (org-agenda-list nil nil 1))))
-        "Idle timer that will display today's org agenda as a pop-up.
+                               'executor:org-agenda-fullscreen))
+        "Idle timer that will display today's org agenda.
 See `cb-org:show-agenda-idle-delay'.")
 
 
