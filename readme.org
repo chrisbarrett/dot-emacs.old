@@ -83,7 +83,7 @@ I have sane configurations for several languages and environments:
 - Elisp
 - Scheme
 ** Key bindings
-Since Evil frees up the Meta key, I use =M-/key/= to display modal views such as terminals, w3m, gnus and dired.
+Since Evil frees up the Meta key, I use =M-/key/= to display modal views such as terminals, w3m and dired.
 - =C-SPC= :: helm-mini
 - =S-SPC= :: execute-extended-command (i.e. =M-x=)
 - =C-RET= :: interactively edit symbol at point
@@ -99,7 +99,6 @@ Since Evil frees up the Meta key, I use =M-/key/= to display modal views such as
 - =M-s= :: Search manpage, Google, YouTube, Wikipedia etc.
 - =M-T= :: eshell
 - =M-W= :: w3m
-- =M-Y= :: gnus
 ** OS X-specific
 - org-mode and pomodoro notifications are displayed using [[http://growl.info/][Growl]] where available
 - =cmd-shift-return= runs OS X's =open= command.
