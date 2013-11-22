@@ -176,10 +176,14 @@
 
     ;; Close paren keys move up sexp.
     (setq sp-navigate-close-if-unbalanced t)
+
     (cl-loop for key in '(")" "]" "}")
-             for map in (list smartparens-mode-map smartparens-strict-mode-map)
-             do (define-key map (kbd key)
-                  (eval `(command (sp-insert-or-up ,key _arg)))))))
+             for map in '(smartparens-mode-map smartparens-strict-mode-map)
+             do (eval `(bind-key
+                        (kbd key)
+                        (command (with-demoted-errors
+                                   (sp-insert-or-up ,key _arg)))
+                        ,map)))))
 
 (provide 'cb-smartparens)
 
