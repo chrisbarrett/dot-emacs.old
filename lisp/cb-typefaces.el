@@ -59,11 +59,6 @@
   (set-frame-font (format "%s 11" (monospace-font)) t
                   (list (car (frame-list)))))
 
-(hook-fn 'text-mode-hook
-  "Use a sans-serif font for text-mode."
-  (when (equal major-mode 'text-mode)
-    (buffer-face-set `(:family ,(sans-serif-font) :height 120))))
-
 (hook-fn 'Info-mode-hook
   (buffer-face-set `(:family ,(serif-font) :height 140)))
 
