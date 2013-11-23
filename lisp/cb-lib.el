@@ -854,7 +854,8 @@ as their first parameter.")
 
 (defun %-async (command &rest arguments)
   "Run COMMAND with ARGUMENTS asynchronously."
-  (async-shell-command (concat command " " (s-join " " arguments))))
+  (save-window-excursion
+    (async-shell-command (concat command " " (s-join " " arguments)))))
 
 (defun %-can-sudo-without-passwd? ()
   "Test whether we are currently able to sudo without entering a password."
