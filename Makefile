@@ -20,7 +20,7 @@ default : $(modules) el-get tags $(emacs_src)
 
 .PHONY: all
 all : $(modules) el-get $(emacs_src) tags \
-	  ruby supercollider python clang haskell gnus \
+	  ruby supercollider python clang haskell \
 
 .PHONY: src
 src : $(emacs_src)
@@ -177,14 +177,3 @@ org_d = $(lib)/org-mode
 .PHONY: org
 org :
 	cd $(org_d) && make all
-
-# ----------------------------------------------------------------------------
-
-gnus_d = $(lib)/gnus
-gnus_load_file = $(gnus_d)/lisp/gnus-load.el
-
-.PHONY: gnus
-gnus : $(gnus_load_file)
-
-$(gnus_load_file) :
-	cd $(gnus_d) && ./configure && make
