@@ -44,7 +44,7 @@
                      " --format=tiff"
                      " > " tmpfile
                      " && cupsfilter -D -i image/tiff " tmpfile
-                     " > " destination)))
+                     " > " (%-quote (f-expand destination)))))
 
   (kill-new destination)
   (message "Scan started. Destination path copied to kill-ring."))
