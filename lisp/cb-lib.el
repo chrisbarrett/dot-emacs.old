@@ -634,34 +634,38 @@ In batch mode, this just prints a summary instead of progress."
   "Face for key highlight in search method prompt"
   :group 'options)
 
+(defun cb-lib:columnate-lines (lines column-width)
+  "Columnate LINES by splitting the lines into two lists then
+zipping them together again, such that:
+
+  '(A B C D)
+
+becomes:
+
+  A C
+  B D
+
+COLUMN-WIDTH sets the width of each column."
+  (let* ((mid (ceiling (/ (length lines) 2.0)))
+         (xs (-slice lines 0 mid))
+         (ys (-slice lines mid)))
+    (->>
+        ;; Add an extra line to YS if there is an odd number of options so
+        ;; the zip does not discard an option.
+        (if (/= (length xs) (length ys))
+            (-concat ys '(""))
+          ys)
+      (-zip-with
+       (lambda (l r) (concat (s-pad-right column-width " " l) r)) xs)
+      (s-join "\n"))))
+
 (defun cb-lib:maybe-columnate-lines (thresh-hold column-width lines)
   "Return a formatted string that may columnate the input.
 The columnation will occur if LINES exceeds THRESH-HOLD in length.
 COLUMN-WIDTH specifies the width of columns if columnation is used."
   (if (< (length lines) thresh-hold)
       (s-join "\n" lines)
-    ;; Columnate lines by splitting the lines into two lists then zipping them
-    ;; together again, such that:
-    ;;
-    ;; '("A" "B" "C" "D")
-    ;;
-    ;; becomes the string:
-    ;;
-    ;; A  C
-    ;; B  D
-    ;;
-    (let* ((mid (ceiling (/ (length lines) 2.0)))
-           (xs (-slice lines 0 mid))
-           (ys (-slice lines mid)))
-      (->>
-          ;; Add an extra line to YS if there is an odd number of options so
-          ;; the zip does not discard an option.
-          (if (/= (length xs) (length ys))
-              (-concat ys '(""))
-            ys)
-        (-zip-with
-         (lambda (l r) (concat (s-pad-right column-width " " l) r)) xs)
-        (s-join "\n")))))
+    (cb-lib:columnate-lines lines column-width)))
 
 (defun cb-lib:option-read-loop (option-key-fn options)
   "Read an option from the user.
@@ -686,6 +690,12 @@ is no option bound to \"q\"."
      (setq quit-flag t))
     (t
      (message "Invalid key")))))
+
+(defun window-bounds ()
+  "The width of the selected window, minus the fringe."
+  (- (window-width)
+     (fringe-columns 'left)
+     (fringe-columns 'right)))
 
 (defun read-option (title option-key-fn option-name-fn options)
   "Prompt the user to select from a list of choices.
@@ -730,12 +740,9 @@ Return the element in a list of options corresponding to the user's selection.
             (insert
              ;; Show small numbers of options in a single column. If the number
              ;; of lines exceeds 3, split into 2 columns.
-             (cb-lib:maybe-columnate-lines
-              3
-              (/ (- (window-width)
-                    (fringe-columns 'left)
-                    (fringe-columns 'left)) 2)
-              lines))
+             (cb-lib:maybe-columnate-lines 3
+                                           (/ (window-bounds) 2)
+                                           lines))
 
             ;; 2. Prepare window.
 
