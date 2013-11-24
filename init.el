@@ -118,7 +118,7 @@
 ;; Load remaining config files in the lisp directory.
 ;; Each file must declare a corresponding emacs feature.
 (let* ((files (f-files cb:lisp-dir))
-       (config-files (-filter (& (~ (^ f-ext?) "el")
+       (config-files (-filter (& (~ (<> f-ext?) "el")
                                  (N (| (~ s-contains? "flycheck")
                                        (~ s-ends-with? "~"))))
                               files))
