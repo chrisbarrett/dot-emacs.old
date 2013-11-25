@@ -189,6 +189,9 @@ The signal is captured by the event loop in `file-picker'."
                  (forward-line)))
 
              (goto-char (line-beginning-position)))
+            ((and (file-picker-in-file-section?)
+                  (null (file-picker-files)))
+             (error "List is empty"))
             (t
              (error "Point is not at a file"))))))
 
