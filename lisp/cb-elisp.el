@@ -152,6 +152,7 @@
     (setq-local comment-end "")
     (hs-minor-mode +1)))
 
+;; Add hideshow support for IELM.
 (after 'hideshow
   (add-to-list 'hs-special-modes-alist
                '(inferior-emacs-lisp-mode "(" ")" ";.*$" nil nil)))
