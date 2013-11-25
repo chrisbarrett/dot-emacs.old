@@ -123,13 +123,13 @@ The signal is captured by the event loop in `file-picker'."
 (defun file-picker-append-file (path)
   "Add PATH to the current file picker selection."
   (interactive (list (ido-read-file-name "Add File: ")))
-  (let (buffer-read-only)
-    (let ((s (propertize (f-short (s-trim path)) 'face 'solarized-hl-blue)))
-      (goto-char (point-max))
-      (while (s-matches? (rx bol (* space) eol) (current-line))
-        (join-line))
-      (newline)
-      (insert (concat "    " s)))))
+  (let (buffer-read-only
+        (line (concat "    " (f-short (s-trim path)))))
+    (goto-char (point-max))
+    (while (s-matches? (rx bol (* space) eol) (current-line))
+      (join-line))
+    (newline)
+    (insert (propertize line 'face 'font-lock-string-face))))
 
 (defun file-picker-append-glob (glob)
   "Add multiple files matching GLOB pattern to a file picker."
