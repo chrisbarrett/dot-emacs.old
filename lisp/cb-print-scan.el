@@ -61,8 +61,4 @@
 
 (provide 'cb-print-scan)
 
-;; Local Variables:
-;; lexical-binding: t
-;; End:
-
 ;;; cb-print-scan.el ends here
