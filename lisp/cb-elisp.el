@@ -220,6 +220,24 @@
    (lambda ()
      (apply 'derived-mode-p cb:elisp-modes))))
 
+;; Define auxiliary functions for snippets.
+(after 'yasnippet
+
+  (defun cbel:bol-for-snippet? ()
+    "Non-nil if point is on an empty line, with the exception of the snippet key."
+    (unless (equal (point) (line-beginning-position))
+      (s-blank? (s-trim (buffer-substring (line-beginning-position) (1- (point)))))))
+
+  (defun cbel:format-docstring-for-snippet (text)
+    "Format a function docstring for a snippet.
+* TEXT is contents of the arglist as a string."
+    (let ((arg-docs (->> (s-split (rx space) text t)
+                      (-remove (~ s-starts-with? "&"))
+                      (-map (C (~ format "* %s") s-upcase))
+                      (s-join "\n\n"))))
+      (unless (s-blank? arg-docs)
+        (concat "\n\n" arg-docs)))))
+
 (hook-fn 'minibuffer-setup-hook
   "Enable Paredit during eval-expression."
   (when (equal this-command 'eval-expression)
