@@ -1,8 +1,7 @@
-# -*- mode: snippet -*-
-# name: defun
 # key: d
+# name: defun
 # condition: (cbel:bol-for-snippet?)
 # --
 (defun $1 ($2)
-  "${2:$(cbel:format-docstring-for-snippet yas/text)}"
+  "$3${2:$(cbel:format-docstring-for-snippet yas/text)}"
   $0)
