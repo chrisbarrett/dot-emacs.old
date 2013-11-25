@@ -27,6 +27,7 @@
 ;;; Code:
 
 (require 'cb-lib)
+(autoload 'cl-gensym "cl-macs")
 
 (defvar file-picker-mode-map
   (let ((km (make-sparse-keymap)))
@@ -45,6 +46,9 @@
     (define-key km (kbd "RET") 'file-picker-show-file)
     (define-key km (kbd "C-c C-k") 'file-picker-abort)
     (define-key km (kbd "C-c C-c") 'file-picker-accept)
+    ;; Undo
+    (define-key km (kbd "u") 'undo-tree-undo)
+    (define-key km (kbd "C-r") 'undo-tree-redo)
     ;; Structure
     (define-key km (kbd "M-<up>") 'file-picker-move-file-up)
     (define-key km (kbd "M-<down>") 'file-picker-move-file-down)
@@ -53,6 +57,10 @@
 (defvar-local file-picker-accept-function nil
   "A unary handler function taking the list of files selected by
   the user in a file picker.")
+
+(defvar-local file-picker-window-register nil
+  "Register symbol for restoring the window configuration to its
+state before the file picker was shown.")
 
 (defun file-picker-pp-option (key desc)
   "Propertize a file picker key command for display in the key summary.
@@ -92,24 +100,25 @@ KEY and DESC are the key binding and command description."
 (defun file-picker-clear ()
   "Remove all files in the file picker."
   (interactive)
-  ;; Ignore if empty.
-  (if (null (file-picker-files))
+  (atomic-change-group
+    ;; Ignore if empty.
+    (if (null (file-picker-files))
+        (when (called-interactively-p)
+          (user-error "List is empty"))
+
+      ;; Prompt user to confirm.
       (when (called-interactively-p)
-        (user-error "List is empty"))
+        (unless (y-or-n-p "Clear all files? ")
+          (user-error "Cancelled")))
 
-    ;; Prompt user to confirm.
-    (when (called-interactively-p)
-      (unless (y-or-n-p "Clear all files? ")
-        (user-error "Cancelled")))
+      ;; Clear files list.
+      (let (buffer-read-only)
+        (file-picker-goto-files)
+        (delete-region (point) (point-max))
+        (insert "    "))
 
-    ;; Clear files list.
-    (file-picker-goto-files)
-    (let (buffer-read-only)
-      (delete-region (point) (point-max))
-      (insert "    "))
-
-    (when (called-interactively-p)
-      (message "List cleared"))))
+      (when (called-interactively-p)
+        (message "List cleared")))))
 
 (defun file-picker-accept ()
   "Accept the files and signal input is finished.
@@ -118,13 +127,18 @@ The signal is captured by the event loop in `file-picker'."
   (interactive)
   (let ((files (file-picker-files))
         (buf (current-buffer)))
-    (unwind-protect (funcall file-picker-accept-function files)
-      (kill-buffer buf))))
+    (file-picker-restore-previous-window-state)
+    (with-current-buffer buf
+      (unwind-protect (funcall file-picker-accept-function files)
+        (kill-buffer buf)))))
 
 (defun file-picker-abort ()
   "Close the current file-picker and signal an error."
   (interactive)
-  (kill-buffer)
+  (let ((buf (current-buffer)))
+    (file-picker-restore-previous-window-state)
+    (kill-buffer buf))
+
   (user-error "Aborted"))
 
 (defun file-picker-goto-files ()
@@ -144,15 +158,16 @@ The signal is captured by the event loop in `file-picker'."
 (defun file-picker-remove-file ()
   "Delete the filepath at point in a file picker."
   (interactive)
-  (let (buffer-read-only)
+  (atomic-change-group
     (let ((indented-line? (s-matches? (rx "    " (+ nonl)) (current-line))))
       (cond ((and (file-picker-in-file-section?) indented-line?)
-             (delete-region (line-beginning-position) (line-end-position))
 
-             ;; Don't join with the section header if we just deleted the last file.
-             (when (file-picker-files)
-               (join-line)
-               (forward-line))
+             (let (buffer-read-only)
+               (delete-region (line-beginning-position) (line-end-position))
+               ;; Don't join with the section header if we just deleted the last file.
+               (when (file-picker-files)
+                 (join-line)
+                 (forward-line)))
 
              (goto-char (line-beginning-position)))
             (t
@@ -161,19 +176,23 @@ The signal is captured by the event loop in `file-picker'."
 (defun file-picker-append-file (path)
   "Add PATH to the current file picker selection."
   (interactive (list (ido-read-file-name "Add File: ")))
-  (let (buffer-read-only
-        (line (concat "    " (f-short (s-trim path)))))
-    (goto-char (point-max))
-    (while (s-matches? (rx bol (* space) eol) (current-line))
-      (join-line))
-    (newline)
-    (insert (propertize line 'face 'font-lock-string-face))
-    (goto-char (line-beginning-position))))
+  (atomic-change-group
+    (let ((line (concat "    " (f-short (s-trim path)))))
+      (goto-char (point-max))
+
+      (let (buffer-read-only)
+        (while (s-matches? (rx bol (* space) eol) (current-line))
+          (join-line))
+        (newline)
+        (insert (propertize line 'face 'font-lock-string-face)))
+
+      (goto-char (line-beginning-position)))))
 
 (defun file-picker-append-glob (glob)
   "Add multiple files matching GLOB pattern to a file picker."
   (interactive (list (read-file-name "Glob: ")))
-  (-each (file-expand-wildcards glob t) 'file-picker-append-file))
+  (atomic-change-group
+    (-each (file-expand-wildcards glob t) 'file-picker-append-file)))
 
 (defun file-picker-eob? ()
   (and (file-picker-in-file-section?)
@@ -184,28 +203,37 @@ The signal is captured by the event loop in `file-picker'."
   "Move the current file down in the file picker list."
   (interactive)
   (cond
-   ((not (file-picker-in-file-section?))
+   ((or (not (file-picker-in-file-section?))
+        (s-blank? (s-trim (current-line))))
     (error "Point is not at a file"))
    ((file-picker-eob?)
     (error "End of section"))
    (t
-    (forward-line)
-    (file-picker-move-file-up)
-    (forward-line))))
+    (atomic-change-group
+      (forward-line)
+
+      (let (buffer-read-only)
+        (file-picker-move-file-up))
+
+      (forward-line)))))
 
 (defun file-picker-move-file-up ()
   "Move the current file up in the file picker list."
   (interactive)
   (cond
-   ((not (file-picker-in-file-section?))
+   ((or (not (file-picker-in-file-section?))
+        (s-blank? (s-trim (current-line))))
     (error "Point is not at a file"))
    ((not (save-excursion
            (forward-line -1)
            (file-picker-in-file-section?)))
     (error "Start of section"))
    (t
-    (let (buffer-read-only)
-      (transpose-lines 1)
+    (atomic-change-group
+
+      (let (buffer-read-only)
+        (transpose-lines 1))
+
       (forward-line -2)))))
 
 (defun file-picker-next-file ()
@@ -238,6 +266,16 @@ The signal is captured by the event loop in `file-picker'."
       (find-file-other-window filename)
     (user-error "Point is not at a file")))
 
+(defun file-picker-restore-previous-window-state ()
+  "Restore window state to that prior to when the file picker was shown."
+  (jump-to-register file-picker-window-register))
+
+(define-derived-mode file-picker-mode nil "FilePicker"
+  "Major mode for interactively selecting a number of files.
+\\{file-picker-mode-map}"
+  (setq-local require-final-newline nil)
+  (when (fboundp 'evil-emacs-state)
+    (evil-emacs-state)))
 
 ;;;###autoload
 (cl-defun file-picker (title &key on-accept)
@@ -246,25 +284,29 @@ The picker allows the user to input a number of files.
 
 * ON-ACCEPT is a unary function. It will be called with the list of files once
   the user has finished."
-  ;; Prepare buffer.
-  (switch-to-buffer (get-buffer-create title))
-  (delete-other-windows)
 
-  (let (buffer-read-only)
+  (let ((register (cl-gensym)))
+    ;; Save current window configuration.
+    (window-configuration-to-register register)
+    (switch-to-buffer (get-buffer-create title))
     (file-picker-mode)
-    (erase-buffer)
+    (delete-other-windows)
 
-    ;; Insert section skeleton.
-    (insert (file-picker-format-info))
-    (newline 2)
-    (insert (file-picker-format-key-summary))
-    (insert "\n\nSelected Files:\n    ")
+    (setq file-picker-window-register register
+          file-picker-accept-function on-accept))
 
-    (when (fboundp 'evil-emacs-state)
-      (evil-emacs-state)))
+  ;; Insert description and sections.
+  (erase-buffer)
+  (insert (file-picker-format-info))
+  (newline 2)
+  (insert (file-picker-format-key-summary))
+  (insert "\n\nSelected Files:\n")
 
   (read-only-mode +1)
-  (setq-local file-picker-accept-function on-accept))
+
+  ;; Start the undo history from this point.
+  (setq buffer-undo-list nil
+        buffer-undo-tree nil))
 
 (provide 'cb-file-picker-widget)
 
