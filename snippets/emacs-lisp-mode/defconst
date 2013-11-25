@@ -1,6 +1,5 @@
-# -*- mode: snippet -*-
-# name: defconst
 # key: k
+# name: defconst
 # condition: (cbel:bol-for-snippet?)
 # --
-(defconst $1 $0)
+(defconst $0)
