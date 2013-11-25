@@ -70,8 +70,7 @@
     (define-keys ac-completing-map
       "C-n"   'ac-next
       "C-p"   'ac-previous
-      "\t"    'ac-complete
-      "M-RET" 'ac-help)))
+      "\t"    'ac-complete)))
 
 (provide 'cb-auto-complete)
 
