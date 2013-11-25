@@ -42,6 +42,7 @@
     (define-key km (kbd "c") 'file-picker-clear)
     (define-key km (kbd "d") 'file-picker-remove-file)
     (define-key km (kbd "g") 'file-picker-append-glob)
+    (define-key km (kbd "RET") 'file-picker-show-file)
     (define-key km (kbd "C-c C-k") 'file-picker-abort)
     (define-key km (kbd "C-c C-c") 'file-picker-accept)
     ;; Structure
@@ -130,9 +131,10 @@ The signal is captured by the event loop in `file-picker'."
   "Move to the files section of a file picker."
   (interactive)
   (goto-char (point-min))
-  (when (search-forward-regexp (rx bol "Selected Files:" eol) nil t)
-    (forward-line)
-    (point)))
+  (search-forward-regexp (rx bol "Selected Files:" (* space) eol))
+  (forward-line)
+  (goto-char (line-beginning-position))
+  (point))
 
 (defun file-picker-in-file-section? ()
   "Non-nil if point is in the file section of a file picker."
@@ -146,7 +148,13 @@ The signal is captured by the event loop in `file-picker'."
     (let ((indented-line? (s-matches? (rx "    " (+ nonl)) (current-line))))
       (cond ((and (file-picker-in-file-section?) indented-line?)
              (delete-region (line-beginning-position) (line-end-position))
-             (join-line))
+
+             ;; Don't join with the section header if we just deleted the last file.
+             (when (file-picker-files)
+               (join-line)
+               (forward-line))
+
+             (goto-char (line-beginning-position)))
             (t
              (error "Point is not at a file"))))))
 
@@ -159,7 +167,8 @@ The signal is captured by the event loop in `file-picker'."
     (while (s-matches? (rx bol (* space) eol) (current-line))
       (join-line))
     (newline)
-    (insert (propertize line 'face 'font-lock-string-face))))
+    (insert (propertize line 'face 'font-lock-string-face))
+    (goto-char (line-beginning-position))))
 
 (defun file-picker-append-glob (glob)
   "Add multiple files matching GLOB pattern to a file picker."
@@ -206,7 +215,8 @@ The signal is captured by the event loop in `file-picker'."
    ((not (file-picker-in-file-section?))
     (file-picker-goto-files))
    ((not (file-picker-eob?))
-    (forward-line 1))))
+    (forward-line 1)
+    (goto-char (line-beginning-position)))))
 
 (defun file-picker-previous-file ()
   "Move to the previous file in the file picker."
@@ -218,11 +228,16 @@ The signal is captured by the event loop in `file-picker'."
    ((save-excursion
       (forward-line -1)
       (file-picker-in-file-section?))
-    (forward-line -1))))
+    (forward-line -1)
+    (goto-char (line-beginning-position)))))
 
-(define-derived-mode file-picker-mode fundamental-mode "FilePicker"
-  "Major mode for interactively selecting a number of files."
-  (setq-local require-final-newline nil))
+(defun file-picker-show-file (filename)
+  "Show FILENAME in another frame."
+  (interactive (list (s-trim (current-line))))
+  (if (file-picker-in-file-section?)
+      (find-file-other-window filename)
+    (user-error "Point is not at a file")))
+
 
 ;;;###autoload
 (cl-defun file-picker (title &key on-accept)
