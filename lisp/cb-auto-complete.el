@@ -68,13 +68,11 @@
     (ac-flyspell-workaround)
 
     (define-keys ac-completing-map
+      "<escape>"   'ac-stop
       "C-n"   'ac-next
       "C-p"   'ac-previous
       "\t"    'ac-complete)))
 
 (provide 'cb-auto-complete)
-
-;; Local Variables:
-;; End:
 
 ;;; cb-auto-complete.el ends here

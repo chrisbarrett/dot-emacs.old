@@ -80,15 +80,6 @@
 
     (bind-key* "C-c y" 'yasnippet-picker)))
 
-;; Disable auto-complete while editing snippets.
-(after 'auto-complete
-
-  (hook-fn 'yas-before-expand-snippet-hook
-    (auto-complete-mode -1))
-
-  (hook-fn 'yas-after-exit-snippet-hook
-    (auto-complete-mode +1)))
-
 (provide 'cb-yasnippet)
 
 ;; Local Variables:
