@@ -54,6 +54,7 @@
     (add-hook 'text-mode-hook 'yas-minor-mode))
   :config
   (progn
+
     (setq yas-prompt-functions '(yas-ido-prompt)
           yas/trigger-key (kbd "RET")
           yas-wrap-around-region t)
@@ -78,6 +79,15 @@
         ("t" "Show Tables" yas-describe-tables)))
 
     (bind-key* "C-c y" 'yasnippet-picker)))
+
+;; Disable auto-complete while editing snippets.
+(after 'auto-complete
+
+  (hook-fn 'yas-before-expand-snippet-hook
+    (auto-complete-mode -1))
+
+  (hook-fn 'yas-after-exit-snippet-hook
+    (auto-complete-mode +1)))
 
 (provide 'cb-yasnippet)
 
