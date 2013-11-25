@@ -35,16 +35,16 @@
 (defvar file-picker-mode-map
   (let ((km (make-sparse-keymap)))
     ;; Navigation
-    (define-key km (kbd "j") 'forward-line)
-    (define-key km (kbd "k") 'previous-line)
-    (define-key km (kbd "n") 'forward-line)
-    (define-key km (kbd "p") 'previous-line)
-    (define-key km [down] 'forward-line)
-    (define-key km [up] 'previous-line)
+    (define-key km (kbd "j") 'file-picker-next-file)
+    (define-key km (kbd "k") 'file-picker-previous-file)
+    (define-key km (kbd "n") 'file-picker-next-file)
+    (define-key km (kbd "p") 'file-picker-previous-file)
+    (define-key km [down] 'file-picker-next-file)
+    (define-key km [up] 'file-picker-previous-file)
     ;; Editing
     (define-key km (kbd "a") 'file-picker-append-file)
     (define-key km (kbd "d") 'file-picker-remove-file)
-    (define-key km (kbd "r") 'file-picker-append-glob)
+    (define-key km (kbd "g") 'file-picker-append-glob)
     (define-key km (kbd "C-c C-k") 'file-picker-abort)
     (define-key km (kbd "C-c C-c") 'file-picker-accept)
     ;; Structure
@@ -58,17 +58,20 @@ KEY and DESC are the key binding and command description."
   (concat "[" (propertize key 'face 'option-key) "] " desc))
 
 (defun file-picker-format-key-summary ()
-  (concat
-   "Commands:\n"
-   (->> '(("a" "Add File")
-          ("d" "Remove File")
-          ("C-c C-c" "Accept")
-          ("C-c C-k" "Abort"))
-     (-map (@ 'file-picker-pp-option))
-     (AP (<> cb-lib:columnate-lines) 20)
-     (s-split "\n")
-     (-map (~ s-prepend "    "))
-     (s-join "\n"))))
+  (let* ((cmds (-map (@ 'file-picker-pp-option)
+                     '(("a" "Add File")
+                       ("g" "Add Files (Glob)")
+                       ("d" "Remove File")
+                       ("C-c C-c" "Accept")
+                       ("C-c C-k" "Abort"))))
+         (max-width (-max (-map 'length cmds))))
+    (concat
+     "Commands:\n"
+     (->> cmds
+       (AP (<> cb-lib:columnate-lines) (+ 4 max-width))
+       (s-split "\n")
+       (-map (~ s-prepend "    "))
+       (s-join "\n")))))
 
 (defun file-picker-files ()
   "Get the list of files added to the file picker."
@@ -123,8 +126,9 @@ The signal is captured by the event loop in `file-picker'."
   (let (buffer-read-only)
     (let ((s (propertize (f-short (s-trim path)) 'face 'solarized-hl-blue)))
       (goto-char (point-max))
-      (unless (s-blank? (current-line))
-        (newline))
+      (while (s-matches? (rx bol (* space) eol) (current-line))
+        (join-line))
+      (newline)
       (insert (concat "    " s)))))
 
 (defun file-picker-append-glob (glob)
@@ -132,14 +136,18 @@ The signal is captured by the event loop in `file-picker'."
   (interactive (list (read-file-name "Glob: ")))
   (-each (file-expand-wildcards glob t) 'file-picker-append-file))
 
+(defun file-picker-eob? ()
+  (and (file-picker-in-file-section?)
+       (or (= (line-number-at-pos) (line-number-at-pos (point-max)))
+           (s-blank? (save-excursion (forward-line) (current-line))))))
+
 (defun file-picker-move-file-down ()
   "Move the current file down in the file picker list."
   (interactive)
   (cond
    ((not (file-picker-in-file-section?))
     (error "Point is not at a file"))
-   ((or (= (line-number-at-pos) (line-number-at-pos (point-max)))
-        (s-blank? (save-excursion (forward-line) (current-line))))
+   ((file-picker-eob?)
     (error "End of section"))
    (t
     (forward-line)
@@ -160,6 +168,27 @@ The signal is captured by the event loop in `file-picker'."
     (let (buffer-read-only)
       (transpose-lines 1)
       (forward-line -2)))))
+
+(defun file-picker-next-file ()
+  "Move to the next file in the file picker."
+  (interactive)
+  (cond
+   ((not (file-picker-in-file-section?))
+    (file-picker-goto-files))
+   ((not (file-picker-eob?))
+    (forward-line 1))))
+
+(defun file-picker-previous-file ()
+  "Move to the previous file in the file picker."
+  (interactive)
+  (cond
+   ((not (file-picker-in-file-section?))
+    (file-picker-goto-files))
+
+   ((save-excursion
+      (forward-line -1)
+      (file-picker-in-file-section?))
+    (forward-line -1))))
 
 (define-derived-mode file-picker-mode fundamental-mode "FilePicker"
   "Major mode for interactively selecting a number of files."
@@ -183,9 +212,8 @@ The picker allows the user to input a number of files.
     (erase-buffer)
 
     ;; Insert section skeleton.
-    (save-excursion
-      (insert (file-picker-format-key-summary))
-      (insert "\n\nSelected Files:"))
+    (insert (file-picker-format-key-summary))
+    (insert "\n\nSelected Files:\n    ")
 
     (when (fboundp 'evil-emacs-state)
       (evil-emacs-state))))
