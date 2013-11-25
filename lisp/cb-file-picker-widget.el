@@ -27,7 +27,18 @@
 ;;; Code:
 
 (require 'cb-lib)
+(require 'cb-colour)
 (autoload 'cl-gensym "cl-macs")
+
+(defgroup file-picker-widget nil
+  "Customisations for the file picker widget."
+  :group 'widgets
+  :prefix "file-picker")
+
+(defface file-picker-header-line
+  `((t :foreground ,solarized-hl-yellow :bold t))
+  "Face used for headers in a file picker."
+  :group 'file-picker-widget)
 
 (defvar file-picker-mode-map
   (let ((km (make-sparse-keymap)))
@@ -42,7 +53,7 @@
     (define-key km (kbd "a") 'file-picker-append-file)
     (define-key km (kbd "c") 'file-picker-clear)
     (define-key km (kbd "d") 'file-picker-remove-file)
-    (define-key km (kbd "DEL") 'file-picker-remove-file)
+    (define-key km (kbd "<backspace>") 'file-picker-remove-file)
     (define-key km (kbd "g") 'file-picker-append-glob)
     (define-key km (kbd "RET") 'file-picker-show-file)
     (define-key km (kbd "C-c C-k") 'file-picker-abort)
@@ -83,12 +94,15 @@ KEY and DESC are the key binding and command description."
                        ("C-c C-k" "Abort"))))
          (max-width (-max (-map 'length cmds))))
     (concat
-     "Commands:\n"
+     (propertize "Commands:\n" 'face 'file-picker-header-line)
      (->> cmds
        (AP (<> cb-lib:columnate-lines) (+ 4 max-width))
        (s-split "\n")
        (-map (~ s-prepend "    "))
        (s-join "\n")))))
+
+(defun file-picker-format-files-header ()
+  (propertize "Selected Files:" 'face 'file-picker-header-line))
 
 (defun file-picker-files ()
   "Get the list of files added to the file picker."
@@ -311,7 +325,9 @@ The picker allows the user to input a number of files.
   (insert (file-picker-format-info))
   (newline 2)
   (insert (file-picker-format-key-summary))
-  (insert "\n\nSelected Files:\n")
+  (newline 2)
+  (insert (file-picker-format-files-header))
+  (newline)
 
   (read-only-mode +1)
 
