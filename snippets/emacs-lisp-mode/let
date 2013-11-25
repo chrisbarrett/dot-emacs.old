@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: let
+# key: l
+# condition: (cbel:bol-for-snippet?)
+# --
+(let (($1))
+  $0)

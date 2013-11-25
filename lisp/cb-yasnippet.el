@@ -46,14 +46,19 @@
   :config
   (progn
 
-    ;; Remove yasnippet's default snippets, which are crappy.
-    (setq yas-snippet-dirs (-remove (~ s-matches? (rx "elpa/yasnippet")) yas-snippet-dirs))
+    ;; Remove yasnippet's default snippets, which are mostly crappy.
+    (after 'yasnippet
+      (setq yas-snippet-dirs
+            (->> yas-snippet-dirs
+              (-remove (~ s-matches? (rx "elpa/yasnippet")))
+              (-union (list cb:yasnippet-dir))
+              (-map 'f-expand)
+              (-uniq))))
 
     (setq yas-prompt-functions '(yas-ido-prompt)
           yas/trigger-key (kbd "RET")
           yas-wrap-around-region t)
 
-    (add-to-list 'yas-snippet-dirs cb:yasnippet-dir)
     (yas-global-mode t)
     (hook-fn 'snippet-mode-hook
       (setq require-final-newline nil))

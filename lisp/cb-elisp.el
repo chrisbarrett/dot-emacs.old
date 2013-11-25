@@ -223,6 +223,17 @@
 ;; Define auxiliary functions for snippets.
 (after 'yasnippet
 
+  (defun cbel:find-group-for-snippet ()
+    "Find the first group defined in the current file,
+falling back to the file name sans extension."
+    (or (save-excursion
+          (goto-char (point-min))
+          (when (search-forward-regexp
+                 (rx "(defgroup" (+ space) (group (+ (not space))))
+                 nil t)
+            (match-string 1)))
+        (f-no-ext (f-filename buffer-file-name))))
+
   (defun cbel:bol-for-snippet? ()
     "Non-nil if point is on an empty line, with the exception of the snippet key."
     (unless (equal (point) (line-beginning-position))

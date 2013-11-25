@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: interactive
+# key: in
+# condition: (cbel:bol-for-snippet?)
+# --
+(interactive$1)$0

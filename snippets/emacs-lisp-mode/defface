@@ -1,0 +1,9 @@
+# key: f
+# name: defface
+# condition: (cbel:bol-for-snippet?)
+# --
+(defface $1
+  '((t
+     ($0)))
+  "Face for "
+  :group ${`(cbel:find-group-for-snippet)`})

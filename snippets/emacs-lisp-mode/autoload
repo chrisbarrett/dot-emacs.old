@@ -1,5 +1,5 @@
-# -*- mode: snippet -*-
-# name: autoload
 # key: autoload
+# name: autoload
+# condition: (cbel:bol-for-snippet?)
 # --
 ;;;###autoload

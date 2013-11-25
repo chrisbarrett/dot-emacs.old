@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: defvar
+# key: v
+# condition: (cbel:bol-for-snippet?)
+# --
+(defvar $1 $0)
