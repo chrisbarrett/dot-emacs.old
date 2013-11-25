@@ -44,6 +44,7 @@
     ;; Editing
     (define-key km (kbd "a") 'file-picker-append-file)
     (define-key km (kbd "d") 'file-picker-remove-file)
+    (define-key km (kbd "r") 'file-picker-append-glob)
     (define-key km (kbd "C-c C-k") 'file-picker-abort)
     (define-key km (kbd "C-c C-c") 'file-picker-accept)
     ;; Structure
@@ -125,6 +126,11 @@ The signal is captured by the event loop in `file-picker'."
       (unless (s-blank? (current-line))
         (newline))
       (insert (concat "    " s)))))
+
+(defun file-picker-append-glob (glob)
+  "Add multiple files matching GLOB pattern to a file picker."
+  (interactive (list (read-file-name "Glob: ")))
+  (-each (file-expand-wildcards glob t) 'file-picker-append-file))
 
 (defun file-picker-move-file-down ()
   "Move the current file down in the file picker list."
