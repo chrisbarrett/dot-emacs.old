@@ -47,8 +47,8 @@
     (define-key km (kbd "C-c C-k") 'file-picker-abort)
     (define-key km (kbd "C-c C-c") 'file-picker-accept)
     ;; Undo
-    (define-key km (kbd "u") 'undo-tree-undo)
-    (define-key km (kbd "C-r") 'undo-tree-redo)
+    (define-key km (kbd "u") 'file-picker-undo)
+    (define-key km (kbd "C-r") 'file-picker-redo)
     ;; Structure
     (define-key km (kbd "M-<up>") 'file-picker-move-file-up)
     (define-key km (kbd "M-<down>") 'file-picker-move-file-down)
@@ -265,6 +265,16 @@ The signal is captured by the event loop in `file-picker'."
   (if (file-picker-in-file-section?)
       (find-file-other-window filename)
     (user-error "Point is not at a file")))
+
+(defun file-picker-undo (arg)
+  (interactive "P")
+  (let (buffer-read-only)
+    (undo-tree-undo arg)))
+
+(defun file-picker-redo (arg)
+  (interactive "P")
+  (let (buffer-read-only)
+    (undo-tree-redo arg)))
 
 (defun file-picker-restore-previous-window-state ()
   "Restore window state to that prior to when the file picker was shown."
