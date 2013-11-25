@@ -47,20 +47,13 @@
       "The face used to highlight the currently active field of a snippet"
       :group 'yasnippet)
 
+    ;; Don't use yasnippet's default snippets, which are mostly crappy.
+    (defvar yas-snippet-dirs (list cb:yasnippet-dir))
+
     (add-hook 'prog-mode-hook 'yas-minor-mode)
     (add-hook 'text-mode-hook 'yas-minor-mode))
   :config
   (progn
-
-    ;; Remove yasnippet's default snippets, which are mostly crappy.
-    (after 'yasnippet
-      (setq yas-snippet-dirs
-            (->> yas-snippet-dirs
-              (-remove (~ s-matches? (rx "elpa/yasnippet")))
-              (-union (list cb:yasnippet-dir))
-              (-map 'f-expand)
-              (-uniq))))
-
     (setq yas-prompt-functions '(yas-ido-prompt)
           yas/trigger-key (kbd "RET")
           yas-wrap-around-region t)
