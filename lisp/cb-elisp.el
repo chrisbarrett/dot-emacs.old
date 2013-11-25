@@ -50,10 +50,11 @@
                             "dir-locals"))
                     (buffer-name)))))
 
-;; Prevent flycheck from running checkdoc for certain elisp file types.
+;; Prevent flycheck from running checkdoc for certain elisp file types or when
+;; the buffer is narrowed.
 (after 'flycheck
   (hook-fn 'flycheck-mode-hook
-    (when (cb:special-elisp-buffer?)
+    (when (or (cb:special-elisp-buffer?) (buffer-narrowed-p))
       (flycheck-select-checker 'emacs-lisp)))
 
   (setq-default flycheck-emacs-lisp-load-path (list cb:lib-dir "./")))
