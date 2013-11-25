@@ -61,7 +61,7 @@
      ac-quick-help-height 60
      ac-disable-inline t
      ac-show-menu-immediately-on-auto-complete t
-     ac-auto-start 2
+     ac-auto-start 3
      ac-candidate-menu-min 0
      ac-comphist-file (concat cb:tmp-dir "ac-comphist.dat"))
 
