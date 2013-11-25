@@ -42,6 +42,7 @@
          (message "PDF path copied to kill-ring."))))))
 
 (defun pdf-combine-command (destination pdfs)
+  "Concatenate the given PDF files and output to DESTINATION."
   (%-sh (format "pdftk %s cat output %s"
                 (s-join " " (-map (C %-quote f-expand) pdfs))
                 (%-quote (f-expand destination)))))
