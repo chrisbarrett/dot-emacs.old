@@ -42,6 +42,7 @@
     (define-key km (kbd "a") 'file-picker-append-file)
     (define-key km (kbd "c") 'file-picker-clear)
     (define-key km (kbd "d") 'file-picker-remove-file)
+    (define-key km (kbd "DEL") 'file-picker-remove-file)
     (define-key km (kbd "g") 'file-picker-append-glob)
     (define-key km (kbd "RET") 'file-picker-show-file)
     (define-key km (kbd "C-c C-k") 'file-picker-abort)
