@@ -74,6 +74,10 @@
   "Register symbol for restoring the window configuration to its
 state before the file picker was shown.")
 
+(defvar-local file-picker-last-directory nil
+  "Used to make file reader commands remember the last directory
+read from the user.")
+
 (defun file-picker-pp-option (key desc)
   "Propertize a file picker key command for display in the key summary.
 KEY and DESC are the key binding and command description."
@@ -190,7 +194,10 @@ The signal is captured by the event loop in `file-picker'."
 
 (defun file-picker-append-file (path)
   "Add PATH to the current file picker selection."
-  (interactive (list (ido-read-file-name "Add File: ")))
+  (interactive (list (ido-read-file-name "Add File: "
+                                         file-picker-last-directory)))
+
+  (setq file-picker-last-directory (f-dirname path))
   (atomic-change-group
     (let ((line (concat "    " (f-short (s-trim path)))))
       (goto-char (point-max))
@@ -205,7 +212,9 @@ The signal is captured by the event loop in `file-picker'."
 
 (defun file-picker-append-glob (glob)
   "Add multiple files matching GLOB pattern to a file picker."
-  (interactive (list (read-file-name "Glob: ")))
+  (interactive (list (read-file-name "Glob: "
+                                     file-picker-last-directory)))
+  (setq file-picker-last-directory (f-dirname glob))
   (atomic-change-group
     (-each (file-expand-wildcards glob t) 'file-picker-append-file)))
 
