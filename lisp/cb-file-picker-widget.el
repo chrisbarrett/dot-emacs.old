@@ -43,6 +43,7 @@
     (define-key km [up] 'file-picker-previous-file)
     ;; Editing
     (define-key km (kbd "a") 'file-picker-append-file)
+    (define-key km (kbd "c") 'file-picker-clear)
     (define-key km (kbd "d") 'file-picker-remove-file)
     (define-key km (kbd "g") 'file-picker-append-glob)
     (define-key km (kbd "C-c C-k") 'file-picker-abort)
@@ -57,11 +58,17 @@
 KEY and DESC are the key binding and command description."
   (concat "[" (propertize key 'face 'option-key) "] " desc))
 
+(defun file-picker-format-info ()
+  (propertize "Select the files to act on. Use M-up and M-down reorder the list."
+              'face 'font-lock-comment-face))
+
 (defun file-picker-format-key-summary ()
+  "Format a string listing available key commands."
   (let* ((cmds (-map (@ 'file-picker-pp-option)
                      '(("a" "Add File")
                        ("g" "Add Files (Glob)")
                        ("d" "Remove File")
+                       ("c" "Clear")
                        ("C-c C-c" "Accept")
                        ("C-c C-k" "Abort"))))
          (max-width (-max (-map 'length cmds))))
@@ -80,6 +87,28 @@ KEY and DESC are the key binding and command description."
     (let ((section (s-trim (buffer-substring (point) (point-max)))))
       (unless (s-blank? section)
         (-map (C f-expand s-trim) (s-split "\n" section))))))
+
+(defun file-picker-clear ()
+  "Remove all files in the file picker."
+  (interactive)
+  ;; Ignore if empty.
+  (if (null (file-picker-files))
+      (when (called-interactively-p)
+        (user-error "List is empty"))
+
+    ;; Prompt user to confirm.
+    (when (called-interactively-p)
+      (unless (y-or-n-p "Clear all files? ")
+        (user-error "Cancelled")))
+
+    ;; Clear files list.
+    (file-picker-goto-files)
+    (let (buffer-read-only)
+      (delete-region (point) (point-max))
+      (insert "    "))
+
+    (when (called-interactively-p)
+      (message "List cleared"))))
 
 (defun file-picker-accept ()
   "Accept the files and signal input is finished.
@@ -212,6 +241,8 @@ The picker allows the user to input a number of files.
     (erase-buffer)
 
     ;; Insert section skeleton.
+    (insert (file-picker-format-info))
+    (newline 2)
     (insert (file-picker-format-key-summary))
     (insert "\n\nSelected Files:\n    ")
 
