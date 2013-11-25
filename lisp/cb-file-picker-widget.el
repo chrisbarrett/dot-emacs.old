@@ -28,10 +28,6 @@
 
 (require 'cb-lib)
 
-(defvar-local file-picker-accept-function 'ignore
-  "A unary handler function taking the list of files selected by
-  the user in a file picker.")
-
 (defvar file-picker-mode-map
   (let ((km (make-sparse-keymap)))
     ;; Navigation
@@ -52,6 +48,10 @@
     (define-key km (kbd "M-<up>") 'file-picker-move-file-up)
     (define-key km (kbd "M-<down>") 'file-picker-move-file-down)
     km))
+
+(defvar-local file-picker-accept-function nil
+  "A unary handler function taking the list of files selected by
+  the user in a file picker.")
 
 (defun file-picker-pp-option (key desc)
   "Propertize a file picker key command for display in the key summary.
@@ -115,9 +115,10 @@ KEY and DESC are the key binding and command description."
 Sends a 'files-accepted signal with the list of file paths as data.
 The signal is captured by the event loop in `file-picker'."
   (interactive)
-  (let ((files (file-picker-files)))
-    (kill-buffer)
-    (funcall file-picker-accept-function files)))
+  (let ((files (file-picker-files))
+        (buf (current-buffer)))
+    (unwind-protect (funcall file-picker-accept-function files)
+      (kill-buffer buf))))
 
 (defun file-picker-abort ()
   "Close the current file-picker and signal an error."
@@ -233,8 +234,6 @@ The picker allows the user to input a number of files.
   ;; Prepare buffer.
   (switch-to-buffer (get-buffer-create title))
   (delete-other-windows)
-  (read-only-mode +1)
-  (setq-local file-picker-accept-function on-accept)
 
   (let (buffer-read-only)
     (file-picker-mode)
@@ -247,7 +246,10 @@ The picker allows the user to input a number of files.
     (insert "\n\nSelected Files:\n    ")
 
     (when (fboundp 'evil-emacs-state)
-      (evil-emacs-state))))
+      (evil-emacs-state)))
+
+  (read-only-mode +1)
+  (setq-local file-picker-accept-function on-accept))
 
 (provide 'cb-file-picker-widget)
 
