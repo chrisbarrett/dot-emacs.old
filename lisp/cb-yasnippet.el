@@ -41,6 +41,12 @@
    snippet-mode)
   :init
   (progn
+
+    (defface yas-field-highlight-face
+      `((t (:box (:line-width -1 :color ,solarized-hl-cyan))))
+      "The face used to highlight the currently active field of a snippet"
+      :group 'yasnippet)
+
     (add-hook 'prog-mode-hook 'yas-minor-mode)
     (add-hook 'text-mode-hook 'yas-minor-mode))
   :config
