@@ -22,7 +22,7 @@
 
 ;;; Commentary:
 
-;; Provides a file picker widget.
+;; Provides a file picker widget. See the docstring for `file-picker'.
 
 ;;; Code:
 
