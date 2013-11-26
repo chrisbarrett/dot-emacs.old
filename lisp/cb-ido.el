@@ -92,6 +92,13 @@
 
     (ido-mode +1)))
 
+(use-package ido-vertical-mode
+  :ensure t
+  :defer t
+  :init
+  (after 'ido
+    (ido-vertical-mode +1)))
+
 (use-package ido-hacks
   :ensure t
   :commands ido-hacks-mode
