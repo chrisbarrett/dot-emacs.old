@@ -37,6 +37,7 @@
   (and (derived-mode-p 'emacs-lisp-mode)
        (or
         (true? scratch-buffer)
+        (s-ends-with? "-steps.el" (buffer-name))
         (s-matches? (rx bol (? (any "*" "."))
                         (or "org-"
                             "Org "
