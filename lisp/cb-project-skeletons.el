@@ -78,7 +78,8 @@
   "Create the directory for TEMPLATE at destination FOLDER.
 Performs the substitutions specified by REPLACEMENTS."
   (declare (indent 2))
-  (let ((tmp-folder (expand-file-name (concat "__pa_tmp_" template) skel-project-folder)))
+  (let ((tmp-folder (expand-file-name (concat "__skeleton_tmp_" template) skel-project-folder)))
+    (when (f-exists? tmp-folder) (f-delete tmp-folder t))
     (copy-directory (expand-file-name template skel-folder) tmp-folder nil nil t)
     (--each (skel:files-matching (--map (s-concat "*" (car it) "*") replacements) tmp-folder)
       (rename-file it (s-replace-all replacements it)))
