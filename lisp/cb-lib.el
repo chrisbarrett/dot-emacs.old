@@ -667,29 +667,19 @@ COLUMN-WIDTH specifies the width of columns if columnation is used."
       (s-join "\n" lines)
     (cb-lib:columnate-lines lines column-width)))
 
-(defun cb-lib:option-read-loop (option-key-fn options)
+(defun cb-lib:read-opt (option-key-fn options)
   "Read an option from the user.
-Returns the option matching the key event, or ignores. C-g will
-abort the loop. The \"q\" key will also abort the loop if there
-is no option bound to \"q\"."
-  (cl-loop
-   while t
-
-   for key =
-   (let ((inhibit-quit t))
-     (read-char-exclusive))
-
-   for method =
-   (-first (-compose (~ equal key) 'string-to-char option-key-fn)
-           options)
-   do
-   (cond
-    (method
-     (cl-return method))
-    ((-contains? '(?\C-g ?q) key)
-     (setq quit-flag t))
-    (t
-     (message "Invalid key")))))
+Returns the element in OPTIONS matching the key event. The \"q\"
+key will abort the loop if there is no option bound to \"q\"."
+  (let ((c (read-char-choice "" (-concat
+                                 (-map (-compose 'string-to-char option-key-fn) options)
+                                 (list ?\q)))))
+    (or
+     ;; Return option with the read key.
+     (-first (-compose (~ equal c) 'string-to-char option-key-fn)
+             options)
+     ;; Cancel if the user had entered \q\ and no option was matched.
+     (user-error ""))))
 
 (defun window-bounds ()
   "The width of the selected window, minus the fringe."
@@ -751,7 +741,7 @@ Return the element in a list of options corresponding to the user's selection.
 
             ;; 3. Read selection from user.
             (unwind-protect
-                (cb-lib:option-read-loop option-key-fn options)
+                (cb-lib:read-opt option-key-fn options)
               (kill-buffer title))))))))
 
 (cl-defmacro define-command-picker (name &key title options)
