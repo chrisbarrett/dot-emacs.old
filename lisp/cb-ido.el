@@ -124,12 +124,6 @@
     (ido-mode +1)
     (ido-ubiquitous-mode +1)))
 
-(use-package ido-yes-or-no
-  :disabled t
-  :ensure t
-  :commands ido-yes-or-no-mode
-  :init (after 'ido (ido-yes-or-no-mode +1)))
-
 (use-package flx
   :ensure t
   :defer t)
