@@ -30,6 +30,7 @@
 (require 'cb-foundation)
 (require 'noflet)
 
+;; `ido' provides better commands to read input from users.
 (use-package ido
   :ensure t
   :idle   (require 'ido)
@@ -92,6 +93,7 @@
 
     (ido-mode +1)))
 
+;; `ido-vertical-mode' uses a vertical display for ido functions.
 (use-package ido-vertical-mode
   :ensure t
   :defer t
@@ -99,35 +101,13 @@
   (after 'ido
     (ido-vertical-mode +1)))
 
+;; `ido-hacks' adds optimisations for ido.
 (use-package ido-hacks
   :ensure t
   :commands ido-hacks-mode
   :init (after 'ido (ido-hacks-mode +1)))
 
-(use-package ido-ubiquitous
-  :ensure t
-  :disabled t
-  :commands ido-ubiquitous-mode
-  :init
-  (after 'ido
-    (macrolet
-        ((use-new-completing-read
-          (cmd package)
-          `(eval-after-load ,package
-             '(defadvice ,cmd (around ido-ubiquitous-new activate)
-                (let ((ido-ubiquitous-enable-compatibility nil))
-                  ad-do-it)))))
-
-      (use-new-completing-read yas/expand 'yasnippet)
-      (use-new-completing-read yas/visit-snippet-file 'yasnippet))
-
-    (ido-mode +1)
-    (ido-ubiquitous-mode +1)))
-
-(use-package flx
-  :ensure t
-  :defer t)
-
+;; `flx-ido' extends ido to provide much better flex matching.
 (use-package flx-ido
   :ensure t
   :config
@@ -135,18 +115,6 @@
     (flx-ido-mode +1)
     ;; Override ido faces with flx ones.
     (setq ido-use-faces nil)))
-
-(use-package imenu
-  :commands imenu
-  :init
-  (hook-fn 'emacs-lisp-mode-hook
-    "Display section headings."
-    (setq imenu-prev-index-position-function nil)
-    (add-to-list 'imenu-generic-expression
-                 `("SECTION"
-                   ;; Match sections with at least 3 semicolons
-                   ,(rx bol (* space) ";;;" (* ";") (+ space) (group (+ nonl )))
-                   1) t)))
 
 (provide 'cb-ido)
 

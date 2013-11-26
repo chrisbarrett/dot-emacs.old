@@ -196,6 +196,20 @@
               global-auto-revert-mode)
   :diminish auto-revert-mode)
 
+;; `imenu' provides navigation between sections of the current buffer.
+(use-package imenu
+  :commands imenu
+  :init
+  (hook-fn 'emacs-lisp-mode-hook
+    "Display section headings."
+    (setq imenu-prev-index-position-function nil)
+    (add-to-list 'imenu-generic-expression
+                 `("SECTION"
+                   ;; Match sections with at least 3 semicolons
+                   ,(rx bol (* space) ";;;" (* ";") (+ space) (group (+ nonl )))
+                   1) t)))
+
+
 (provide 'cb-productivity)
 
 ;; Local Variables:
