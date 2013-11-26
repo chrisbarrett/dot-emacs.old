@@ -31,6 +31,7 @@
 (require 'cb-lib)
 (require 'cb-mode-groups)
 (autoload 'emr-reporting-buffer-changes "emr")
+(autoload 'helm "helm")
 (autoload 'org-move-item-down "org-list")
 (autoload 'org-move-item-up "org-list")
 
@@ -85,9 +86,35 @@ If this buffer is a member of `cb:kill-buffer-ignored-list, bury it rather than 
          'kill-buffer))
 
 (defun insert-timestamp ()
-  "Insert a package-conformant cb:timestamp, of the format YYYYMMDD.HHMM at point."
+  "Read a timestamp from the user and insert it at point."
   (interactive)
-  (insert (format-time-string "%Y%m%d.%H%M" nil t)))
+  (let ((time (current-time)))
+    (helm :prompt "Timestamp: "
+          :buffer "*Helm Timestamp*"
+          :sources
+          `(((name . "Dates")
+             (candidates . ,(list
+                             (format-time-string "%d-%m-%y" time)
+                             (format-time-string "%d-%m-%Y" time)
+                             (format-time-string "%d-%m-%Y %H:%M" time)
+                             (format-time-string "%d-%m-%Y %I:%M %p" time)))
+             (action . insert)
+             (volatile))
+
+            ((name . "Times")
+             (candidates . ,(list
+                             (format-time-string "%X" time)
+                             (format-time-string "%I:%M %p" time)
+                             (format-time-string "%I:%M:%S %p" time)))
+             (action . insert)
+             (volatile))
+
+            ((name . "Special")
+             (candidates . ,(list
+                             (format-time-string "%d %B, %Y" time)
+                             (format-time-string "%Y-%m-%dT%H%M%S%z")))
+             (action . insert)
+             (volatile))))))
 
 (defun indent-buffer ()
   "Indent the whole buffer."
