@@ -27,6 +27,7 @@ semanticdb
 
 # ignore directories
 
+.cask
 eshell
 backups
 elpa
