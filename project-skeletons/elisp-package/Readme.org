@@ -1,0 +1,5 @@
+#+TITLE: __project-name__
+
+* Description
+* Contributing
+Yes please!
