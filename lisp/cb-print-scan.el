@@ -28,24 +28,37 @@
 
 (require 'cb-lib)
 
+(defun scan-file (colour-mode destination &optional async?)
+  "Scan as a TIFF to a temp file, then export to PDF with CUPS.
+
+* COLOUR-MODE should be either \"colour\" or \"grayscale\".
+
+* The document will be created at DESTINATION.
+
+* If ASYNC? is non-nil, the scan will be performed in the background."
+  (let* ((tmpfile (make-temp-file "scan--" nil ".tiff"))
+         (command (concat "scanimage"
+                          " --mode=" colour-mode
+                          " --format=tiff"
+                          " > " tmpfile
+                          " && cupsfilter -D -i image/tiff " tmpfile
+                          " > " (%-quote (f-expand destination)))))
+
+    (if async? (%-async command) (%-sh command))
+    destination))
+
 (defun scan (colour-mode destination)
   "Scan using the default scanner to a PDF file.
+
 * COLOUR-MODE should be either \"colour\" or \"grayscale\".
+
 * The document will be created at DESTINATION."
   (interactive
    (list
     (ido-completing-read "Mode: " '("Colour" "Grayscale"))
     (read-file-name "Destination: " "~/" nil nil ".pdf")))
 
-  ;; Scan as a TIFF to a temp file, then export to PDF with CUPS.
-  (let ((tmpfile (make-temp-file "scan--" nil ".tiff")))
-    (%-async (concat "scanimage"
-                     " --mode=" colour-mode
-                     " --format=tiff"
-                     " > " tmpfile
-                     " && cupsfilter -D -i image/tiff " tmpfile
-                     " > " (%-quote (f-expand destination)))))
-
+  (scan-file colour-mode destination 'async)
   (kill-new destination)
   (message "Scan started. Destination path copied to kill-ring."))
 
