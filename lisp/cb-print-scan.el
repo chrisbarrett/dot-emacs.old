@@ -27,6 +27,7 @@
 ;;; Code:
 
 (require 'cb-lib)
+(autoload 'org-attach-attach "org-agenda")
 
 (defun scan-file (colour-mode destination &optional async?)
   "Scan as a TIFF to a temp file, then export to PDF with CUPS.
@@ -36,16 +37,17 @@
 * The document will be created at DESTINATION.
 
 * If ASYNC? is non-nil, the scan will be performed in the background."
-  (let* ((tmpfile (make-temp-file "scan--" nil ".tiff"))
-         (command (concat "scanimage"
-                          " --mode=" colour-mode
-                          " --format=tiff"
-                          " > " tmpfile
-                          " && cupsfilter -D -i image/tiff " tmpfile
-                          " > " (%-quote (f-expand destination)))))
+  (save-window-excursion
+    (let* ((tmpfile (make-temp-file "scan--" nil ".tiff"))
+           (command (concat "scanimage"
+                            " --mode=" colour-mode
+                            " --format=tiff"
+                            " > " tmpfile
+                            " && cupsfilter -D -i image/tiff " tmpfile
+                            " > " (%-quote (f-expand destination)))))
 
-    (if async? (%-async command) (%-sh command))
-    destination))
+      (if async? (%-async command) (%-sh command))
+      destination)))
 
 (defun scan (colour-mode destination)
   "Scan using the default scanner to a PDF file.
@@ -68,9 +70,14 @@
 * MODE is one of the strings \"color\" or \"grayscale\"."
   (interactive
    (list (prog1 (ido-completing-read "Mode: " '("Colour" "Grayscale"))
-           (read-char-choice "Press <return> to start." (list ?\^M)))))
-  (let ((file (scan mode (make-temp-file "scan--"))))
-    (org-attach-attach file nil 'mv)))
+           (read-char-choice "Press <return> to start." (list ?\^M))
+           (message "Scanning..."))))
+
+  (let ((inhibit-redisplay t))
+    (let ((file (scan-file mode (make-temp-file "scan--"))))
+      (org-attach-attach file nil 'mv)))
+
+  (message "Scanning...Done"))
 
 (define-command-picker printer-scanner-picker
   :title
@@ -79,7 +86,9 @@
   '(("s" "Scan" scan)
     ("p" "Print Buffer" print-buffer)
     ("r" "Print Region" print-region)
-    ("a" "Scan and Attach (org)" :when (lambda () (derived-mode-p 'org-mode)))))
+
+    ("a" "Scan and Attach (org)" org-attach-from-scanner
+     :when (lambda () (derived-mode-p 'org-mode)))))
 
 (bind-key* "<f10>" 'printer-scanner-picker)
 
