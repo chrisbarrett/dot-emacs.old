@@ -62,13 +62,24 @@
   (kill-new destination)
   (message "Scan started. Destination path copied to kill-ring."))
 
+(defun org-attach-from-scanner (mode)
+  "Scan a document and attach it to the current org heading.
+
+* MODE is one of the strings \"color\" or \"grayscale\"."
+  (interactive
+   (list (prog1 (ido-completing-read "Mode: " '("Colour" "Grayscale"))
+           (read-char-choice "Press <return> to start." (list ?\^M)))))
+  (let ((file (scan mode (make-temp-file "scan--"))))
+    (org-attach-attach file nil 'mv)))
+
 (define-command-picker printer-scanner-picker
   :title
   "*Print/Scan*"
   :options
   '(("s" "Scan" scan)
     ("p" "Print Buffer" print-buffer)
-    ("r" "Print Region" print-region)))
+    ("r" "Print Region" print-region)
+    ("a" "Scan and Attach (org)" :when (lambda () (derived-mode-p 'org-mode)))))
 
 (bind-key* "<f10>" 'printer-scanner-picker)
 
