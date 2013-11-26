@@ -32,7 +32,7 @@
   (with-new-project name "elisp-package"
     ((cons "__project-name__" name)
      (cons "__description__" description))
-    (skel-sh "cask")))
+    (%-async "cask")))
 
 (declare-project-skeleton "elisp-package" 'create-elisp-package)
 

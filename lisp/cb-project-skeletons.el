@@ -41,9 +41,6 @@
 (defvar skel-project-folder (f-join user-home-directory "Projects")
   "The directory where projects should be created.")
 
-(defvar skel-out "*project-skeleton-output*"
-  "Name of the buffer where output from the running process is displayed.")
-
 (defun skel:join-patterns (patterns)
   "Turn PATTERNS into a string that `find' can use."
   (mapconcat (lambda (pat) (format "-name \"%s\"" pat))
@@ -77,10 +74,6 @@
       (while (search-forward (car it) nil t)
         (replace-match (cdr it))))))
 
-(defun skel-sh (cmd)
-  "Run shell command CMD, outputting to the buffer specified by `skel-out'."
-  (shell-command cmd skel-out))
-
 (defun skel-instantiate-template-directory (template folder &rest replacements)
   "Create the directory for TEMPLATE at destination FOLDER.
 Performs the substitutions specified by REPLACEMENTS."
@@ -107,13 +100,18 @@ Performs the substitutions specified by REPLACEMENTS."
 * BODY forms are executed at the project root once the project is created."
   (declare (indent 2))
   `(let ((folder (expand-file-name ,project-name skel-project-folder)))
+
+     (message "Initialising project...")
+
      (skel-instantiate-template-directory ,skeleton folder ,@replacements)
      (view-buffer-other-window skel-out)
      (let ((default-directory (concat folder "/")))
-       (skel-sh "git init")
        ,@body
-       (skel-sh "git add -A")
-       (skel-sh "git commit -m \"Initial commit\""))))
+       (async-shell-command
+        "git init && git add -A && git commit -m 'Initial commit'"
+        (format "*init skeleton [%s]*" folder)))
+
+     (message "Initialising project...Done")))
 
 (defun declare-project-skeleton (name fn)
   "Add project skeleton to the list of available ones.
