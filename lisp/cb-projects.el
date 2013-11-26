@@ -116,10 +116,6 @@ Performs the substitutions specified by REPLACEMENTS."
        (skel-sh "git add -A")
        (skel-sh "git ci -m \"Initial commit\""))))
 
-(when (file-exists-p skel-folder)
-  (--each (directory-files skel-folder nil "^[^#].*el$")
-    (load (expand-file-name it skel-folder))))
-
 (defun declare-project-skeleton (name fn)
   "Add project skeleton to the list of available ones.
 
@@ -134,6 +130,12 @@ Performs the substitutions specified by REPLACEMENTS."
   (interactive
    (list (completing-read "Skeleton: " (-map 'car skel-project-skeletons) nil t)))
   (call-interactively (cdr (assoc type skel-project-skeletons))))
+
+;; Load skeletons.
+(when (file-exists-p skel-folder)
+  (--each (directory-files skel-folder nil "^[^#].*el$")
+    (load (expand-file-name it skel-folder))))
+
 
 (provide 'cb-projects)
 
