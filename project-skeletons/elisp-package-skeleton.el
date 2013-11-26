@@ -32,7 +32,7 @@
   (with-new-project name "elisp-package"
     ((cons "__project-name__" name)
      (cons "__description__" description))
-    (pa-sh "carton")))
+    (skel-sh "cask")))
 
 (declare-project-skeleton "elisp-package" 'create-elisp-package)
 

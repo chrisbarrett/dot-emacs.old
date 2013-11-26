@@ -1,4 +1,4 @@
-;;; cb-projects.el --- Configuration for project-level utilities.
+;;; cb-project-skeletons.el --- Create project skeletons.
 
 ;; Copyright (C) 2013 Chris Barrett
 
@@ -22,8 +22,7 @@
 
 ;;; Commentary:
 
-;; Configuration for project-level utilities. Most of this code is taken from
-;; @magnar's init.el at:
+;; Creates project skeletons. Most of this code is taken from @magnar's init.el:
 ;; <https://github.com/magnars/.emacs.d/blob/master/site-lisp/project-skeletons/project-skeletons.el>.
 
 ;;; Code:
@@ -137,6 +136,6 @@ Performs the substitutions specified by REPLACEMENTS."
     (load (expand-file-name it skel-folder))))
 
 
-(provide 'cb-projects)
+(provide 'cb-project-skeletons)
 
-;;; cb-projects.el ends here
+;;; cb-project-skeletons.el ends here
