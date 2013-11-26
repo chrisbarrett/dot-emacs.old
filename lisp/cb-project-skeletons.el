@@ -113,7 +113,7 @@ Performs the substitutions specified by REPLACEMENTS."
        (skel-sh "git init")
        ,@body
        (skel-sh "git add -A")
-       (skel-sh "git ci -m \"Initial commit\""))))
+       (skel-sh "git commit -m \"Initial commit\""))))
 
 (defun declare-project-skeleton (name fn)
   "Add project skeleton to the list of available ones.
