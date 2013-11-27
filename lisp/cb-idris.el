@@ -152,6 +152,50 @@ With a prefix arg, insert an arrow with padding at point."
   (sp-with-modes cb:idris-modes
     (sp-local-pair "'" "'" :actions '(:rem insert))))
 
+;; Use font lock to display Unicode symbols in Idris buffers.
+(after 'idris-mode
+
+  (defun cbidris:apply-font-lock (pat rep)
+    "Call SUBSTITUTE-PATTERN-WITH-UNICODE repeatedly."
+    (font-lock-add-keywords
+     nil `((,pat
+            (0 (progn (compose-region (match-beginning 1) (match-end 1)
+                                      ,(string-to-char rep) 'decompose-region)
+                      nil))))))
+
+  (defun cbidris:font-lock (patterns)
+    (--each patterns
+      (cl-destructuring-bind (pat rep) it
+        (cbidris:apply-font-lock
+         (rx-to-string `(and (not (any "\""))
+                             (? "`")
+                             (group  symbol-start ,pat symbol-end)
+                             (? "`")
+                             (not (any "\""))))
+         rep))))
+
+  (defun cbidris:apply-unicode ()
+    (cbidris:apply-font-lock
+     "\\s ?(?\\(\\\\\\)\\s *\\(\\w\\|_\\|(.*)\\).*?\\s *->" "λ")
+    (cbidris:font-lock '(("<-"     "←")
+                         ("->"     "→")
+                         ("=>"     "⇒")
+                         ("."      "•")
+                         ("forall" "∀")
+                         ("undefined" "⊥")
+                         (">="     "≥")
+                         ("<="     "≤")
+                         ("=="     "≣")
+                         ("alpha"  "ɑ")
+                         ("beta"   "β")
+                         ("gamma"  "ɣ")
+                         ("delta"  "δ")
+                         ("elem"   "∈")
+                         ("notElem" "∉")
+                         ("!!"     "‼"))))
+
+  (add-hook 'cb:haskell-modes-hook 'cbidris:apply-unicode))
+
 ;; `idris-mode' provides editing support for the Idris language.
 (use-package idris-mode
   :mode (("\\.idr$" . idris-mode))
@@ -165,7 +209,7 @@ With a prefix arg, insert an arrow with padding at point."
   "Pop to the last idris source buffer."
   (interactive)
   (-if-let (buf (car (--filter-buffers (derived-mode-p 'idris-mode))))
-    (pop-to-buffer buf)
+      (pop-to-buffer buf)
     (error "No idris buffers")))
 
 (after 'idris-repl
