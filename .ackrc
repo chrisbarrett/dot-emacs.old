@@ -1,3 +1,4 @@
+--ignore-dir=.cask
 --ignore-dir=auto-save-list
 --ignore-dir=backups
 --ignore-dir=bin
