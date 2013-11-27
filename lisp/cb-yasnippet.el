@@ -30,6 +30,12 @@
 (require 'cb-lib)
 (require 'cb-foundation)
 
+(defun cbyas:bol? ()
+  "Non-nil if point is on an empty line or at the first word."
+  (s-matches? (rx bol (* space) (* word) eol)
+              (buffer-substring (line-beginning-position)
+                                (point))))
+
 (use-package yasnippet
   :ensure t
   :if (not noninteractive)

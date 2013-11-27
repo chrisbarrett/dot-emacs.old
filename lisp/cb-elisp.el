@@ -239,6 +239,7 @@ falling back to the file name sans extension."
     "Non-nil if point is on an empty line, with the exception of the snippet key."
     (unless (equal (point) (line-beginning-position))
       (s-blank? (s-trim (buffer-substring (line-beginning-position) (1- (point)))))))
+  (make-obsolete 'cbel:bol-for-snippet? 'cbyas:bol?)
 
   (defun cbel:format-docstring-for-snippet (text)
     "Format a function docstring for a snippet.
