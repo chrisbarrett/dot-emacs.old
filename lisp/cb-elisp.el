@@ -250,16 +250,20 @@ falling back to the file name sans extension."
           ((symbolp it) it))))
       (-remove (C (~ s-starts-with? "&") symbol-name))))
 
-  (defun cbel:defun-form-for-arglist (text)
-    "Return either 'defun or 'cl-defun depending on whether TEXT is a Common Lisp arglist."
-    (let* ((al (ignore-errors (read (format "(%s)" text))))
-           (cl? (or (-any? 'listp al)
-                    (-intersection al '(&key &allow-other-keys &body)))))
-      (if cl? 'cl-defun 'defun)))
+  (defun cbel:cl-arglist? (text)
+    "Non-nil if TEXT is a Common Lisp arglist."
+    (let ((al (ignore-errors (read (format "(%s)" text)))))
+      (or (-any? 'listp al)
+          (-intersection al '(&key &allow-other-keys &body)))))
 
-  (defun cbel:process-defun-docstring (text)
+  (defun cbel:defun-form-for-arglist (text)
+    "Return either 'defun or 'cl-defun depending on whether TEXT
+is a Common Lisp arglist."
+    (if (cbel:cl-arglist? text) 'cl-defun 'defun))
+
+  (defun cbel:process-docstring (text)
     "Format a function docstring for a snippet.
-* TEXT is contents of the text as a string."
+* TEXT is the content of the docstring."
     (let ((docs (->> (cbel:simplify-arglist text)
                   (-map (C (~ format "* %s") s-upcase symbol-name))
                   (s-join "\n\n"))))

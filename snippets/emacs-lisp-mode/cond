@@ -1,7 +1,5 @@
-# -*- mode: snippet -*-
-# name: cond
 # key: c
-# condition: (cbel:bol-for-snippet?)
+# name: cond
 # --
 (cond
   (($1)
