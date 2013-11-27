@@ -194,7 +194,7 @@ With a prefix arg, insert an arrow with padding at point."
                          ("notElem" "∉")
                          ("!!"     "‼"))))
 
-  (add-hook 'cb:haskell-modes-hook 'cbidris:apply-unicode))
+  (add-hook 'cb:idris-modes-hook 'cbidris:apply-unicode))
 
 ;; `idris-mode' provides editing support for the Idris language.
 (use-package idris-mode
