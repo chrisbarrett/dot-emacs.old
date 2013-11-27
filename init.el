@@ -48,7 +48,7 @@
 (when (fboundp 'menu-bar-mode)     (menu-bar-mode (if (display-graphic-p) +1 -1)))
 
 ;; Increase GC threshold to 20 MiB. Computers have lots of memory these days.
-(setq gc-cons-threshold 20000000)
+(setq gc-cons-threshold (* 1024 1024 20))
 
 (require 'package)
 (require 'cl)
