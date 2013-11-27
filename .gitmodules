@@ -31,3 +31,6 @@
 [submodule "lib/reveal.js"]
 	path = lib/reveal.js
 	url = https://github.com/hakimel/reveal.js.git
+[submodule "lib/agda-mode"]
+	path = lib/agda-mode
+	url = https://github.com/jwiegley/agda-mode.git
