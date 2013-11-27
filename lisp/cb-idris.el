@@ -106,7 +106,8 @@ Otherwise insert an arrow at the end of the line."
     (just-one-space)))
 
 (defun cbidris:at-typedecl? ()
-  (s-matches? (rx bow ":" eow) (buffer-substring (line-beginning-position) (point))))
+  (s-matches? (rx space ":" (not (any ":")))
+              (buffer-substring (line-beginning-position) (point))))
 
 (defun cbidris:smart-minus (&optional arg)
   "Insert an arrow if we're in a typesig, otherwise perform a normal insertion.
