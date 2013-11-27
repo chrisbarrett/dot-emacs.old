@@ -224,6 +224,24 @@
 ;; Define auxiliary functions for snippets.
 (after 'yasnippet
 
+  (defun cbel:find-identifier-prefix ()
+    "Find the commonest identifier prefix in use in this buffer."
+    (let ((ns-separators (rx (or ":" "--" "/"))))
+      (->> (buffer-string-no-properties)
+        ;; Extract the identifiers from declarations.
+        (s-match-strings-all
+         (rx bol (* space)
+             "(" (? "cl-") (or "defun" "defmacro" "defvar" "defconst")
+             (+ space)
+             (group (+ (not space)))))
+        ;; Find the commonest prefix.
+        (-map 'cadr)
+        (-filter (~ s-matches? ns-separators))
+        (-map (C car (~ s-match (rx (group (* nonl) (or ":" "--" "/"))))))
+        (-group-by 'identity)
+        (-max-by (-on '>= 'length))
+        (car))))
+
   (defun cbel:find-group-for-snippet ()
     "Find the first group defined in the current file,
 falling back to the file name sans extension."
@@ -260,6 +278,11 @@ falling back to the file name sans extension."
     "Return either 'defun or 'cl-defun depending on whether TEXT
 is a Common Lisp arglist."
     (if (cbel:cl-arglist? text) 'cl-defun 'defun))
+
+  (defun cbel:defmacro-form-for-arglist (text)
+    "Return either 'defmacro or 'cl-defmacro depending on whether TEXT
+is a Common Lisp arglist."
+    (if (cbel:cl-arglist? text) 'cl-defmacro 'defmacro))
 
   (defun cbel:process-docstring (text)
     "Format a function docstring for a snippet.

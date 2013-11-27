@@ -2,4 +2,4 @@
 # name: defvar
 # condition: (cbel:bol-for-snippet?)
 # --
-(defvar $0)
+(defvar `(cbel:find-identifier-prefix)`$0)

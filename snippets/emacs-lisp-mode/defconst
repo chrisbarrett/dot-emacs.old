@@ -2,4 +2,4 @@
 # name: defconst
 # condition: (cbel:bol-for-snippet?)
 # --
-(defconst $0)
+(defconst `(cbel:find-identifier-prefix)`$0)

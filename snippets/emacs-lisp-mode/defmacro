@@ -1,0 +1,7 @@
+# key: m
+# name: defmacro
+# condition: (cbyas:bol?)
+# --
+(${2:$(cbel:defmacro-form-for-arglist yas/text)} `(cbel:find-identifier-prefix)`$1 ($2)
+  "$3${2:$(cbel:process-docstring yas/text)}"
+  $0)
