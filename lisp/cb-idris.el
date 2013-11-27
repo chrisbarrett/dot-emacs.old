@@ -141,6 +141,11 @@ With a prefix arg, insert an arrow with padding at point."
 
 (add-hook 'cb:idris-modes-hook 'smart-insert-operator-hook)
 
+;; Configure Smartparens.
+(after 'smartparens
+  (sp-with-modes cb:idris-modes
+    (sp-local-pair "'" "'" :actions '(:rem insert))))
+
 ;; `idris-mode' provides editing support for the Idris language.
 (use-package idris-mode
   :mode (("\\.idr$" . idris-mode))
