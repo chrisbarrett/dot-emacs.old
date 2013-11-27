@@ -29,8 +29,24 @@
 (require 'use-package)
 (require 'cb-lib)
 
+;; `idris-mode' provides editing support for the Idris language.
 (use-package idris-mode
-  :mode (("\\.idr$" . idris-mode)))
+  :mode (("\\.idr$" . idris-mode))
+  :config
+  (after 'idris-mode
+    (define-key idris-mode-map (kbd "C-c C-z") 'idris-switch-to-output-buffer)))
+
+;; Define a command to switch from the repl to the last Idris src buffer.
+
+(defun idris-switch-to-src ()
+  "Pop to the last idris source buffer."
+  (interactive)
+  (-if-let (buf (car (--filter-buffers (derived-mode-p 'idris-mode))))
+    (pop-to-buffer buf)
+    (error "No idris buffers")))
+
+(after 'idris-repl
+  (define-key idris-repl-mode-map (kbd "C-c C-z") 'idris-switch-to-src))
 
 (provide 'cb-idris)
 
