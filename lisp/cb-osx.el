@@ -49,14 +49,17 @@
    ((s-ends-with? "fish" (getenv "SHELL"))
     ;; Get the path from fish, then set the default shell to something
     ;; POSIX-compliant or anything that shells out will bork.
-    (let ((path (s-split " " (shell-command-to-string "echo $PATH"))))
+    (let ((path (s-split " " (%-string "echo $PATH"))))
       (setq exec-path (-union path exec-path))
       (setenv "PATH" (s-join ":" exec-path))
       (setq shell-file-name "/bin/bash"
             explicit-shell-file-name shell-file-name)
       (setenv "SHELL"  shell-file-name)))
    (t
-    (let ((path (->> (list "~/bin" "~/scripts" "/opt/local/bin/"
+    (let ((path (->> (list "~/Library/Haskell/bin"
+                           "~/bin"
+                           "~/scripts"
+                           "/opt/local/bin/"
                            (%-string "echo $PATH"))
                   (s-join ":")
                   (s-split ":")
