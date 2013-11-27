@@ -452,6 +452,26 @@ Otherwise, use the value of said variable as argument to a funcall."
 
 (bind-key* "C-x n" 'narrowing-picker)
 
+(define-command-picker sorting-picker
+  :title "*Sorting*"
+  :options
+  '(("a" "Alpha" sort-lines)
+    ("A" "Alpha (reverse)" (lambda () (sort-lines t (region-beginning) (region-end))))
+    ("r" "Reverse" reverse-region)))
+
+(defun cb:sort-dispatch ()
+  "Open the appropriate sorting picker for the current mode."
+  (interactive)
+  (cond
+   ((derived-mode-p 'org-mode)
+    (call-interactively 'org-sort))
+   ((region-active-p)
+    (call-interactively 'sorting-picker))
+   (t
+    (user-error "Sort commands require a region to be active"))))
+
+(bind-key* "C-c ^" 'cb:sort-dispatch)
+
 (provide 'cb-foundation)
 
 ;; Local Variables:
