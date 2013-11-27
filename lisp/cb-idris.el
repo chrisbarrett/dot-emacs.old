@@ -29,6 +29,12 @@
 (require 'use-package)
 (require 'cb-lib)
 (require 'cb-mode-groups)
+(autoload 'idris-indentation-indent-line "idris-indentation")
+(autoload 'thing-at-point-looking-at "thingatpt")
+(autoload 'smart-insert-operator "smart-operator")
+(autoload 'sp-end-of-sexp "smartparens")
+(autoload 'sp-get-sexp "smartparens")
+(autoload 'thing-at-point "thingatpt")
 
 ;; Configure smart operators for Idris
 ;;
