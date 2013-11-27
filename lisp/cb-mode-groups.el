@@ -87,6 +87,10 @@
       haskell-c-mode
       haskell-cabal-mode))
 
+  (define-mode-group cb:idris-modes
+    '(idris-mode
+      idris-repl-mode))
+
   (define-mode-group cb:python-modes
     '(python-mode
       inferior-python-mode))
