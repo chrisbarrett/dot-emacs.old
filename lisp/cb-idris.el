@@ -82,11 +82,9 @@ With a prefix arg, insert a period without padding."
   (if (s-matches? (rx bol (* space) (? ",") (* space)
                       (+ (not (any space "("))) (* space) eol)
                   (buffer-substring (line-beginning-position) (point)))
-      (atomic-change-group
-        (just-one-space)
-        (insert "::")
-        (just-one-space))
-    (insert ":")))
+      (smart-insert-operator ":")
+    (insert ":"))
+  (cbidris:format-data-decl))
 
 (defun cbidris:insert-arrow (arrow)
   "If point is inside a tuple, insert an arrow inside.
@@ -133,6 +131,90 @@ With a prefix arg, insert an arrow with padding at point."
     (just-one-space))
    (t
     (smart-insert-operator "<"))))
+
+(defun cbidris:data-start-pos ()
+  "Find the start position of the datatype declaration at point."
+  (save-excursion
+    (end-of-line)
+    (search-backward-regexp (rx bol "data" eow) nil t)))
+
+(defun cbidris:data-end-pos ()
+  "Find the end position of the datatype declaration at point."
+  (save-excursion
+    (when (s-matches? (rx bol "data" eow) (current-line))
+      (end-of-line))
+    (let ((start (point))
+          (pt
+           (if (search-forward-regexp (rx bol (or (and (* space) eol)
+                                                  (not (any space))))
+                                      nil t)
+               (1- (line-beginning-position))
+             (point))))
+      (when (<= start pt)
+        pt))))
+
+(defun cbidris:at-data-decl? ()
+  (-when-let* ((start (cbidris:data-start-pos))
+               (end (cbidris:data-end-pos))
+               (lines (s-split "\n" (buffer-substring start end))))
+    (or (equal 1 (length lines))
+        (->> (-drop 1 lines)
+          (-all? (~ s-matches? (rx bol space)))))))
+
+(cl-defun cbidris:goto-type-judgement-colon
+    (&optional (bound (cbidris:data-end-pos)))
+  (ignore-errors
+    (goto-char (line-beginning-position))
+    (search-forward " : " bound)
+    (search-backward ":")))
+
+(defun cbidris:max-colon-column-in-data ()
+  "Find the greatest column of type judgements in a data decl."
+  (->> (save-excursion
+         (cl-loop
+          while (cbidris:at-data-decl?)
+          collect (progn
+                    (cbidris:goto-type-judgement-colon)
+                    (current-column))
+          do (progn
+              (forward-line)
+              (beginning-of-line))))
+    (-remove 'null)
+    (cons 0)
+    (-max)))
+
+(defun cbidris:indent-data-decl ()
+  "Indent the data decl at point."
+  (save-excursion
+    (when (s-starts-with? "data" (current-line))
+      (forward-line 1))
+    (while (cbidris:at-data-decl?)
+      (goto-char (line-beginning-position))
+      (delete-horizontal-space)
+      (indent-for-tab-command)
+      (forward-line))))
+
+(defun cbidris:normalise-data-decl-colons ()
+  (save-excursion
+    (let ((start (goto-char (cbidris:data-start-pos))))
+      (while (search-forward-regexp
+              (rx space ":")
+              (cbidris:data-end-pos) t)
+        (search-backward ":")
+        (just-one-space))
+      (goto-char start)
+      (let ((col (cbidris:max-colon-column-in-data)))
+        (while (cbidris:at-data-decl?)
+          (when (cbidris:goto-type-judgement-colon)
+            (indent-to col))
+          (forward-line))))))
+
+(defun cbidris:format-data-decl ()
+  "Align colons in a datatype declaration."
+  (interactive)
+  (when (cbidris:at-data-decl?)
+    (cbidris:indent-data-decl)
+    (cbidris:normalise-data-decl-colons)))
 
 (bind-keys
   :hook cb:idris-modes-hook
