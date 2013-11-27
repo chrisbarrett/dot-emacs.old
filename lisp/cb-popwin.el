@@ -52,6 +52,7 @@
             ("*Org Note*")
             ("*jedi:doc*" :height 30)
             ("*robe-doc*" :height 30)
+            ("*idris-repl*" :height 30)
             ("*bbdb*")
             ("*BBDB*")
             ("*Occur*" :noselect t)
