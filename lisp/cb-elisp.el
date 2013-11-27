@@ -235,21 +235,36 @@ falling back to the file name sans extension."
             (match-string 1)))
         (f-no-ext (f-filename buffer-file-name))))
 
-  (defun cbel:bol-for-snippet? ()
-    "Non-nil if point is on an empty line, with the exception of the snippet key."
-    (unless (equal (point) (line-beginning-position))
-      (s-blank? (s-trim (buffer-substring (line-beginning-position) (1- (point)))))))
-  (make-obsolete 'cbel:bol-for-snippet? 'cbyas:bol?)
+  (define-obsolete-function-alias 'cbel:bol-for-snippet? 'cbyas:bol?)
 
-  (defun cbel:format-docstring-for-snippet (text)
+  (defun cbel:simplify-arglist (text)
+    "Return a simplified docstring of arglist TEXT."
+    (->> (ignore-errors
+           (read (format "(%s)" text)))
+      (--keep
+       (ignore-errors
+         (cond
+          ((listp it)
+           (-first (& symbolp (C (N (~ s-starts-with? "&")) symbol-name))
+                   it))
+          ((symbolp it) it))))
+      (-remove (C (~ s-starts-with? "&") symbol-name))))
+
+  (defun cbel:defun-form-for-arglist (text)
+    "Return either 'defun or 'cl-defun depending on whether TEXT is a Common Lisp arglist."
+    (let* ((al (ignore-errors (read (format "(%s)" text))))
+           (cl? (or (-any? 'listp al)
+                    (-intersection al '(&key &allow-other-keys &body)))))
+      (if cl? 'cl-defun 'defun)))
+
+  (defun cbel:process-defun-docstring (text)
     "Format a function docstring for a snippet.
-* TEXT is contents of the arglist as a string."
-    (let ((arg-docs (->> (s-split (rx space) text t)
-                      (-remove (~ s-starts-with? "&"))
-                      (-map (C (~ format "* %s") s-upcase))
-                      (s-join "\n\n"))))
-      (unless (s-blank? arg-docs)
-        (concat "\n\n" arg-docs)))))
+* TEXT is contents of the text as a string."
+    (let ((docs (->> (cbel:simplify-arglist text)
+                  (-map (C (~ format "* %s") s-upcase symbol-name))
+                  (s-join "\n\n"))))
+      (unless (s-blank? docs)
+        (concat "\n\n" docs)))))
 
 (hook-fn 'minibuffer-setup-hook
   "Enable Paredit during eval-expression."

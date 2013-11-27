@@ -1,7 +1,7 @@
 # key: d
 # name: defun
-# condition: (cbel:bol-for-snippet?)
+# condition: (cbyas:bol?)
 # --
-(defun $1 ($2)
-  "$3${2:$(cbel:format-docstring-for-snippet yas/text)}"
+(${2:$(cbel:defun-form-for-arglist yas/text)} $1 ($2)
+  "$3${2:$(cbel:process-defun-docstring yas/text)}"
   $0)
