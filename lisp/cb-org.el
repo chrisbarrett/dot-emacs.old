@@ -184,6 +184,7 @@ This will set which file org-capture will capture to."
      org-startup-with-inline-images t
      org-edit-src-content-indentation 0
      org-catch-invisible-edits 'smart
+     org-insert-heading-respect-content t
 
      ;; Org habit
 
