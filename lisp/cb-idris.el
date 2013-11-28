@@ -38,8 +38,30 @@
 (autoload 'smart-insert-operator "smart-operator")
 
 ;; Configure smart operators for Idris
-;;
-;; These are more or less duplicates of the Haskell functions.
+
+(defun cbidris:typing-operator-in-braces? ()
+  (or (equal (char-before) ?\()
+      (and (not (s-matches? (rx alnum) (char-to-string (char-before))))
+           (equal (char-after) ?\)))))
+
+(defun cbidris:inserting-cons-in-braces? (op)
+  (and (equal op ":")
+       (equal (char-after) ?\))))
+
+(defun cbidris:smart-insert-operator (op)
+  "Insert an operator with padding.
+Does not pad if inside a pair of brackets.
+
+* OP is the operator as a string."
+  (cond
+   ((or (cbidris:inserting-cons-in-braces? op)
+        (cbidris:typing-operator-in-braces?))
+    (delete-horizontal-space)
+    (insert op))
+   (t
+    (smart-insert-operator op)))
+
+  (idris-indent-dwim t))
 
 (defun cbidris:smart-comma ()
   (interactive)
@@ -57,7 +79,7 @@
   (if (s-matches? (rx "[" (* (any "|" alnum)) eol)
                   (buffer-substring (line-beginning-position) (point)))
       (insert "|")
-    (smart-insert-operator "|")))
+    (cbidris:smart-insert-operator "|")))
 
 (defun cbidris:looking-at-module-or-constructor? ()
   (-when-let (sym (thing-at-point 'symbol))
@@ -75,15 +97,7 @@ With a prefix arg, insert a period without padding."
    ((thing-at-point-looking-at (rx (or "(" "{" "[") (* space)))
     (insert "."))
    (t
-    (smart-insert-operator "."))))
-
-(defun cbidris:smart-colon ()
-  (interactive)
-  (if (s-matches? (rx "(" (* (not (any ")"))) eol)
-                  (buffer-substring (line-beginning-position) (point)))
-      (insert ":")
-    (smart-insert-operator ":"))
-  (idris-indent-dwim t))
+    (cbidris:smart-insert-operator "."))))
 
 (defun cbidris:insert-arrow (arrow)
   "If point is inside a tuple, insert an arrow inside.
@@ -118,7 +132,7 @@ With a prefix arg, insert an arrow with padding at point."
    ((cbidris:at-typedecl?)
     (cbidris:insert-arrow "->"))
    (t
-    (smart-insert-operator "-"))))
+    (cbidris:smart-insert-operator "-"))))
 
 (defun cbidris:smart-lt (&optional arg)
   "Insert a less than symbol. With a prefix arg, insert an arrow at point."
@@ -129,25 +143,25 @@ With a prefix arg, insert an arrow with padding at point."
     (insert "<-")
     (just-one-space))
    (t
-    (smart-insert-operator "<"))))
+    (cbidris:smart-insert-operator "<"))))
 
 (after 'idris-mode
   (define-keys idris-mode-map
     "," 'cbidris:smart-comma
-    "&" (command (smart-insert-operator "&"))
-    "%" (command (smart-insert-operator "%"))
-    "*" (command (smart-insert-operator "*"))
-    "+" (command (smart-insert-operator "+"))
-    "/" (command (smart-insert-operator "/"))
+    "&" (command (cbidris:smart-insert-operator "&"))
+    "%" (command (cbidris:smart-insert-operator "%"))
+    "*" (command (cbidris:smart-insert-operator "*"))
+    "+" (command (cbidris:smart-insert-operator "+"))
+    "/" (command (cbidris:smart-insert-operator "/"))
     "-" 'cbidris:smart-minus
-    "=" (command (smart-insert-operator "="))
+    "=" (command (cbidris:smart-insert-operator "="))
     "<" 'cbidris:smart-lt
-    ">" (command (smart-insert-operator ">"))
+    ">" (command (cbidris:smart-insert-operator ">"))
     "." 'cbidris:smart-dot
-    ":" 'cbidris:smart-colon
+    ":" (command (cbidris:smart-insert-operator ":"))
     "|" 'cbidris:smart-pipe
-    "?" (command (smart-insert-operator "?"))
-    "$" (command (smart-insert-operator "$"))))
+    "?" (command (cbidris:smart-insert-operator "?"))
+    "$" (command (cbidris:smart-insert-operator "$"))))
 
 ;; Define code formatting commands for idris-mode.
 
