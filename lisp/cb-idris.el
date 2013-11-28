@@ -317,7 +317,7 @@ With a prefix arg, insert an arrow with padding at point."
                                 (group (+ (not (any space ":" ")"))))
                                 (? ")")))
     (let ((s (match-string-no-properties 1)))
-      (unless (-contains? idris-keywords s)
+      (unless (-contains? (cons "data" idris-keywords) s)
         s))))
 
 (defun cbidris:columnate-arguments (linums)
