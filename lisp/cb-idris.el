@@ -261,7 +261,8 @@ With a prefix arg, insert an arrow with padding at point."
     t))
 
 (defun idris-indent-dwim (&optional silent?)
-  "Perform a context-sensitive indentation command."
+  "Perform a context-sensitive indentation command.
+SILENT? controls whether provide feedback to the user on the action performed."
   (interactive "*")
   (save-excursion
     (cond
