@@ -79,7 +79,7 @@ With a prefix arg, insert a period without padding."
 
 (defun cbidris:smart-colon ()
   (interactive)
-  (if (s-matches? (rx "(" (* (not alnum)) eol)
+  (if (s-matches? (rx "(" (* (not (any ")"))) eol)
                   (buffer-substring (line-beginning-position) (point)))
       (insert ":")
     (smart-insert-operator ":"))
