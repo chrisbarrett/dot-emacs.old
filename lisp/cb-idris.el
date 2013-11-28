@@ -108,13 +108,13 @@ With a prefix arg, insert a period without padding."
     (cbidris:smart-insert-operator "."))))
 
 (defun cbidris:insert-arrow (arrow)
-  "If point is inside a tuple, insert an arrow inside.
+  "If point is inside a tuple or braces, insert an arrow inside.
 Otherwise insert an arrow at the end of the line."
   (atomic-change-group
     (cl-destructuring-bind (&key beg end op &allow-other-keys)
         (sp-get-sexp t)
       ;; Check whether point is inside a tuple.
-      (if (and (equal op "(")
+      (if (and (-contains? '("(" "{") op)
                (> (point) beg)
                (< (point) end))
           (sp-end-of-sexp)
