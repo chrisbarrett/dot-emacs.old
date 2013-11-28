@@ -160,20 +160,22 @@ With a prefix arg, insert an arrow with padding at point."
 (defun cbidris:data-end-pos ()
   "Find the end position of the datatype declaration at point."
   (save-excursion
+    (let ((start (point)))
 
-    (when (s-matches? (rx bol "data" eow) (current-line))
-      (goto-char (line-end-position)))
+      (goto-char (cbidris:data-start-pos))
+      (goto-char (line-end-position))
 
-    (-when-let* ((start (point))
-                 (end (cond
+      (-when-let (end (cond
                        ((eobp) (point))
-                       ((s-blank? (current-line)) nil)
                        ((search-forward-regexp
                          (rx bol (or (and (* space) eol)
                                      (not space))) nil t)
-                        (1- (line-beginning-position))))))
-      (when (<= start end)
-        end))))
+                        (1- (line-beginning-position)))
+                       (t
+                        (forward-line)
+                        (line-end-position))))
+        (when (<= start end)
+          end)))))
 
 (cl-defun cbidris:data-decl-at-pt ()
   "Return the data declaration at point."
