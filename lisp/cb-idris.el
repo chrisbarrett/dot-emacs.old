@@ -314,7 +314,7 @@ With a prefix arg, insert an arrow with padding at point."
                                 (group (+ (not (any space ":" ")"))))
                                 (? ")")))
     (let ((s (match-string-no-properties 1)))
-      (unless (-contains? '("module" "data") s)
+      (unless (-contains? idris-keywords s)
         s))))
 
 (defun cbidris:columnate-arguments (linums)
@@ -397,8 +397,8 @@ SILENT? controls whether provide feedback to the user on the action performed."
   (interactive)
   (cond
    ((cbidris:function-name-at-pt)
+    (goto-char (line-end-position))
     (let ((fn (cbidris:function-name-at-pt)))
-      (goto-char (line-end-position))
       (newline-and-indent)
       (insert fn)
       (just-one-space)))
@@ -414,7 +414,8 @@ SILENT? controls whether provide feedback to the user on the action performed."
           (insert "where")))
 
       (goto-char (line-end-position))
-      (newline-and-indent)))
+      (newline-and-indent)
+      (indent-for-tab-command)))
 
    ((s-matches? comment-start (current-line))
     (fill-paragraph)
