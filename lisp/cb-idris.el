@@ -61,7 +61,7 @@ Does not pad if inside a pair of brackets.
    (t
     (smart-insert-operator op)))
 
-  (idris-indent-dwim t))
+  (idris-reformat-dwim t))
 
 (defun cbidris:smart-comma ()
   (interactive)
@@ -283,28 +283,33 @@ With a prefix arg, insert an arrow with padding at point."
 
 (defun idris-indent-dwim (&optional silent?)
   "Perform a context-sensitive indentation command.
+(defun idris-reformat-dwim (&optional silent?)
+  "Perform a context-sensitive reformatting command.
 SILENT? controls whether provide feedback to the user on the action performed."
   (interactive "*")
   (save-excursion
     (cond
      ((cbidris:format-data-decl)
       (unless silent?
-        (message "Indented data declaration.")))
+        (message "Formatted data declaration.")))
+     ((cbidris:format-function-args)
+      (unless silent?
+        (message "Formatted function arguments.")))
      (t
       (unless silent?
-        (user-error "Unable to indent"))))))
+        (user-error "No context to reformat"))))))
 
 (defun idris-ret ()
   "Indent and align on newline."
   (interactive "*")
   (if (s-matches? comment-start (current-line))
       (comment-indent-new-line)
-    (idris-indent-dwim t)
+    (idris-reformat-dwim t)
     (idris-newline-and-indent)))
 
 (after 'idris-mode
   (define-keys idris-mode-map
-    "M-q" 'idris-indent-dwim
+    "M-q" 'idris-reformat-dwim
     "<return>" 'idris-ret))
 
 ;; Configure Smartparens.
