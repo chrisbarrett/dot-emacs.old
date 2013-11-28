@@ -272,8 +272,18 @@ With a prefix arg, insert an arrow with padding at point."
       (unless silent?
         (user-error "Unable to indent"))))))
 
+(defun idris-ret ()
+  "Indent and align on newline."
+  (interactive "*")
+  (if (s-matches? comment-start (current-line))
+      (comment-indent-new-line)
+    (idris-indent-dwim t)
+    (idris-newline-and-indent)))
+
 (after 'idris-mode
-  (define-key idris-mode-map (kbd "M-q") 'idris-indent-dwim))
+  (define-keys idris-mode-map
+    "M-q" 'idris-indent-dwim
+    "<return>" 'idris-ret))
 
 ;; Configure Smartparens.
 (after 'smartparens
