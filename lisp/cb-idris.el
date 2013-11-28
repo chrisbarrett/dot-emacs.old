@@ -313,7 +313,9 @@ With a prefix arg, insert an arrow with padding at point."
     (search-backward-regexp (rx bol (? "(")
                                 (group (+ (not (any space ":" ")"))))
                                 (? ")")))
-    (match-string-no-properties 1)))
+    (let ((s (match-string-no-properties 1)))
+      (unless (-contains? '("module" "data") s)
+        s))))
 
 (defun cbidris:columnate-arguments (linums)
   "Align function arguments by column for each line in LINE-NOS."
@@ -394,7 +396,7 @@ SILENT? controls whether provide feedback to the user on the action performed."
 * At comments, fill paragraph and insert a newline."
   (interactive)
   (cond
-   ((cbidris:at-equation?)
+   ((cbidris:function-name-at-pt)
     (let ((fn (cbidris:function-name-at-pt)))
       (goto-char (line-end-position))
       (newline-and-indent)
