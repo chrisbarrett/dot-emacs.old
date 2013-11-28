@@ -170,7 +170,6 @@ With a prefix arg, insert an arrow with padding at point."
     "." 'cbidris:smart-dot
     ":" 'cbidris:smart-colon
     "|" 'cbidris:smart-pipe
-    "?" (command (cbidris:smart-insert-operator "?"))
     "$" (command (cbidris:smart-insert-operator "$"))))
 
 (add-hook 'idris-repl-mode-hook 'smart-insert-operator-hook)
