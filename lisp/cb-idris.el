@@ -389,11 +389,12 @@ SILENT? controls whether provide feedback to the user on the action performed."
 
 (defun idris-meta-ret ()
   "Create a newline and perform a context-sensitive continuation.
-* If point is at a function, create a new case for the function.
-* If point is at a type, add a 'where' statement if one does not exist."
+* At functions, create a new case for the function.
+* At types, add a 'where' statement if one does not exist.
+* At comments, fill paragraph and insert a newline."
   (interactive)
   (cond
-   ((cbidris:at-function-definition?)
+   ((cbidris:at-equation?)
     (let ((fn (cbidris:function-name-at-pt)))
       (goto-char (line-end-position))
       (newline-and-indent)
@@ -412,6 +413,10 @@ SILENT? controls whether provide feedback to the user on the action performed."
 
       (goto-char (line-end-position))
       (newline-and-indent)))
+
+   ((s-matches? comment-start (current-line))
+    (fill-paragraph)
+    (comment-indent-new-line))
 
    (t
     (newline-and-indent))))
