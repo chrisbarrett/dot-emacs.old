@@ -131,19 +131,23 @@ With a prefix arg, insert an arrow with padding at point."
    (t
     (smart-insert-operator "<"))))
 
-(add-hook 'cb:idris-modes-hook 'smart-insert-operator-hook)
-
-(bind-keys
-  :hook cb:idris-modes-hook
-  "," 'cbidris:smart-comma
-  "-" 'cbidris:smart-minus
-  "=" (command (smart-insert-operator "="))
-  "<" 'cbidris:smart-lt
-  "." 'cbidris:smart-dot
-  ":" 'cbidris:smart-colon
-  "|" 'cbidris:smart-pipe
-  "?" (command (smart-insert-operator "?"))
-  "$" (command (smart-insert-operator "$")))
+(after 'idris-mode
+  (define-keys idris-mode-map
+    "," 'cbidris:smart-comma
+    "&" (command (smart-insert-operator "&"))
+    "%" (command (smart-insert-operator "%"))
+    "*" (command (smart-insert-operator "*"))
+    "+" (command (smart-insert-operator "+"))
+    "/" (command (smart-insert-operator "/"))
+    "-" 'cbidris:smart-minus
+    "=" (command (smart-insert-operator "="))
+    "<" 'cbidris:smart-lt
+    ">" (command (smart-insert-operator ">"))
+    "." 'cbidris:smart-dot
+    ":" 'cbidris:smart-colon
+    "|" 'cbidris:smart-pipe
+    "?" (command (smart-insert-operator "?"))
+    "$" (command (smart-insert-operator "$"))))
 
 ;; Define code formatting commands for idris-mode.
 
