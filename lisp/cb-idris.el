@@ -479,6 +479,23 @@ SILENT? controls whether provide feedback to the user on the action performed."
 
   (add-hook 'cb:idris-modes-hook 'cbidris:apply-unicode))
 
+;; Configure eldoc for Idris.
+
+(defun cbidris:get-docstring ()
+  "Format a docstring for eldoc."
+  (ignore-errors
+    (-when-let* ((name (car (idris-thing-at-point)))
+                 (s (idris-eval `(:type-of ,name))))
+      (nth 1 (s-match (rx (* (any "-" "\n" space)) (group (* anything)))
+                      s)))))
+
+(defun cbidris:configure-eldoc ()
+  "Set up eldoc for Idris."
+  (setq-local eldoc-documentation-function 'cbidris:get-docstring)
+  (eldoc-mode +1))
+
+(add-hook 'cb:idris-modes-hook 'cbidris:configure-eldoc)
+
 ;; `idris-mode' provides editing support for the Idris language.
 (use-package idris-mode
   :mode (("\\.idr$" . idris-mode))
