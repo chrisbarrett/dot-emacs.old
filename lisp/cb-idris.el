@@ -44,24 +44,32 @@
       (and (not (s-matches? (rx alnum) (char-to-string (char-before))))
            (equal (char-after) ?\)))))
 
-(defun cbidris:inserting-cons-in-braces? (op)
-  (and (equal op ":")
-       (equal (char-after) ?\))))
-
 (defun cbidris:smart-insert-operator (op)
   "Insert an operator with padding.
 Does not pad if inside a pair of brackets.
 
 * OP is the operator as a string."
   (cond
-   ((or (cbidris:inserting-cons-in-braces? op)
-        (cbidris:typing-operator-in-braces?))
+   ((cbidris:typing-operator-in-braces?)
     (delete-horizontal-space)
     (insert op))
    (t
     (smart-insert-operator op)))
 
   (idris-reformat-dwim t))
+
+(defun cbidris:inserting-cons-in-braces? ()
+  (equal (char-after) ?\)))
+
+(defun cbidris:smart-colon ()
+  (interactive)
+  (cond
+   ((equal (string-to-char " ") (char-before))
+    (smart-insert-operator ":"))
+   ((cbidris:inserting-cons-in-braces?)
+    (insert ":"))
+   (t
+    (smart-insert-operator ":"))))
 
 (defun cbidris:smart-comma ()
   (interactive)
@@ -158,7 +166,7 @@ With a prefix arg, insert an arrow with padding at point."
     "<" 'cbidris:smart-lt
     ">" (command (cbidris:smart-insert-operator ">"))
     "." 'cbidris:smart-dot
-    ":" (command (cbidris:smart-insert-operator ":"))
+    ":" 'cbidris:smart-colon
     "|" 'cbidris:smart-pipe
     "?" (command (cbidris:smart-insert-operator "?"))
     "$" (command (cbidris:smart-insert-operator "$"))))
