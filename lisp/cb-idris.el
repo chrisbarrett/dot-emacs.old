@@ -229,7 +229,6 @@ With a prefix arg, insert an arrow with padding at point."
 
 (defun cbidris:indent-data-decl ()
   "Indent the data decl at point."
-  (interactive)
   (when (< 1 (->> (cbidris:data-decl-at-pt)
                (s-split "\n")
                (length)))
@@ -275,7 +274,6 @@ With a prefix arg, insert an arrow with padding at point."
 
 (defun cbidris:format-data-decl ()
   "Align colons in a datatype declaration."
-  (interactive)
   (when (cbidris:at-data-decl?)
     (cbidris:indent-data-decl)
     (cbidris:normalise-data-decl-colons)
