@@ -77,14 +77,12 @@ With a prefix arg, insert a period without padding."
     (smart-insert-operator "."))))
 
 (defun cbidris:smart-colon ()
-  "Insert either a type binding colon pair or a cons colon."
   (interactive)
-  (if (s-matches? (rx bol (* space) (? ",") (* space)
-                      (+ (not (any space "("))) (* space) eol)
+  (if (s-matches? (rx "(" (* (not alnum)) eol)
                   (buffer-substring (line-beginning-position) (point)))
-      (smart-insert-operator ":")
-    (insert ":"))
-  (cbidris:format-data-decl))
+      (insert ":")
+    (smart-insert-operator ":"))
+  (idris-indent-dwim t))
 
 (defun cbidris:insert-arrow (arrow)
   "If point is inside a tuple, insert an arrow inside.
@@ -262,15 +260,17 @@ With a prefix arg, insert an arrow with padding at point."
     (cbidris:normalise-data-decl-colons)
     t))
 
-(defun idris-indent-dwim ()
+(defun idris-indent-dwim (&optional silent?)
   "Perform a context-sensitive indentation command."
   (interactive "*")
   (save-excursion
     (cond
      ((cbidris:format-data-decl)
-      (message "Indented data declaration."))
+      (unless silent?
+        (message "Indented data declaration.")))
      (t
-      (user-error "Unable to indent")))))
+      (unless silent?
+        (user-error "Unable to indent"))))))
 
 (after 'idris-mode
   (define-key idris-mode-map (kbd "M-q") 'idris-indent-dwim))
