@@ -165,6 +165,9 @@ With a prefix arg, insert an arrow with padding at point."
 
 ;; Define code formatting commands for idris-mode.
 
+;; -----------------------------------------------------------------------------
+;; Datatypes
+
 (defun cbidris:data-start-pos ()
   "Find the start position of the datatype declaration at point."
   (save-excursion
@@ -279,23 +282,94 @@ With a prefix arg, insert an arrow with padding at point."
     (cbidris:normalise-data-decl-colons)
     t))
 
-(defun idris-indent-dwim (&optional silent?)
-  "Perform a context-sensitive indentation command.
+;; -----------------------------------------------------------------------------
+;; Functions
+
+(defun cbidris:at-equation? ()
+  "Non-nil if point is at a function definition or equation."
+  (s-matches? (rx space "=" (or space eol)) (current-line)))
+
+(defun cbidris:function-case-lines (fname)
+  "Return a list of lines for the function FNAME."
+  (save-excursion
+    (cl-loop
+     initially (goto-char (point-min))
+     while (search-forward-regexp (rx-to-string `(and bol (? "(") ,fname (? ")")))
+                                  nil t)
+     unless (s-matches? " : " (current-line))
+     collect (line-number-at-pos))))
+
+(defun cbidris:function-name-at-pt ()
+  "Return the name of the function at point."
+  (save-excursion
+    (search-backward-regexp (rx bol (? "(")
+                                (group (+ (not (any ")"))))
+                                (? ")")))
+    (match-string-no-properties 1)))
+
+(defun cbidris:columnate-arguments (linums)
+  "Align function arguments by column for each line in LINE-NOS."
+  (let* ((tkns (->> linums
+                 (-map (~ cbidris:bol-to-s "="))
+                 (-map (-cut s-split (rx space) <> t))))
+         (padded
+          (cl-loop for col in (number-sequence 0 (-max (cons 0 (-map 'length tkns))))
+                   for rows = (-map (~ nth col) tkns)
+                   for widest = (-max (-map 'length rows))
+                   collect (-map (~ s-pad-right widest " ") rows)))
+         (rotated
+          (cl-loop
+           for col in (number-sequence 0 (-max (cons 0 (-map 'length tkns))))
+           for rows = (-map (~ nth col) padded)
+           collect rows)))
+    (-map (C s-trim (~ s-join " ")) rotated)))
+
+(defun cbidris:bol-to-s (rx line-no)
+  "Return the part of the line at LINUM from the line start up to RX."
+  (save-excursion
+    (goto-char (point-min))
+    (forward-line (1- line-no))
+    (buffer-substring-no-properties (line-beginning-position)
+                                    (search-forward-regexp rx nil t))))
+
+(defun cbidris:normalise-function-decl-arguments ()
+  (let* ((linums (cbidris:function-case-lines (cbidris:function-name-at-pt)))
+         (replacements (cbidris:columnate-arguments linums)))
+    (-each (-zip linums replacements)
+           (lambda+ ((linum . s))
+             (save-excursion
+               (goto-char (point-min))
+               (forward-line (1- linum))
+               (search-forward-regexp (rx bol (group (+ nonl) "="))
+                                      (line-end-position))
+               (replace-match s t))))))
+
+(defun cbidris:format-function-args ()
+  "Align function declaration arguments."
+  (when (cbidris:at-equation?)
+    (cbidris:normalise-function-decl-arguments)
+    t))
+
+;; -----------------------------------------------------------------------------
+
 (defun idris-reformat-dwim (&optional silent?)
   "Perform a context-sensitive reformatting command.
 SILENT? controls whether provide feedback to the user on the action performed."
   (interactive "*")
-  (save-excursion
-    (cond
-     ((cbidris:format-data-decl)
-      (unless silent?
-        (message "Formatted data declaration.")))
-     ((cbidris:format-function-args)
-      (unless silent?
-        (message "Formatted function arguments.")))
-     (t
-      (unless silent?
-        (user-error "No context to reformat"))))))
+  ;; HACK: Set point manually--something is moving point to the line start pos.
+  (let ((pt (point)))
+    (save-excursion
+      (cond
+       ((cbidris:format-data-decl)
+        (unless silent?
+          (message "Formatted data declaration.")))
+       ((cbidris:format-function-args)
+        (unless silent?
+          (message "Formatted function arguments.")))
+       (t
+        (unless silent?
+          (message "No context to reformat")))))
+    (goto-char (max (point) pt))))
 
 (defun idris-ret ()
   "Indent and align on newline."
