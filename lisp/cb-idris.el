@@ -303,7 +303,7 @@ With a prefix arg, insert an arrow with padding at point."
   "Return the name of the function at point."
   (save-excursion
     (search-backward-regexp (rx bol (? "(")
-                                (group (+ (not (any ")"))))
+                                (group (+ (not (any space ":" ")"))))
                                 (? ")")))
     (match-string-no-properties 1)))
 
@@ -379,10 +379,40 @@ SILENT? controls whether provide feedback to the user on the action performed."
     (idris-reformat-dwim t)
     (idris-newline-and-indent)))
 
+(defun idris-meta-ret ()
+  "Create a newline and perform a context-sensitive continuation.
+* If point is at a function, create a new case for the function.
+* If point is at a type, add a 'where' statement if one does not exist."
+  (interactive)
+  (cond
+   ((cbidris:at-function-definition?)
+    (let ((fn (cbidris:function-name-at-pt)))
+      (goto-char (line-end-position))
+      (newline-and-indent)
+      (insert fn)
+      (just-one-space)))
+
+   ((cbidris:at-data-decl?)
+    (let ((dt (cbidris:data-decl-at-pt)))
+
+      (unless (s-contains? "where" dt)
+        (save-excursion
+          (goto-char (cbidris:data-start-pos))
+          (goto-char (line-end-position))
+          (just-one-space)
+          (insert "where")))
+
+      (goto-char (line-end-position))
+      (newline-and-indent)))
+
+   (t
+    (newline-and-indent))))
+
 (after 'idris-mode
   (define-keys idris-mode-map
     "M-q" 'idris-reformat-dwim
-    "<return>" 'idris-ret))
+    "<return>" 'idris-ret
+    "M-<return>" 'idris-meta-ret))
 
 ;; Configure Smartparens.
 (after 'smartparens
