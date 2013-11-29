@@ -69,7 +69,9 @@ Does not pad if inside a pair of brackets.
    ((cbidris:inserting-cons-in-braces?)
     (insert ":"))
    (t
-    (smart-insert-operator ":"))))
+    (smart-insert-operator ":")))
+
+  (idris-reformat-dwim t))
 
 (defun cbidris:smart-comma ()
   (interactive)
