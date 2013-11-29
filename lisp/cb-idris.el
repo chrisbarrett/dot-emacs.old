@@ -267,7 +267,8 @@ With a prefix arg, insert an arrow with padding at point."
           (goto-char (line-beginning-position))
           (delete-horizontal-space)
           (indent-for-tab-command)
-          (if (eobp)
+          (if (save-excursion (goto-char (line-end-position))
+                              (eobp))
               (setq done t)
             (forward-line)))))))
 
