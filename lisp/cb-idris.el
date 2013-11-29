@@ -308,10 +308,20 @@ With a prefix arg, insert an arrow with padding at point."
 ;; -----------------------------------------------------------------------------
 ;; Functions
 
+(defun cbidris:after-function-args? ()
+  "Non-nil if point is at a function application."
+  (let ((fst-equals (s-index-of "=" (current-line))))
+    (and (< fst-equals (current-column)))))
+
+(defun cbidris:at-let-binding? ()
+  "Non-nil if point is at a let-binding form."
+  (s-matches? (rx bow "let" eow) (current-line)))
+
 (defun cbidris:at-equation? ()
   "Non-nil if point is at a function definition or equation."
   (and (s-matches? (rx space "=" (or space eol)) (current-line))
-       (not (s-matches? (rx bow "let" eow) (current-line)))))
+       (not (cbidris:at-let-binding?))
+       (not (cbidris:after-function-args?))))
 
 (defun cbidris:function-case-lines (fname)
   "Return a list of lines for the function FNAME."
