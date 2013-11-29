@@ -307,7 +307,8 @@ With a prefix arg, insert an arrow with padding at point."
 
 (defun cbidris:at-equation? ()
   "Non-nil if point is at a function definition or equation."
-  (s-matches? (rx space "=" (or space eol)) (current-line)))
+  (and (s-matches? (rx space "=" (or space eol)) (current-line))
+       (not (s-matches? (rx bow "let" eow) (current-line)))))
 
 (defun cbidris:function-case-lines (fname)
   "Return a list of lines for the function FNAME."
