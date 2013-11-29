@@ -327,7 +327,7 @@ With a prefix arg, insert an arrow with padding at point."
          (padded
           (cl-loop for col in (number-sequence 0 (-max (cons 0 (-map 'length tkns))))
                    for rows = (-map (~ nth col) tkns)
-                   for widest = (-max (-map 'length rows))
+                   for widest = (-max (cons 0 (-map 'length rows)))
                    collect (-map (~ s-pad-right widest " ") rows)))
          (rotated
           (cl-loop
