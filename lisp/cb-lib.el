@@ -458,6 +458,20 @@ Find the first window where PRED-FORM is not nil."
 
 (defalias 's-no-props 'substring-no-properties)
 
+(defun s-split-sexps (str)
+  "Split STR by sexp boundaries."
+  (with-temp-buffer
+    (insert str)
+    (goto-char (point-min))
+    ;; Collect sexps in buffer.
+    (let (acc (pt (point-min)))
+      (until (eobp)
+        (forward-sexp)
+        (setq acc (cons (s-trim (buffer-substring pt (point)))
+                        acc))
+        (setq pt (point)))
+      (nreverse acc))))
+
 ;; -----------------------------------------------------------------------------
 
 (defun filter-atoms (predicate)

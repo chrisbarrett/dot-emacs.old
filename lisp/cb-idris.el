@@ -322,9 +322,8 @@ With a prefix arg, insert an arrow with padding at point."
 
 (defun cbidris:columnate-arguments (linums)
   "Align function arguments by column for each line in LINE-NOS."
-  (let* ((tkns (->> linums
-                 (-map (~ cbidris:bol-to-s "="))
-                 (-map (-cut s-split (rx space) <> t))))
+  (let* ((tkns (-map (C s-split-sexps (~ cbidris:bol-to-s "="))
+                     linums))
          (padded
           (cl-loop for col in (number-sequence 0 (-max (cons 0 (-map 'length tkns))))
                    for rows = (-map (~ nth col) tkns)
