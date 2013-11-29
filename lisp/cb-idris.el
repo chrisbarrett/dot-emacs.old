@@ -153,6 +153,16 @@ With a prefix arg, insert an arrow with padding at point."
    (t
     (cbidris:smart-insert-operator "<"))))
 
+(defun cbidris:smart-question-mark ()
+  "Insert a ? char as an operator, unless point is after an = sign."
+  (interactive)
+  (cond
+   ((s-matches? (rx "=" (* space) eol) (current-line))
+    (just-one-space)
+    (insert "?"))
+   (t
+    (cbidris:smart-insert-operator "?"))))
+
 ;; Set key bindings
 
 (after 'idris-mode
@@ -160,6 +170,7 @@ With a prefix arg, insert an arrow with padding at point."
     "," 'cbidris:smart-comma
     "&" (command (cbidris:smart-insert-operator "&"))
     "%" (command (cbidris:smart-insert-operator "%"))
+    "?" 'cbidris:smart-question-mark
     "*" (command (cbidris:smart-insert-operator "*"))
     "+" (command (cbidris:smart-insert-operator "+"))
     "/" (command (cbidris:smart-insert-operator "/"))
@@ -171,8 +182,6 @@ With a prefix arg, insert an arrow with padding at point."
     ":" 'cbidris:smart-colon
     "|" 'cbidris:smart-pipe
     "$" (command (cbidris:smart-insert-operator "$"))))
-
-(add-hook 'idris-repl-mode-hook 'smart-insert-operator-hook)
 
 ;; Define code formatting commands for idris-mode.
 
