@@ -322,19 +322,24 @@ With a prefix arg, insert an arrow with padding at point."
 
 (defun cbidris:columnate-arguments (linums)
   "Align function arguments by column for each line in LINE-NOS."
-  (let* ((tkns (-map (C s-split-sexps (~ cbidris:bol-to-s "="))
-                     linums))
+  (let* ((tkns   (-map (C s-split-sexps (~ cbidris:bol-to-s "=")) linums))
+         (n-tkns (number-sequence 0 (-max (cons 0 (-map 'length tkns)))))
+         ;; Align token in each column by right-padding with whitespace.
          (padded
-          (cl-loop for col in (number-sequence 0 (-max (cons 0 (-map 'length tkns))))
+          (cl-loop for col in n-tkns
                    for rows = (-map (~ nth col) tkns)
-                   for widest = (-max (cons 0 (-map 'length rows)))
+                   for widest = (-max (-map 'length rows))
                    collect (-map (~ s-pad-right widest " ") rows)))
          (rotated
-          (cl-loop
-           for col in (number-sequence 0 (-max (cons 0 (-map 'length tkns))))
-           for rows = (-map (~ nth col) padded)
-           collect rows)))
-    (-map (C s-trim (~ s-join " ")) rotated)))
+          (cl-loop for col in n-tkns
+                   for rows = (-map (~ nth col) padded)
+                   collect rows))
+         ;; Manually pad and align '=' sign, in case some equations are partial.
+         (joined
+          (-map (C (~ s-chop-suffix "=") s-trim (~ s-join " ")) rotated))
+         (widest-arglist
+          (-max (cons 0 (-map 'length joined)))))
+    (-map (C (~ s-append "=") (~ s-pad-right widest-arglist " ")) joined)))
 
 (defun cbidris:bol-to-s (rx line-no)
   "Return the part of the line at LINUM from the line start up to RX."
