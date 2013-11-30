@@ -263,18 +263,22 @@ With a prefix arg, insert an arrow with padding at point."
     (let ((end (cbidris:data-end-pos)))
       (save-excursion
 
+        ;; Indent each line in the decl to the column of the first ident.
         (goto-char (cbidris:data-start-pos))
-        (forward-line)
+        (let ((col (progn
+                     (search-forward-regexp (rx "data" (+ space)))
+                     (current-column))))
+          (forward-line)
 
-        (let (done)
-          (while (and (not done) (<= (point) end))
-            (goto-char (line-beginning-position))
-            (delete-horizontal-space)
-            (indent-for-tab-command)
-            (if (save-excursion (goto-char (line-end-position))
-                                (eobp))
-                (setq done t)
-              (forward-line))))))))
+          (let (done)
+            (while (and (not done) (<= (point) end))
+              (goto-char (line-beginning-position))
+              (delete-horizontal-space)
+              (indent-to col)
+              (if (save-excursion (goto-char (line-end-position))
+                                  (eobp))
+                  (setq done t)
+                (forward-line)))))))))
 
 (defun cbidris:normalise-data-decl-colons ()
   (save-excursion
