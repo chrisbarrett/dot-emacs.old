@@ -49,14 +49,16 @@
 Does not pad if inside a pair of brackets.
 
 * OP is the operator as a string."
-  (cond
-   ((cbidris:typing-operator-in-braces?)
-    (delete-horizontal-space)
-    (insert op))
-   (t
-    (smart-insert-operator op)))
-
-  (idris-reformat-dwim t))
+  (let ((pt (point)))
+    (cond
+     ((cbidris:typing-operator-in-braces?)
+      (delete-horizontal-space)
+      (insert op))
+     (t
+      (smart-insert-operator op)))
+    (save-excursion
+      (goto-char pt)
+      (idris-reformat-dwim t))))
 
 (defun cbidris:inserting-cons-in-braces? ()
   (equal (char-after) ?\)))
