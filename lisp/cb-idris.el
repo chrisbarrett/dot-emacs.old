@@ -260,22 +260,21 @@ With a prefix arg, insert an arrow with padding at point."
   (when (< 1 (->> (cbidris:data-decl-at-pt)
                (s-split "\n")
                (length)))
-    (save-excursion
+    (let ((end (cbidris:data-end-pos)))
+      (save-excursion
 
-      (goto-char (cbidris:data-start-pos))
+        (goto-char (cbidris:data-start-pos))
+        (forward-line)
 
-      (when (s-starts-with? "data" (current-line))
-        (forward-line 1))
-
-      (let (done)
-        (while (and (not done) (cbidris:at-data-decl?))
-          (goto-char (line-beginning-position))
-          (delete-horizontal-space)
-          (indent-for-tab-command)
-          (if (save-excursion (goto-char (line-end-position))
-                              (eobp))
-              (setq done t)
-            (forward-line)))))))
+        (let (done)
+          (while (and (not done) (<= (point) end))
+            (goto-char (line-beginning-position))
+            (delete-horizontal-space)
+            (indent-for-tab-command)
+            (if (save-excursion (goto-char (line-end-position))
+                                (eobp))
+                (setq done t)
+              (forward-line))))))))
 
 (defun cbidris:normalise-data-decl-colons ()
   (save-excursion
