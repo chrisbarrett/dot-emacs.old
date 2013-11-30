@@ -581,7 +581,7 @@ SILENT? controls whether provide feedback to the user on the action performed."
 
   (defun cbidris:apply-unicode ()
     (cbidris:apply-font-lock
-     "\\s ?(?\\(\\\\\\)\\s *\\(\\w\\|_\\|(.*)\\).*?\\s *->" "λ")
+     "\\s ?(?\\(\\\\\\)\\s *\\(\\w\\|_\\|(.*)\\).*?\\s *=>" "λ")
     (cbidris:font-lock '(("<-"     "←")
                          ("->"     "→")
                          ("=>"     "⇒")
