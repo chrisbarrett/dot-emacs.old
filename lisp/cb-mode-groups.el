@@ -131,7 +131,8 @@
 (defvar cb:whitespace-sensitive-languages
   '(python-mode
     haskell-mode
-    fsharp-mode))
+    fsharp-mode
+    idris-mode))
 
 (provide 'cb-mode-groups)
 
