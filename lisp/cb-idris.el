@@ -508,6 +508,39 @@ SILENT? controls whether provide feedback to the user on the action performed."
 
 ;; Configure Smartparens.
 (after 'smartparens
+
+  (defun sp-idris-just-one-space (id action ctx)
+    "Pad parens with spaces."
+    (when (and (equal 'insert action)
+               (sp-in-code-p id action ctx))
+      ;; Insert a leading space, unless
+      ;; 1. this is a quoted form
+      ;; 2. this is the first position of another list
+      ;; 3. this form begins a new line.
+      (save-excursion
+        (search-backward id)
+        (unless (s-matches?
+                 (rx (or (group bol (* space))
+                         (any "," "`" "@" "(" "[" "{")) eol)
+                 (buffer-substring (line-beginning-position) (point)))
+          (just-one-space)))
+      ;; Insert space after separator, unless
+      ;; 1. this form is at the end of another list.
+      ;; 2. this form is at the end of the line.
+      (save-excursion
+        (search-forward (sp-get-pair id :close))
+        (unless (s-matches? (rx (or (any ")" "]" "}")
+                                    eol))
+                            (buffer-substring (point) (1+ (point))))
+          (just-one-space)))))
+
+  (sp-with-modes cb:idris-modes
+    ;; Pad delimiters with spaces.
+    (sp-local-pair "\"" "\"" :post-handlers '(:add sp-idris-just-one-space))
+    (sp-local-pair "{" "}" :post-handlers '(:add sp-idris-just-one-space))
+    (sp-local-pair "[" "]" :post-handlers '(:add sp-idris-just-one-space))
+    (sp-local-pair "(" ")" :post-handlers '(:add sp-idris-just-one-space))
+    (sp-local-pair "'" nil :actions nil))
   (sp-with-modes cb:idris-modes
     (sp-local-pair "'" "'" :actions '(:rem insert))))
 
