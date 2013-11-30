@@ -343,26 +343,33 @@ With a prefix arg, insert an arrow with padding at point."
       (unless (-contains? (cons "data" idris-keywords) s)
         s))))
 
-(defun cbidris:columnate-arguments (linums)
+(defun cbidris:pad-tokens (lines)
+  "For each line in LINES, align tokens in columns by right-padding with whitespace."
+  (cl-loop
+   ;; Split lines into a matrix of argument expressions.
+   for split-lines = (-map 's-split-sexps lines)
+   ;; Pad with whitespace. This requires a matrix transposition before we can calculate
+   ;; the width for each row.
+   for padded =
+   (cl-loop for col from 0 upto (-max (cons 0 (-map 'length split-lines)))
+            for rows = (-map (~ nth col) split-lines)
+            for widest = (-max (-map 'length rows))
+            collect (-map (~ s-pad-right widest " ") rows))
+   ;; Transpose matrix again to restore original ordering.
+   for col from 0 upto (-max (cons 1 (-map 'length padded)))
+   for rows = (-map (~ nth col) padded)
+   collect rows))
+
+(defun cbidris:columnate-arguments (lines)
   "Align function arguments by column for each line in LINE-NOS."
-  (let* ((tkns   (-map (C s-split-sexps (~ cbidris:bol-to-s "=")) linums))
-         (n-tkns (number-sequence 0 (-max (cons 0 (-map 'length tkns)))))
-         ;; Align token in each column by right-padding with whitespace.
-         (padded
-          (cl-loop for col in n-tkns
-                   for rows = (-map (~ nth col) tkns)
-                   for widest = (-max (-map 'length rows))
-                   collect (-map (~ s-pad-right widest " ") rows)))
-         (rotated
-          (cl-loop for col in n-tkns
-                   for rows = (-map (~ nth col) padded)
-                   collect rows))
-         ;; Manually pad and align '=' sign, in case some equations are partial.
-         (joined
-          (-map (C (~ s-chop-suffix "=") s-trim (~ s-join " ")) rotated))
-         (widest-arglist
-          (-max (cons 0 (-map 'length joined)))))
-    (-map (C (~ s-append "=") (~ s-pad-right widest-arglist " ")) joined)))
+  (let* ((padded
+          (->> (cbidris:pad-tokens lines)
+            ;; Manually pad and align '=' sign, in case some equations are partial.
+            (-map (C (~ s-chop-suffix "=") s-trim (~ s-join " ")))))
+         (widest-arglist (-max (cons 0 (-map 'length padded)))))
+    (->> padded
+      (-remove (~ s-matches? (rx bol (* space) eol)))
+      (-map (C (~ s-append "=") (~ s-pad-right widest-arglist " "))))))
 
 (defun cbidris:bol-to-s (rx line-no)
   "Return the part of the line at LINUM from the line start up to RX."
@@ -374,7 +381,8 @@ With a prefix arg, insert an arrow with padding at point."
 
 (defun cbidris:normalise-function-decl-arguments ()
   (let* ((linums (cbidris:function-case-lines (cbidris:function-name-at-pt)))
-         (replacements (cbidris:columnate-arguments linums)))
+         (replacements (cbidris:columnate-arguments
+                        (-map (~ cbidris:bol-to-s "=") linums))))
     (-each (-zip linums replacements)
            (lambda+ ((linum . s))
              (save-excursion
