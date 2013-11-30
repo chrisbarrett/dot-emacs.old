@@ -206,7 +206,7 @@ With a prefix arg, insert an arrow with padding at point."
       ;; Move to first line that doesn't start with whitespace, or eob.
       (goto-char (cbidris:data-start-pos))
       (forward-line)
-      (while (and (s-matches? (rx bol space) (current-line))
+      (while (and (s-matches? (rx bol (or space "|")) (current-line))
                   (not (eobp)))
         (forward-line))
 
@@ -225,7 +225,7 @@ With a prefix arg, insert an arrow with padding at point."
     (let ((lines (s-split "\n" dd)))
       (or (equal 1 (length lines))
           (->> (-drop 1 lines)
-            (-all? (~ s-matches? (rx bol space))))))))
+            (-all? (~ s-matches? (rx bol (or space "|")))))))))
 
 (cl-defun cbidris:goto-type-judgement-colon
     (&optional (bound (cbidris:data-end-pos)))
