@@ -601,6 +601,10 @@ SILENT? controls whether provide feedback to the user on the action performed."
 
   (add-hook 'cb:idris-modes-hook 'cbidris:apply-unicode))
 
+;; Use auto-complete.
+(after 'idris-mode
+  (add-hook 'cb:idris-modes-hook 'auto-complete-mode))
+
 ;; Configure eldoc for Idris.
 
 (defun cbidris:get-docstring ()
