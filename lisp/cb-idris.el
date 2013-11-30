@@ -506,6 +506,7 @@ SILENT? controls whether provide feedback to the user on the action performed."
     (comment-indent-new-line))
 
    (t
+    (goto-char (line-end-position))
     (idris-ret))))
 
 (after 'idris-mode
