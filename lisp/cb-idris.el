@@ -531,6 +531,19 @@ SILENT? controls whether provide feedback to the user on the action performed."
   :mode (("\\.idr$" . idris-mode))
   :config
   (after 'idris-mode
+
+    ;; HACK: redefine idirs-mode to derive from prog-mode.
+    (define-derived-mode idris-mode prog-mode "Idris"
+      "Major mode for Idris
+     \\{idris-mode-map}
+Invokes `idris-mode-hook'."
+      :syntax-table idris-syntax-table
+      :group 'idris
+      (set (make-local-variable 'font-lock-defaults)
+           idris-font-lock-defaults)
+      (set (make-local-variable 'indent-tabs-mode) nil)
+      (set (make-local-variable 'comment-start) "--"))
+
     (define-key idris-mode-map (kbd "C-c C-z") 'idris-switch-to-output-buffer)))
 
 ;; Define a command to switch from the repl to the last Idris src buffer.
