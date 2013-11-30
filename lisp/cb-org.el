@@ -538,15 +538,6 @@ This will set which file org-capture will capture to."
                   ":END:")
                 :clock-keep t)
 
-               ("r" "Reading" entry
-                (file+olp org-default-notes-file "Someday" "Reading")
-                ,(s-unlines
-                  "* TODO Read %i%?"
-                  ":PROPERTIES:"
-                  ":CAPTURED: %U"
-                  ":END:")
-                :clock-keep t)
-
                ("l" "Link" entry
                 (file+headline org-default-notes-file "Links")
                 ,(s-unlines
