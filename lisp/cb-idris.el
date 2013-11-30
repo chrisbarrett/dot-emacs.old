@@ -463,7 +463,10 @@ SILENT? controls whether provide feedback to the user on the action performed."
   (if (s-matches? comment-start (current-line))
       (comment-indent-new-line)
     (idris-reformat-dwim t)
-    (idris-newline-and-indent)))
+
+    (if (s-matches? (rx bol (* space) eol) (current-line))
+        (newline)
+      (idris-newline-and-indent))))
 
 (defun idris-meta-ret ()
   "Create a newline and perform a context-sensitive continuation.
@@ -475,7 +478,10 @@ SILENT? controls whether provide feedback to the user on the action performed."
    ((cbidris:function-name-at-pt)
     (goto-char (line-end-position))
     (let ((fn (cbidris:function-name-at-pt)))
-      (newline-and-indent)
+
+      (unless (s-matches? (rx bol (* space) eol) (current-line))
+        (newline-and-indent))
+
       (insert fn)
       (just-one-space)))
 
@@ -485,9 +491,10 @@ SILENT? controls whether provide feedback to the user on the action performed."
       (unless (s-contains? "where" dt)
         (save-excursion
           (goto-char (cbidris:data-start-pos))
-          (goto-char (line-end-position))
-          (just-one-space)
-          (insert "where")))
+          (unless (s-matches? (rx space "=" (not (any "="))) (current-line))
+            (goto-char (line-end-position))
+            (just-one-space)
+            (insert "where"))))
 
       (goto-char (line-end-position))
       (newline-and-indent)
@@ -498,7 +505,7 @@ SILENT? controls whether provide feedback to the user on the action performed."
     (comment-indent-new-line))
 
    (t
-    (newline-and-indent))))
+    (idris-ret))))
 
 (after 'idris-mode
   (define-keys idris-mode-map
@@ -611,7 +618,7 @@ SILENT? controls whether provide feedback to the user on the action performed."
   :config
   (after 'idris-mode
 
-    ;; HACK: redefine idirs-mode to derive from prog-mode.
+    ;; HACK: redefine idris-mode to derive from prog-mode.
     (define-derived-mode idris-mode prog-mode "Idris"
       "Major mode for Idris
      \\{idris-mode-map}
