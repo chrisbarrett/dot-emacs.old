@@ -1,6 +1,5 @@
-# -*- mode: snippet -*-
+# key: T
 # name: Type
-# key: t
 # condition: (cbidris:at-data-decl?)
 # --
 Type
