@@ -377,8 +377,9 @@ With a prefix arg, insert an arrow with padding at point."
     (search-backward-regexp (rx bol (? "(")
                                 (group (+ (not (any space ":" ")"))))
                                 (? ")")))
-    (let ((s (match-string-no-properties 1)))
-      (unless (-contains? (cons "data" idris-keywords) s)
+    (let ((s (s-trim (match-string-no-properties 1))))
+      (unless (or (-contains? (cons "data" idris-keywords) s)
+                  (s-blank? s))
         s))))
 
 (defun cbidris:pad-tokens (lines)
