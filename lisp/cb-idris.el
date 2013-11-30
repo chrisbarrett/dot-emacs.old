@@ -203,18 +203,14 @@ With a prefix arg, insert an arrow with padding at point."
   (save-excursion
     (let ((start (point)))
 
+      ;; Move to first line that doesn't start with whitespace, or eob.
       (goto-char (cbidris:data-start-pos))
-      (goto-char (line-end-position))
+      (forward-line)
+      (while (and (s-matches? (rx bol space) (current-line))
+                  (not (eobp)))
+        (forward-line))
 
-      (-when-let (end (cond
-                       ((eobp) (point))
-                       ((search-forward-regexp
-                         (rx bol (or (and (* space) eol)
-                                     (not space))) nil t)
-                        (1- (line-beginning-position)))
-                       (t
-                        (forward-line)
-                        (line-end-position))))
+      (let ((end (1- (line-beginning-position))))
         (when (<= start end)
           end)))))
 
@@ -300,11 +296,47 @@ With a prefix arg, insert an arrow with padding at point."
               (setq done t)
             (forward-line)))))))
 
+(defun cbidris:at-sum-type? ()
+  "Non-nil if point is at a data decl for a sum type."
+  (s-matches? (rx bol (* space) "data" (* nonl) "=")
+              (cbidris:data-decl-at-pt)))
+
+(defun cbidris:align-sum-cases ()
+  "Align cases of a sum type with the '=' sign."
+  (save-excursion
+    ;; Ensure the '=' sign is surrounded by single spaces.
+    (goto-char (cbidris:data-start-pos))
+    (search-forward-regexp (rx space "=" (not (any "="))))
+    (just-one-space)
+    (search-backward "=")
+    (just-one-space)
+    (let ((col (current-column))
+          done)
+      (forward-line)
+      (goto-char (line-end-position))
+      (while (and (not done)
+                  (cbidris:at-data-decl?))
+        (when (s-matches? (rx bol (* space) "|") (current-line))
+          (goto-char (line-beginning-position))
+          (search-forward "|")
+          (backward-char)
+          (indent-to col))
+        (goto-char (line-end-position))
+        (if (eobp)
+            (setq done t)
+          (forward-line))))))
+
 (defun cbidris:format-data-decl ()
   "Align colons in a datatype declaration."
   (when (cbidris:at-data-decl?)
-    (cbidris:indent-data-decl)
-    (cbidris:normalise-data-decl-colons)
+    (cond
+     ((cbidris:at-sum-type?)
+      (cbidris:align-sum-cases))
+
+     (t
+      (cbidris:indent-data-decl)
+      (cbidris:normalise-data-decl-colons)))
+
     t))
 
 ;; -----------------------------------------------------------------------------
