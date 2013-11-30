@@ -380,7 +380,7 @@ With a prefix arg, insert an arrow with padding at point."
              (save-excursion
                (goto-char (point-min))
                (forward-line (1- linum))
-               (search-forward-regexp (rx bol (group (+ nonl) "="))
+               (search-forward-regexp (rx bol (group (+ (not (any "="))) "="))
                                       (line-end-position))
                (replace-match s t))))))
 
