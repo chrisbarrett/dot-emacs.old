@@ -203,14 +203,19 @@ With a prefix arg, insert an arrow with padding at point."
   (save-excursion
     (let ((start (point)))
 
-      ;; Move to first line that doesn't start with whitespace, or eob.
       (goto-char (cbidris:data-start-pos))
       (forward-line)
-      (while (and (s-matches? (rx bol (or space "|")) (current-line))
-                  (not (eobp)))
-        (forward-line))
+      (goto-char (line-beginning-position))
 
-      (let ((end (1- (line-beginning-position))))
+      (let ((end
+             (or
+              (when (search-forward-regexp
+                     (rx bol (or (and (* space) eol) (not (any space "|"))))
+                     nil t)
+                (forward-line -1)
+                (line-end-position))
+
+              (point-max))))
         (when (<= start end)
           end)))))
 
