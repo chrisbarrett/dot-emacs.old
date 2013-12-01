@@ -232,10 +232,14 @@ With a prefix arg, insert an arrow with padding at point."
 
 (cl-defun cbidris:goto-type-judgement-colon
     (&optional (bound (cbidris:data-end-pos)))
-  (ignore-errors
+  (let (done)
     (goto-char (line-beginning-position))
-    (search-forward " : " bound)
-    (search-backward ":")))
+    (while (and (not done)
+                (search-forward " : " bound t))
+      (unless (sp-get-enclosing-sexp)
+        (search-backward ":")
+        (setq done t)))
+    done))
 
 (defun cbidris:max-colon-column-in-data ()
   "Find the greatest column of type judgements in a data decl."
@@ -243,9 +247,8 @@ With a prefix arg, insert an arrow with padding at point."
          (cl-loop
           while (and (not (eobp))
                      (cbidris:at-data-decl?))
-          collect (progn
-                    (cbidris:goto-type-judgement-colon)
-                    (current-column))
+          if (cbidris:goto-type-judgement-colon)
+          collect (current-column)
           do (progn
                (forward-line)
                (end-of-line))))
@@ -272,7 +275,27 @@ With a prefix arg, insert an arrow with padding at point."
             (while (and (not done) (<= (point) end))
               (goto-char (line-beginning-position))
               (delete-horizontal-space)
-              (indent-to col)
+
+              ;; Indent new constructors to the same column as the first
+              ;; identifier after the data keyword.
+              ;; Align multi-line type judgements after the colon.
+              (if (s-matches? (rx "->" (* space) eol)
+                              (save-excursion
+                                (forward-line -1)
+                                (current-line)))
+                  (let ((colon-column (save-excursion
+                                        (forward-line -1)
+                                        (goto-char (line-beginning-position))
+                                        (cbidris:goto-type-judgement-colon)
+                                        (search-forward-regexp
+                                         (rx (not (any space ":")))
+                                         (line-end-position))
+                                        (1- (current-column)))))
+                    (indent-to colon-column))
+
+                  (indent-to col))
+
+              ;; If it's not the end of the buffer, continue the loop.
               (if (save-excursion (goto-char (line-end-position))
                                   (eobp))
                   (setq done t)
