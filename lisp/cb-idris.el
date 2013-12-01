@@ -208,16 +208,14 @@ With a prefix arg, insert an arrow with padding at point."
       (goto-char (line-beginning-position))
 
       (let ((end
-             (or
-              (when (search-forward-regexp
-                     (rx bol (or (and (* space) eol) (not (any space "|"))))
-                     nil t)
-                (forward-line -1)
-                (line-end-position))
-
-              (point-max))))
-        (when (<= start end)
-          end)))))
+             (when (search-forward-regexp
+                    (rx bol (or (and (* space) eol) (not (any space "|"))))
+                    nil t)
+               (forward-line -1)
+               (line-end-position))))
+        (if (and end (<= start end))
+            end
+          (point-max))))))
 
 (cl-defun cbidris:data-decl-at-pt ()
   "Return the data declaration at point."
