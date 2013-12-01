@@ -196,7 +196,7 @@ With a prefix arg, insert an arrow with padding at point."
   "Find the start position of the datatype declaration at point."
   (save-excursion
     (end-of-line)
-    (search-backward-regexp (rx bol (* space) "data" eow) nil t)))
+    (search-backward-regexp (rx bol (* space) (or "record" "data") eow) nil t)))
 
 (defun cbidris:data-end-pos ()
   "Find the end position of the datatype declaration at point."
@@ -264,7 +264,7 @@ With a prefix arg, insert an arrow with padding at point."
         ;; Indent each line in the decl to the column of the first ident.
         (goto-char (cbidris:data-start-pos))
         (let ((col (progn
-                     (search-forward-regexp (rx "data" (+ space)))
+                     (search-forward-regexp (rx (or "record" "data") (+ space)))
                      (current-column))))
           (forward-line)
 
@@ -374,12 +374,16 @@ With a prefix arg, insert an arrow with padding at point."
      unless (s-matches? " : " (current-line))
      collect (line-number-at-pos))))
 
+(after 'idris-mode
+  (-each '("record" "data")
+         (~ add-to-list 'idris-keywords)))
+
 (defun cbidris:function-name-at-pt ()
   "Return the name of the function at point."
   (save-excursion
     (search-backward-regexp (rx bol (* space) (group (+ (not (any space ":"))))))
     (let ((s (s-trim (match-string-no-properties 1))))
-      (unless (or (-contains? (cons "data" idris-keywords) s)
+      (unless (or (-contains? idris-keywords s)
                   (s-blank? s))
         s))))
 
