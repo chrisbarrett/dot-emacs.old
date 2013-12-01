@@ -618,6 +618,7 @@ SILENT? controls whether provide feedback to the user on the action performed."
 ;; `idris-mode' provides editing support for the Idris language.
 (use-package idris-mode
   :mode (("\\.idr$" . idris-mode))
+  :ensure t
   :config
   (after 'idris-mode
 
