@@ -368,7 +368,8 @@ With a prefix arg, insert an arrow with padding at point."
   (save-excursion
     (cl-loop
      initially (goto-char (point-min))
-     while (search-forward-regexp (rx-to-string `(and bol (? "(") ,fname (? ")")))
+     while (search-forward-regexp (rx-to-string `(and bol (* space)
+                                                      (? "(") ,fname (? ")")))
                                   nil t)
      unless (s-matches? " : " (current-line))
      collect (line-number-at-pos))))
@@ -385,6 +386,11 @@ With a prefix arg, insert an arrow with padding at point."
 (defun cbidris:pad-tokens (lines)
   "For each line in LINES, align tokens in columns by right-padding with whitespace."
   (cl-loop
+   ;; Calculate leading indentation for lines.
+   for indent-column =
+   (-max (cons 0 (-map (C length cadr (~ s-match (rx bol (group (* space)))))
+                       lines)))
+   for indentation = (s-repeat indent-column " ")
    ;; Split lines into a matrix of argument expressions.
    for split-lines = (-map 's-split-sexps lines)
    ;; Pad with whitespace. This requires a matrix transposition before we can calculate
@@ -396,15 +402,15 @@ With a prefix arg, insert an arrow with padding at point."
             collect (-map (~ s-pad-right widest " ") rows))
    ;; Transpose matrix again to restore original ordering.
    for col from 0 upto (-max (cons 1 (-map 'length padded)))
-   for rows = (-map (~ nth col) padded)
-   collect rows))
+   for (ident . argv) = (-map (~ nth col) padded)
+   collect (cons (s-prepend indentation ident) argv)))
 
 (defun cbidris:columnate-arguments (lines)
   "Align function arguments by column for each line in LINE-NOS."
   (let* ((padded
           (->> (cbidris:pad-tokens lines)
             ;; Manually pad and align '=' sign, in case some equations are partial.
-            (-map (C (~ s-chop-suffix "=") s-trim (~ s-join " ")))))
+            (-map (C (~ s-chop-suffix "=") s-trim-right (~ s-join " ")))))
          (widest-arglist (-max (cons 0 (-map 'length padded)))))
     (->> padded
       (-remove (~ s-matches? (rx bol (* space) eol)))
