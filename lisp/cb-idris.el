@@ -378,9 +378,7 @@ With a prefix arg, insert an arrow with padding at point."
 (defun cbidris:function-name-at-pt ()
   "Return the name of the function at point."
   (save-excursion
-    (search-backward-regexp (rx bol (? "(")
-                                (group (+ (not (any space ":" ")"))))
-                                (? ")")))
+    (search-backward-regexp (rx bol (group (+ (not (any space ":"))))))
     (let ((s (s-trim (match-string-no-properties 1))))
       (unless (or (-contains? (cons "data" idris-keywords) s)
                   (s-blank? s))
