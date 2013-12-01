@@ -469,9 +469,12 @@ SILENT? controls whether provide feedback to the user on the action performed."
       (comment-indent-new-line)
     (idris-reformat-dwim t)
 
-    (if (s-matches? (rx bol (* space) eol) (current-line))
-        (newline)
-      (idris-newline-and-indent))))
+    (cond
+     ((s-matches? (rx bol (* space) eol) (current-line))
+      (delete-horizontal-space)
+      (newline))
+     (t
+      (idris-newline-and-indent)))))
 
 (defun idris-meta-ret ()
   "Create a newline and perform a context-sensitive continuation.
