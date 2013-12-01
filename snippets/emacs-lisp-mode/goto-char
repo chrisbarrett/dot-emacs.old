@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
 # name: goto-char
-# key: go
+# key: gc
 # --
-(goto-char $0)
+(goto-char ${1:(point-min)})$0

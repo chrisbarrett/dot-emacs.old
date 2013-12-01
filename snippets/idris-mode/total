@@ -1,6 +1,0 @@
-# -*- mode: snippet -*-
-# name: total
-# key: t
-# condition: (cbyas:bol?)
-# --
-total
