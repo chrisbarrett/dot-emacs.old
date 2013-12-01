@@ -586,6 +586,7 @@ SILENT? controls whether provide feedback to the user on the action performed."
                          ("->"     "→")
                          ("=>"     "⇒")
                          ("."      "•")
+                         ("_|_"    "⊥")
                          (">="     "≥")
                          ("<="     "≤")
                          ("=="     "≣"))))
