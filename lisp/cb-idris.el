@@ -489,16 +489,6 @@ SILENT? controls whether provide feedback to the user on the action performed."
 * At comments, fill paragraph and insert a newline."
   (interactive)
   (cond
-   ((cbidris:function-name-at-pt)
-    (goto-char (line-end-position))
-    (let ((fn (cbidris:function-name-at-pt)))
-
-      (unless (s-matches? (rx bol (* space) eol) (current-line))
-        (newline-and-indent))
-
-      (insert fn)
-      (just-one-space)))
-
    ((cbidris:at-data-decl?)
     (let ((dt (cbidris:data-decl-at-pt)))
 
@@ -513,6 +503,16 @@ SILENT? controls whether provide feedback to the user on the action performed."
       (goto-char (line-end-position))
       (newline-and-indent)
       (indent-for-tab-command)))
+
+   ((cbidris:function-name-at-pt)
+    (goto-char (line-end-position))
+    (let ((fn (cbidris:function-name-at-pt)))
+
+      (unless (s-matches? (rx bol (* space) eol) (current-line))
+        (newline-and-indent))
+
+      (insert fn)
+      (just-one-space)))
 
    ((s-matches? comment-start (current-line))
     (fill-paragraph)
