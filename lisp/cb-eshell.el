@@ -36,6 +36,8 @@
   :config
   (progn
 
+    (setenv "EDITOR" "emacsclient")
+
     ;; Case-insensitive filename completion.
     (setq eshell-cmpl-ignore-case t)
 
