@@ -488,6 +488,14 @@ With a prefix arg, insert an arrow with padding at point."
           scion-program "~/.cabal/bin/scion-server"
           scion-completing-read-function 'ido-completing-read)))
 
+;; `flycheck-hdevtools' adds an additional haskell flycheck checker.
+(use-package flycheck-hdevtools
+  :ensure t
+  :defer t
+  :init
+  (after 'flycheck
+    (require 'flycheck-hdevtools)))
+
 (provide 'cb-haskell)
 
 ;;; cb-haskell.el ends here
