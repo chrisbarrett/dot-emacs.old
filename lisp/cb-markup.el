@@ -132,6 +132,19 @@
               ("h6"   "^###### \\(.*\\)$" 1)
               ("fn"   "^\\[\\^\\(.*\\)\\]" 1))))))
 
+(use-package creole-mode
+  :commands creole-mode
+  :defer t
+  :ensure t
+  :config
+  (progn
+
+    (defun creole-insert-link (url desc)
+      (interactive "sURL: \nsDescription: ")
+      (insert (format "[[%s|%s]]" url desc)))
+
+    (define-key creole-mode-map (kbd "C-c C-l") 'creole-insert-link)))
+
 (provide 'cb-markup)
 
 ;; Local Variables:
