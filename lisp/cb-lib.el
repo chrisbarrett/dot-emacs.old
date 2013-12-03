@@ -360,8 +360,17 @@ Find the first window where PRED-FORM is not nil."
   "Show an Exposé-style arrangement of BUFFERS."
   (when buffers
     (delete-other-windows)
-    (switch-to-buffer (car buffers))
-    (--each buffers (switch-to-buffer-other-window it))))
+    (switch-to-buffer (car buffers) t)
+    ;; Alternate between splitting windows above and below.
+    (-each (-zip (cdr buffers) (number-sequence 0 (length buffers)))
+           (lambda+ ((buf . i))
+
+             (if (zerop (% i 2))
+                 (split-window-horizontally)
+               (split-window-vertically))
+
+             (switch-to-buffer buf t)
+             (balance-windows)))))
 
 ;; -----------------------------------------------------------------------------
 

@@ -97,19 +97,18 @@
   "Show all IRC buffers."
   (interactive)
   (with-window-restore
-    (delete-other-windows)
     ;; Start IRC.
     (unless (--first-buffer (derived-mode-p 'circe-server-mode))
       (call-interactively 'circe))
-    ;; Show all IRC windows.
-    (-when-let (bufs (->> (--filter-buffers (derived-mode-p 'circe-server-mode 'circe-chat-mode 'circe-channel-mode))
-                       (-sort (-on 'string< 'buffer-name))))
+    ;; Select IRC buffers.
+    (let ((bufs (->> (--filter-buffers (derived-mode-p 'circe-server-mode
+                                                       'circe-chat-mode
+                                                       'circe-channel-mode))
+                  (-sort (-on 'string< 'buffer-name)))))
+      ;; Show all IRC buffers.
       (expose-buffers bufs)
       ;; Set up restore bindings.
-      (--each bufs
-        (buffer-local-set-key (kbd "C-c C-k") (command (restore))))
-
-      (message "<C-c C-k> to restore previous window state"))))
+      (--each bufs (buffer-local-set-key (kbd "C-c C-k") (command (restore)))))))
 
 (provide 'cb-irc)
 
