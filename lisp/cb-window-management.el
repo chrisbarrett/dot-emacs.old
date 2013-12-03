@@ -36,31 +36,6 @@
     (when (get-buffer bufname)
       (bury-buffer bufname))))
 
-(use-package workgroups
-  :ensure t
-  :defer  t
-  :idle   (require 'workgroups)
-  :bind
-  (("s-1" . wg-switch-to-index-0)
-   ("s-2" . wg-switch-to-index-1)
-   ("s-3" . wg-switch-to-index-2)
-   ("s-4" . wg-switch-to-index-3)
-   ("s-5" . wg-switch-to-index-4))
-  :diminish workgroups-mode
-  :commands workgroups-mode
-  :config
-  (progn
-    (setq
-     wg-display-current-workgroup-left-decor "["
-     wg-display-current-workgroup-right-decor "]"
-     wg-morph-vsteps 6
-     wg-prefix-key (kbd "C-c w"))
-    (wg-set-prefix-key)
-
-    (defadvice wg-mode-line-add-display (around wg-suppress-error activate)
-      "Ignore errors in modeline display function caused by custom modeline."
-      (ignore-errors ad-do-it))))
-
 (use-package transpose-frame
   :bind
   (("C-x t" . transpose-frame)
