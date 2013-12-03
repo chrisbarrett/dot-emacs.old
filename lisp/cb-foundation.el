@@ -260,29 +260,6 @@
     (when (buffer-live-p buf)
       ad-do-it)))
 
-;;; Arrow keys are for suckers.
-
-(defun you-lack-discipline ()
-  "Admonish the user for using the arrow keys."
-  (interactive)
-  (let ((img (f-join cb:tmp-dir "discipline.jpg")))
-    (unless (f-exists? img)
-      (url-copy-file
-       "http://ulrichdesign.ca/wp-content/uploads/2011/11/YOU-LACK-discipline.jpg"
-       img))
-    ;; Insert in a new window.
-    (let ((buf (get-buffer-create "* ADMONISHMENT *")))
-      (select-window
-       (or (display-buffer-reuse-window buf nil)
-           (display-buffer-pop-up-window buf nil)))
-      (with-current-buffer buf
-        (help-mode)
-        (read-only-mode +1)
-        (let ((inhibit-read-only t))
-          (delete-region (point-min) (point-max))
-          (insert-image (create-image img)))))
-    (message "Arrow keys are not the Emacs Way")))
-
 ;;; Hippie-expand
 
 (setq hippie-expand-try-functions-list
@@ -376,14 +353,6 @@ Otherwise, use the value of said variable as argument to a funcall."
   "C-x C-\\" 'set-input-method
   "RET"      'comment-indent-new-line
   "C-c C"    'indirect-region)
-
-
-(bind-keys
-  :hook (text-mode-hook prog-mode-hook)
-  [left]  'you-lack-discipline
-  [right] 'you-lack-discipline
-  [up]    'you-lack-discipline
-  [down]  'you-lack-discipline)
 
 (define-key prog-mode-map (kbd "M-q") 'indent-dwim)
 
