@@ -205,27 +205,6 @@
       (buffer-face-set
        `(:family ,(serif-font) :height 130)))))
 
-;; `erc' is an Emacs IRC client.
-(use-package erc
-  :commands erc
-  :config
-  (progn
-
-    (after 'erc
-      (setq
-       erc-hide-list
-       '("JOIN" "PART" "QUIT" "NICK")
-
-       erc-prompt
-       (lambda () (format "%s>" (erc-current-nick)))
-
-       erc-track-exclude-types
-       '("JOIN" "NICK" "PART" "QUIT" "MODE"
-         "324" "329" "332" "333" "353" "477")))
-
-    (erc-autojoin-mode +1)
-    (erc-track-mode +1)))
-
 (provide 'cb-net)
 
 ;; Local Variables:
