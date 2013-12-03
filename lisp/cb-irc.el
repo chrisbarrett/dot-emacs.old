@@ -36,10 +36,6 @@
   :ensure t
   :config
   (progn
-    ;; Use evil insert state.
-    (after 'evil
-      (--each '(circe-server-mode-hook circe-channel-mode-hook circe-chat-mode-hook)
-        (add-hook it 'evil-insert-state)))
 
     (require 'lui-autopaste)
     (add-hook 'circe-channel-mode-hook 'enable-lui-autopaste)
@@ -93,6 +89,11 @@
     (add-hook 'circe-nickserv-authenticated-hook 'cbcirce:set-prompt)
     (add-hook 'circe-server-connected-hook 'cbcirce:set-prompt)
     (add-hook 'circe-channel-mode-hook 'cbcirce:set-prompt)))
+
+;; Use evil insert state in circe
+(after 'evil
+  (--each '(circe-server-mode-hook circe-channel-mode-hook circe-chat-mode-hook)
+    (add-hook it 'evil-insert-state)))
 
 (defun show-irc ()
   "Show all IRC buffers."
