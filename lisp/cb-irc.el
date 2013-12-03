@@ -101,8 +101,7 @@
     (unless (--first-buffer (derived-mode-p 'circe-server-mode))
       (call-interactively 'circe))
     ;; Select IRC buffers.
-    (let ((bufs (->> (--filter-buffers (derived-mode-p 'circe-server-mode
-                                                       'circe-chat-mode
+    (let ((bufs (->> (--filter-buffers (derived-mode-p 'circe-chat-mode
                                                        'circe-channel-mode))
                   (-sort (-on 'string< 'buffer-name)))))
       ;; Show all IRC buffers.
