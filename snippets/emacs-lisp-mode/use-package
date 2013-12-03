@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: use-package
+# key: up
+# condition: (cbyas:bol?)
+# --
+;; `$1' $2
+(use-package $1
+  $0)
