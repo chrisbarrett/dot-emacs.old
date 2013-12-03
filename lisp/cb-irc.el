@@ -73,6 +73,7 @@
     ;; Customise faces
 
     (set-face-foreground 'circe-server-face (face-foreground 'font-lock-comment-face))
+    (set-face-foreground 'circe-fool-face (face-foreground 'font-lock-comment-face))
     (set-face-foreground 'circe-my-message-face solarized-hl-orange)
     (set-face-foreground 'lui-button-face solarized-hl-yellow)
     (set-face-foreground 'circe-originator-face solarized-hl-violet)
