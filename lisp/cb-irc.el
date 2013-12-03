@@ -30,6 +30,8 @@
 (require 'use-package)
 (require 'cb-colour)
 
+(defvar circe-bot-list '("fsbot" "rudybot"))
+
 ;; `circe' is an Emacs IRC client.
 (use-package circe
   :commands circe
@@ -88,7 +90,15 @@
 
     (add-hook 'circe-nickserv-authenticated-hook 'cbcirce:set-prompt)
     (add-hook 'circe-server-connected-hook 'cbcirce:set-prompt)
-    (add-hook 'circe-channel-mode-hook 'cbcirce:set-prompt)))
+    (add-hook 'circe-channel-mode-hook 'cbcirce:set-prompt)
+
+    ;; Dim messages from bots.
+
+    (defun cbcirce:message-option-bot (nick &rest ignored)
+      (when (member nick circe-bot-list)
+        '((text-properties . (face circe-fool-face lui-do-not-track t)))))
+
+    (add-hook 'circe-message-option-functions 'cbcirce:message-option-bot)))
 
 ;; Use evil insert state in circe
 (after 'evil
