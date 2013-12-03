@@ -28,29 +28,9 @@
 
 (require 'cb-lib)
 (require 'use-package)
+(require 'cb-colour)
 
-;; `erc' is an Emacs IRC client.
-(use-package erc
-  :commands erc
-  :config
-  (progn
-
-    (after 'erc
-      (setq
-       erc-hide-list
-       '("JOIN" "PART" "QUIT" "NICK")
-
-       erc-prompt
-       (lambda () (format "%s>" (erc-current-nick)))
-
-       erc-track-exclude-types
-       '("JOIN" "NICK" "PART" "QUIT" "MODE"
-         "324" "329" "332" "333" "353" "477")))
-
-    (erc-autojoin-mode +1)
-    (erc-track-mode +1)))
-
-;; `circe' is a better Emacs IRC client.
+;; `circe' is an Emacs IRC client.
 (use-package circe
   :commands circe
   :ensure t
@@ -94,12 +74,24 @@
 
     ;; Customise faces
 
-    (set-face-foreground circe-server-face (face-foreground 'font-lock-comment-face))
+    (set-face-foreground 'circe-server-face (face-foreground 'font-lock-comment-face))
     (set-face-foreground 'lui-button-face solarized-hl-yellow)
-    (set-face-foreground circe-originator-face solarized-hl-green)
-    (set-face-foreground circe-prompt-face solarized-hl-red)
-    (set-face-background circe-prompt-face nil)
-    ))
+    (set-face-foreground 'circe-originator-face solarized-hl-green)
+    (set-face-foreground 'circe-highlight-nick-face solarized-hl-cyan)
+    (set-face-foreground 'lui-time-stamp-face (face-foreground 'font-lock-comment-face))
+
+    ;; Customise prompt
+
+    (set-face-foreground 'circe-prompt-face solarized-hl-red)
+    (set-face-background 'circe-prompt-face nil)
+
+    (defun cbcirce:set-prompt ()
+      (let ((prompt (propertize (format "%s> " (circe-server-nick)) 'face circe-prompt-face)))
+        (lui-set-prompt prompt)))
+
+    (add-hook 'circe-nickserv-authenticated-hook 'cbcirce:set-prompt)
+    (add-hook 'circe-server-connected-hook 'cbcirce:set-prompt)
+    (add-hook 'circe-channel-mode-hook 'cbcirce:set-prompt)))
 
 (provide 'cb-irc)
 
