@@ -441,6 +441,13 @@ Otherwise, use the value of said variable as argument to a funcall."
 
 (bind-key* "C-c ^" 'cb:sort-dispatch)
 
+(define-command-picker viewing-picker
+  :title "*Viewing*"
+  :options
+  '(("i" "IRC" executor:show-irc)))
+
+(bind-key* "C-c v" 'viewing-picker)
+
 (provide 'cb-foundation)
 
 ;; Local Variables:
