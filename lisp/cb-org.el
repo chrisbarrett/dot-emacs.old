@@ -559,6 +559,15 @@ This will set which file org-capture will capture to."
                   ":END:")
                 :clock-keep t)
 
+               ("v" "Viewing" entry
+                (file+olp org-default-notes-file "Someday" "Viewing")
+                ,(s-unlines
+                  "* MAYBE Watch %i%?"
+                  ":PROPERTIES:"
+                  ":CAPTURED: %U"
+                  ":END:")
+                :clock-keep t)
+
                ("r" "Reading" entry
                 (file+olp org-default-notes-file "Someday" "Reading")
                 ,(s-unlines
