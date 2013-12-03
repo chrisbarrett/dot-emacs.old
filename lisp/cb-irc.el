@@ -95,6 +95,17 @@
   (--each '(circe-server-mode-hook circe-channel-mode-hook circe-chat-mode-hook)
     (add-hook it 'evil-insert-state)))
 
+;; Fix delete key behaviour in circe message mode.
+(after '(circe smartparens)
+
+  (defun cbcirce:del ()
+    "Delete command for Circe buffers that works with smartparens."
+    (interactive)
+    (call-interactively
+     (if (sp-get-sexp t) 'sp-backward-delete-char 'delete-backward-char)))
+
+  (define-key circe-channel-mode-map (kbd "<backspace>") 'cbcirce:del))
+
 (defun show-irc ()
   "Show all IRC buffers."
   (interactive)
