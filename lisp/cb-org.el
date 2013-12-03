@@ -141,6 +141,7 @@ This will set which file org-capture will capture to."
 
 (bind-keys
   :overriding? t
+  "C-c a" 'org-agenda
   "<f6>" (command (org-capture nil "t"))
   "<f7>" 'cb-org:capture
   "<f8>" 'org-action-picker
