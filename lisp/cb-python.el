@@ -63,17 +63,9 @@
       (jedi:show-doc)
       t)))
 
-;; Use `python', the newer package off MELPA.
+;; `python' provides a major mode for python files.
 (use-package python
-  :ensure   t
   :commands python-mode
-  :mode     ("\\.py$" . python-mode)
-  :init
-  (hook-fn 'python-mode-hook
-    ;; Python-mode is not derived from prog mode, but we still want all the
-    ;; programming goodies.
-    (run-hooks 'prog-mode-hook))
-
   :config
   (progn
     ;; Use ipython if installed.

@@ -189,11 +189,11 @@
 
 ;; `autorevert' is a minor mode that reverts the buffer if it changes on disk.
 (use-package autorevert
-  :commands '(auto-revert-mode
-              turn-on-auto-revert-mode
-              auto-revert-tail-mode
-              turn-on-auto-revert-tail-mode
-              global-auto-revert-mode)
+  :commands (auto-revert-mode
+             turn-on-auto-revert-mode
+             auto-revert-tail-mode
+             turn-on-auto-revert-tail-mode
+             global-auto-revert-mode)
   :diminish auto-revert-mode)
 
 ;; `imenu' provides navigation between sections of the current buffer.
@@ -208,7 +208,6 @@
                    ;; Match sections with at least 3 semicolons
                    ,(rx bol (* space) ";;;" (* ";") (+ space) (group (+ nonl )))
                    1) t)))
-
 
 (provide 'cb-productivity)
 

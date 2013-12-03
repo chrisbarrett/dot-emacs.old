@@ -77,11 +77,12 @@
   (sp-local-pair (-difference cb:lisp-modes cb:elisp-modes)
                  "`" "`" :when '(sp-in-string-p)))
 
-(use-package parenface-plus
+(use-package parenface
   :ensure t
   :config
-  ;; HACK: Ensure paren face is displayed the first time a candidate buffer is loaded.
   (--each cb:lisp-modes
+    ;; Ensure paren face is displayed the first time a candidate buffer is
+    ;; loaded.
     (font-lock-add-keywords it '(("(\\|)" . paren-face)))))
 
 (use-package eval-sexp-fu

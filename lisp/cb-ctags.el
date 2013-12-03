@@ -88,7 +88,7 @@
   (if (file-exists-p (concat (cb:tags-project-root) "TAGS"))
       (visit-ctags)
     (build-ctags))
-  (etags-select-find-tag-at-point))
+  (find-tag (symbol-name (symbol-at-point))))
 
 ;; Ensure tags searching is case-sensitive.
 (setq tags-case-fold-search nil)
@@ -101,10 +101,6 @@
   :defer    t
   :diminish ctags-auto-update-mode
   :init   (add-hook 'prog-mode-hook 'turn-on-ctags-auto-update-mode))
-
-(use-package etags-select
-  :ensure   t
-  :commands (etags-select-find-tag-at-point etags-select-find-tag))
 
 (provide 'cb-ctags)
 
