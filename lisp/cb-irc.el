@@ -90,7 +90,16 @@
          word-wrap t
          wrap-prefix "    "))
 
-      (add-hook 'lui-mode-hook 'cbcirce:wrapping-setup))))
+      (add-hook 'lui-mode-hook 'cbcirce:wrapping-setup))
+
+    ;; Customise faces
+
+    (set-face-foreground circe-server-face (face-foreground 'font-lock-comment-face))
+    (set-face-foreground 'lui-button-face solarized-hl-yellow)
+    (set-face-foreground circe-originator-face solarized-hl-green)
+    (set-face-foreground circe-prompt-face solarized-hl-red)
+    (set-face-background circe-prompt-face nil)
+    ))
 
 (provide 'cb-irc)
 
