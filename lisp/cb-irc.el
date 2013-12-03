@@ -87,7 +87,7 @@
     (set-face-background 'circe-prompt-face nil)
 
     (defun cbcirce:set-prompt ()
-      (let ((prompt (propertize (format "%s> " (circe-server-nick)) 'face circe-prompt-face)))
+      (let ((prompt (propertize (format "%s: " (circe-server-nick)) 'face circe-prompt-face)))
         (lui-set-prompt prompt)))
 
     (add-hook 'circe-nickserv-authenticated-hook 'cbcirce:set-prompt)
