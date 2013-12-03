@@ -356,6 +356,13 @@ restore key."
 Find the first window where PRED-FORM is not nil."
   `(-first-window (lambda (it) ,pred-form)))
 
+(defun expose-buffers (buffers)
+  "Show an Exposé-style arrangement of BUFFERS."
+  (when buffers
+    (delete-other-windows)
+    (switch-to-buffer (car buffers))
+    (--each buffers (switch-to-buffer-other-window it))))
+
 ;; -----------------------------------------------------------------------------
 
 (cl-defmacro bind-keys (&rest
