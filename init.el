@@ -54,7 +54,7 @@
 (require 'cl)
 (require 'cl-lib)
 
-;;;; Basic paths.
+;;; Set basic paths
 
 (eval-and-compile
   (setq user-emacs-directory (expand-file-name user-emacs-directory))
@@ -62,11 +62,10 @@
   (add-to-list 'load-path (concat (getenv "HOME") "/Dropbox/"))
   (add-to-list 'load-path (concat user-emacs-directory "lisp")))
 
-;; Load submodules.
-
-(cl-loop with lib = (concat user-emacs-directory "lib/")
-         for module in '("org-mode" "apel")
-         do (add-to-list 'load-path (concat lib module)))
+;; Load org-mode submodule.
+(let ((org-src (concat user-emacs-directory "lib/org-mode")))
+  (add-to-list 'load-path (concat org-src "/lisp"))
+  (add-to-list 'load-path (concat org-src "/contrib")))
 
 ;;; Configure packages.
 
