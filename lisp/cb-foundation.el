@@ -444,7 +444,8 @@ Otherwise, use the value of said variable as argument to a funcall."
 (define-command-picker viewing-picker
   :title "*Viewing*"
   :options
-  '(("i" "IRC" show-irc)))
+  '(("i" "IRC" show-irc)
+    ("m" "Exposé (mode)" expose-buffers-by-mode)))
 
 (bind-key* "C-c v" 'viewing-picker)
 

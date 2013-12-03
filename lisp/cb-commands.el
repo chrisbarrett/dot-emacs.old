@@ -37,7 +37,6 @@
 
 ;;; Buffers
 
-;;;###autoload
 (defun cb:rotate-buffers ()
   "Rotate active buffers, retaining the window layout.
 Changes the selected buffer."
@@ -199,6 +198,15 @@ With prefix argument ARG, justify text."
       (-each results 'princ))
 
     (error "No autoloads found in current buffer")))
+
+(defun expose-buffers-by-mode (mode)
+  "Show all buffers with major mode MODE."
+  (interactive (list (->> (--map-buffers (symbol-name major-mode))
+                       (-sort 'string<)
+                       (-uniq)
+                       (ido-completing-read "Mode: ")
+                       (intern))))
+  (expose-buffers (--filter-buffers (derived-mode-p mode))))
 
 ;;; Shebang insertion
 
