@@ -75,14 +75,15 @@
     ;; Customise faces
 
     (set-face-foreground 'circe-server-face (face-foreground 'font-lock-comment-face))
+    (set-face-foreground 'circe-my-message-face solarized-hl-orange)
     (set-face-foreground 'lui-button-face solarized-hl-yellow)
-    (set-face-foreground 'circe-originator-face solarized-hl-green)
+    (set-face-foreground 'circe-originator-face solarized-hl-violet)
     (set-face-foreground 'circe-highlight-nick-face solarized-hl-cyan)
     (set-face-foreground 'lui-time-stamp-face (face-foreground 'font-lock-comment-face))
 
     ;; Customise prompt
 
-    (set-face-foreground 'circe-prompt-face solarized-hl-red)
+    (set-face-foreground 'circe-prompt-face solarized-hl-orange)
     (set-face-background 'circe-prompt-face nil)
 
     (defun cbcirce:set-prompt ()
