@@ -93,6 +93,24 @@
     (add-hook 'circe-server-connected-hook 'cbcirce:set-prompt)
     (add-hook 'circe-channel-mode-hook 'cbcirce:set-prompt)))
 
+(defun show-irc ()
+  "Show all IRC buffers."
+  (interactive)
+  (with-window-restore
+    (delete-other-windows)
+    ;; Start IRC.
+    (unless (--first-buffer (derived-mode-p 'circe-server-mode))
+      (call-interactively 'circe))
+    ;; Show all IRC windows.
+    (-when-let (bufs (->> (--filter-buffers (derived-mode-p 'circe-server-mode 'circe-chat-mode 'circe-channel-mode))
+                       (-sort (-on 'string< 'buffer-name))))
+      (expose-buffers bufs)
+      ;; Set up restore bindings.
+      (--each bufs
+        (buffer-local-set-key (kbd "C-c C-k") (command (restore))))
+
+      (message "<C-c C-k> to restore previous window state"))))
+
 (provide 'cb-irc)
 
 ;;; cb-irc.el ends here
