@@ -1,4 +1,4 @@
-#+TITLE: %N
+#+TITLE: %((s-capitalize (f-filename (f-no-ext (buffer-file-name))))%)
 #+AUTHOR: %U
 
 %@
