@@ -356,21 +356,30 @@ restore key."
 Find the first window where PRED-FORM is not nil."
   `(-first-window (lambda (it) ,pred-form)))
 
-(defun expose-buffers (buffers)
+(cl-defun expose-buffers
+    (buffers &optional (sort-fn (-on 'string< 'buffer-file-name)))
   "Show an Exposé-style arrangement of BUFFERS."
   (when buffers
     (delete-other-windows)
-    (switch-to-buffer (car buffers) t)
-    ;; Alternate between splitting windows above and below.
-    (-each (-zip (cdr buffers) (number-sequence 0 (length buffers)))
-           (lambda+ ((buf . i))
+    (let* ((live (-filter 'buffer-live-p (-sort sort-fn buffers)))
+           (padded (if (cl-evenp (length live)) live (nreverse (cons nil (nreverse live)))))
+           (bs (apply '-zip (-partition (/ (length padded) 2) padded))))
 
-             (if (zerop (% i 2))
-                 (split-window-horizontally)
-               (split-window-vertically))
+      (when live
+        (switch-to-buffer (caar bs) t))
 
-             (switch-to-buffer buf t)
-             (balance-windows)))))
+      (-each (cdr bs)
+             (lambda+ ((top . bot))
+               (select-window (split-window-horizontally))
+               (switch-to-buffer top)
+               (balance-windows)))
+
+      (-each bs
+             (lambda+ ((top . bot))
+               (select-window (get-buffer-window top))
+               (when bot
+                 (select-window (split-window-vertically))
+                 (switch-to-buffer bot)))))))
 
 ;; -----------------------------------------------------------------------------
 
