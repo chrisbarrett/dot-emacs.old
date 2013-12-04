@@ -97,14 +97,11 @@
 Each element is either a string or a cons of (var . default)."
   (cl-loop
    for arg in (s-split (rx ",") arglist t)
-   if (not (s-blank? arg))
-
    for (x . y)  = (s-split "=" arg)
    for (_ name) = (s-match (rx (* (any "*")) (group (* (any "_" alnum)))) x)
    for default  = (when y (car y))
-   collect (if default
-               (cons name default)
-             name)))
+   when (not (s-blank? (s-trim name)))
+   collect (if default (cons name default) name)))
 
 (defun cb-py:python-docstring (arglist)
   "Format a docstring according to ARGLIST."
