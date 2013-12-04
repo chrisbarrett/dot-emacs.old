@@ -2,6 +2,6 @@
 # name: defun
 # condition: (cbyas:bol?)
 # --
-(${2:$(cbel:defun-form-for-arglist yas/text)} `(cbel:find-identifier-prefix)`$1 ($2)
-  "$3${2:$(cbel:process-docstring yas/text)}"
-  $0)
+(${3:$(cbel:defun-form-for-arglist yas/text)} ${1:`(cbel:find-identifier-prefix)`$2} ($3)
+  ${4:"$5${3:$(cbel:process-docstring yas/text)}"
+  }$0)
