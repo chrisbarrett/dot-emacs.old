@@ -1,4 +1,4 @@
-# key: f
+# key: defface
 # name: defface
 # condition: (cbel:bol-for-snippet?)
 # --
