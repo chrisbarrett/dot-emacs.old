@@ -131,11 +131,6 @@ errors forward of POS."
     (when (= pos (point-max))
       (message "No more spelling errors"))))
 
-;; Enter insertion state after auto-insert.
-(after '(autoinsert evil)
-  (defadvice auto-insert (after evil-insert activate)
-    (evil-insert-state)))
-
 ;;; Mode-appropriate documentation search with K.
 
 (defun get-manpage (candidate)
