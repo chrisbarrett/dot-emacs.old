@@ -368,18 +368,25 @@ Find the first window where PRED-FORM is not nil."
       (when live
         (switch-to-buffer (caar bs) t))
 
-      (-each (cdr bs)
-             (lambda+ ((top . bot))
-               (select-window (split-window-horizontally))
-               (switch-to-buffer top)
-               (balance-windows)))
+      ;; Split sensibly for 2-up view, otherwise show a grid.
+      (cond
+       ((= 1 (length bs))
+        (-when-let (bot (cdar bs))
+          (select-window (split-window-sensibly))
+          (switch-to-buffer bot)))
 
-      (-each bs
-             (lambda+ ((top . bot))
-               (select-window (get-buffer-window top))
-               (when bot
-                 (select-window (split-window-vertically))
-                 (switch-to-buffer bot)))))))
+       (t
+        (-each (cdr bs)
+               (lambda+ ((top . bot))
+                 (select-window (split-window-horizontally))
+                 (switch-to-buffer top)
+                 (balance-windows)))
+        (-each bs
+               (lambda+ ((top . bot))
+                 (select-window (get-buffer-window top))
+                 (when bot
+                   (select-window (split-window-vertically))
+                   (switch-to-buffer bot)))))))))
 
 ;; -----------------------------------------------------------------------------
 
