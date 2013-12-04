@@ -196,7 +196,9 @@ With a prefix arg, insert an arrow with padding at point."
   "Find the start position of the datatype declaration at point."
   (save-excursion
     (end-of-line)
-    (search-backward-regexp (rx bol (* space) (or "record" "data") eow) nil t)))
+    (when (search-backward-regexp (rx bol (* space) (or "record" "data") eow) nil t)
+      (skip-chars-forward " \t")
+      (point))))
 
 (defun cbidris:data-end-pos ()
   "Find the end position of the datatype declaration at point."
