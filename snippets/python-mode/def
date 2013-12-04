@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# name: def
+# key: d
+# --
+def $1 ($2):
+    """$3
+    ${2:$(cb-py:python-docstring yas/text)}
+
+    Returns:
+    $4
+
+    """
+    $0
