@@ -148,7 +148,7 @@ Each element is either a string or a cons of (var . default)."
 (add-to-list 'insertion-picker-options
              '("d" "Docstring" cb-py:insert-docstring :modes (python-mode)))
 
-;; Use `python', the newer package off Maramalade.
+;; Use `python', the newer package off Marmalade.
 (use-package python
   :ensure   t
   :commands python-mode
@@ -232,7 +232,7 @@ Each element is either a string or a cons of (var . default)."
   :defer t
   :ensure t)
 
-;; `jedi' provides auto-completion, code search and docmentation for python
+;; `jedi' provides auto-completion, code search and documentation for python
 ;; buffers.
 (use-package jedi
   :ensure   t
