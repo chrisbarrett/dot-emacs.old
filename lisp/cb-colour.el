@@ -128,7 +128,7 @@
 
     (after 'eval-sexp-fu
       (set-face-background 'eval-sexp-fu-flash "#073642")
-      (set-face-foreground 'eval-sexp-fu-flash-error solarized-hl-cyan))
+      (set-face-foreground 'eval-sexp-fu-flash solarized-hl-cyan))
 
     (after 'parenface-plus
       (set-face-foreground  'paren-face "#505070")))
