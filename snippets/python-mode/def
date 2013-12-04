@@ -1,7 +1,7 @@
 # key: d
 # name: def
 # --
-def $1 ($2):
+def ${1:$$(s-downcase yas/text)} ($2):
     ${3:"""$4
     ${2:$(cb-py:python-docstring yas/text)}
 

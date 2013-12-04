@@ -1,8 +1,8 @@
 # key: c
 # name: class
 # --
-class $1:
+class ${1:$$(s-upper-camel-case yas/text)}${2: ($3)}:
 
-    ${2:'''$3'''
+    ${4:'''$5'''
 
     }$0
