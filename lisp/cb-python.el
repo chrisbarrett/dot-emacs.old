@@ -95,12 +95,11 @@
   (define-auto-insert
     '("\\.py$" . "Python skeleton")
     '("Short description: "
-      "\"\"\"" \n
-      str \n
-      "\"\"\"" \n
-      \n
-      _ \n
-      \n)))
+      "\"\"\"\n"
+      str
+      "\n\"\"\"\n\n"
+      _
+      "\n")))
 
 ;; Add functions for manipulating docstrings.
 
