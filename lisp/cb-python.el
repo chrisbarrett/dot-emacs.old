@@ -63,6 +63,67 @@
       (jedi:show-doc)
       t)))
 
+;; Add functions for manipulating docstrings.
+
+(defun cb-py:split-arglist (arglist)
+  "Parse ARGLIST into a list of parameters.
+Each element is either a string or a cons of (var . default)."
+  (cl-loop
+   for arg in (s-split (rx ",") arglist t)
+   if (not (s-blank? arg))
+
+   for (x . y)  = (s-split "=" arg)
+   for (_ name) = (s-match (rx (* (any "*")) (group (* anything))) x)
+   for default  = (when y (car y))
+   collect (if default
+               (cons name default)
+             name)))
+
+(defun cb-py:python-docstring (arglist)
+  "Format a docstring according to ARGLIST."
+  (let ((al (s-replace " " "" arglist)))
+    (if (s-blank? al)
+        ""
+      (cl-destructuring-bind (keywords formal)
+          (-separate 'listp (cb-py:split-arglist al))
+        (concat
+         (when (or formal keywords) "\n")
+         ;; Formal args
+         (when (and formal keywords) "    Formal arguments:\n")
+         (s-join "\n" (--map (format "    %s --" it) formal))
+         (when keywords "\n\n")
+         ;; Keyword args
+         (when (and formal keywords) "    Keyword arguments:\n")
+         (s-join "\n" (--map (format "    %s (default %s) --" (car it) (cdr it))
+                             keywords)))))))
+
+;; Add command to insert docstring for fn at point.
+
+(defun cb-py:arglist-for-function-at-point ()
+  "Return the arglist for the function at point, or nil if none."
+  (save-excursion
+    (when (beginning-of-defun)
+      (let ((start (search-forward "("))
+            (end (1- (search-forward ")"))))
+        (buffer-substring start end)))))
+
+(defun cb-py:insert-docstring ()
+  "Insert a docstring for the python function at point."
+  (interactive "*")
+  (-when-let (arglist (cb-py:arglist-for-function-at-point))
+    (when (beginning-of-defun)
+      (search-forward-regexp (rx ":" (* space) eol))
+      (newline)
+      (open-line 1)
+      (insert (concat "    \"\"\"\n"
+                      (cb-py:python-docstring arglist) "\n\n"
+                      "    Returns:\n\n"
+                      "    \"\"\"" ))
+      (message "Arglist inserted."))))
+
+(add-to-list 'insertion-picker-options
+             '("d" "Docstring" cb-py:insert-docstring :modes (python-mode)))
+
 ;; Use `python', the newer package off Maramalade.
 (use-package python
   :ensure   t
