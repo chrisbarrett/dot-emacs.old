@@ -313,6 +313,7 @@ With a prefix arg, insert an arrow with padding at point."
               (rx space ":" (or space eol))
               (cbidris:data-end-pos) t)
         (save-excursion
+          (just-one-space)
           (search-backward ":")
           (just-one-space)))
 
