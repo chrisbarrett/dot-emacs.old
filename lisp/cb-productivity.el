@@ -222,6 +222,11 @@
     (setq file-template-insert-automatically t
           file-template-paths (list cb:file-templates-dir))
 
+    ;; Start the undo history after the expansion is complete.
+    (hook-fn 'file-template-insert-hook
+      (setq buffer-undo-list nil
+            buffer-undo-tree nil))
+
     (setq file-template-mapping-alist
           (->> (f-files cb:file-templates-dir)
             (-map 'f-filename)
