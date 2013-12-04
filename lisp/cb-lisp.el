@@ -30,9 +30,11 @@
 (require 'cb-foundation)
 (require 'cb-mode-groups)
 
+;; Set keys for all lisp modes.
 (hook-fn 'cb:lisp-modes-hook
   (local-set-key (kbd "M-q") 'indent-dwim))
 
+;; Configure special paren formatting behaviours for lisp modes.
 (after 'smartparens
 
   ;; Add lisp modes to `sp-navigate-reindent-after-up'.
@@ -83,25 +85,30 @@
   (sp-local-pair (-difference cb:lisp-modes cb:elisp-modes)
                  "`" "`" :when '(sp-in-string-p)))
 
+;; `parenface-plus' adds a face for parentheses allowing, parens to be dimmed.
 (use-package parenface-plus
   :ensure t
   :config
-  ;; HACK: Ensure paren face is displayed the first time a candidate buffer is loaded.
+  ;; Ensure paren face is displayed the first time a candidate buffer is loaded.
   (--each cb:lisp-modes
     (font-lock-add-keywords it '(("(\\|)" . paren-face)))))
 
+;; `eval-sexp-fu' adds a flash when running eval-expression.
 (use-package eval-sexp-fu
   :commands eval-sexp-fu-flash-mode
-  :init     (add-hook 'cb:lisp-modes-hook 'eval-sexp-fu-flash-mode)
+  :init     (add-hook 'cb:lisp-modes-hook 'turn-on-eval-sexp-fu-flash-mode)
   :config   (setq eval-sexp-fu-flash-duration 0.2))
 
+;; `eldoc' shows documentation hints in the minibuffer.
 (use-package eldoc
   :commands eldoc-mode
   :diminish eldoc-mode
   :init
   (add-hook 'cb:lisp-modes-hook 'turn-on-eldoc-mode))
 
+;; `slime' adds support for inferior Common Lisp processes.
 (use-package slime
+  :ensure   t
   :defer    t
   :commands (slime-setup slime)
   :init
@@ -113,6 +120,7 @@
   :config
   (setq slime-lisp-implementations `((lisp ("sbcl" "--noinform")))))
 
+;; `ac-slime' adds an auto-complete source for slime.
 (use-package ac-slime
   :ensure   t
   :defer    t
