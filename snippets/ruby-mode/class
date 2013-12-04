@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: class
+# key: cls
+# --
+# $4
+
+class $1${2: < $3}
+  $0
+end

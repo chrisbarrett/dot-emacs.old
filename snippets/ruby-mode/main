@@ -1,0 +1,6 @@
+# key: main
+# name: main
+# --
+if __FILE__ == \$0
+  $0
+end
