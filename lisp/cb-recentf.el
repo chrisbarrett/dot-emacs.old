@@ -31,11 +31,10 @@
 (require 'noflet)
 
 (use-package recentf
+  :init
+  (setq recentf-save-file (f-join cb:tmp-dir "recentf"))
   :config
   (progn
-
-    (add-hook 'kill-emacs-hook 'recentf-save-list)
-    (run-with-idle-timer (* 5 60) t 'recentf-save-list)
 
     (defadvice recentf-cleanup (around hide-messages activate)
       "Suppress messages when cleaning up recentf."
@@ -43,7 +42,6 @@
         ad-do-it))
 
     (setq
-     recentf-save-file       (concat cb:tmp-dir "recentf")
      recentf-auto-cleanup    5
      recentf-keep            '(file-remote-p file-readable-p)
      recentf-max-saved-items 100
@@ -61,23 +59,27 @@
                        ".emacs.d/url/"
                        "/\\.git/"
                        "/Emacs.app/"
+                       ;; Tramp
+                       "^/?sudo"
                        ;; Special files
                        "\\.bbdb"
                        "\\.newsrc"
-                       "^/?sudo"
                        "recentf"
                        "/gnus$"
                        "/gnus.eld$"
                        "\\.ido\\.last"
+                       "\\.org-clock-save\.el$"
                        ))
 
-    ;; Sometimes recentf gets into a recursive load, so just nuke the save file
-    ;; if that happens.
-    (condition-case _
-        (recentf-mode +1)
-      (error
-       (f-delete recentf-save-file)
-       (recentf-mode +1)))))
+    ;; Start recentf at init time.
+    (unless (ignore-errors (emacs-init-time))
+      ;; Sometimes recentf gets into a recursive load, so just nuke the save
+      ;; file if that happens.
+      (condition-case _
+         (recentf-mode +1)
+       (error
+        (f-delete recentf-save-file)
+        (recentf-mode +1))))))
 
 (provide 'cb-recentf)
 
