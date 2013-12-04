@@ -100,7 +100,7 @@ Each element is either a string or a cons of (var . default)."
    if (not (s-blank? arg))
 
    for (x . y)  = (s-split "=" arg)
-   for (_ name) = (s-match (rx (* (any "*")) (group (* anything))) x)
+   for (_ name) = (s-match (rx (* (any "*")) (group (* (any "_" alnum)))) x)
    for default  = (when y (car y))
    collect (if default
                (cons name default)
