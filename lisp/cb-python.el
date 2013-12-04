@@ -214,9 +214,11 @@ Each element is either a string or a cons of (var . default)."
   :ensure   t
   :commands (jedi:setup jedi:show-doc)
   :init     (add-hook 'cb:python-modes-hook 'jedi:setup)
-  :config   (setq jedi:tooltip-method nil
-                  jedi:complete-on-dot t
-                  jedi:install-imenu t))
+  :config
+  (setq jedi:tooltip-method nil
+        jedi:key-goto-definition (kbd "M-.")
+        jedi:complete-on-dot t
+        jedi:install-imenu t))
 
 ;; `virtualenv' configures Emacs according to the current python virtualenv
 ;; settings.
