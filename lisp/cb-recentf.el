@@ -34,6 +34,9 @@
   :config
   (progn
 
+    (add-hook 'kill-emacs-hook 'recentf-save-list)
+    (run-with-idle-timer (* 5 60) t 'recentf-save-list)
+
     (defadvice recentf-cleanup (around hide-messages activate)
       "Suppress messages when cleaning up recentf."
       (noflet ((message (&rest args)))
