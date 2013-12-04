@@ -79,6 +79,7 @@
 
 (add-hook 'text-mode-hook 'visual-line-mode)
 (icomplete-mode +1)
+(auto-insert-mode +1)
 
 (put 'downcase-region  'disabled nil)
 
@@ -403,7 +404,7 @@ Otherwise, use the value of said variable as argument to a funcall."
   :options
   '(("F" "File" insert-file)
     ("V" "Lisp Variable" insert-variable)
-    ("#" "Shebang" insert-shebang)
+    ("#" "Auto-Insert" auto-insert)
     ("L" "Lorem Ipsum" insert-lorem-ipsum)
     ("T" "Timestamp" insert-timestamp)
     ("U" "UUID" insert-uuid)))

@@ -90,6 +90,18 @@
       (jedi:show-doc)
       t)))
 
+;; Auto-insert header in python files.
+(after 'autoinsert
+  (define-auto-insert
+    '("\\.py$" . "Python skeleton")
+    '("Short description: "
+      "\"\"\"" \n
+      str \n
+      "\"\"\"" \n
+      \n
+      _ \n
+      \n)))
+
 ;; Add functions for manipulating docstrings.
 
 (defun cb-py:split-arglist (arglist)
