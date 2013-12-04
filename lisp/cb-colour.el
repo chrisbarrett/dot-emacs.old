@@ -93,6 +93,10 @@
       (set-face-background  'helm-selection "white")
       (set-face-foreground  'helm-selection "black"))
 
+    (after 'eval-sexp-fu
+      (set-face-background 'eval-sexp-fu-flash "#eee8d5")
+      (set-face-foreground 'eval-sexp-fu-flash solarized-hl-cyan))
+
     (after 'parenface-plus
       (set-face-foreground  'paren-face "grey80")))
 
@@ -124,6 +128,11 @@
     (after 'helm
       (set-face-background  'helm-selection "black")
       (set-face-foreground  'helm-selection "white"))
+
+    (after 'eval-sexp-fu
+      (set-face-background 'eval-sexp-fu-flash "#073642")
+      (set-face-foreground 'eval-sexp-fu-flash-error solarized-hl-cyan))
+
     (after 'parenface-plus
       (set-face-foreground  'paren-face "#505070")))
 
@@ -131,6 +140,8 @@
     "Perform customisation common to all themes."
     (set-face-underline 'hl-line nil)
     (set-face-font 'default (format "%s 11" (monospace-font)))
+    (after 'eval-sexp-fu
+      (set-face-background 'eval-sexp-fu-flash-error solarized-hl-orange))
     (after 'helm
       (set-face-underline   'helm-selection nil))
     (after 'smartparens
