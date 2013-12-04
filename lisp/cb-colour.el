@@ -67,7 +67,6 @@
              (< emacs-minor-version 3))
     (defalias 'set-face-bold 'set-face-bold-p))
 
-;;;###autoload
   (defvar cb:color-theme-changed-hook nil
     "Run when the theme is changed. Passes the command that was used an argument.")
 
@@ -79,7 +78,6 @@
        ,@body
        (run-hook-with-args 'cb:color-theme-changed-hook ',sym)))
 
-;;;###autoload
   (cb:define-theme solarized-light
     (load-theme 'solarized-light 'no-confirm)
     (cb-colour:common-setup)
@@ -102,7 +100,6 @@
 
   (defalias 'light 'solarized-light)
 
-;;;###autoload
   (cb:define-theme solarized-dark
     (load-theme 'solarized-dark 'no-confirm)
     (cb-colour:common-setup)
