@@ -274,10 +274,11 @@ With a prefix arg, insert an arrow with padding at point."
 
         ;; Indent each line in the decl to the column of the first identifier.
         (goto-char (cbidris:data-start-pos))
-        (let ((col (progn
-                     (search-forward-regexp (rx (or "record" "data") (+ space)))
-                     (just-one-space)
-                     (current-column))))
+        (let ((datatype-ident-col
+               (progn
+                 (search-forward-regexp (rx (or "record" "data") (+ space)))
+                 (just-one-space)
+                 (current-column))))
           (forward-line)
 
           (let (done current-type-judgement-col)
@@ -291,7 +292,7 @@ With a prefix arg, insert an arrow with padding at point."
 
                 ;; Indent new constructors to the same column as the first
                 ;; identifier after the data keyword.
-                (indent-to col)
+                (indent-to datatype-ident-col)
                 (setq current-type-judgement-col
                       (save-excursion
                         (goto-char (line-beginning-position))
