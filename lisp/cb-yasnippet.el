@@ -86,6 +86,9 @@
 
     (bind-key* "C-c y" 'yasnippet-picker)))
 
+(after 'evil
+  (add-hook 'yas-before-expand-snippet-hook 'evil-insert-state))
+
 (provide 'cb-yasnippet)
 
 ;; Local Variables:
