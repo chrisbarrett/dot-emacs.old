@@ -199,17 +199,22 @@ With prefix argument ARG, justify text."
 
     (error "No autoloads found in current buffer")))
 
-(defun expose-buffers-by-mode (mode)
-  "Show all buffers with major mode MODE."
-  (interactive (list (->> (--filter-buffers (and
-                                             (buffer-file-name)
-                                             (derived-mode-p 'prog-mode 'text-mode)))
-                       (--map-buffers (symbol-name major-mode))
-                       (-sort 'string<)
-                       (-uniq)
-                       (ido-completing-read "Mode: ")
-                       (intern))))
-  (expose-buffers (--filter-buffers (and (derived-mode-p mode) (buffer-file-name)))))
+(defun expose-buffers-by-mode (&optional mode arg)
+  "Show all buffers with major mode MODE.
+With a prefix ARG, show all buffers"
+  (interactive (list
+                (->> (--filter-buffers
+                      (and (derived-mode-p 'prog-mode 'text-mode)
+                           (or current-prefix-arg (buffer-file-name))))
+                  (--map-buffers (symbol-name major-mode))
+                  (-sort 'string<)
+                  (-uniq)
+                  (ido-completing-read "Mode: ")
+                  (intern))
+
+                current-prefix-arg))
+  (expose-buffers (--filter-buffers (and (derived-mode-p mode)
+                                         (or arg (buffer-file-name))))))
 
 ;;; Shebang insertion
 
