@@ -35,21 +35,48 @@
   (-each cb:python-modes (~ add-to-list 'ac-modes)))
 
 ;; Add special smart-operator behaviours for python buffers.
-(after 'smart-operator
+(defun cb-py:smart-equals ()
+  "Insert an '=' char padded by spaces, except in function arglists."
+  (interactive)
+  (if (s-matches? (rx (* space) "def" space) (current-line))
+      (insert "=")
+    (smart-insert-operator "=")))
 
-  (defun cb:python-equals ()
-    "Insert an '=' char padded by spaces, except in function arglists."
-    (interactive)
-    (if (s-matches? (rx (* space) "def" (+ space))
-                    (current-line))
-        (insert "=")
-      (smart-insert-operator "=")))
+(defun cb-py:smart-asterisk ()
+  "Insert an asterisk with padding unless we're in an arglist."
+  (interactive "*")
+  (if (s-matches? (rx (* space) "def" space) (current-line))
+      (insert "*")
+    (smart-insert-operator "*")))
 
-  (hook-fn 'cb:python-modes-hook
-    (smart-insert-operator-hook)
-    (local-set-key (kbd "=") 'cb:python-equals)
-    (local-unset-key (kbd "."))
-    (local-unset-key (kbd ":"))))
+(defun cb-py:smart-comma ()
+  "Insert a comma with padding."
+  (interactive "*")
+  (insert ",")
+  (just-one-space))
+
+(defun cb-py:smart-colon ()
+  "Insert a colon with padding."
+  (interactive "*")
+  (insert ":")
+  (just-one-space))
+
+(after 'python
+  (define-keys python-mode-map
+    "," 'cb-py:smart-comma
+    "&" (command (smart-insert-operator "&"))
+    "%" (command (smart-insert-operator "%"))
+    "?" (command (smart-insert-operator "?"))
+    "*" 'cb-py:smart-asterisk
+    ":" 'cb-py:smart-colon
+    "+" (command (smart-insert-operator "+"))
+    "/" (command (smart-insert-operator "/"))
+    "-" (command (smart-insert-operator "-"))
+    "=" 'cb-py:smart-equals
+    "<" (command (smart-insert-operator "<"))
+    ">" (command (smart-insert-operator ">"))
+    "|" (command (smart-insert-operator "|"))
+    "$" (command (smart-insert-operator "$"))))
 
 ;; Configure smartparens formatting for python.
 (after 'smartparens
