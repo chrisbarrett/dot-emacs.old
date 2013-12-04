@@ -47,7 +47,8 @@
 (setenv "INFOPATH" (f-join source-directory "info/"))
 
 ;; Use ~ as the default directory at startup.
-(setq default-directory user-home-directory)
+(unless (ignore-errors (emacs-init-time))
+  (setq default-directory user-home-directory))
 
 (setq
  redisplay-dont-pause         t
