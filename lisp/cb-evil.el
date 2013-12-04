@@ -159,6 +159,10 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
     (error
      (user-error "No documentation available"))))
 
+;; Enter insert state after inserting file template.
+(after 'evil
+  (add-hook 'file-template-insert-hook 'evil-insert-state))
+
 ;;; Configure packages.
 
 ;; `evil' adds vim command emulation to Emacs.
