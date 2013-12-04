@@ -29,7 +29,9 @@
 (require 'use-package)
 (require 'cb-lib)
 (require 'noflet)
+(require 'cb-paths)
 
+;; `recentf' adds a recent files list.
 (use-package recentf
   :init
   (setq recentf-save-file (f-join cb:tmp-dir "recentf"))
@@ -42,8 +44,7 @@
         ad-do-it))
 
     (setq
-     recentf-auto-cleanup    5
-     recentf-keep            '(file-remote-p file-readable-p)
+     recentf-keep '(file-remote-p file-readable-p)
      recentf-max-saved-items 100
      recentf-max-menu-items  25
      recentf-exclude '(
@@ -64,22 +65,13 @@
                        ;; Special files
                        "\\.bbdb"
                        "\\.newsrc"
-                       "recentf"
                        "/gnus$"
                        "/gnus.eld$"
                        "\\.ido\\.last"
-                       "\\.org-clock-save\.el$"
+                       "\\.org-clock-save\\.el$"
                        ))
 
-    ;; Start recentf at init time.
-    (unless (ignore-errors (emacs-init-time))
-      ;; Sometimes recentf gets into a recursive load, so just nuke the save
-      ;; file if that happens.
-      (condition-case _
-         (recentf-mode +1)
-       (error
-        (f-delete recentf-save-file)
-        (recentf-mode +1))))))
+      (recentf-mode)))
 
 (provide 'cb-recentf)
 
