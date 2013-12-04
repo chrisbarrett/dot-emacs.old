@@ -258,44 +258,45 @@ With a prefix arg, insert an arrow with padding at point."
     (cons 0)
     (-max)))
 
+(defun cbidris:line-is-unfinished-type-judgement? (line-no)
+  (save-excursion
+    (goto-char (point-min))
+    (forward-line (1- line-no))
+    (s-matches? (rx "->" (* space) eol) (current-line))))
+
 (defun cbidris:indent-data-decl ()
   "Indent the data decl at point."
   (when (< 1 (->> (cbidris:data-decl-at-pt)
                (s-split "\n")
                (length)))
-    (let ((end (cbidris:data-end-pos)))
+    (let ((end-ln (line-number-at-pos (cbidris:data-end-pos))))
       (save-excursion
 
-        ;; Indent each line in the decl to the column of the first ident.
+        ;; Indent each line in the decl to the column of the first identifier.
         (goto-char (cbidris:data-start-pos))
         (let ((col (progn
                      (search-forward-regexp (rx (or "record" "data") (+ space)))
+                     (just-one-space)
                      (current-column))))
           (forward-line)
 
-          (let (done)
-            (while (and (not done) (<= (point) end))
+          (let (done current-type-judgement-col)
+            (while (and (not done) (<= (line-number-at-pos (point)) end-ln))
               (goto-char (line-beginning-position))
               (delete-horizontal-space)
 
-              ;; Indent new constructors to the same column as the first
-              ;; identifier after the data keyword.
               ;; Align multi-line type judgements after the colon.
-              (if (s-matches? (rx "->" (* space) eol)
-                              (save-excursion
-                                (forward-line -1)
-                                (current-line)))
-                  (let ((colon-column (save-excursion
-                                        (forward-line -1)
-                                        (goto-char (line-beginning-position))
-                                        (cbidris:goto-type-judgement-colon)
-                                        (search-forward-regexp
-                                         (rx (not (any space ":")))
-                                         (line-end-position))
-                                        (1- (current-column)))))
-                    (indent-to colon-column))
+              (if (cbidris:line-is-unfinished-type-judgement? (1- (line-number-at-pos)))
+                  (indent-to (+ 2 current-type-judgement-col))
 
-                  (indent-to col))
+                ;; Indent new constructors to the same column as the first
+                ;; identifier after the data keyword.
+                (indent-to col)
+                (setq current-type-judgement-col
+                      (save-excursion
+                        (goto-char (line-beginning-position))
+                        (cbidris:goto-type-judgement-colon)
+                        (current-column))))
 
               ;; If it's not the end of the buffer, continue the loop.
               (if (save-excursion (goto-char (line-end-position))
@@ -501,9 +502,17 @@ SILENT? controls whether provide feedback to the user on the action performed."
     (idris-reformat-dwim t)
 
     (cond
+
+     ((s-matches? (rx space "->" (* space))
+                  (buffer-substring (line-beginning-position) (point)))
+      (newline)
+      (delete-horizontal-space)
+      (indent-for-tab-command))
+
      ((s-matches? (rx bol (* space) eol) (current-line))
       (delete-horizontal-space)
       (newline))
+
      (t
       (idris-newline-and-indent)))))
 
