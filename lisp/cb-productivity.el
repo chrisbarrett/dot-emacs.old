@@ -209,6 +209,24 @@
                    ,(rx bol (* space) ";;;" (* ";") (+ space) (group (+ nonl )))
                    1) t)))
 
+;; `file-template' provides file skeletons.
+(use-package file-template
+  :if (not noninteractive)
+  :config
+  (progn
+    (autoload 'file-template-find-file-not-found-hook "file-template" nil t)
+    (add-hook 'find-file-not-found-hooks 'file-template-find-file-not-found-hook 'append)
+
+    (defvar cb:file-templates-dir (f-join user-emacs-directory "templates"))
+
+    (setq file-template-insert-automatically t
+          file-template-paths (list cb:file-templates-dir))
+
+    (setq file-template-mapping-alist
+          (->> (f-files cb:file-templates-dir)
+            (-map 'f-filename)
+            (--map (cons (format "\\.%s$" (f-ext it)) it))))))
+
 (provide 'cb-productivity)
 
 ;; Local Variables:
