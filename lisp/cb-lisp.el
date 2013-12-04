@@ -95,9 +95,9 @@
 
 ;; `eval-sexp-fu' adds a flash when running eval-expression.
 (use-package eval-sexp-fu
-  :commands eval-sexp-fu-flash-mode
-  :init     (add-hook 'cb:lisp-modes-hook 'turn-on-eval-sexp-fu-flash-mode)
-  :config   (setq eval-sexp-fu-flash-duration 0.2))
+  :defer t
+  :init (add-hook 'cb:lisp-modes-hook 'turn-on-eval-sexp-fu-flash-mode)
+  :config (setq eval-sexp-fu-flash-duration 0.2))
 
 ;; `eldoc' shows documentation hints in the minibuffer.
 (use-package eldoc
