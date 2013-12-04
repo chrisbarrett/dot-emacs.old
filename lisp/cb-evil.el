@@ -132,7 +132,7 @@ errors forward of POS."
       (message "No more spelling errors"))))
 
 ;; Enter insertion state after auto-insert.
-(after 'autoinsert
+(after '(autoinsert evil)
   (defadvice auto-insert (after evil-insert activate)
     (evil-insert-state)))
 
