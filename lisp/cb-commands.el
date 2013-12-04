@@ -201,12 +201,15 @@ With prefix argument ARG, justify text."
 
 (defun expose-buffers-by-mode (mode)
   "Show all buffers with major mode MODE."
-  (interactive (list (->> (--map-buffers (symbol-name major-mode))
+  (interactive (list (->> (--filter-buffers (and
+                                             (buffer-file-name)
+                                             (derived-mode-p 'prog-mode 'text-mode)))
+                       (--map-buffers (symbol-name major-mode))
                        (-sort 'string<)
                        (-uniq)
                        (ido-completing-read "Mode: ")
                        (intern))))
-  (expose-buffers (--filter-buffers (derived-mode-p mode))))
+  (expose-buffers (--filter-buffers (and (derived-mode-p mode) (buffer-file-name)))))
 
 ;;; Shebang insertion
 
