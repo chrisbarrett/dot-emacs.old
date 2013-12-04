@@ -1,0 +1,12 @@
+# key: m
+# name: method
+# --
+def $1 (self${2:, $3}):
+    ${4:"""$5
+    ${3:$(cb-py:python-docstring yas/text)}
+
+    ${6:Returns:
+    $7
+
+    }"""
+    }$0
