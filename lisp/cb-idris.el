@@ -537,8 +537,7 @@ SILENT? controls whether provide feedback to the user on the action performed."
             (insert "where"))))
 
       (goto-char (line-end-position))
-      (newline-and-indent)
-      (indent-for-tab-command)))
+      (idris-ret)))
 
    ((cbidris:function-name-at-pt)
     (goto-char (line-end-position))
