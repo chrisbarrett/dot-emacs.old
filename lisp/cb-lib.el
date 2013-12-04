@@ -486,7 +486,8 @@ Find the first window where PRED-FORM is not nil."
         (setq acc (cons (s-trim (buffer-substring pt (point)))
                         acc))
         (setq pt (point)))
-      (nreverse acc))))
+
+      (-remove 's-blank? (nreverse acc)))))
 
 ;; -----------------------------------------------------------------------------
 
