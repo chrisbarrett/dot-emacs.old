@@ -40,10 +40,16 @@
   (let ((ls (assoc 'interactive sp-navigate-reindent-after-up)))
     (setcdr ls (-uniq (-concat (cdr ls) cb:lisp-modes))))
 
+  (defun cblisp:just-inserted-double-quotes? (id action ctx)
+    (and (sp-in-string-p id action ctx)
+         (s-matches? (rx (not (any "\\")) "\"" eol)
+                     (buffer-substring (line-beginning-position) (point)))))
+
   (defun sp-lisp-just-one-space (id action ctx)
     "Pad LISP delimiters with spaces."
     (when (and (equal 'insert action)
-               (sp-in-code-p id action ctx))
+               (or (sp-in-code-p id action ctx)
+                   (cblisp:just-inserted-double-quotes? id action ctx)))
       ;; Insert a leading space, unless
       ;; 1. this is a quoted form
       ;; 2. this is the first position of another list
