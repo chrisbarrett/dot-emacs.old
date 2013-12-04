@@ -95,7 +95,7 @@
 
 ;; `eval-sexp-fu' adds a flash when running eval-expression.
 (use-package eval-sexp-fu
-  :defer t
+  :commands turn-on-eval-sexp-fu-flash-mode
   :init (add-hook 'cb:lisp-modes-hook 'turn-on-eval-sexp-fu-flash-mode)
   :config (setq eval-sexp-fu-flash-duration 0.2))
 
