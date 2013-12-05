@@ -108,7 +108,6 @@
   (progn
 
     (setq yas-prompt-functions '(yas-ido-prompt)
-          yas/trigger-key (kbd "RET")
           yas-wrap-around-region t)
 
     (yas-global-mode t)
