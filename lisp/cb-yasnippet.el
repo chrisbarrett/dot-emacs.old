@@ -54,7 +54,51 @@
     (defvar yas-snippet-dirs (list cb:yasnippet-dir))
 
     (add-hook 'prog-mode-hook 'yas-minor-mode)
-    (add-hook 'text-mode-hook 'yas-minor-mode))
+    (add-hook 'text-mode-hook 'yas-minor-mode)
+
+    ;; Advice
+
+    (defun cbyas:yas-face? ()
+      "Non-nil if point is at a yasnippet face."
+      (-contains? '(yas--field-debug-face yas-field-highlight-face)
+                  (face-at-point)))
+
+    (defun cbyas:beginning-of-field ()
+      (let (beg)
+        (save-excursion
+          (while (and (not (eobp)) (cbyas:yas-face?))
+            (setq beg (1+ (point)))
+            (forward-char -1)))
+        beg))
+
+    (defun cbyas:end-of-field ()
+      (let (end)
+        (save-excursion
+          (while (and (not (bobp)) (cbyas:yas-face?))
+            (setq end (point))
+            (forward-char 1)))
+        end))
+
+    (defun cbyas:current-field-text ()
+      "Return the text in the active snippet field."
+      (-when-let* ((beg (cbyas:beginning-of-field))
+                   (end (cbyas:end-of-field)))
+        (buffer-substring beg end)))
+
+    (defun cbyas:clear-blank-field ()
+      "Clear the current field if it is blank."
+      (-when-let* ((beg (cbyas:beginning-of-field))
+                   (end (cbyas:end-of-field))
+                   (str (cbyas:current-field-text)))
+        (when (s-matches? (rx bol (* space) eol) str)
+          (delete-region beg end))))
+
+    (defadvice yas-next-field (before clear-blank-field activate)
+      (cbyas:clear-blank-field))
+
+    (defadvice yas-prev-field (before clear-blank-field activate)
+      (cbyas:clear-blank-field)))
+
   :config
   (progn
 
