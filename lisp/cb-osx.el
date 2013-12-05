@@ -41,6 +41,9 @@
     (-when-let (snd (osx-find-system-sound name))
       (start-process "appt alert" " appt alert" "afplay" snd))))
 
+(defconst org-unicorn-png
+  (f-join user-emacs-directory "assets" "org_unicorn.png"))
+
 (configuration-group
   :when (equal system-type 'darwin)
 
@@ -159,8 +162,13 @@
              (type (if (string-match "^\\([a-z]+\\):" url)
                        (match-string 1 url)))
              (title (or (cadr parts) "")))
-        (growl "Link Stored" (or title url)
-               (f-join user-emacs-directory "assets" "org_unicorn.png")))))
+        (growl "Link Stored" (or title url) org-unicorn-png))))
+
+  ;; Show Growl notification for countdown timers
+
+  (hook-fn 'org-timer-start-hook (growl "Timer Started" "" org-unicorn-png))
+  (hook-fn 'org-timer-done-hook (growl "Timer Finished" "" org-unicorn-png))
+  (hook-fn 'org-timer-done-hook (osx-play-system-sound "glass"))
 
   ;; Show Growl notification for appt alerts
 
