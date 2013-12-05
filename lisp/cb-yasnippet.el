@@ -100,7 +100,11 @@
     (defadvice yas-prev-field (before clear-blank-field activate)
       (cbyas:clear-blank-field))
 
-    (defadvice yas-prev-field (after desc activate)
+    (defadvice yas-next-field (after goto-field-end activate)
+      (-when-let (end (cbyas:end-of-field))
+        (goto-char end)))
+
+    (defadvice yas-prev-field (after goto-field-end activate)
       (-when-let (end (cbyas:end-of-field))
         (goto-char end))))
 
