@@ -35,12 +35,15 @@
   :commands (ledger-mode)
   :mode ("\\.ledger$" . ledger-mode)
   :config
-  (after 'ledger-mode
-    ;; FIX: Modify function to prevent errors passing nil string to
-    ;; regexp-quote.
-    (defun ledger-report-payee-format-specifier ()
-      (let ((payee (ledger-xact-payee)))
-        (ledger-read-string-with-default "Payee" (when payee (regexp-quote payee)))))))
+  (progn
+    (setq ledger-post-account-alignment-column 2)
+
+    (after 'ledger-mode
+      ;; FIX: Modify function to prevent errors passing nil string to
+      ;; regexp-quote.
+      (defun ledger-report-payee-format-specifier ()
+        (let ((payee (ledger-xact-payee)))
+          (ledger-read-string-with-default "Payee" (when payee (regexp-quote payee))))))))
 
 (after 'evil
 
