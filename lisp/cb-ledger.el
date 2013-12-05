@@ -38,6 +38,12 @@
   (progn
     (setq ledger-post-account-alignment-column 2)
 
+    ;; Custom reports.
+
+    (--each '(("net worth" "ledger -f %(ledger-file) bal ^assets ^liabilities")
+              ("cash flow" "ledger -f %(ledger-file) bal ^income ^expenses"))
+      (add-to-list 'ledger-reports it t))
+
     (after 'ledger-mode
       ;; FIX: Modify function to prevent errors passing nil string to
       ;; regexp-quote.
