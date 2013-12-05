@@ -29,6 +29,7 @@
 (require 'use-package)
 (require 'cb-lib)
 (require 'cb-foundation)
+(require 'cb-colour)
 
 (defun cbyas:bol? ()
   "Non-nil if point is on an empty line or at the first word."
