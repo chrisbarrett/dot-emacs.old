@@ -90,8 +90,9 @@
       (-when-let* ((beg (cbyas:beginning-of-field))
                    (end (cbyas:end-of-field))
                    (str (cbyas:current-field-text)))
-        (when (s-matches? (rx bol (* space) eol) str)
-          (delete-region beg end))))
+        (when (s-matches? (rx bos (* space) eos) str)
+          (delete-region beg end)
+          t)))
 
     (defadvice yas-next-field (before clear-blank-field activate)
       (cbyas:clear-blank-field))
