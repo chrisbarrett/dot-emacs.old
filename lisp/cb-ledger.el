@@ -44,6 +44,12 @@
 
 (after 'evil
 
+  (after 'ledger-mode
+    (defadvice ledger-add-transaction (after insert-state activate)
+      "Enter evil insert state after adding transaction."
+      (when (fboundp 'evil-insert-state)
+        (evil-insert-state))))
+
   (defun cbledger:set-report-keys ()
     "Set key bindings for ledger-report-mode."
     (evil-local-set-key 'normal (kbd "e") 'ledger-report-edit)
