@@ -33,7 +33,14 @@
 (use-package ledger-mode
   :ensure t
   :commands (ledger-mode)
-  :mode ("\\.ledger$" . ledger-mode))
+  :mode ("\\.ledger$" . ledger-mode)
+  :config
+  (after 'ledger-mode
+    ;; FIX: Modify function to prevent errors passing nil string to
+    ;; regexp-quote.
+    (defun ledger-report-payee-format-specifier ()
+      (let ((payee (ledger-xact-payee)))
+        (ledger-read-string-with-default "Payee" (when payee (regexp-quote payee)))))))
 
 (after 'evil
 
