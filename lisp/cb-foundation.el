@@ -402,10 +402,11 @@ Otherwise, use the value of said variable as argument to a funcall."
   :title "*Insert*"
   :options
   '(("F" "File" insert-file)
-    ("V" "Lisp Variable" insert-variable)
     ("L" "Lorem Ipsum" insert-lorem-ipsum)
     ("T" "Timestamp" insert-timestamp)
-    ("U" "UUID" insert-uuid)))
+    ("U" "UUID" insert-uuid)
+    ("V" "File Local Var" add-file-local-variable)
+    ("P" "File Local Var (prop line)" add-file-local-variable-prop-line)))
 
 (bind-key* "C-c i" 'insertion-picker)
 

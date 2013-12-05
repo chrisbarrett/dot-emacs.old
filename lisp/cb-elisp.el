@@ -51,14 +51,6 @@
                             "dir-locals"))
                     (buffer-name)))))
 
-;; Add insertion picker options.
-(-each '(("v" "File Local Var" add-file-local-variable
-          :modes emacs-lisp-mode)
-         ("p" "File Local Var (prop line)" add-file-local-variable-prop-line
-          :modes emacs-lisp-mode))
-
-       (~ add-to-list 'insertion-picker-options))
-
 ;; Prevent flycheck from running checkdoc for certain elisp file types or when
 ;; the buffer is narrowed.
 (after 'flycheck
