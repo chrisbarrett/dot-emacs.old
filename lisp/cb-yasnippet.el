@@ -133,7 +133,7 @@
 
 (after 'evil
 
-  (defadvice yas-prev-field (around insert-state activate)
+  (defadvice yas-prev-field (after insert-state activate)
     "Enter evil insert state."
     (when (true? evil-mode)
       (evil-insert-state)))
