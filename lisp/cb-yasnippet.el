@@ -97,7 +97,11 @@
       (cbyas:clear-blank-field))
 
     (defadvice yas-prev-field (before clear-blank-field activate)
-      (cbyas:clear-blank-field)))
+      (cbyas:clear-blank-field))
+
+    (defadvice yas-prev-field (after desc activate)
+      (-when-let (end (cbyas:end-of-field))
+        (goto-char end))))
 
   :config
   (progn
@@ -128,6 +132,12 @@
     (bind-key* "C-c y" 'yasnippet-picker)))
 
 (after 'evil
+
+  (defadvice yas-prev-field (around insert-state activate)
+    "Enter evil insert state."
+    (when (true? evil-mode)
+      (evil-insert-state)))
+
   (add-hook 'yas-before-expand-snippet-hook 'evil-insert-state))
 
 (provide 'cb-yasnippet)
