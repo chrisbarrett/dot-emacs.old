@@ -54,7 +54,34 @@
     (defvar yas-snippet-dirs (list cb:yasnippet-dir))
 
     (add-hook 'prog-mode-hook 'yas-minor-mode)
-    (add-hook 'text-mode-hook 'yas-minor-mode)
+    (add-hook 'text-mode-hook 'yas-minor-mode))
+
+  :config
+  (progn
+
+    (setq yas-prompt-functions '(yas-ido-prompt)
+          yas-wrap-around-region t)
+
+    (yas-global-mode t)
+    (hook-fn 'snippet-mode-hook
+      (setq require-final-newline nil))
+
+    (defun cbyas:reload-all ()
+      (interactive)
+      (yas-recompile-all)
+      (yas-reload-all))
+
+    (define-command-picker yasnippet-picker
+      :title "*Yasnippet Commands*"
+      :options
+      '(("e" "Expand" yas-expand)
+        ("f" "Visit File" yas-visit-snippet-file)
+        ("i" "Insert" yas-insert-snippet)
+        ("n" "New" yas-new-snippet)
+        ("r" "Reload All" cbyas:reload-all)
+        ("t" "Show Tables" yas-describe-tables)))
+
+    (bind-key* "C-c y" 'yasnippet-picker)
 
     ;; Advice
 
@@ -106,34 +133,7 @@
 
     (defadvice yas-prev-field (after goto-field-end activate)
       (-when-let (end (cbyas:end-of-field))
-        (goto-char end))))
-
-  :config
-  (progn
-
-    (setq yas-prompt-functions '(yas-ido-prompt)
-          yas-wrap-around-region t)
-
-    (yas-global-mode t)
-    (hook-fn 'snippet-mode-hook
-      (setq require-final-newline nil))
-
-    (defun cbyas:reload-all ()
-      (interactive)
-      (yas-recompile-all)
-      (yas-reload-all))
-
-    (define-command-picker yasnippet-picker
-      :title "*Yasnippet Commands*"
-      :options
-      '(("e" "Expand" yas-expand)
-        ("f" "Visit File" yas-visit-snippet-file)
-        ("i" "Insert" yas-insert-snippet)
-        ("n" "New" yas-new-snippet)
-        ("r" "Reload All" cbyas:reload-all)
-        ("t" "Show Tables" yas-describe-tables)))
-
-    (bind-key* "C-c y" 'yasnippet-picker)))
+        (goto-char end)))))
 
 (after 'evil
 
