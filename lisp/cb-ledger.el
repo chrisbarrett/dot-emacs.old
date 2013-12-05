@@ -29,14 +29,6 @@
 (require 'cb-lib)
 (require 'use-package)
 
-(after 'cb-yasnippet
-  (defadvice cbyas:end-of-field (around offset-for-ledger-face-weirdness activate)
-    "Ledger-mode reports incorrect field ends. Add an offset to correct this."
-    (-when-let (pos ad-do-it)
-      (if (derived-mode-p 'ledger-mode)
-          (1+ pos)
-        pos))))
-
 ;; `ledger-mode' provides support for ledger files.
 (use-package ledger-mode
   :ensure t
