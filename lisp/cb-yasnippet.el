@@ -41,10 +41,6 @@
   :if (not noninteractive)
   :mode ("/\\.emacs\\.d/snippets/" . snippet-mode)
   :diminish yas-minor-mode
-  :commands
-  (yas-global-mode
-   yas-minor-mode
-   snippet-mode)
   :init
   (progn
 
