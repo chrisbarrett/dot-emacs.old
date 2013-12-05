@@ -35,6 +35,17 @@
   :commands (ledger-mode)
   :mode ("\\.ledger$" . ledger-mode))
 
+(after 'evil
+
+  (defun cbledger:set-report-keys ()
+    "Set key bindings for ledger-report-mode."
+    (evil-local-set-key 'normal (kbd "e") 'ledger-report-edit)
+    (evil-local-set-key 'normal (kbd "q") 'ledger-report-kill)
+    (evil-local-set-key 'normal (kbd "r") 'ledger-report-redo)
+    (evil-local-set-key 'normal (kbd "s") 'ledger-report-save))
+
+  (add-hook 'ledger-report-mode-hook 'cbledger:set-report-keys))
+
 (provide 'cb-ledger)
 
 ;;; cb-ledger.el ends here
