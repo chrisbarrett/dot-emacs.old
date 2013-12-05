@@ -49,7 +49,8 @@
       ;; regexp-quote.
       (defun ledger-report-payee-format-specifier ()
         (let ((payee (ledger-xact-payee)))
-          (ledger-read-string-with-default "Payee" (when payee (regexp-quote payee))))))))
+          (ledger-read-string-with-default
+           "Payee" (when payee (regexp-quote payee))))))))
 
 (after 'evil
 
