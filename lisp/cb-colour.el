@@ -87,6 +87,10 @@
       (set-face-background 'org-block-end-line "#f8f1dc")
       (set-face-background 'org-block-background "#f8f1dc"))
 
+    (after 'ledger-fonts
+      (set-face-background 'ledger-font-xact-highlight-face "#eee8d5")
+      (set-face-background 'ledger-occur-xact-face "#eee8d5"))
+
     (after 'helm
       (set-face-background  'helm-selection "white")
       (set-face-foreground  'helm-selection "black"))
@@ -125,6 +129,10 @@
     (after 'helm
       (set-face-background  'helm-selection "black")
       (set-face-foreground  'helm-selection "white"))
+
+    (after 'ledger-fonts
+      (set-face-background 'ledger-font-xact-highlight-face "#073642")
+      (set-face-background 'ledger-occur-xact-face "#073642"))
 
     (after 'eval-sexp-fu
       (set-face-background 'eval-sexp-fu-flash "#073642")
