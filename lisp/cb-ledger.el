@@ -99,12 +99,12 @@ With prefix ARG, insert at point."
       (interactive)
       (call-interactively 'cbledger:insert-header)
 
-      (let ((amount (read-string "Amount $: "))
+      (let ((amount (read-number "Amount $: "))
             (account (read-string "Account: " "Expenses:"))
             (balancing-account (read-string "From Account: " "Assets:Checking")))
 
         (insert account)
-        (insert (format "  $ %s" amount))
+        (insert (format "  $ %.2f" amount))
         (ledger-post-align-xact (point))
         (newline)
         (indent-to ledger-post-account-alignment-column)
