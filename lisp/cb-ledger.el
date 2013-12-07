@@ -85,8 +85,8 @@ With prefix ARG, insert at point."
             (balancing-account (read-string "From Account: " "Assets:Checking")))
 
         (insert account)
-        (indent-to ledger-post-account-alignment-column)
-        (insert (format "$ %s" amount))
+        (insert (format "  $ %s" amount))
+        (ledger-post-align-xact (point))
         (newline)
         (indent-to ledger-post-account-alignment-column)
         (insert balancing-account)
