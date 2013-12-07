@@ -102,7 +102,8 @@ With prefix ARG, insert at point. Otherwise move to an appropriate buffer pos."
     (defun cbledger:accounts ()
       "Find all accounts in the current buffer."
       (->> (s-match-strings-all
-            (rx bol (+ space) (group (+ (not space)) ":" (+ (not space))))
+            (rx bol (+ space) (group (+ (not space)) ":" (+? nonl))
+                (or eol "  "))
             (buffer-string-no-properties))
         (-map 'cadr)
         (-uniq)
