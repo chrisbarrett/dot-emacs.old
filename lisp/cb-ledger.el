@@ -113,6 +113,7 @@ With prefix ARG, insert at point."
 
     (bind-keys
       :map ledger-mode-map
+      "C-c C-c" 'ledger-report
       "C-c C-h" 'cbledger:insert-header
       "C-c C-t" 'ledger-toggle-current
       "C-c C-e" 'cbledger:add-expense
