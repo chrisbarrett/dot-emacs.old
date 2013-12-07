@@ -33,6 +33,21 @@
 
 (defvar ledger-file (f-join org-directory "accounts.ledger"))
 
+(add-to-list 'org-action-picker-options
+             '("$" "Go to ledger" (lambda () (find-file ledger-file))))
+
+(after 'org-capture
+
+  (defun ledger-capture-expense ()
+    (with-current-buffer (find-file-noselect ledger-file)
+      (call-interactively 'cbledger:add-expense)))
+
+  (add-to-list 'org-capture-templates
+               `("$" "Expense" plain (file ,ledger-file)
+                 (function ledger-capture-expense)
+                 :clock-keep t
+                 :immediate-finish t)))
+
 ;; `ledger-mode' provides support for ledger files.
 (use-package ledger-mode
   :ensure t
