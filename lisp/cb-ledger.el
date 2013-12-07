@@ -113,29 +113,30 @@ With prefix ARG, insert at point. Otherwise move to an appropriate buffer pos."
       "Insert an expense transaction at the appropriate place for the given date.
 With prefix ARG, insert at point."
       (interactive)
-      (call-interactively 'cbledger:insert-transaction-header)
+      (atomic-change-group
+        (call-interactively 'cbledger:insert-transaction-header)
 
-      (let ((amount (read-number "Amount $: "))
-            (account
-             (ido-completing-read
-              "Account: "
-              (->> (cbledger:accounts)
-                (-filter 'stringp)
-                (-remove (~ s-starts-with? "Assets") ))))
-            (balancing-account
-             (ido-completing-read
-              "From Account: "
-              (->> (cbledger:accounts)
-                (-filter 'stringp)
-                (-remove (~ s-starts-with? "Expenses"))))))
+        (let ((amount (read-number "Amount $: "))
+              (account
+               (ido-completing-read
+                "Account: "
+                (->> (cbledger:accounts)
+                  (-filter 'stringp)
+                  (-remove (~ s-starts-with? "Assets") ))))
+              (balancing-account
+               (ido-completing-read
+                "From Account: "
+                (->> (cbledger:accounts)
+                  (-filter 'stringp)
+                  (-remove (~ s-starts-with? "Expenses"))))))
 
-        (insert account)
-        (insert (format "  $ %.2f" amount))
-        (ledger-post-align-xact (point))
-        (newline)
-        (indent-to ledger-post-account-alignment-column)
-        (insert balancing-account)
-        (open-line 2))
+          (insert account)
+          (insert (format "  $ %.2f" amount))
+          (ledger-post-align-xact (point))
+          (newline)
+          (indent-to ledger-post-account-alignment-column)
+          (insert balancing-account)
+          (open-line 2)))
       (run-hooks 'ledger-expense-inserted-hook))
 
     (defun cbledger:format-buffer ()
