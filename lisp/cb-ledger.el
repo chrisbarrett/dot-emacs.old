@@ -57,6 +57,8 @@
   (progn
     (setq ledger-post-account-alignment-column 2)
 
+    (set-face-background 'ledger-font-xact-highlight-face nil)
+
     ;; Custom reports.
 
     (--each '(("net worth" "ledger -f %(ledger-file) bal ^assets ^liabilities")
