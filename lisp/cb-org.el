@@ -150,7 +150,8 @@ This will set which file org-capture will capture to."
 ;; If we're running in a graphical context, show the agenda on startup.
 (when (or (daemonp) (display-graphic-p))
   (hook-fn 'after-init-hook
-    (executor:org-agenda-fullscreen)))
+    (unless noninteractive
+      (executor:org-agenda-fullscreen))))
 
 ;; Add `org-search-view' to search methods picker.
 (cbs-define-search-method
