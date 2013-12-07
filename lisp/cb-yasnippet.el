@@ -153,9 +153,7 @@ Otherwise delete backwards."
       "Move to the end of the current field if it has been modified."
       (-when-let (field (cbyas:current-field))
         (when (yas--field-modified-p field)
-          (goto-char (cbyas:end-of-field))
-          (when (true? evil-mode)
-            (evil-insert-state)))))
+          (goto-char (cbyas:end-of-field)))))
 
     (defadvice yas-next-field (before clear-blank-field activate)
       (cbyas:clear-blank-field))
@@ -174,9 +172,14 @@ Otherwise delete backwards."
   (defadvice yas-prev-field (after insert-state activate)
     "Enter evil insert state."
     (when (true? evil-mode)
-      (evil-insert-state)))
+      (evil-insert-state))
 
-  (add-hook 'yas-before-expand-snippet-hook 'evil-insert-state))
+    (defadvice yas-prev-field (after insert-state activate)
+      "Enter evil insert state."
+      (when (true? evil-mode)
+        (evil-insert-state)))
+
+    (add-hook 'yas-before-expand-snippet-hook 'evil-insert-state)))
 
 (provide 'cb-yasnippet)
 
