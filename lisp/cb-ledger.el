@@ -57,8 +57,6 @@
   (progn
     (setq ledger-post-account-alignment-column 2)
 
-    (set-face-background 'ledger-font-xact-highlight-face nil)
-
     ;; Custom reports.
 
     (--each '(("net worth" "ledger -f %(ledger-file) bal ^assets ^liabilities")
@@ -116,17 +114,19 @@ With prefix ARG, insert at point."
     (defun cbledger:format-buffer ()
       "Reformat the buffer."
       (interactive "*")
-      (ledger-post-align-postings (point-min) (point-max)))
+      (ledger-post-align-postings (point-min) (point-max))
+      (message "Formatted buffer"))
 
-    (bind-keys
-      :map ledger-mode-map
-      "C-c C-c" 'ledger-report
-      "C-c C-h" 'cbledger:insert-header
-      "C-c C-t" 'ledger-toggle-current
-      "C-c C-e" 'cbledger:add-expense
-      "C-c C-d" 'cbledger:move-to-date
-      "M-RET"   'ledger-toggle-current-transaction
-      "M-q"     'cbledger:format-buffer)
+    (defun cbledger:set-key-bindings ()
+      (local-set-key (kbd "C-c C-c") 'ledger-report)
+      (local-set-key (kbd "C-c C-h") 'cbledger:insert-header)
+      (local-set-key (kbd "C-c C-t") 'ledger-toggle-current)
+      (local-set-key (kbd "C-c C-e") 'cbledger:add-expense)
+      (local-set-key (kbd "C-c C-d") 'cbledger:move-to-date)
+      (local-set-key (kbd "M-RET")   'ledger-toggle-current-transaction)
+      (local-set-key (kbd "M-q")     'cbledger:format-buffer))
+
+    (add-hook 'ledger-mode-hook 'cbledger:set-key-bindings)
 
     (after 'ledger-mode
       ;; FIX: Modify function to prevent errors passing nil string to
