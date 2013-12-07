@@ -109,7 +109,6 @@ With prefix ARG, insert at point. Otherwise move to an appropriate buffer pos."
         (-uniq)
         (-sort 'string<)))
 
-
     (defun cbledger:add-expense ()
       "Insert an expense transaction at the appropriate place for the given date.
 With prefix ARG, insert at point."
@@ -152,7 +151,15 @@ With prefix ARG, insert at point."
       (ledger-post-align-postings (point-min) (point-max))
       (message "Formatted buffer"))
 
+    (defun cbledger:ret ()
+      "Newline and format."
+      (interactive "*")
+      (ledger-post-align-postings)
+      (newline)
+      (indent-to ledger-post-account-alignment-column))
+
     (defun cbledger:set-key-bindings ()
+      (local-set-key (kbd "RET")     'cbledger:ret)
       (local-set-key (kbd "C-c C-c") 'ledger-report)
       (local-set-key (kbd "C-c C-t") 'cbledger:insert-transaction-header)
       (local-set-key (kbd "C-c C-e") 'cbledger:add-expense)
