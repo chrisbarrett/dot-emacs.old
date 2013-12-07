@@ -44,6 +44,59 @@
               ("cash flow" "ledger -f %(ledger-file) bal ^income ^expenses"))
       (add-to-list 'ledger-reports it t))
 
+    ;; Custom commands.
+
+    (defun cbledger:move-to-date (date)
+      "Move to DATE in the ledger file."
+      ;; Use slashes for consistency with ledger's date format.
+      (interactive (list (s-replace "-" "/" (org-read-date))))
+      (cl-destructuring-bind (y m d) (-map 'string-to-number (s-split "/" date))
+        (ledger-xact-find-slot (encode-time 0 0 0 d m y))))
+
+    (defun cbledger:add-expense
+      (date payee amount account balancing-account reference
+            &optional insert-at-point)
+      "Insert an expense transaction at the appropriate place for the given date.
+
+* DATE is a string of the form YYYY/MM/DD
+
+* Unless prefix arg INSERT-AT-POINT is set, find the correct
+  place to perform the insertion."
+      (interactive (list
+                    (org-read-date nil nil nil "Transaction")
+                    (read-string "Payee: ")
+                    (read-number "Amount $: ")
+                    (read-string "Account: " "Expenses:")
+                    (read-string "From Account: " "Assets:Checking")
+                    (let ((ref (s-trim (read-string "[Reference]: "))))
+                      (if (s-blank? ref)
+                          (format "(%s)" ref)))
+
+                    current-prefix-arg))
+
+      (unless insert-at-point
+        (cbledger:move-to-date date))
+
+      ;; Only insert header if there is no identical header at point.
+      (let ((header (concat (s-replace "-" "/" date)
+                            (if reference (concat reference " ") "")
+                            payee
+                            "\n  " account)))
+        (unless (s-matches? (regexp-quote header) (current-line))
+          (insert header)))
+
+      (indent-to ledger-post-account-alignment-column)
+      (insert (format "$ %s" amount))
+      (insert (concat "\n  " balancing-account))
+      (open-line 2)
+      (message "Inserted new transaction"))
+
+    (bind-keys
+      :map ledger-mode-map
+      "C-c C-t" 'ledger-toggle-current
+      "C-c C-e" 'cbledger:add-expense
+      "C-c C-d" 'cbledger:move-to-date)
+
     (after 'ledger-mode
       ;; FIX: Modify function to prevent errors passing nil string to
       ;; regexp-quote.
