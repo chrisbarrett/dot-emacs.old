@@ -580,12 +580,13 @@ If NO-PROPERTIES is non-nil, return the region without text properties."
              (region-beginning)
              (region-end))))
 
-(defun current-line (&optional no-properties)
-  "Return the line at point.
-If NO-PROPERTIES is non-nil, return the line without text properties."
-  (funcall (if no-properties 'buffer-substring-no-properties 'buffer-substring)
-           (line-beginning-position)
-           (line-end-position)))
+(cl-defun current-line (&optional (move-n-lines 0))
+  "Return the line at point, or another line relative to this line.
+MOVE-N-LINES is an integer that will return a line forward if
+positive or backward if negative."
+  (save-excursion
+    (forward-line move-n-lines)
+    (buffer-substring (line-beginning-position) (line-end-position))))
 
 (defun buffer-length-lines ()
   "Return the number of lines in the current buffer."
