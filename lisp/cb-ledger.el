@@ -111,13 +111,19 @@ With prefix ARG, insert at point."
         (insert balancing-account)
         (open-line 2)))
 
+    (defun cbledger:format-buffer ()
+      "Reformat the buffer."
+      (interactive "*")
+      (ledger-post-align-postings (point-min) (point-max)))
+
     (bind-keys
       :map ledger-mode-map
       "C-c C-c" 'ledger-report
       "C-c C-h" 'cbledger:insert-header
       "C-c C-t" 'ledger-toggle-current
       "C-c C-e" 'cbledger:add-expense
-      "C-c C-d" 'cbledger:move-to-date)
+      "C-c C-d" 'cbledger:move-to-date
+      "M-q"     'cbledger:format-buffer)
 
     (after 'ledger-mode
       ;; FIX: Modify function to prevent errors passing nil string to
