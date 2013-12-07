@@ -121,6 +121,12 @@
           (delete-region beg end)
           t)))
 
+    (defun cbyas:maybe-goto-field-end ()
+      "Move to the end of the current field if it has been modified."
+      (-when-let (end (cbyas:end-of-field))
+        (when yas-modified-p
+          (goto-char end))))
+
     (defadvice yas-next-field (before clear-blank-field activate)
       (cbyas:clear-blank-field))
 
@@ -128,12 +134,10 @@
       (cbyas:clear-blank-field))
 
     (defadvice yas-next-field (after goto-field-end activate)
-      (-when-let (end (cbyas:end-of-field))
-        (goto-char end)))
+      (cbyas:maybe-goto-field-end))
 
     (defadvice yas-prev-field (after goto-field-end activate)
-      (-when-let (end (cbyas:end-of-field))
-        (goto-char end)))))
+      (cbyas:maybe-goto-field-end))))
 
 (after 'evil
 
