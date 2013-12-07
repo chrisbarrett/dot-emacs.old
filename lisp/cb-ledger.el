@@ -102,8 +102,8 @@ With prefix ARG, insert at point. Otherwise move to an appropriate buffer pos."
     (defun cbledger:accounts ()
       "Find all accounts in the current buffer."
       (->> (s-match-strings-all
-                   (rx bol (+ space) (group (+ (not space)) ":" (+ (not space))))
-                   (buffer-string-no-properties))
+            (rx bol (+ space) (group (+ (not space)) ":" (+ (not space))))
+            (buffer-string-no-properties))
         (-map 'cadr)
         (-uniq)
         (-sort 'string<)))
@@ -112,7 +112,7 @@ With prefix ARG, insert at point. Otherwise move to an appropriate buffer pos."
     (defun cbledger:add-expense ()
       "Insert an expense transaction at the appropriate place for the given date.
 With prefix ARG, insert at point."
-      (interactive)
+      (interactive "*")
       (atomic-change-group
         (call-interactively 'cbledger:insert-transaction-header)
 
@@ -122,13 +122,19 @@ With prefix ARG, insert at point."
                 "Account: "
                 (->> (cbledger:accounts)
                   (-filter 'stringp)
-                  (-remove (~ s-starts-with? "Assets") ))))
+                  (-remove (~ s-starts-with? "Assets")))
+                nil nil "Expenses:"))
               (balancing-account
                (ido-completing-read
                 "From Account: "
                 (->> (cbledger:accounts)
                   (-filter 'stringp)
-                  (-remove (~ s-starts-with? "Expenses"))))))
+                  (-remove (~ s-starts-with? "Expenses")))
+                nil nil "Assets:")))
+
+          (when (or (s-matches? "checking" balancing-account)
+                    (y-or-n-p "Transaction cleared? "))
+            (ledger-toggle-current-transaction))
 
           (insert account)
           (insert (format "  $ %.2f" amount))
