@@ -28,7 +28,10 @@
 
 (require 'cb-lib)
 (require 'use-package)
+(require 'cb-org)
 (autoload 'org-read-date "org")
+
+(defvar ledger-file (f-join org-directory "accounts.ledger"))
 
 ;; `ledger-mode' provides support for ledger files.
 (use-package ledger-mode
