@@ -1,0 +1,6 @@
+# key: e
+# name: expense
+# --
+Expenses:${1:ACCOUNT}                                         \$ ${2:AMOUNT}
+Assets:${3:Checking}
+$0
