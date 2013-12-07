@@ -94,9 +94,7 @@ With prefix ARG, insert at point."
         (newline)
         (indent-to ledger-post-account-alignment-column)
         (insert balancing-account)
-        (open-line 2))
-
-      (message "Inserted new transaction"))
+        (open-line 2)))
 
     (bind-keys
       :map ledger-mode-map
