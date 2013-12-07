@@ -32,6 +32,10 @@
 (autoload 'org-read-date "org")
 
 (defvar ledger-file (f-join org-directory "accounts.ledger"))
+(defvar ledger-transaction-inserted-hook nil
+  "Hook run after a transaction has been inserted.")
+(defvar ledger-expense-inserted-hook nil
+  "Hook run after an expense transaction has been inserted.")
 
 (add-to-list 'org-action-picker-options
              '("$" "Go to ledger" (lambda () (find-file ledger-file))))
@@ -91,7 +95,8 @@ With prefix ARG, insert at point. Otherwise move to an appropriate buffer pos."
           (goto-char (line-beginning-position))
           (insert (concat dt ref payee))
           (newline)
-          (indent-to ledger-post-account-alignment-column))))
+          (indent-to ledger-post-account-alignment-column)))
+      (run-hooks 'ledger-transaction-inserted-hook))
 
     (defun cbledger:add-expense ()
       "Insert an expense transaction at the appropriate place for the given date.
@@ -109,7 +114,8 @@ With prefix ARG, insert at point."
         (newline)
         (indent-to ledger-post-account-alignment-column)
         (insert balancing-account)
-        (open-line 2)))
+        (open-line 2))
+      (run-hooks 'ledger-expense-inserted-hook))
 
     (defun cbledger:format-buffer ()
       "Reformat the buffer."
@@ -178,12 +184,6 @@ With prefix ARG, insert at point."
 
 (after 'evil
 
-  (after 'ledger-mode
-    (defadvice ledger-add-transaction (after insert-state activate)
-      "Enter evil insert state after adding transaction."
-      (when (fboundp 'evil-insert-state)
-        (evil-insert-state))))
-
   (defun cbledger:set-report-keys ()
     "Set key bindings for ledger-report-mode."
     (evil-local-set-key 'normal (kbd "e") 'ledger-report-edit)
@@ -191,7 +191,8 @@ With prefix ARG, insert at point."
     (evil-local-set-key 'normal (kbd "r") 'ledger-report-redo)
     (evil-local-set-key 'normal (kbd "s") 'ledger-report-save))
 
-  (add-hook 'ledger-report-mode-hook 'cbledger:set-report-keys))
+  (add-hook 'ledger-report-mode-hook 'cbledger:set-report-keys)
+  (add-hook 'ledger-transaction-inserted-hook 'evil-insert-state))
 
 (provide 'cb-ledger)
 
