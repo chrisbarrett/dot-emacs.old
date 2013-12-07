@@ -142,7 +142,10 @@ With prefix ARG, insert at point."
       "Reformat the buffer."
       (interactive "*")
       (ledger-post-align-postings (point-min) (point-max))
+      (ledger-sort-buffer)
       (message "Formatted buffer"))
+
+    (add-hook 'before-save-hook 'cbledger:format-buffer)
 
     (defun cbledger:ret ()
       "Newline and format."
