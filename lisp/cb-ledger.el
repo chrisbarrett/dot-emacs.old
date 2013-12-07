@@ -53,46 +53,50 @@
       (cl-destructuring-bind (y m d) (-map 'string-to-number (s-split "/" date))
         (ledger-xact-find-slot (encode-time 0 0 0 d m y))))
 
-    (defun cbledger:add-expense
-      (date payee amount account balancing-account reference
-            &optional insert-at-point)
-      "Insert an expense transaction at the appropriate place for the given date.
-
-* DATE is a string of the form YYYY/MM/DD
-
-* Unless prefix arg INSERT-AT-POINT is set, find the correct
-  place to perform the insertion."
+    (defun cbledger:insert-header (date payee reference &optional arg)
+      "Insert a header at point. DATE, PAYEE and REFERENCE are all strings.
+With prefix ARG, insert at point. Otherwise move to an appropriate buffer pos."
       (interactive (list
                     (org-read-date nil nil nil "Transaction")
                     (read-string "Payee: ")
-                    (read-number "Amount $: ")
-                    (read-string "Account: " "Expenses:")
-                    (read-string "From Account: " "Assets:Checking")
-                    (let ((ref (s-trim (read-string "[Reference]: "))))
-                      (if (s-blank? ref)
-                          (format "(%s)" ref)))
-
+                    (s-trim (read-string "[Reference]: "))
                     current-prefix-arg))
-
-      (unless insert-at-point
-        (cbledger:move-to-date date))
-
       ;; Only insert header if there is no identical header at point.
-      (let ((header (concat (s-replace "-" "/" date)
-                            (if reference (concat reference " ") "")
-                            payee
-                            "\n  " account)))
-        (unless (s-matches? (regexp-quote header) (current-line))
-          (insert header)))
+      (let ((dt (s-replace "-" "/" date))
+            (ref (if (s-blank? reference) " " (format " (%s) " reference))))
+        (unless arg
+          (cbledger:move-to-date dt))
+        (unless (and (s-matches? (regexp-quote dt) (current-line -1))
+                     (s-matches? (regexp-quote payee) (current-line -1))
+                     (s-matches? (regexp-quote ref) (current-line -1)))
+          (goto-char (line-beginning-position))
+          (insert (concat dt ref payee))
+          (newline)
+          (indent-to ledger-post-account-alignment-column))))
 
-      (indent-to ledger-post-account-alignment-column)
-      (insert (format "$ %s" amount))
-      (insert (concat "\n  " balancing-account))
-      (open-line 2)
+    (defun cbledger:add-expense ()
+      "Insert an expense transaction at the appropriate place for the given date.
+With prefix ARG, insert at point."
+      (interactive)
+      (call-interactively 'cbledger:insert-header)
+
+      (let ((amount (read-string "Amount $: "))
+            (account (read-string "Account: " "Expenses:"))
+            (balancing-account (read-string "From Account: " "Assets:Checking")))
+
+        (insert account)
+        (indent-to ledger-post-account-alignment-column)
+        (insert (format "$ %s" amount))
+        (newline)
+        (indent-to ledger-post-account-alignment-column)
+        (insert balancing-account)
+        (open-line 2))
+
       (message "Inserted new transaction"))
 
     (bind-keys
       :map ledger-mode-map
+      "C-c C-h" 'cbledger:insert-header
       "C-c C-t" 'ledger-toggle-current
       "C-c C-e" 'cbledger:add-expense
       "C-c C-d" 'cbledger:move-to-date)
