@@ -127,6 +127,26 @@ With prefix ARG, insert at point."
           (ledger-read-string-with-default
            "Payee" (when payee (regexp-quote payee))))))))
 
+;; Configure hideshow.
+(after 'hideshow
+
+  (defun cbledger:hs-forward (&optional n)
+    (forward-line 1)
+    (or (when (search-forward-regexp (rx bol digit) nil t)
+          (forward-line -1)
+          (goto-char (line-end-position))
+          t)
+
+        (goto-char (point-max))))
+
+  (add-to-list 'hs-special-modes-alist
+               `(ledger-mode
+                 ,(rx bol digit)
+                 nil
+                 nil
+                 cbledger:hs-forward
+                 nil)))
+
 (after 'evil
 
   (after 'ledger-mode
