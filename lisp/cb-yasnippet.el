@@ -39,9 +39,23 @@
 
 (defun cbyas:current-field ()
   "Return the current active field."
-  (and yas--active-field-overlay
+  (and (boundp 'yas--active-field-overlay)
+       yas--active-field-overlay
        (overlay-buffer yas--active-field-overlay)
        (overlay-get yas--active-field-overlay 'yas--field)))
+
+(defun cbyas:beginning-of-field ()
+  (-when-let (field (cbyas:current-field))
+    (marker-position (yas--field-start field))))
+
+(defun cbyas:end-of-field ()
+  (-when-let (field (cbyas:current-field))
+    (marker-position (yas--field-end field))))
+
+(defun cbyas:current-field-text ()
+  "Return the text in the active snippet field."
+  (-when-let (field (cbyas:current-field))
+    (yas--field-text-for-display field)))
 
 (use-package yasnippet
   :ensure t
@@ -125,19 +139,6 @@ Otherwise delete backwards."
       "SPC"         'cbyas:space)
 
     ;; Advice
-
-    (defun cbyas:beginning-of-field ()
-      (-when-let (field (cbyas:current-field))
-        (marker-position (yas--field-start field))))
-
-    (defun cbyas:end-of-field ()
-      (-when-let (field (cbyas:current-field))
-        (marker-position (yas--field-end field))))
-
-    (defun cbyas:current-field-text ()
-      "Return the text in the active snippet field."
-      (-when-let (field (cbyas:current-field))
-        (yas--field-text-for-display field)))
 
     (defun cbyas:clear-blank-field ()
       "Clear the current field if it is blank."
