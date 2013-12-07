@@ -72,7 +72,7 @@
       (cl-destructuring-bind (y m d) (-map 'string-to-number (s-split "/" date))
         (ledger-xact-find-slot (encode-time 0 0 0 d m y))))
 
-    (defun cbledger:insert-header (date payee reference &optional arg)
+    (defun cbledger:insert-transaction-header (date payee reference &optional arg)
       "Insert a header at point. DATE, PAYEE and REFERENCE are all strings.
 With prefix ARG, insert at point. Otherwise move to an appropriate buffer pos."
       (interactive (list
@@ -97,7 +97,7 @@ With prefix ARG, insert at point. Otherwise move to an appropriate buffer pos."
       "Insert an expense transaction at the appropriate place for the given date.
 With prefix ARG, insert at point."
       (interactive)
-      (call-interactively 'cbledger:insert-header)
+      (call-interactively 'cbledger:insert-transaction-header)
 
       (let ((amount (read-number "Amount $: "))
             (account (read-string "Account: " "Expenses:"))
@@ -119,8 +119,7 @@ With prefix ARG, insert at point."
 
     (defun cbledger:set-key-bindings ()
       (local-set-key (kbd "C-c C-c") 'ledger-report)
-      (local-set-key (kbd "C-c C-h") 'cbledger:insert-header)
-      (local-set-key (kbd "C-c C-t") 'ledger-toggle-current)
+      (local-set-key (kbd "C-c C-t") 'cbledger:insert-transaction-header)
       (local-set-key (kbd "C-c C-e") 'cbledger:add-expense)
       (local-set-key (kbd "C-c C-d") 'cbledger:move-to-date)
       (local-set-key (kbd "M-RET")   'ledger-toggle-current-transaction)
