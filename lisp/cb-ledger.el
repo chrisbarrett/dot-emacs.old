@@ -118,19 +118,11 @@ With prefix ARG, insert at point."
 
         (let ((amount (read-number "Amount $: "))
               (account
-               (ido-completing-read
-                "Account: "
-                (->> (cbledger:accounts)
-                  (-filter 'stringp)
-                  (-remove (~ s-starts-with? "Assets")))
-                nil nil "Expenses:"))
+               (ido-completing-read "To Account: " (cbledger:accounts)
+                                    nil nil "Expenses:"))
               (balancing-account
-               (ido-completing-read
-                "From Account: "
-                (->> (cbledger:accounts)
-                  (-filter 'stringp)
-                  (-remove (~ s-starts-with? "Expenses")))
-                nil nil "Assets:")))
+               (ido-completing-read "From Account: " (cbledger:accounts)
+                                    nil nil "Assets:")))
 
           (when (or (s-matches? "checking" balancing-account)
                     (y-or-n-p "Transaction cleared? "))
@@ -138,11 +130,12 @@ With prefix ARG, insert at point."
 
           (insert account)
           (insert (format "  $ %.2f" amount))
-          (ledger-post-align-postings)
           (newline)
           (indent-to ledger-post-account-alignment-column)
           (insert balancing-account)
-          (open-line 2)))
+          (open-line 2)
+          (cbledger:format-buffer)))
+
       (run-hooks 'ledger-expense-inserted-hook))
 
     (defun cbledger:format-buffer ()
