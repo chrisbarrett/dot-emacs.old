@@ -198,13 +198,14 @@
 
     (hook-fn 'after-save-hook
       (when (true? git-gutter+-mode)
-        (git-gutter+-refresh)))
+        (ignore-errors
+          (git-gutter+-refresh))))
 
     (defvar cb-git:gutter-refresh-idle-timer
       (unless noninteractive
         (run-with-idle-timer 1 t (lambda ()
-                                   (when (true? git-gutter+-mode)
-                                     (git-gutter+-refresh))))))))
+                                   (ignore-errors (when (true? git-gutter+-mode)
+                                                    (git-gutter+-refresh)))))))))
 
 (use-package git-gutter-fringe+
   :ensure t
