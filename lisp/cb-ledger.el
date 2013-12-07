@@ -125,6 +125,7 @@ With prefix ARG, insert at point."
       "C-c C-t" 'ledger-toggle-current
       "C-c C-e" 'cbledger:add-expense
       "C-c C-d" 'cbledger:move-to-date
+      "M-RET"   'ledger-toggle-current-transaction
       "M-q"     'cbledger:format-buffer)
 
     (after 'ledger-mode
