@@ -30,6 +30,7 @@
 (require 'use-package)
 (require 'cb-org)
 (autoload 'org-read-date "org")
+(autoload 'ido-completing-read "ido")
 
 (defvar ledger-file (f-join org-directory "accounts.ledger"))
 (defvar ledger-transaction-inserted-hook nil
@@ -81,7 +82,7 @@
 With prefix ARG, insert at point. Otherwise move to an appropriate buffer pos."
       (interactive (list
                     (org-read-date nil nil nil "Transaction")
-                    (read-string "Payee: ")
+                    (ido-completing-read "Payee: " (ledger-payees-in-buffer))
                     (s-trim (read-string "[Reference]: "))
                     current-prefix-arg))
       ;; Only insert header if there is no identical header at point.
@@ -98,6 +99,16 @@ With prefix ARG, insert at point. Otherwise move to an appropriate buffer pos."
           (indent-to ledger-post-account-alignment-column)))
       (run-hooks 'ledger-transaction-inserted-hook))
 
+    (defun cbledger:accounts ()
+      "Find all accounts in the current buffer."
+      (->> (s-match-strings-all
+                   (rx bol (+ space) (group (+ (not space)) ":" (+ (not space))))
+                   (buffer-string-no-properties))
+        (-map 'cadr)
+        (-uniq)
+        (-sort 'string<)))
+
+
     (defun cbledger:add-expense ()
       "Insert an expense transaction at the appropriate place for the given date.
 With prefix ARG, insert at point."
@@ -105,8 +116,18 @@ With prefix ARG, insert at point."
       (call-interactively 'cbledger:insert-transaction-header)
 
       (let ((amount (read-number "Amount $: "))
-            (account (read-string "Account: " "Expenses:"))
-            (balancing-account (read-string "From Account: " "Assets:Checking")))
+            (account
+             (ido-completing-read
+              "Account: "
+              (->> (cbledger:accounts)
+                (-filter 'stringp)
+                (-remove (~ s-starts-with? "Assets") ))))
+            (balancing-account
+             (ido-completing-read
+              "From Account: "
+              (->> (cbledger:accounts)
+                (-filter 'stringp)
+                (-remove (~ s-starts-with? "Expenses"))))))
 
         (insert account)
         (insert (format "  $ %.2f" amount))
