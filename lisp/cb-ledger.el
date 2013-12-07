@@ -145,7 +145,8 @@ With prefix ARG, insert at point."
       (ledger-sort-buffer)
       (message "Formatted buffer"))
 
-    (add-hook 'before-save-hook 'cbledger:format-buffer)
+    (hook-fn 'ledger-mode-hook
+      (add-hook 'before-save-hook 'cbledger:format-buffer nil t))
 
     (defun cbledger:ret ()
       "Newline and format."
