@@ -136,6 +136,27 @@ With prefix ARG, insert at point."
           (ledger-read-string-with-default
            "Payee" (when payee (regexp-quote payee))))))))
 
+;; Customise font locking.
+(after 'ledger-mode
+  (set-face-background 'ledger-font-xact-highlight-face nil)
+  (set-face-foreground 'ledger-font-comment-face
+                       (face-foreground 'font-lock-comment-face))
+  (set-face-foreground 'ledger-font-posting-account-face
+                       (face-foreground 'default))
+
+  (set-face-foreground 'ledger-font-pending-face solarized-hl-orange)
+  (set-face-foreground 'ledger-font-payee-cleared-face solarized-hl-green)
+  (set-face-foreground 'ledger-font-payee-uncleared-face solarized-hl-orange)
+
+  (defface ledger-date
+    `((t :inherit org-date :underline nil :foreground ,solarized-hl-cyan))
+    "Face for dates at start of transactions."
+    :group 'ledger-faces)
+
+  (font-lock-add-keywords
+   'ledger-mode
+   `((,(rx bol (* space) (group (+ (any digit "/")))) 1 'ledger-date))))
+
 ;; Configure hideshow.
 (after 'hideshow
 
