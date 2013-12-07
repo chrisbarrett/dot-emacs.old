@@ -189,6 +189,11 @@
       "g c" 'git-gutter+-commit
       "g C" 'git-gutter+-stage-and-commit)
 
+    (defadvice git-gutter+-close-commit-edit-buffer (after kill-diff activate)
+      "Kill the diff buffer."
+      (-when-let (diff (get-buffer "*Staged Changes*"))
+        (kill-buffer diff)))
+
     ;; Enable git gutter when viewing files in a git repository.
     (hook-fns '(find-file-hook after-save-hook)
       (when (vc-git-root (buffer-file-name))
