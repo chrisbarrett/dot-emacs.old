@@ -28,6 +28,7 @@
 
 (require 'cb-lib)
 (require 'use-package)
+(autoload 'org-read-date "org")
 
 ;; `ledger-mode' provides support for ledger files.
 (use-package ledger-mode
