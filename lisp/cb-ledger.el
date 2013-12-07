@@ -197,6 +197,8 @@ With prefix ARG, insert at point."
 ;; Configure hideshow.
 (after 'hideshow
 
+  (add-hook 'ledger-mode-hook 'hs-hide-all)
+
   (defun cbledger:hs-forward (&optional n)
     (forward-line 1)
     (or (when (search-forward-regexp (rx bol digit) nil t)
