@@ -138,7 +138,7 @@ With prefix ARG, insert at point."
 
           (insert account)
           (insert (format "  $ %.2f" amount))
-          (ledger-post-align-xact (point))
+          (ledger-post-align-postings)
           (newline)
           (indent-to ledger-post-account-alignment-column)
           (insert balancing-account)
