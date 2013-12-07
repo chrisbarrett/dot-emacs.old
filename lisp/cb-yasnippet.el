@@ -37,6 +37,12 @@
               (buffer-substring (line-beginning-position)
                                 (point))))
 
+(defun cbyas:current-field ()
+  "Return the current active field."
+  (and yas--active-field-overlay
+       (overlay-buffer yas--active-field-overlay)
+       (overlay-get yas--active-field-overlay 'yas--field)))
+
 (use-package yasnippet
   :ensure t
   :if (not noninteractive)
@@ -83,49 +89,71 @@
 
     (bind-key* "C-c y" 'yasnippet-picker)
 
+    ;; Commands
+
+    (defun cbyas:backspace ()
+      "Clear the current field if the current snippet is unmodified.
+Otherwise delete backwards."
+      (interactive "*")
+      (let ((field (cbyas:current-field)))
+        (cond ((and field
+                    (not (yas--field-modified-p field))
+                    (eq (point) (marker-position (yas--field-start field))))
+               (yas--skip-and-clear field)
+               (yas-next-field 1))
+              ((true? smartparens-mode)
+               (call-interactively 'sp-backward-delete-char))
+              (t
+               (call-interactively 'backward-delete-char)))))
+
+    (defun cbyas:space ()
+      "Clear and skip this field if it is unmodified. Otherwise insert a space."
+      (interactive "*")
+      (let ((field (cbyas:current-field)))
+        (cond ((and field
+                    (not (yas--field-modified-p field))
+                    (eq (point) (marker-position (yas--field-start field))))
+               (yas--skip-and-clear field)
+               (yas-next-field 1))
+              (t
+               (insert " ")))))
+
+    (bind-keys
+      :map yas-keymap
+      "<backspace>" 'cbyas:backspace
+      "SPC"         'cbyas:space)
+
     ;; Advice
 
-    (defun cbyas:yas-face? ()
-      "Non-nil if point is at a yasnippet face."
-      (-contains? '(yas--field-debug-face yas-field-highlight-face)
-                  (face-at-point)))
-
     (defun cbyas:beginning-of-field ()
-      (let (beg)
-        (save-excursion
-          (while (and (not (eobp)) (cbyas:yas-face?))
-            (setq beg (1+ (point)))
-            (forward-char -1)))
-        beg))
+      (-when-let (field (cbyas:current-field))
+        (marker-position (yas--field-start field))))
 
     (defun cbyas:end-of-field ()
-      (let (end)
-        (save-excursion
-          (while (and (not (bobp)) (cbyas:yas-face?))
-            (setq end (point))
-            (forward-char 1)))
-        end))
+      (-when-let (field (cbyas:current-field))
+        (marker-position (yas--field-end field))))
 
     (defun cbyas:current-field-text ()
       "Return the text in the active snippet field."
-      (-when-let* ((beg (cbyas:beginning-of-field))
-                   (end (cbyas:end-of-field)))
-        (buffer-substring beg end)))
+      (-when-let (field (cbyas:current-field))
+        (yas--field-text-for-display field)))
 
     (defun cbyas:clear-blank-field ()
       "Clear the current field if it is blank."
       (-when-let* ((beg (cbyas:beginning-of-field))
                    (end (cbyas:end-of-field))
                    (str (cbyas:current-field-text)))
-        (when (s-matches? (rx bos (* space) eos) str)
+        (when (s-matches? (rx bos (+ space) eos) str)
           (delete-region beg end)
           t)))
 
     (defun cbyas:maybe-goto-field-end ()
       "Move to the end of the current field if it has been modified."
-      (-when-let (end (cbyas:end-of-field))
-        (when yas-modified-p
-          (goto-char end))))
+      (-when-let (field (cbyas:current-field))
+        (when (yas--field-modified-p field)
+          (goto-char (cbyas:end-of-field))
+          (when (true? evil-mode)
+            (evil-insert-state)))))
 
     (defadvice yas-next-field (before clear-blank-field activate)
       (cbyas:clear-blank-field))
