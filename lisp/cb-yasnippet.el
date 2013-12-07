@@ -52,7 +52,8 @@
   (progn
 
     (defface yas-field-highlight-face
-      `((t (:box (:line-width -1 :color ,solarized-hl-cyan))))
+      `((t :underline ,solarized-hl-cyan
+           :italic t))
       "The face used to highlight the currently active field of a snippet"
       :group 'yasnippet)
 
