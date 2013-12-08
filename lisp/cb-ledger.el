@@ -151,9 +151,14 @@ With prefix ARG, insert at point."
     (defun cbledger:ret ()
       "Newline and format."
       (interactive "*")
-      (ledger-post-align-postings)
-      (newline)
-      (indent-to ledger-post-account-alignment-column))
+      (cond
+       ((s-matches? (rx bol (* space) eol) (current-line))
+        (delete-horizontal-space)
+        (newline))
+       (t
+        (ledger-post-align-postings)
+        (newline)
+        (indent-to ledger-post-account-alignment-column))))
 
     (defun cbledger:set-key-bindings ()
       (local-set-key (kbd "RET")     'cbledger:ret)
