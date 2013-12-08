@@ -75,6 +75,9 @@
 
     ;; Custom commands.
 
+    (defvar cbledger:transaction-start (rx bol (any digit "~" "="))
+      "Regex matching the start of a transaction line.")
+
     (defun ledger-move-to-date (date)
       "Move to DATE in the ledger file."
       ;; Use slashes for consistency with ledger's date format.
@@ -173,7 +176,7 @@ With prefix ARG, insert at point."
       (cond
        ((bobp)
         (user-error "Beginning of buffer"))
-       ((search-backward-regexp (rx bol digit) nil t count)
+       ((search-backward-regexp cbledger:transaction-start nil t count)
         (goto-char (line-beginning-position)))
        (t
         (goto-char (point-min)))))
@@ -183,7 +186,7 @@ With prefix ARG, insert at point."
       (interactive)
       (let ((start (point)))
         (goto-char (line-end-position))
-        (if (search-forward-regexp (rx bol digit) nil t count)
+        (if (search-forward-regexp cbledger:transaction-start nil t count)
             (goto-char (line-beginning-position))
           (goto-char start)
           (user-error "End of buffer"))))
@@ -203,7 +206,7 @@ With prefix ARG, insert at point."
     (defun ledger-transaction-start-pos ()
       "Return the buffer position where the transaction at point begins."
       (save-excursion
-        (if (s-matches? (rx bol (any digit)) (current-line))
+        (if (s-matches? cbledger:transaction-start (current-line))
             (goto-char (line-beginning-position))
           (ignore-errors
             (ledger-prev-transaction)))))
@@ -251,7 +254,7 @@ Behaves correctly for transactions that are not separated by blank lines."
 The transactions must have matching dates."
       (interactive "*")
       (let ((start (point)))
-        (unless (s-matches? (rx bol (any digit)) (current-line))
+        (unless (s-matches? cbledger:transaction-start (current-line))
           (ledger-prev-transaction))
 
         (let ((trans (ledger-transaction-at-pt))
@@ -276,6 +279,7 @@ The transactions must have matching dates."
                   (unless (bobp) (newline))
                   (save-excursion
                     (insert trans)
+                    (newline)
                     (collapse-vertical-whitespace)))
 
               (pop kill-ring)))
@@ -364,7 +368,7 @@ Signal an error of doing so would break date ordering."
 
   (defun cbledger:hs-forward (&rest _)
     (forward-line 1)
-    (or (when (search-forward-regexp (rx bol digit) nil t)
+    (or (when (search-forward-regexp cbledger:transaction-start nil t)
           (forward-line -1)
           (goto-char (line-end-position))
           t)
@@ -374,7 +378,7 @@ Signal an error of doing so would break date ordering."
 
   (add-to-list 'hs-special-modes-alist
                `(ledger-mode
-                 ,(rx bol digit)
+                 ,cbledger:transaction-start
                  nil
                  nil
                  cbledger:hs-forward
