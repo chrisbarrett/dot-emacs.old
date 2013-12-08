@@ -249,24 +249,36 @@ Behaves correctly for transactions that are not separated by blank lines."
             trans)
         (user-error "Point is not at a transaction")))
 
+    (defun ledger-periodic-transaction? (str)
+      "Non-nil if STR is a periodic transaction."
+      (when str (s-starts-with? "~" str)))
+
     (defun ledger-transpose-transactions ()
       "Swap the current transaction with the preceding one.
 The transactions must have matching dates."
       (interactive "*")
       (let ((start (point)))
-        (unless (s-matches? cbledger:transaction-start (current-line))
-          (ledger-prev-transaction))
-
-        (let ((trans (ledger-transaction-at-pt))
-              (date (ledger-cur-transaction-date)))
+        (goto-char (ledger-transaction-start-pos))
+        (let* ((trans (ledger-transaction-at-pt))
+               (date (ledger-cur-transaction-date))
+               (periodic? (ledger-periodic-transaction? trans)))
           (cond
            ((null trans)
             (goto-char start)
             (user-error "Point is not at a valid transaction"))
-           ((null date)
+
+           ((and (null date) (not periodic?))
             (goto-char start)
             (error "Invalid date for current transaction"))
 
+           ((save-excursion
+              (ledger-prev-transaction)
+              (equal periodic? (not (ledger-periodic-transaction?
+                                     (ledger-transaction-at-pt)))))
+            (goto-char start)
+            (user-error "Incompatable transaction types"))
+
+           ;; Inspect the preceding transaction to see whether we can transpose.
            ((save-excursion
               (ledger-prev-transaction)
               (equal date (ledger-cur-transaction-date)))
