@@ -191,9 +191,15 @@ With prefix ARG, insert at point."
     "Face for dates at start of transactions."
     :group 'ledger-faces)
 
+  (defface ledger-year-line
+    `((t :foreground ,solarized-hl-violet :bold t))
+    "Face for year declarations."
+    :group 'ledger-faces)
+
   (font-lock-add-keywords
    'ledger-mode
-   `((,(rx bol (* space) (group (+ (any digit "/")))) 1 'ledger-date))))
+   `((,(rx bol (+ (any digit "/"))) . 'ledger-date)
+     (,(rx bol "year" (+ space) (+ digit) (* space) eol) . 'ledger-year-line))))
 
 ;; Configure hideshow.
 (after 'hideshow
