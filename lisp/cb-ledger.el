@@ -250,36 +250,39 @@ Behaves correctly for transactions that are not separated by blank lines."
       "Swap the current transaction with the preceding one.
 The transactions must have matching dates."
       (interactive "*")
+      (let ((start (point)))
+        (unless (s-matches? (rx bol (any digit)) (current-line))
+          (ledger-prev-transaction))
 
-      (unless (s-matches? (rx bol (any digit)) (current-line))
-        (ledger-prev-transaction))
+        (let ((trans (ledger-transaction-at-pt))
+              (date (ledger-cur-transaction-date)))
+          (cond
+           ((null trans)
+            (goto-char start)
+            (user-error "Point is not at a valid transaction"))
+           ((null date)
+            (goto-char start)
+            (error "Invalid date for current transaction"))
 
-      (let ((trans (ledger-transaction-at-pt))
-            (date (ledger-cur-transaction-date)))
-        (cond
-         ((null trans)
-          (user-error "Point is not at a valid transaction"))
-         ((null date)
-          (error "Invalid date for current transaction"))
+           ((save-excursion
+              (ledger-prev-transaction)
+              (equal date (ledger-cur-transaction-date)))
 
-         ((save-excursion
-            (ledger-prev-transaction)
-            (equal date (ledger-cur-transaction-date)))
+            (unwind-protect
+                (atomic-change-group
+                  (ledger-kill-transaction-at-pt)
+                  (ledger-prev-transaction)
+                  (forward-line -1)
+                  (unless (bobp) (newline))
+                  (save-excursion
+                    (insert trans)
+                    (collapse-vertical-whitespace)))
 
-          (unwind-protect
-              (atomic-change-group
-                (ledger-kill-transaction-at-pt)
-                (ledger-prev-transaction)
-                (forward-line -1)
-                (unless (bobp) (newline))
-                (save-excursion
-                  (insert trans)
-                  (collapse-vertical-whitespace)))
+              (pop kill-ring)))
 
-            (pop kill-ring)))
-
-         (t
-          (user-error "Transaction dates do not match")))))
+           (t
+            (goto-char start)
+            (user-error "Transaction dates do not match"))))))
 
     (defun ledger-move-transaction-up ()
       "Move the current transaction up.
