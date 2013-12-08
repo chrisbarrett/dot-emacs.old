@@ -45,7 +45,7 @@
 
   (defun ledger-capture-expense ()
     (with-current-buffer (find-file-noselect ledger-file)
-      (call-interactively 'cbledger:add-expense)))
+      (call-interactively 'ledger-add-expense)))
 
   (add-to-list 'org-capture-templates
                `("$" "Expense" plain (file ,ledger-file)
@@ -64,20 +64,23 @@
 
     ;; Custom reports.
 
-    (--each '(("net worth" "ledger -f %(ledger-file) bal ^assets ^liabilities")
-              ("cash flow" "ledger -f %(ledger-file) bal ^income ^expenses"))
+    (--each
+        '(("net worth" "ledger -f %(ledger-file) bal ^assets ^liabilities")
+          ("cash flow" "ledger -f %(ledger-file) bal ^income ^expenses")
+          ("week budget"
+           "ledger -f %(ledger-file) -p 'this month' --add-budget --weekly reg checking"))
       (add-to-list 'ledger-reports it t))
 
     ;; Custom commands.
 
-    (defun cbledger:move-to-date (date)
+    (defun ledger-move-to-date (date)
       "Move to DATE in the ledger file."
       ;; Use slashes for consistency with ledger's date format.
       (interactive (list (s-replace "-" "/" (org-read-date))))
       (cl-destructuring-bind (y m d) (-map 'string-to-number (s-split "/" date))
         (ledger-xact-find-slot (encode-time 0 0 0 d m y))))
 
-    (defun cbledger:insert-transaction-header (date payee reference &optional arg)
+    (defun ledger-insert-transaction-header (date payee reference &optional arg)
       "Insert a header at point. DATE, PAYEE and REFERENCE are all strings.
 With prefix ARG, insert at point. Otherwise move to an appropriate buffer pos."
       (interactive (list
@@ -89,7 +92,7 @@ With prefix ARG, insert at point. Otherwise move to an appropriate buffer pos."
       (let ((dt (s-replace "-" "/" date))
             (ref (if (s-blank? reference) " " (format " (%s) " reference))))
         (unless arg
-          (cbledger:move-to-date dt))
+          (ledger-move-to-date dt))
         (unless (and (s-matches? (regexp-quote dt) (current-line -1))
                      (s-matches? (regexp-quote payee) (current-line -1))
                      (s-matches? (regexp-quote ref) (current-line -1)))
@@ -109,12 +112,12 @@ With prefix ARG, insert at point. Otherwise move to an appropriate buffer pos."
         (-uniq)
         (-sort 'string<)))
 
-    (defun cbledger:add-expense ()
+    (defun ledger-add-expense ()
       "Insert an expense transaction at the appropriate place for the given date.
 With prefix ARG, insert at point."
       (interactive "*")
       (atomic-change-group
-        (call-interactively 'cbledger:insert-transaction-header)
+        (call-interactively 'ledger-insert-transaction-header)
 
         (let ((amount (read-number "Amount $: "))
               (account
@@ -134,11 +137,11 @@ With prefix ARG, insert at point."
           (indent-to ledger-post-account-alignment-column)
           (insert balancing-account)
           (open-line 2)
-          (cbledger:format-buffer)))
+          (ledger-format-buffer)))
 
       (run-hooks 'ledger-expense-inserted-hook))
 
-    (defun cbledger:format-buffer ()
+    (defun ledger-format-buffer ()
       "Reformat the buffer."
       (interactive "*")
       (ledger-post-align-postings (point-min) (point-max))
@@ -146,9 +149,9 @@ With prefix ARG, insert at point."
       (message "Formatted buffer"))
 
     (hook-fn 'ledger-mode-hook
-      (add-hook 'before-save-hook 'cbledger:format-buffer nil t))
+      (add-hook 'before-save-hook 'ledger-format-buffer nil t))
 
-    (defun cbledger:ret ()
+    (defun ledger-ret ()
       "Newline and format."
       (interactive "*")
       (cond
@@ -160,14 +163,117 @@ With prefix ARG, insert at point."
         (newline)
         (indent-to ledger-post-account-alignment-column))))
 
+    (defun ledger-prev-transaction (&optional count)
+      "Move backward to the start of the last transaction."
+      (interactive)
+      (goto-char (line-beginning-position))
+      (cond
+       ((bobp)
+        (user-error "Beginning of buffer"))
+       ((search-backward-regexp (rx bol digit) nil t count)
+        (goto-char (line-beginning-position)))
+       (t
+        (goto-char (point-min)))))
+
+    (defun ledger-next-transaction (&optional count)
+      "Move forward to the start of the next transaction."
+      (interactive)
+      (let ((start (point)))
+        (goto-char (line-end-position))
+        (if (search-forward-regexp (rx bol digit) nil t count)
+            (goto-char (line-beginning-position))
+          (goto-char start)
+          (user-error "End of buffer"))))
+
+    (cl-defun ledger-transaction-at-pt (&optional (pt (point)))
+      "Return the transaction at PT."
+      (-when-let (bounds (ledger-find-xact-extents (point)))
+        (cl-destructuring-bind (beg end) bounds
+          (s-trim (buffer-substring-no-properties beg end)))))
+
+    (cl-defun ledger-cur-transaction-date ()
+      "Return the date for the transaction at point"
+      (-when-let (trans (ledger-transaction-at-pt))
+        (car (s-match ledger-full-date-regexp trans))))
+
+    (defun ledger-kill-transaction-at-pt ()
+      "Kill the transaction at point and add it to the kill ring."
+      (-if-let (trans (ledger-transaction-at-pt))
+          (progn
+            (kill-new trans)
+            (ledger-delete-current-transaction (point))
+            (collapse-vertical-whitespace 1)
+
+            (ignore-errors
+              (ledger-next-transaction))
+            trans)
+        (user-error "Point is not at a transaction")))
+
+    (defun ledger-transpose-transactions ()
+      "Swap the current transaction with the preceding one.
+The transactions must have matching dates."
+      (interactive "*")
+
+      (unless (s-matches? (rx bol (any digit)) (current-line))
+        (ledger-prev-transaction))
+
+      (let ((trans (ledger-transaction-at-pt))
+            (date (ledger-cur-transaction-date)))
+        (cond
+         ((null trans)
+          (user-error "Point is not at a valid transaction"))
+         ((null date)
+          (error "Invalid date for current transaction"))
+
+         ((save-excursion
+            (ledger-prev-transaction)
+            (equal date (ledger-cur-transaction-date)))
+
+          (unwind-protect
+              (atomic-change-group
+                (ledger-kill-transaction-at-pt)
+                (ledger-prev-transaction)
+                (forward-line -1)
+                (unless (bobp) (newline))
+                (save-excursion
+                  (insert trans)
+                  (newline)))
+
+            (pop kill-ring)))
+
+         (t
+          (user-error "Transaction dates do not match")))))
+
+    (defun ledger-move-transaction-up ()
+      "Move the current transaction up.
+Signal an error of doing so would break date ordering."
+      (interactive "*")
+      (ledger-transpose-transactions))
+
+    (defun ledger-move-transaction-down ()
+      "Move the current transaction down.
+Signal an error of doing so would break date ordering."
+      (interactive "*")
+      (let ((pt (point)))
+        (unwind-protect
+            (progn
+              (ledger-next-transaction)
+              (ledger-transpose-transactions))
+          (goto-char pt))
+        (ledger-next-transaction)))
+
     (defun cbledger:set-key-bindings ()
-      (local-set-key (kbd "RET")     'cbledger:ret)
+      (local-set-key (kbd "RET")     'ledger-ret)
+      (local-set-key (kbd "M-<up>") 'ledger-move-transaction-up)
+      (local-set-key (kbd "M-<down>") 'ledger-move-transaction-down)
+      (local-set-key (kbd "M-P") 'ledger-prev-transaction)
+      (local-set-key (kbd "M-N") 'ledger-next-transaction)
       (local-set-key (kbd "C-c C-c") 'ledger-report)
-      (local-set-key (kbd "C-c C-t") 'cbledger:insert-transaction-header)
-      (local-set-key (kbd "C-c C-e") 'cbledger:add-expense)
-      (local-set-key (kbd "C-c C-d") 'cbledger:move-to-date)
+      (local-set-key (kbd "C-c C-t") 'ledger-insert-transaction-header)
+      (local-set-key (kbd "C-c C-e") 'ledger-add-expense)
+      (local-set-key (kbd "C-c C-d") 'ledger-move-to-date)
       (local-set-key (kbd "M-RET")   'ledger-toggle-current-transaction)
-      (local-set-key (kbd "M-q")     'cbledger:format-buffer))
+      (local-set-key (kbd "M-q")     'ledger-format-buffer))
 
     (add-hook 'ledger-mode-hook 'cbledger:set-key-bindings)
 
@@ -215,16 +321,15 @@ With prefix ARG, insert at point."
 ;; Configure hideshow.
 (after 'hideshow
 
-  (add-hook 'ledger-mode-hook 'hs-hide-all)
-
-  (defun cbledger:hs-forward (&optional n)
+  (defun cbledger:hs-forward (&rest _)
     (forward-line 1)
     (or (when (search-forward-regexp (rx bol digit) nil t)
           (forward-line -1)
           (goto-char (line-end-position))
           t)
-
         (goto-char (point-max))))
+
+  (add-hook 'ledger-mode-hook 'hs-hide-all)
 
   (add-to-list 'hs-special-modes-alist
                `(ledger-mode
