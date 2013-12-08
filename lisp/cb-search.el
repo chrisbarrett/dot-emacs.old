@@ -163,6 +163,15 @@ PRED is a predicate to determine whether search method is currently available.
  (lambda (q)
    (notmuch-search (cbs-read "Mail" q))))
 
+(cbs-define-search-method
+ :name "GitHub"
+ :key "g"
+ :command
+ (lambda (q)
+   (browse-url
+    (concat "https://github.com/search?q="
+            (url-hexify-string (cbs-read "GitHub Search" q))))))
+
 (provide 'cb-search)
 
 ;; Local Variables:
