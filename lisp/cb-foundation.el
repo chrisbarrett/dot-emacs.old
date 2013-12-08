@@ -105,6 +105,11 @@
   (aset buffer-display-table ?\^M [])
   (aset buffer-display-table ?\^L []))
 
+;; Linum
+
+(hook-fns '(prog-mode-hook sgml-mode-hook)
+  (linum-mode +1))
+
 ;; File-handling
 
 (auto-compression-mode +1)

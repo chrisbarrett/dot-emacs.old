@@ -53,6 +53,8 @@
                  :clock-keep t
                  :immediate-finish t)))
 
+(add-hook 'ledger-mode-hook 'linum-mode)
+
 ;; `ledger-mode' provides support for ledger files.
 (use-package ledger-mode
   :ensure t
@@ -96,6 +98,7 @@ With prefix ARG, insert at point. Otherwise move to an appropriate buffer pos."
         (unless (and (s-matches? (regexp-quote dt) (current-line -1))
                      (s-matches? (regexp-quote payee) (current-line -1))
                      (s-matches? (regexp-quote ref) (current-line -1)))
+          (newline)
           (goto-char (line-beginning-position))
           (insert (concat dt ref payee))
           (newline)
