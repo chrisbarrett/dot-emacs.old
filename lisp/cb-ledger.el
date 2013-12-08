@@ -342,6 +342,10 @@ Signal an error of doing so would break date ordering."
           (ledger-read-string-with-default
            "Payee" (when payee (regexp-quote payee))))))))
 
+;; `flycheck-ledger' Adds a flycheck checker for ledger files.
+(after 'flycheck
+  (use-package flycheck-ledger :ensure t))
+
 ;; Customise font locking.
 (after 'ledger-mode
   (set-face-background 'ledger-font-xact-highlight-face nil)
