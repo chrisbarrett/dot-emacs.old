@@ -620,6 +620,20 @@ CODING is the text encoding of the file."
   (let ((orig (f-read path coding)))
     (f-write (concat orig "\n" text) coding path)))
 
+(cl-defun collapse-vertical-whitespace (&optional (to-n-lines 1))
+  "Collapse blank lines around point.
+TO-N-LINES is the number of blank lines to insert afterwards."
+  (interactive "*nCollapse to N blanks: ")
+  (save-excursion
+    ;; Delete blank lines.
+    (search-backward-regexp (rx (not (any space "\n"))) nil t)
+    (forward-line 1)
+    (while (s-matches? (rx bol (* space) eol) (current-line))
+      (forward-line)
+      (join-line))
+    ;; Open a user-specified number of blanks.
+    (open-line to-n-lines)))
+
 ;;; ----------------------------------------------------------------------------
 ;;; UI
 
