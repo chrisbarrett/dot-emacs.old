@@ -339,6 +339,7 @@ This will set which file org-capture will capture to."
 
     (org-babel-do-load-languages
      'org-babel-load-languages '((python . t)
+                                 (ledger . t)
                                  (C . t)
                                  (ditaa . t)
                                  (sh . t)
