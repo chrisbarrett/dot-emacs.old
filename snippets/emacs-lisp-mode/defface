@@ -5,5 +5,5 @@
 (defface $1
   '((t
      ($0)))
-  "Face for "
-  :group ${`(cbel:find-group-for-snippet)`})
+  "Face for $3"
+  :group '${4:`(cbel:find-group-for-snippet)`})
