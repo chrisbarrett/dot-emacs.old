@@ -187,25 +187,59 @@ With prefix ARG, insert at point."
 
     (cl-defun ledger-transaction-at-pt (&optional (pt (point)))
       "Return the transaction at PT."
-      (-when-let (bounds (ledger-find-xact-extents (point)))
-        (cl-destructuring-bind (beg end) bounds
-          (s-trim (buffer-substring-no-properties beg end)))))
+      (goto-char pt)
+      (-when-let* ((beg (ledger-transaction-start-pos))
+                   (end (ledger-transaction-end-pos)))
+        (buffer-substring-no-properties beg end)))
 
     (cl-defun ledger-cur-transaction-date ()
       "Return the date for the transaction at point"
       (-when-let (trans (ledger-transaction-at-pt))
         (car (s-match ledger-full-date-regexp trans))))
 
+    (defun ledger-transaction-start-pos ()
+      "Return the buffer position where the transaction at point begins."
+      (save-excursion
+        (if (s-matches? (rx bol (any digit)) (current-line))
+            (goto-char (line-beginning-position))
+          (ignore-errors
+            (ledger-prev-transaction)))))
+
+    (defun ledger-transaction-end-pos ()
+      "Return the buffer position where the transaction at point ends."
+      (save-excursion
+        (or (ignore-errors (ledger-next-transaction))
+            (goto-char (point-max)))
+
+        (let (pos)
+          (forward-line -1)
+          (goto-char (line-end-position))
+          (setq pos (point))
+          (while (s-matches? (rx bol (* space) eol) (current-line))
+            (forward-line -1)
+            (goto-char (line-end-position))
+            (setq pos (point)))
+          pos)))
+
+    (defun cbledger:delete-transaction-at-pt ()
+      "Kill the current transaction.
+Behaves correctly for transactions that are not separated by blank lines."
+      (when (s-blank? (ledger-transaction-at-pt))
+        (error "Not at a transaction"))
+      (delete-region (ledger-transaction-start-pos)
+                     (ledger-transaction-end-pos))
+      (collapse-vertical-whitespace)
+      (forward-line))
+
     (defun ledger-kill-transaction-at-pt ()
       "Kill the transaction at point and add it to the kill ring."
+      (interactive "*")
       (-if-let (trans (ledger-transaction-at-pt))
           (progn
             (kill-new trans)
-            (ledger-delete-current-transaction (point))
-            (collapse-vertical-whitespace 1)
-
-            (ignore-errors
-              (ledger-next-transaction))
+            (cbledger:delete-transaction-at-pt)
+            (when (called-interactively-p)
+              (message "Transaction copied to kill-ring"))
             trans)
         (user-error "Point is not at a transaction")))
 
@@ -237,7 +271,7 @@ The transactions must have matching dates."
                 (unless (bobp) (newline))
                 (save-excursion
                   (insert trans)
-                  (newline)))
+                  (collapse-vertical-whitespace)))
 
             (pop kill-ring)))
 
@@ -268,6 +302,7 @@ Signal an error of doing so would break date ordering."
       (local-set-key (kbd "M-<down>") 'ledger-move-transaction-down)
       (local-set-key (kbd "M-P") 'ledger-prev-transaction)
       (local-set-key (kbd "M-N") 'ledger-next-transaction)
+      (local-set-key (kbd "C-c C-k") 'ledger-kill-transaction-at-pt)
       (local-set-key (kbd "C-c C-c") 'ledger-report)
       (local-set-key (kbd "C-c C-t") 'ledger-insert-transaction-header)
       (local-set-key (kbd "C-c C-e") 'ledger-add-expense)
