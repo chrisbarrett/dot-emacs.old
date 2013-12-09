@@ -144,7 +144,7 @@
 
     (defun cb-eshell:format-header ()
       (concat
-       "\n"
+       (when cb-eshell:last-header "\n")
        (propertize " [ " 'face 'eshell-prompt-sep)
        (cb-eshell:current-dir)
        (cb-eshell:git-status)
