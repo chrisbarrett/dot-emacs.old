@@ -322,6 +322,7 @@ The insertion will be repeated COUNT times."
           evil-toggle-key (kbd "M-z")
           evil-default-cursor t)
     (setq-default evil-shift-width 2)
+    (setq-default evil-symbol-word-search 'symbol)
 
     (evil-mode +1)))
 
