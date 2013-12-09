@@ -32,7 +32,6 @@
 
 (defvar-local cb-eshell:last-header nil)
 
-
 ;; `eshell' is a terminal emulator written in elisp.
 (use-package eshell
   :commands eshell
@@ -40,6 +39,7 @@
   :config
   (progn
     (setenv "EDITOR" "emacsclient")
+
     (setq
      ;; Case-insensitive filename completion.
      eshell-cmpl-ignore-case t
