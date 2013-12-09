@@ -950,7 +950,7 @@ Switch projects and subprojects from NEXT back to TODO."
     :config
     (progn
       (org-crypt-use-before-save-magic)
-      (setq org-crypt-disable-auto-save nil)
+      (setq org-crypt-disable-auto-save 'encypt)
       (add-to-list 'org-tags-exclude-from-inheritance "crypt")
 
       (define-key org-mode-map (kbd "C-c x") 'org-encrypt-entry)
