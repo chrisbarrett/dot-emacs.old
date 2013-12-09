@@ -159,6 +159,9 @@
         (setq cb-eshell:last-header h)
         (propertize p 'read-only t 'front-sticky 'read-only 'rear-nonsticky 'read-only)))))
 
+(after 'smartparens
+  (add-hook 'eshell-mode-hook 'smartparens-mode))
+
 (provide 'cb-eshell)
 
 ;; Local Variables:
