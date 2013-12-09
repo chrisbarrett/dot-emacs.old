@@ -28,6 +28,10 @@
 
 (require 'use-package)
 (require 'cb-lib)
+(require 'cb-colour)
+
+(defvar-local cb-eshell:last-header nil)
+
 
 ;; `eshell' is a terminal emulator written in elisp.
 (use-package eshell
@@ -35,11 +39,14 @@
   :bind ("<f1>" . cb:term-cycle)
   :config
   (progn
-
     (setenv "EDITOR" "emacsclient")
-
-    ;; Case-insensitive filename completion.
-    (setq eshell-cmpl-ignore-case t)
+    (setq
+     ;; Case-insensitive filename completion.
+     eshell-cmpl-ignore-case t
+     ;; Use custom faces.
+     eshell-highlight-prompt nil
+     eshell-prompt-regexp (rx bol (* space) (or "#" ":") space)
+     eshell-prompt-function 'cb-eshell:format-prompt)
 
     (defun cb:term-cycle (&optional arg)
       "Cycle through various terminal window states."
@@ -78,8 +85,8 @@
         (delete-region (point-min)
                        (save-excursion
                          (goto-char (point-max))
-                         (search-backward-regexp (rx bol space (or "#" "%") space) nil t)
-                         (point)))))
+                         (search-backward-regexp eshell-prompt-regexp)
+                         (line-beginning-position)))))
 
     (defun eshell-subshelling-ret ()
       (interactive)
@@ -98,31 +105,57 @@
     ;;
     ;; Displays the current working directory only when it changes.
 
-    (defun cb-eshell:cwd-info ()
+    (defface eshell-prompt-sep
+      '((t :inherit 'font-lock-comment-face))
+      "Face for separators in the eshell prompt."
+      :group 'cb-eshell)
+
+    (defun cb-eshell:current-dir ()
+      (let* ((cwd (f-short (eshell/pwd)))
+             (colour (if (s-starts-with? "/" cwd)
+                         solarized-hl-orange
+                       solarized-hl-cyan)))
+        (propertize cwd 'face `(:foreground ,colour))))
+
+    (defun cb-eshell:git-status ()
+      (when (locate-dominating-file (eshell/pwd) ".git")
+        (concat
+         (propertize " | " 'face 'eshell-prompt-sep)
+         ;; Branch
+         (propertize (%-string "git rev-parse --abbrev-ref HEAD")
+                     'face `(:foreground ,solarized-hl-yellow))
+         ;; @
+         (propertize "@" 'face 'eshell-prompt-sep)
+         ;; Rev
+         (substring (%-string "git rev-parse HEAD") 0 7)
+         " "
+         ;; State
+         (when (magit-anything-unstaged-p)
+           (propertize "M" 'face `(:foreground ,solarized-hl-orange)))
+         (when (magit-anything-staged-p)
+           (propertize "+" 'face `(:foreground ,solarized-hl-green))))))
+
+    (defun cb-eshell:prompt-symbol ()
+      (if (= (user-uid) 0)
+          (propertize "#" 'face `(:bold t :foreground ,solarized-hl-red))
+        ":"))
+
+    (defun cb-eshell:format-header ()
       (concat
        "\n"
-       "------------------------- "
-       (abbreviate-file-name (eshell/pwd))
+       (propertize " [ " 'face 'eshell-prompt-sep)
+       (cb-eshell:current-dir)
+       (cb-eshell:git-status)
+       (propertize " ]" 'face 'eshell-prompt-sep)
        "\n"))
 
-    (defvar cb-eshell:prev-dir nil)
-
-    (setq
-
-     eshell-prompt-regexp
-     (rx bol
-         (* (not (any "#" "%")))
-         (or "#" "%")
-         space)
-
-     eshell-prompt-function
-     (lambda ()
-       (prog1
-           (concat
-            (unless (equal (eshell/pwd) cb-eshell:prev-dir)
-              (cb-eshell:cwd-info))
-            (if (= (user-uid) 0) " # " " % "))
-         (setq cb-eshell:prev-dir (eshell/pwd)))))))
+    (defun cb-eshell:format-prompt ()
+      "Format the prompt to display in eshell."
+      (let* ((h (cb-eshell:format-header))
+             (changed? (not (equal h cb-eshell:last-header)))
+             (p (concat (when changed? h) " " (cb-eshell:prompt-symbol) " ")))
+        (setq cb-eshell:last-header h)
+        (propertize p 'read-only t 'front-sticky 'read-only 'rear-nonsticky 'read-only)))))
 
 (provide 'cb-eshell)
 
