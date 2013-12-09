@@ -153,9 +153,12 @@ With prefix ARG, insert at point."
     (defun ledger-format-buffer ()
       "Reformat the buffer."
       (interactive "*")
-      (ledger-post-align-postings (point-min) (point-max))
-      (ledger-sort-buffer)
-      (message "Formatted buffer"))
+      (let ((pt (point)))
+        (save-excursion
+          (ledger-post-align-postings (point-min) (point-max))
+          (ledger-sort-buffer)
+          (message "Formatted buffer"))
+        (goto-char pt)))
 
     (hook-fn 'ledger-mode-hook
       (add-hook 'before-save-hook 'ledger-format-buffer nil t))
