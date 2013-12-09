@@ -31,6 +31,7 @@
 (require 'cb-org)
 (autoload 'org-read-date "org")
 (autoload 'ido-completing-read "ido")
+(autoload 'hs-hide-all "hideshow")
 
 (defvar ledger-file (f-join org-directory "accounts.ledger"))
 (defvar ledger-transaction-inserted-hook nil
@@ -54,6 +55,11 @@
                  :immediate-finish t)))
 
 (add-hook 'ledger-mode-hook 'linum-mode)
+(require 'ledger-hideshow)
+(add-hook 'ledger-mode-hook 'hs-hide-all)
+
+(defvar cbledger:transaction-start (rx bol (any digit "~" "="))
+  "Regex matching the start of a transaction line.")
 
 ;; `ledger-mode' provides support for ledger files.
 (use-package ledger-mode
@@ -74,9 +80,6 @@
       (add-to-list 'ledger-reports it t))
 
     ;; Custom commands.
-
-    (defvar cbledger:transaction-start (rx bol (any digit "~" "="))
-      "Regex matching the start of a transaction line.")
 
     (defun ledger-move-to-date (date)
       "Move to DATE in the ledger file."
@@ -378,27 +381,6 @@ Signal an error of doing so would break date ordering."
    `((,(rx bol (+ (any digit "/"))) . 'ledger-date)
      (,(rx bol "~" (* nonl)) . 'ledger-periodic-header)
      (,(rx bol "year" (+ space) (+ digit) (* space) eol) . 'ledger-year-line))))
-
-;; Configure hideshow.
-(after 'hideshow
-
-  (defun cbledger:hs-forward (&rest _)
-    (forward-line 1)
-    (or (when (search-forward-regexp cbledger:transaction-start nil t)
-          (forward-line -1)
-          (goto-char (line-end-position))
-          t)
-        (goto-char (point-max))))
-
-  (add-hook 'ledger-mode-hook 'hs-hide-all)
-
-  (add-to-list 'hs-special-modes-alist
-               `(ledger-mode
-                 ,cbledger:transaction-start
-                 nil
-                 nil
-                 cbledger:hs-forward
-                 nil)))
 
 (after 'evil
 
