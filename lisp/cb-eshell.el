@@ -128,12 +128,14 @@
          (propertize "@" 'face 'eshell-prompt-sep)
          ;; Rev
          (substring (%-string "git rev-parse HEAD") 0 7)
-         " "
          ;; State
-         (when (magit-anything-unstaged-p)
-           (propertize "M" 'face `(:foreground ,solarized-hl-orange)))
-         (when (magit-anything-staged-p)
-           (propertize "+" 'face `(:foreground ,solarized-hl-green))))))
+
+         (let ((s (concat (when (magit-anything-unstaged-p)
+                            (propertize "M" 'face `(:foreground ,solarized-hl-orange)))
+                          (when (magit-anything-staged-p)
+                            (propertize "+" 'face `(:foreground ,solarized-hl-green))))))
+           (unless (s-blank? s)
+             (concat " " s))))))
 
     (defun cb-eshell:prompt-symbol ()
       (if (= (user-uid) 0)

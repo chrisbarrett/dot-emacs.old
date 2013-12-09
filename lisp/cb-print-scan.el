@@ -49,6 +49,39 @@
       (if async? (%-async command) (%-sh command))
       destination)))
 
+(defun scan-batch-to-file (colour-mode destination)
+  "Scan several files from the document feeder then export to a single PDF.
+The args COLOUR-MODE and DESTINATION are the same as for `scan-file'."
+  (interactive
+   (list
+    (ido-completing-read "Mode: " '("Colour" "Grayscale"))
+    (read-file-name "Destination: " "~/" nil nil ".pdf")))
+
+  (read-char-choice "Press <return> to start." (list ?\^M))
+  (let (pdfs)
+    ;; Scan PDFs in flatbed.
+    (save-window-excursion
+      (let ((tmpdir (make-temp-file "scan-" t)))
+
+        ;; Scan with document feeder.
+        (unless (zerop (%-sh (concat "scanimage"
+                                     " --mode=" colour-mode
+                                     " --format=tiff"
+                                     " --batch=" (f-join tmpdir "scan--%d.tiff"))))
+          (error "Scanning failed"))
+        ;; Export files to PDFs.
+        (unless (->> (f-files tmpdir)
+                  (--map (%-sh "cupsfilter -D -i image/tiff" (%-quote it)
+                               ">" (%-quote (concat it ".pdf"))))
+                  (-all? 'zerop))
+          (error "PDF export failed"))
+        ;; Combine PDFs.
+        (unless (zerop (pdf-combine-command destination (f-files tmpdir)))
+          (error "PDF combination failed"))))
+
+    (kill-new destination)
+    (message "PDF path copied to kill-ring.")))
+
 (defun scan (colour-mode destination)
   "Scan using the default scanner to a PDF file.
 
@@ -83,10 +116,10 @@
   :title
   "*Print/Scan*"
   :options
-  '(("s" "Scan" scan)
-    ("p" "Print Buffer" print-buffer)
+  '(("p" "Print Buffer" print-buffer)
     ("r" "Print Region" print-region)
-
+    ("s" "Scan (flatbed)" scan)
+    ("u" "Scan (document feeder)" scan-batch-to-file)
     ("a" "Scan and Attach (org)" org-attach-from-scanner
      :when (lambda () (derived-mode-p 'org-mode)))))
 
