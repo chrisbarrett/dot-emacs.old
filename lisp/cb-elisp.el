@@ -245,13 +245,12 @@
   (defun cbel:find-group-for-snippet ()
     "Find the first group defined in the current file,
 falling back to the file name sans extension."
-    (or (save-excursion
-          (goto-char (point-min))
-          (when (search-forward-regexp
-                 (rx "(defgroup" (+ space) (group (+ (not space))))
-                 nil t)
-            (match-string 1)))
-        (f-no-ext (f-filename buffer-file-name))))
+    (or
+     (cadr (s-match (rx "(defgroup" (+ space) (group (+ (not space))))
+                    (buffer-string)))
+     (cadr (s-match (rx ":group" (+ space) "'" (group (+ (any "-" alnum))))
+                    (buffer-string)))
+     (f-no-ext (f-filename buffer-file-name))))
 
   (define-obsolete-function-alias 'cbel:bol-for-snippet? 'cbyas:bol?)
 
