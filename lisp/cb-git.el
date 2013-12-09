@@ -129,6 +129,14 @@
   :init
   (add-to-list 'safe-local-variable-values '(gac-automatically-push-p . t)))
 
+;; `git-commit-mode' adds a major mode for git commit messages.
+(use-package git-commit-mode
+  :defer t
+  :config
+  (progn
+    (add-hook 'git-commit-mode-hook 'turn-on-auto-fill)
+    (hook-fn  'git-commit-mode-hook (setq-local fill-column 72))))
+
 (use-package git-gutter+
   :diminish git-gutter+-mode
   :defer t
