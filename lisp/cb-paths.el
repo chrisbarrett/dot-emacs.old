@@ -44,6 +44,7 @@
 (define-path cb:src-dir       "src")
 (define-path cb:tmp-dir       "tmp/")
 (define-path cb:yasnippet-dir "snippets/")
+(define-path cb:info-dir      "info")
 
 (provide 'cb-paths)
 

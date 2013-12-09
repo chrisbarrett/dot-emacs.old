@@ -44,7 +44,9 @@
 ;; Use the version of emacs in /src for info and source.
 (setq source-directory
       (f-join cb:src-dir (format "emacs-%s.%s" emacs-major-version emacs-minor-version)))
-(setenv "INFOPATH" (f-join source-directory "info/"))
+
+(add-to-list 'Info-default-directory-list (f-join source-directory "info/"))
+(add-to-list 'Info-additional-directory-list cb:info-dir)
 
 ;; Use ~ as the default directory at startup.
 (unless (ignore-errors (emacs-init-time))
