@@ -122,7 +122,7 @@ KEY and DESC are the key binding and command description."
   (atomic-change-group
     ;; Ignore if empty.
     (if (null (file-picker-files))
-        (when (called-interactively-p)
+        (when (called-interactively-p nil)
           (user-error "List is empty"))
 
       ;; Prompt user to confirm.
@@ -136,7 +136,7 @@ KEY and DESC are the key binding and command description."
         (delete-region (point) (point-max))
         (insert "    "))
 
-      (when (called-interactively-p)
+      (when (called-interactively-p nil)
         (message "List cleared")))))
 
 (defun file-picker-accept ()
@@ -315,37 +315,48 @@ The signal is captured by the event loop in `file-picker'."
     (evil-emacs-state)))
 
 ;;;###autoload
-(cl-defun file-picker (title &key on-accept)
+(cl-defmacro file-picker (title &rest keys)
   "Show a file picker widget with TITLE.
 The picker allows the user to input a number of files.
 
 * ON-ACCEPT is a unary function. It will be called with the list of files once
-  the user has finished."
+  the user has finished.
 
-  (let ((register (cl-gensym)))
-    ;; Save current window configuration.
-    (window-configuration-to-register register)
-    (switch-to-buffer (get-buffer-create title))
-    (file-picker-mode)
-    (delete-other-windows)
+* DEFAULT-DIR is the default directory to use when reading files.
 
-    (setq file-picker-window-register register
-          file-picker-accept-function on-accept))
+\(fn title &key on-accept [default-dir])"
+  (let ((on-accept (plist-get keys :on-accept))
+        (default-dir (plist-get keys :default-dir)))
+    (cl-assert on-accept nil "Must provide :on-accept function")
+    (cl-assert (cl-evenp (length keys)))
+    (let ((keys (-map 'car (-partition-in-steps 2 2 keys))))
+      (cl-assert (null (-difference keys '(:on-accept :default-dir)))))
+    `(progn
+       (let ((register (cl-gensym)))
+         ;; Save current window configuration.
+         (window-configuration-to-register register)
+         (switch-to-buffer (get-buffer-create ,title))
+         (file-picker-mode)
+         (delete-other-windows)
 
-  ;; Insert description and sections.
-  (erase-buffer)
-  (insert (file-picker-format-info))
-  (newline 2)
-  (insert (file-picker-format-key-summary))
-  (newline 2)
-  (insert (file-picker-format-files-header))
-  (newline)
+         (setq file-picker-window-register register
+               file-picker-accept-function ,on-accept
+               file-picker-last-directory ,default-dir))
 
-  (read-only-mode +1)
+       ;; Insert description and sections.
+       (erase-buffer)
+       (insert (file-picker-format-info))
+       (newline 2)
+       (insert (file-picker-format-key-summary))
+       (newline 2)
+       (insert (file-picker-format-files-header))
+       (newline)
 
-  ;; Start the undo history from this point.
-  (setq buffer-undo-list nil
-        buffer-undo-tree nil))
+       (read-only-mode +1)
+
+       ;; Start the undo history from this point.
+       (setq buffer-undo-list nil
+             buffer-undo-tree nil))))
 
 (provide 'cb-file-picker-widget)
 
