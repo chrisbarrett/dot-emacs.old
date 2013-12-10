@@ -307,6 +307,15 @@ The signal is captured by the event loop in `file-picker'."
   "Restore window state to that prior to when the file picker was shown."
   (jump-to-register file-picker-window-register))
 
+(defun file-picker--format-header ()
+  "Prepare the header section for file-picker buffer."
+  (concat  (file-picker-format-info)
+           "\n\n"
+           (file-picker-format-key-summary)
+           "\n\n"
+           (file-picker-format-files-header)
+           "\n"))
+
 (define-derived-mode file-picker-mode nil "FilePicker"
   "Major mode for interactively selecting a number of files.
 \\{file-picker-mode-map}"
@@ -345,13 +354,7 @@ The picker allows the user to input a number of files.
 
        ;; Insert description and sections.
        (erase-buffer)
-       (insert (file-picker-format-info))
-       (newline 2)
-       (insert (file-picker-format-key-summary))
-       (newline 2)
-       (insert (file-picker-format-files-header))
-       (newline)
-
+       (insert (file-picker--format-header))
        (read-only-mode +1)
 
        ;; Start the undo history from this point.
