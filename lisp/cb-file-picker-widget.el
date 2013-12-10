@@ -32,6 +32,13 @@
 (autoload 'undo-tree-redo "undo-tree")
 (autoload 'undo-tree-undo "undo-tree")
 
+;; Variable declaration to silence compiler warning in consumers.
+(defvar buffer-undo-tree nil
+  "Tree of undo entries in current buffer.")
+(put 'buffer-undo-tree 'permanent-local t)
+(make-variable-buffer-local 'buffer-undo-tree)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defgroup file-picker-widget nil
   "Customisations for the file picker widget."
   :group 'widgets
@@ -357,7 +364,6 @@ The picker allows the user to input a number of files.
        (read-only-mode +1)
 
        ;; Start the undo history from this point.
-       (require 'undo-tree)
        (setq buffer-undo-list nil
              buffer-undo-tree nil))))
 
