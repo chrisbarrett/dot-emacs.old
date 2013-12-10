@@ -251,7 +251,7 @@ Behaves correctly for transactions that are not separated by blank lines."
           (progn
             (kill-new trans)
             (cbledger:delete-transaction-at-pt)
-            (when (called-interactively-p)
+            (when (called-interactively-p nil)
               (message "Transaction copied to kill-ring"))
             trans)
         (user-error "Point is not at a transaction")))
