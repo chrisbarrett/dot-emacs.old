@@ -333,6 +333,17 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
                                 (or (cbom:maybe-download-title-at-uri uri) uri))))
       (format "[[%s][%s]]" uri (s-truncate 70 title))))
 
+   ;; Expense in ledger format.
+   ((s-matches? "expense" kind)
+    (cl-destructuring-bind (_ dollars cents payee)
+        (s-match (rx (group (+ num)) (? ".") (group (* num))
+                     (+ space)
+                     (group (* nonl)))
+                 notes)
+      (concat (format-time-string "%Y/%m/%d") " " (s-capitalize payee) "\n"
+              "  Expenses:??               $ " dollars "." (or cents "00") "\n"
+              "  Accounts:Checking")))
+
    ;; Special diary format. The deadline is interpreted as an end time-stamp.
    ((equal "diary" kind)
     (concat (cond
@@ -370,9 +381,15 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 (cl-defun cbom:capture (str (&key kind tags &allow-other-keys))
   (when (boundp 'org-capture-templates)
     ;; Move to the capture site associated with KIND.
-    (cl-destructuring-bind (&optional key &rest rest_)
-       (-first (C (~ equal kind) s-downcase cadr) org-capture-templates)
-     (org-capture-goto-target (or key "n"))))
+    (let ((key (-first (C (~ equal kind) s-downcase cadr)
+                       org-capture-templates)))
+      (cond
+       ((s-matches? "expense" kind)
+        (org-capture-goto-target "n"))
+       (key
+        (org-capture-goto-target key))
+       (t
+        (org-capture-goto-target "n")))))
 
   ;; Prepare headline.
   (end-of-line)
