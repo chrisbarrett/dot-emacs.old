@@ -325,23 +325,21 @@ Signal an error of doing so would break date ordering."
           (goto-char pt))
         (ledger-next-transaction)))
 
-    (defun cbledger:set-key-bindings ()
-      (local-set-key (kbd "RET")     'ledger-ret)
-      (local-set-key (kbd "M-<up>") 'ledger-move-transaction-up)
-      (local-set-key (kbd "M-<down>") 'ledger-move-transaction-down)
-      (local-set-key (kbd "M-P") 'ledger-prev-transaction)
-      (local-set-key (kbd "M-N") 'ledger-next-transaction)
-      (local-set-key (kbd "C-c C-k") 'ledger-kill-transaction-at-pt)
-      (local-set-key (kbd "C-c C-c") 'ledger-report)
-      (local-set-key (kbd "C-c C-t") 'ledger-insert-transaction-header)
-      (local-set-key (kbd "C-c C-e") 'ledger-add-expense)
-      (local-set-key (kbd "C-c C-d") 'ledger-move-to-date)
-      (local-set-key (kbd "M-RET")   'ledger-toggle-current-transaction)
-      (local-set-key (kbd "M-q")     'ledger-format-buffer))
-
-    (add-hook 'ledger-mode-hook 'cbledger:set-key-bindings)
-
     (after 'ledger-mode
+      (define-keys ledger-mode-map
+        "RET" 'ledger-ret
+        "M-<up>" 'ledger-move-transaction-up
+        "M-<down>" 'ledger-move-transaction-down
+        "M-P" 'ledger-prev-transaction
+        "M-N" 'ledger-next-transaction
+        "C-c C-k" 'ledger-kill-transaction-at-pt
+        "C-c C-c" 'ledger-report
+        "C-c C-t" 'ledger-insert-transaction-header
+        "C-c C-e" 'ledger-add-expense
+        "C-c C-d" 'ledger-move-to-date
+        "M-RET" 'ledger-toggle-current-transaction
+        "M-q" 'ledger-format-buffer)
+
       ;; FIX: Modify function to prevent errors passing nil string to
       ;; regexp-quote.
       (defun ledger-report-payee-format-specifier ()
