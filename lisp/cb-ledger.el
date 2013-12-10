@@ -56,7 +56,9 @@
 
 (add-hook 'ledger-mode-hook 'linum-mode)
 (require 'ledger-hideshow)
-(add-hook 'ledger-mode-hook 'hs-hide-all)
+(hook-fn 'ledger-mode-hook
+  (hs-minor-mode +1)
+  (hs-hide-all))
 
 (defvar cbledger:transaction-start (rx bol (any digit "~" "="))
   "Regex matching the start of a transaction line.")
