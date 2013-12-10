@@ -126,7 +126,7 @@ KEY and DESC are the key binding and command description."
           (user-error "List is empty"))
 
       ;; Prompt user to confirm.
-      (when (called-interactively-p)
+      (when (called-interactively-p nil)
         (unless (y-or-n-p "Clear all files? ")
           (user-error "Cancelled")))
 
@@ -355,6 +355,7 @@ The picker allows the user to input a number of files.
        (read-only-mode +1)
 
        ;; Start the undo history from this point.
+       (require 'undo-tree)
        (setq buffer-undo-list nil
              buffer-undo-tree nil))))
 
