@@ -345,7 +345,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 
               "$ " dollars "." (if (s-blank? cents) "00" (s-pad-left 2 cents "0"))
 
-              "\n  Accounts:Checking\n"
+              "\n  Assets:Checking\n"
               ;; Format notes as comments.
               (unless (s-blank? notes)
                 (concat (->> notes
