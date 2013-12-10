@@ -85,6 +85,7 @@
 (require 'cb-paths)
 (require 'async)
 (require 'cb-org)
+(require 'cb-file-picker-widget)
 (autoload 'org-insert-link "org")
 (autoload 'org-insert-time-stamp "org")
 (autoload 'org-insert-subheading "org")
@@ -127,9 +128,7 @@
 DIR should be an IMAP maildir folder containing a subdir called 'new'."
   (let ((new (f-join dir "new")))
     (when (f-exists? new)
-      (->> (f-files new)
-        (-filter 'cbom:unread-message?)
-        (-map (π f-read-text I))))))
+      (-filter 'cbom:unread-message? (f-files new)))))
 
 ;;; Message parsing
 
@@ -220,10 +219,11 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
         (format "%s %s" (org-read-date t nil str) time)
       (org-read-date t nil str))))
 
-;; (String, FilePath) -> MessagePlist
-(cl-defun cbom:parse-message ((msg path))
+;; FilePath -> MessagePlist
+(cl-defun cbom:parse-message (path)
   "Parse message body."
-  (let* ((body (if (cbom:multipart-message? msg)
+  (let* ((msg (f-read-text path))
+         (body (if (cbom:multipart-message? msg)
                    (cbom:multipart-body-plaintext-section msg)
                  (cdr (cbom:split-message-head-and-body msg))))
          (lns (-remove 's-blank? (-map 's-trim (s-lines body))))
@@ -386,11 +386,12 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
    (s-with-temp-buffer
      (org-insert-time-stamp (current-time) t 'inactive))))
 
-;; MessagePlist -> IO ()
-(cl-defun cbom:remove-message ((&key filepath &allow-other-keys))
+;; FilePath -> IO ()
+(cl-defun cbom:mark-as-read (filepath)
+  "Mark the message at FILEPATH as read
+In accordance with maildir conventions, this renames the message
+at FILEPATH and moves it to the cur dir."
   (when (f-exists? filepath)
-    ;; Create filepath to the destination dir, with filename tags that mark
-    ;; the message as read.
     (let* ((dest-file (format "%s:2,S" (car (s-split ":" (f-filename filepath)))))
            (dest-filepath (f-join (funcall cbom:org-processed-mail-folder)
                                   "cur"
@@ -403,45 +404,54 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
          (s-truncate 40 title)
          cbom:icon))
 
+;; MessagePlist -> IO ()
+(defun cbom:capture-message-async (filepath)
+  "Process the email at FILEPATH and capture with org-mode."
+  (let ((msg (cbom:parse-message filepath)))
+    (cond
+     ;; If a message contains a URI, capture using the link template.
+     ((equal "agenda" (plist-get msg :kind))
+      (cbom:dispatch-agenda-email)
+      (growl "Agenda Emailed" "" cbom:icon))
+     ;;
+     ;; Prepare messages for capture in another Emacs process. This keeps
+     ;; the UI responsive while performing web requests, etc.
+     (t
+      (async-start
+       `(lambda ()
+          ,(async-inject-variables "load-path")
+          (let ((msg ',msg))
+            (package-initialize)
+            (require 'cb-org-email-capture)
+            (list msg (cbom:format-for-insertion msg))))
+       (lambda+ ((msg fmt))
+         (save-excursion
+           (save-window-excursion
+             ;; The user may have interactively changed the default notes
+             ;; file, so we rebind it to the note file set at init time.
+             (let ((org-default-notes-file org-init-notes-file))
+               (cbom:capture fmt msg)
+               (cbom:growl msg))))))))))
+
 ;; IO ()
 (defun cbom:capture-messages ()
   "Parse and capture unread messages in `cbom:org-mail-folder'.
 Captures messages subjects match one of the values in `org-capture-templates'.
 Captured messages are marked as read."
+  (--each (cbom:unprocessed-messages (AP cbom:org-mail-folder))
+    (cbom:capture-message-async it)
+    (cbom:mark-as-read it)))
+
+(defun org-capture-import-files ()
+  "Read a list of files maildir format and capture them with orgmode."
   (interactive)
-  ;; Get a list of unprocessed messages. Check for membership in the processed
-  ;; messages list to prevent double-ups.
-  (let ((msgs (->> (AP cbom:org-mail-folder)
-                (cbom:unprocessed-messages)
-                (-map 'cbom:parse-message))))
-    (-each msgs 'cbom:remove-message )
-    ;; Capture each message.
-    (dolist (pl msgs)
-      ;; Capture according to kind.
-      (cond
-       ;; If a message contains a URI, capture using the link template.
-       ((equal "agenda" (plist-get pl :kind))
-        (cbom:dispatch-agenda-email)
-        (growl "Agenda Emailed" "" cbom:icon))
-       ;;
-       ;; Prepare messages for capture in another Emacs process. This keeps
-       ;; the UI responsive while performing web requests, etc.
-       (t
-        (async-start
-         `(lambda ()
-            ,(async-inject-variables "load-path")
-            (let ((pl ',pl))
-              (package-initialize)
-              (require 'cb-org-email-capture)
-              (list pl (cbom:format-for-insertion pl))))
-         (lambda+ ((pl fmt))
-           (save-excursion
-             (save-window-excursion
-               ;; The user may have interactively changed the default notes
-               ;; file, so we rebind it to the note file set at init time.
-               (let ((org-default-notes-file org-init-notes-file))
-                 (cbom:capture fmt pl)
-                 (cbom:growl pl)))))))))))
+  (file-picker
+   "*Select Files*"
+   :default-dir user-mail-directory
+   :on-accept
+   (lambda (paths)
+     (-each paths 'cbom:capture-message-async)
+     (message "Importing messages in the background"))))
 
 ;;; Timer
 
