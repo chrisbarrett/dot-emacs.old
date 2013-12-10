@@ -29,6 +29,8 @@
 (require 'cb-lib)
 (require 'cb-colour)
 (autoload 'cl-gensym "cl-macs")
+(autoload 'undo-tree-redo "undo-tree")
+(autoload 'undo-tree-undo "undo-tree")
 
 (defgroup file-picker-widget nil
   "Customisations for the file picker widget."
@@ -264,11 +266,13 @@ The signal is captured by the event loop in `file-picker'."
     (user-error "Point is not at a file")))
 
 (defun file-picker-undo (arg)
+  "Wrapper for undo-tree-undo.  Passes ARG on."
   (interactive "P")
   (let (buffer-read-only)
     (undo-tree-undo arg)))
 
 (defun file-picker-redo (arg)
+  "Wrapper for undo-tree-redo.  Passes ARG on."
   (interactive "P")
   (let (buffer-read-only)
     (undo-tree-redo arg)))
