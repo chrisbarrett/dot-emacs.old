@@ -298,7 +298,9 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 
 ;; Env [String]
 (defun cbom:todo-keywords ()
-  (->> org-todo-keywords
+  (->> (if (boundp 'org-todo-keywords)
+           org-todo-keywords
+         '("TODO" "SOMEDAY" "MAYBE" "NEXT"))
     (-flatten)
     (-filter 'stringp)
     (-keep (C cadr (~ s-match (rx bol (group (+ word))))))
@@ -314,9 +316,9 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
   (cond
    ((null notes) "")
    ((= (length notes) 1)
-    (format "\n%s" (car notes))))
-  (t
-   (format "\n%s" (s-join "\n- " notes))))
+    (format "\n%s" (car notes)))
+   (t
+    (format "\n%s" (s-join "\n- " notes)))))
 
 ;; MessagePlist -> Env String
 (cl-defun cbom:format-for-insertion
@@ -357,18 +359,20 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 
 ;; IO ()
 (defun cbom:dispatch-agenda-email ()
-  (let ((inhibit-redisplay t))
-    (-when-let (key (->> org-agenda-custom-commands
-                      (-first (& (C listp cdr) (C (~ s-matches? "email") cadr)))
-                      (car)))
-      (org-agenda nil key))))
+  (when (boundp 'org-agenda-custom-commands)
+    (let ((inhibit-redisplay t))
+     (-when-let (key (->> org-agenda-custom-commands
+                       (-first (& (C listp cdr) (C (~ s-matches? "email") cadr)))
+                       (car)))
+       (org-agenda nil key)))))
 
 ;; String -> MessagePlist -> IO ()
 (cl-defun cbom:capture (str (&key kind tags &allow-other-keys))
-  ;; Move to the capture site associated with KIND.
-  (cl-destructuring-bind (&optional key &rest rest_)
-      (-first (C (~ equal kind) s-downcase cadr) org-capture-templates)
-    (org-capture-goto-target (or key "n")))
+  (when (boundp 'org-capture-templates)
+    ;; Move to the capture site associated with KIND.
+    (cl-destructuring-bind (&optional key &rest rest_)
+       (-first (C (~ equal kind) s-downcase cadr) org-capture-templates)
+     (org-capture-goto-target (or key "n"))))
 
   ;; Prepare headline.
   (end-of-line)
