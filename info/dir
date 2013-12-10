@@ -14,5 +14,6 @@ File: dir,	Node: Top	This is the top of the INFO tree
 
 * Menu:
 
-Emacs
+Ledger
+* Ledger: (ledger).                      Commandline accounting application.
 * Ledger mode: (ledger-mode).            Major mode for editing ledger files.

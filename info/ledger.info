@@ -1,0 +1,260 @@
+This is ledger3.info, produced by makeinfo version 4.8 from
+/Users/chris/src/ledger/doc/ledger3.texi.
+
+   Copyright (C) 2003–2013, John Wiegley.  All rights reserved.
+
+   Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+   * Redistributions of source code must retain the above copyright
+     notice, this list of conditions and the following disclaimer.
+
+   * Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in
+     the documentation and/or other materials provided with the
+     distribution.
+
+   * Neither the name of New Artisans LLC nor the names of its
+     contributors may be used to endorse or promote products derived
+     from this software without specific prior written permission.
+
+
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+INFO-DIR-SECTION User Applications
+START-INFO-DIR-ENTRY
+* Ledger3: (ledger3).           Command-Line Accounting
+END-INFO-DIR-ENTRY
+
+
+Indirect:
+ledger3.info-1: 1769
+ledger3.info-2: 301430
+
+Tag Table:
+(Indirect)
+Node: Top1769
+Node: Introduction to Ledger2597
+Node: Fat-free Accounting2823
+Ref: Fat-free Accounting-Footnote-19164
+Node: Building the program9247
+Node: Getting help9821
+Node: Ledger Tutorial10404
+Node: Start a Journal File10630
+Node: Run a Few Reports11249
+Node: Balance Report12109
+Node: Register Report13763
+Node: Cleared Report18448
+Node: Using the Windows Command Line20456
+Node: Principles of Accounting with Ledger20843
+Node: Accounting with Ledger21300
+Node: Stating where money goes21857
+Node: Assets and Liabilities24535
+Node: Tracking reimbursable expenses26928
+Node: Commodities and Currencies32948
+Node: Commodity price histories36442
+Node: Commodity equivalencies37494
+Node: Accounts and Inventories39496
+Node: Understanding Equity41119
+Node: Dealing with Petty Cash43061
+Node: Working with multiple funds and accounts44175
+Node: Keeping a Journal48895
+Ref: Keeping a Journal-Footnote-150722
+Node: The Most Basic Entry50923
+Node: Starting up52675
+Node: Structuring your Accounts54127
+Node: Commenting on your Journal55104
+Node: Currency and Commodities56562
+Ref: Currency and Commodities-Footnote-159202
+Node: Naming Commodities59344
+Node: Buying and Selling Stock59985
+Node: Fixing Lot Prices61350
+Node: Complete control over commodity pricing63387
+Node: Keeping it Consistent68058
+Node: Journal Format69314
+Node: Transactions and Comments69724
+Node: Command Directives72719
+Node: Converting from other formats85194
+Node: Archiving Previous Years85979
+Node: Transactions88460
+Node: Basic format89073
+Node: Eliding amounts89781
+Node: Auxiliary dates91061
+Node: Codes91665
+Node: Transaction state92128
+Node: Transaction notes93570
+Node: Metadata94837
+Node: Metadata tags95334
+Node: Payee metadata tag95864
+Node: Metadata values97279
+Node: Typed metadata97757
+Node: Virtual postings98708
+Node: Expression amounts99862
+Node: Balance verification100330
+Node: Balance assertions100914
+Node: Balance assignments101404
+Node: Resetting a balance101960
+Node: Balancing transactions102768
+Node: Posting cost103587
+Node: Explicit posting costs104486
+Node: Primary and secondary commodities105197
+Node: Posting cost expressions106100
+Node: Total posting costs106645
+Node: Virtual posting costs107282
+Node: Commodity prices107873
+Node: Total commodity prices110053
+Node: Prices vs. costs112224
+Node: Fixated prices and costs112987
+Node: Lot dates114215
+Node: Lot notes114822
+Node: Lot value expressions115543
+Node: Automated Transactions118291
+Node: Amount multipliers119986
+Node: Accessing the matching posting's amount120914
+Node: Referring to the matching posting's account121831
+Node: Applying metadata to every matched posting122659
+Node: Applying metadata to the generated posting123466
+Node: State flags124458
+Node: Effective Dates124856
+Node: Periodic Transactions128042
+Node: Concrete Example of Automated Transactions128522
+Node: Building Reports131561
+Node: Introduction131793
+Node: Balance Reports132367
+Node: Controlling the Accounts and Payees132599
+Node: Controlling Formatting135593
+Node: Typical queries135957
+Node: Reporting monthly expenses136480
+Node: Advanced Reports137970
+Node: Asset Allocation138167
+Node: Visualizing with Gnuplot143168
+Node: Reporting Commands145234
+Node: Primary Financial Reports145533
+Node: The `balance' command145847
+Node: The `equity' command146319
+Node: The `register' command146717
+Node: The `print' command147864
+Node: Reports in other Formats148459
+Node: Comma Separated Values files148864
+Node: The `csv' command149143
+Node: The `convert' command149573
+Node: The `lisp' command153474
+Node: Emacs `org' Mode153975
+Node: Org mode with Babel156295
+Node: Embedded Ledger example with single source block157999
+Node: Multiple Ledger source blocks with `noweb'160896
+Node: Income Entries161546
+Node: Expenses162645
+Node: Financial Summaries163225
+Node: An overall balance summary163775
+Node: Generating a monthly register165270
+Node: Summary167545
+Node: The `pricemap' command167941
+Node: The `xml' command168532
+Node: `prices' and `pricedb' commands173015
+Node: Reports about your Journals173660
+Node: `accounts'173944
+Node: `payees'174377
+Node: `commodities'174826
+Node: `tags'175155
+Node: `xact'175516
+Node: `stats'177320
+Node: `select'177469
+Node: Command-line Syntax177605
+Node: Basic Usage177885
+Node: Command Line Quick Reference179449
+Node: Basic Reporting Commands179848
+Node: Basic Options180686
+Node: Report Filtering181232
+Node: Error Checking and Calculation Options182646
+Node: Output Customization183306
+Node: Grouping Options185297
+Node: Commodity Reporting185889
+Node: Detailed Option Description186609
+Node: Global Options187004
+Node: Session Options190338
+Node: Report Options194147
+Node: Basic options213982
+Node: Report filtering215810
+Node: Output customization219922
+Node: Commodity reporting229379
+Node: Environment variables236848
+Node: Period Expressions237512
+Node: Budgeting and Forecasting239094
+Node: Budgeting239306
+Node: Forecasting241427
+Node: Time Keeping242253
+Node: Value Expressions243492
+Node: Variables244844
+Node: Posting/account details246095
+Node: Calculated totals247162
+Node: Functions247865
+Node: Operators248446
+Node: Unary Operators248757
+Node: Binary Operators248922
+Node: Complex expressions249180
+Node: Miscellaneous250636
+Node: Format Strings251625
+Node: Format String Basics251913
+Node: Format String Structure253011
+Node: Format Expressions254109
+Node: Balance format256651
+Node: Formatting Functions and Codes257214
+Node: Field Widths257566
+Node: Colors257991
+Node: Quantities and Calculations258496
+Node: Date Functions258957
+Node: Date and Time Format Codes259757
+Node: Days260185
+Node: Weekdays260624
+Node: Month261322
+Node: Miscellaneous Date Codes261878
+Node: Text Formatting262493
+Node: Data File Parsing Information263811
+Node: Extending with Python264654
+Node: Basic data traversal265070
+Node: Raw vs. Cooked266192
+Node: Queries268191
+Node: Embedded Python268656
+Node: Amounts269346
+Node: Ledger for Developers269895
+Node: Internal Design270204
+Node: Journal File Format for Developers280039
+Node: Comments and meta-data282206
+Node: Specifying Amounts282672
+Node: Integer Amounts283343
+Node: Commoditized Amounts286009
+Node: Posting costs287956
+Node: Primary commodities289752
+Node: Developer Commands291075
+Node: `echo'291365
+Node: `reload'291561
+Node: `source'291864
+Node: Debug Options292214
+Node: Pre-Commands295217
+Node: Ledger Development Environment298023
+Node: `acprep' build configuration tool298282
+Node: Testing Framework298531
+Node: Running Tests299235
+Node: Writing Tests300173
+Node: Major Changes from version 2.6300310
+Node: Example Journal File301430
+Node: Miscellaneous Notes303772
+Node: Cookbook304080
+Node: Invoking Ledger304247
+Node: Ledger Files304646
+Node: Concepts Index304997
+Node: Commands & Options Index311521
+
+End Tag Table
