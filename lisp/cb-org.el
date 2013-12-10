@@ -164,6 +164,7 @@ This will set which file org-capture will capture to."
 ;; `org-mode' is a suite of editing and management tools centred around
 ;; human-readable text files.
 (use-package org
+  :if (not noninteractive)
   :defer t
   :config
   (progn
@@ -387,6 +388,7 @@ This will set which file org-capture will capture to."
 
 ;; `orglink' adds support for org-mode-style and plain links in other modes.
 (use-package orglink
+  :if (not noninteractive)
   :ensure t
   :defer t
   :init
@@ -402,6 +404,7 @@ This will set which file org-capture will capture to."
 ;; `org-pomodoro' adds Pomodoro clocking functions.
 ;; I have my own fork, since the original isn't keeping up with pull requests.
 (use-package org-pomodoro
+  :if (not noninteractive)
   :defer t
   :bind ("<f5>" . org-pomodoro)
   :config
@@ -833,6 +836,7 @@ Return nil if there are no items to display."
 ;; org-mode.
 (after 'org
   (use-package org-clock
+    :if (not noninteractive)
     :config
     (progn
       (org-clock-persistence-insinuate)
