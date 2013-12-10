@@ -340,9 +340,12 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
                      (+ space)
                      (group (* nonl)))
                  title)
-      (concat (format-time-string "%Y/%m/%d") " " (s-capitalize (or payee "??")) "\n"
-              "  Expenses:??               $ " dollars "." (or cents "00") "\n"
-              "  Accounts:Checking\n"
+      (concat (format-time-string "%Y/%m/%d ") (s-capitalize (or payee "??"))
+              "\n  Expenses:??        "
+
+              "$" dollars "." (if (s-blank? cents) "00" (s-pad-left 2 cents "0"))
+
+              "\n  Accounts:Checking\n"
               ;; Format notes as comments.
               (unless (s-blank? notes)
                 (concat (->> notes
