@@ -466,6 +466,10 @@ Captured messages are marked as read."
     (cbom:capture-message-async it)
     (cbom:mark-as-read it)))
 
+;; The following commands allow you to manually capture messages from the
+;; filesystem. This is useful when you need to re-import a message that has been
+;; marked as read.
+
 (defun org-capture-import-files ()
   "Read a list of files maildir format and capture them with orgmode."
   (interactive)
@@ -475,6 +479,29 @@ Captured messages are marked as read."
    :on-accept
    (lambda (paths)
      (-each paths 'cbom:capture-message-async)
+     (message "Importing messages in the background"))))
+
+(defun org-capture-import-by-kind ()
+  "Read a list of files maildir format and capture them with orgmode.
+Parses the selected messages and prompts the user for the kind of
+files to be imported."
+  (interactive)
+  (file-picker
+   "*Select Files*"
+   :default-dir user-mail-directory
+   :on-accept
+   (lambda (paths)
+     (let ((groups
+            (->> paths
+              (-map (π (C (-cut plist-get <> :kind) cbom:parse-message)
+                       I))
+              (-group-by 'car)
+              (-map (lambda+ ((kind . xs))
+                      (cons kind (-map 'cadr xs)))))))
+       (-> (ido-completing-read "Import messages of kind: " (-map 'car groups) nil t)
+         (assoc groups)
+         cdr
+         (-each 'cbom:capture-message-async)))
      (message "Importing messages in the background"))))
 
 ;;; Timer
