@@ -8,3 +8,6 @@
 --ignore-dir=lib
 --ignore-dir=src
 --ignore-dir=tmp
+--ignore-dir=info
+--ignore-dir=eshell
+--ignore-dir=scripts/*
