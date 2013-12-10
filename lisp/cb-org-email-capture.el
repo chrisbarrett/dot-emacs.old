@@ -343,7 +343,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
       (concat (format-time-string "%Y/%m/%d ") (s-capitalize (or payee "??"))
               "\n  Expenses:??        "
 
-              "$" dollars "." (if (s-blank? cents) "00" (s-pad-left 2 cents "0"))
+              "$ " dollars "." (if (s-blank? cents) "00" (s-pad-left 2 cents "0"))
 
               "\n  Accounts:Checking\n"
               ;; Format notes as comments.
