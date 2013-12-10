@@ -333,16 +333,23 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
                                 (or (cbom:maybe-download-title-at-uri uri) uri))))
       (format "[[%s][%s]]" uri (s-truncate 70 title))))
 
-   ;; Expense in ledger format.
+   ;; Format expense as a ledger transaction.
    ((s-matches? "expense" kind)
     (cl-destructuring-bind (_ dollars cents payee)
         (s-match (rx (group (+ num)) (? ".") (group (* num))
                      (+ space)
                      (group (* nonl)))
-                 notes)
-      (concat (format-time-string "%Y/%m/%d") " " (s-capitalize payee) "\n"
+                 title)
+      (concat (format-time-string "%Y/%m/%d") " " (s-capitalize (or payee "??")) "\n"
               "  Expenses:??               $ " dollars "." (or cents "00") "\n"
-              "  Accounts:Checking")))
+              "  Accounts:Checking\n"
+              ;; Format notes as comments.
+              (unless (s-blank? notes)
+                (concat (->> notes
+                          (s-split "\n")
+                          (-map (C (~ s-prepend "      ; ") s-trim))
+                          (s-join "\n"))
+                        "\n")))))
 
    ;; Special diary format. The deadline is interpreted as an end time-stamp.
    ((equal "diary" kind)
