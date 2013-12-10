@@ -431,19 +431,19 @@ at FILEPATH and moves it to the cur dir."
          (s-truncate 40 title)
          cbom:icon))
 
-;; MessagePlist -> IO ()
-(defun cbom:capture-message-async (filepath)
-  "Process the email at FILEPATH and capture with org-mode."
-  (let ((msg (cbom:parse-message filepath)))
+;; [FilePath] -> IO ()
+(defun cbom:capture-messages (files)
+  "Process FILES and capture with org-mode."
+  (dolist (msg (-map 'cbom:parse-message files))
     (cond
      ;; If a message contains a URI, capture using the link template.
      ((equal "agenda" (plist-get msg :kind))
       (cbom:dispatch-agenda-email)
       (growl "Agenda Emailed" "" cbom:icon))
-     ;;
-     ;; Prepare messages for capture in another Emacs process. This keeps
-     ;; the UI responsive while performing web requests, etc.
-     (t
+
+     ;; Prepare link messages for capture in another Emacs process. This keeps
+     ;; the UI responsive while performing web requests.
+     ((equal "link" (plist-get msg :kind))
       (async-start
        `(lambda ()
           ,(async-inject-variables "load-path")
@@ -458,16 +458,12 @@ at FILEPATH and moves it to the cur dir."
              ;; file, so we rebind it to the note file set at init time.
              (let ((org-default-notes-file org-init-notes-file))
                (cbom:capture fmt msg)
-               (cbom:growl msg))))))))))
+               (cbom:growl msg)))))))
 
-;; IO ()
-(defun cbom:capture-messages ()
-  "Parse and capture unread messages in `cbom:org-mail-folder'.
-Captures messages subjects match one of the values in `org-capture-templates'.
-Captured messages are marked as read."
-  (--each (cbom:unprocessed-messages (AP cbom:org-mail-folder))
-    (cbom:capture-message-async it)
-    (cbom:mark-as-read it)))
+     ;; Capture all other messages synchronously.
+     (t
+      (cbom:capture (cbom:format-for-insertion msg) msg)
+      (cbom:growl msg)))))
 
 ;; The following commands allow you to manually capture messages from the
 ;; filesystem. This is useful when you need to re-import a message that has been
@@ -481,7 +477,7 @@ Captured messages are marked as read."
    :default-dir user-mail-directory
    :on-accept
    (lambda (paths)
-     (-each paths 'cbom:capture-message-async)
+     (cbom:capture-messages paths)
      (message "Importing messages in the background"))))
 
 (defun org-capture-import-by-kind ()
@@ -504,17 +500,25 @@ files to be imported."
        (-> (ido-completing-read "Import messages of kind: " (-map 'car groups) nil t)
          (assoc groups)
          cdr
-         (-each 'cbom:capture-message-async)))
+         cbom:capture-messages))
      (message "Importing messages in the background"))))
 
 ;;; Timer
+
+(defun cbom:run-capture ()
+  "Parse and capture unread messages in `cbom:org-mail-folder'.
+Captures messages subjects match one of the values in `org-capture-templates'.
+Captured messages are marked as read."
+  (let ((ms (cbom:unprocessed-messages (AP cbom:org-mail-folder))))
+    (cbom:capture-messages ms)
+    (-each ms 'cbom:mark-as-read)))
 
 (hook-fn 'after-init-hook
   (defvar cbom:capture-timer
     (run-with-timer 10 60 (lambda ()
                            (when (featurep 'org)
                              (with-demoted-errors
-                               (cbom:capture-messages)))))))
+                               (cbom:run-capture)))))))
 
 (provide 'cb-org-email-capture)
 
