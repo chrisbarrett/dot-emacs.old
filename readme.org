@@ -44,7 +44,7 @@ I use [[https://gitorious.org/evil/pages/Home][Evil-mode]] so I can have vim in 
 ** Custom mode-line
 The mode-line is set up to remove clutter.
 
-If you set =cbm:mail-directory= to point to your maildir the modeline will display an unread mail count.
+If you set =user-mail-directory= to point to your maildir the modeline will display an unread mail count.
 ** Modal buffers
 Certain commands display buffers in a /modal/ manner; they expand to fill the
 frame and restore the previous state when killed. This behaviour is provided for

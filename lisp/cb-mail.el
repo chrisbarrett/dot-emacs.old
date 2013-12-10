@@ -29,6 +29,7 @@
 (require 'use-package)
 (require 'cb-lib)
 (require 'cb-modeline)
+(require 'cb-paths)
 (autoload 'bbdb-record-name "bbdb")
 (autoload 'std11-field-body "std11")
 (autoload 'bbdb-complete-mail "bbdb-com")
@@ -301,9 +302,6 @@ Rewrap in an org-style quote block."
 ;; -----------------------------------------------------------------------------
 ;; Display unread mail count in mode-line.
 
-(defvar cbm:mail-directory (f-join user-home-directory "Maildir")
-  "The maildir to scan for new messages.")
-
 (defvar cbm:mail-icon (create-image (f-join cb:assets-dir "letter.xpm")
                                     'xpm nil :ascent 'center))
 
@@ -312,7 +310,7 @@ Rewrap in an org-style quote block."
 
 (defun cbm:unread-mail-count ()
   "Return the number of unread messages in all folders in your maildir."
-  (->> (f-directories cbm:mail-directory)
+  (->> (f-directories user-mail-directory)
     (-mapcat 'f-directories)
     (-mapcat 'f-directories)
     (-filter (~ s-ends-with? "new"))
@@ -329,7 +327,7 @@ Rewrap in an org-style quote block."
 
 (defun cbm:update-unread-count ()
   "Find the number of unread messages and update the modeline."
-  (when (f-exists? cbm:mail-directory)
+  (when (f-exists? user-mail-directory)
     (setq cbm:mode-line-indicator (cbm:make-indicator (cbm:unread-mail-count)))))
 
 ;; Use a combination of timers to update the modeline unread count.

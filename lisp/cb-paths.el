@@ -31,6 +31,7 @@
 
 (defvar user-home-directory (concat (getenv "HOME") "/"))
 (defvar user-dropbox-directory (concat user-home-directory "Dropbox/"))
+(defvar user-mail-directory (f-join user-home-directory "Maildir"))
 
 (define-path cb:assets-dir       "assets/")
 (define-path cb:autosaves-dir "tmp/autosaves/")
