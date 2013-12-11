@@ -189,6 +189,7 @@ This will set which file org-capture will capture to."
      org-edit-src-content-indentation 0
      org-catch-invisible-edits 'smart
      org-insert-heading-respect-content t
+     org-M-RET-may-split-line nil
 
      ;; Org habit
 
