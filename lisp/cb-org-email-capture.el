@@ -368,12 +368,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
    ;; All other types can follow a standard style.
    (t
     (concat
-     (cond
-      ;; If this is a todo, ensure the headline starts with a todo keyword.
-      ((and (equal "todo" kind) (not (cbom:starts-with-todo-keyword? title)))
-       (concat "TODO " title))
-      (t
-       title))
+     title
      (when scheduled (format "\nSCHEDULED: <%s>" scheduled))
      (when deadline (format "\nDEADLINE: <%s>" deadline))
      (cbom:format-notes notes)))))
@@ -390,28 +385,43 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 ;; String -> MessagePlist -> IO ()
 (cl-defun cbom:capture (str (&key kind tags &allow-other-keys))
   (when (boundp 'org-capture-templates)
-    ;; Move to the capture site associated with KIND.
-    (let ((key (-first (C (~ equal kind) s-downcase cadr)
-                       org-capture-templates)))
+    (cl-destructuring-bind (&optional key name file tree template &rest rest)
+        (-first (C (~ equal kind) s-downcase cadr)
+                org-capture-templates)
       (cond
+       ;; Move to the capture site associated with KIND.
        ((s-matches? "expense" kind)
         (org-capture-goto-target "n"))
        (key
         (org-capture-goto-target key))
        (t
-        (org-capture-goto-target "n")))))
+        (org-capture-goto-target "n")))
 
-  ;; Prepare headline.
-  (end-of-line)
-  (org-insert-subheading '(16))     ; 16 = at end of list
+      ;; Prepare headline.
+      (end-of-line)
+      (org-insert-subheading '(16))     ; 16 = at end of list
 
-  ;; Insert item.
-  (insert str)
-  (org-set-tags-to tags)
-  (org-set-property
-   "CAPTURED"
-   (s-with-temp-buffer
-     (org-insert-time-stamp (current-time) t 'inactive))))
+      ;; Insert item. Prepend a todo keyword appropriate for the template,
+      ;; unless the string already starts with one.
+      (insert
+       (let* ((todo-keywords
+               (and (boundp 'org-todo-keywords)
+                    (->> org-todo-keywords
+                      -flatten
+                      (-filter 'stringp)
+                      (-mapcat (~ s-match (rx (+ (not (any "(")))))))))
+              (kw (-first (~ -contains? todo-keywords) (s-split-words template))))
+         (if (and kw (-none? (~ s-matches? str) todo-keywords))
+             (format "%s %s" kw str)
+           str)))
+
+      (org-set-tags-to tags)
+
+      (unless (s-matches? "expense" kind)
+        (org-set-property
+         "CAPTURED"
+         (s-with-temp-buffer
+           (org-insert-time-stamp (current-time) t 'inactive)))))))
 
 ;; FilePath -> IO ()
 (cl-defun cbom:mark-as-read (filepath)
