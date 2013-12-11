@@ -1126,6 +1126,11 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
 ;; Configure evil-mode key bindings.
 (after 'evil
 
+  (defadvice org-toggle-heading (after goto-line-end activate)
+    "Prevent point from being moved to the line beginning."
+    (when (s-matches? (rx bol (+ "*") (* space) eol) (current-line))
+      (goto-char (line-end-position))))
+
   (defadvice org-return (around newlines-only-in-insert-state activate)
     "Only insert newlines if we're in insert state."
     (noflet ((newline (&rest args)
