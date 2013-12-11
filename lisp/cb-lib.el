@@ -505,6 +505,13 @@ Find the first window where PRED-FORM is not nil."
 
       (-remove 's-blank? (nreverse acc)))))
 
+(defun in-comment-p ()
+  "Return non-nil if point is in a comment."
+  (let ((orig (point)))
+    (save-excursion
+      (beginning-of-defun)
+      (nth 4 (parse-partial-sexp (point) orig)))))
+
 ;; -----------------------------------------------------------------------------
 
 (defun filter-atoms (predicate)
