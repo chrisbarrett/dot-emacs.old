@@ -420,7 +420,7 @@ In accordance with maildir conventions, this renames the message
 at FILEPATH and moves it to the cur dir."
   (when (f-exists? filepath)
     (let* ((dest-file (format "%s:2,S" (car (s-split ":" (f-filename filepath)))))
-           (dest-filepath (f-join (funcall cbom:org-processed-mail-folder)
+           (dest-filepath (f-join (AP cbom:org-processed-mail-folder)
                                   "cur"
                                   dest-file)))
       (f-move filepath dest-filepath))))
@@ -505,13 +505,19 @@ files to be imported."
 
 ;;; Timer
 
+(defvar cbom:running? nil)
+
 (defun cbom:run-capture ()
   "Parse and capture unread messages in `cbom:org-mail-folder'.
 Captures messages subjects match one of the values in `org-capture-templates'.
 Captured messages are marked as read."
-  (let ((ms (cbom:unprocessed-messages (AP cbom:org-mail-folder))))
-    (cbom:capture-messages ms)
-    (-each ms 'cbom:mark-as-read)))
+  (unless cbom:running?
+    (setq cbom:running? t)
+    (unwind-protect
+        (let ((ms (cbom:unprocessed-messages (AP cbom:org-mail-folder))))
+          (cbom:capture-messages ms)
+          (-each ms 'cbom:mark-as-read))
+      (setq cbom:running? nil))))
 
 (hook-fn 'after-init-hook
   (defvar cbom:capture-timer
