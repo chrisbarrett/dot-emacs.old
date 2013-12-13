@@ -60,7 +60,8 @@
 
   (define-mode-group cb:clojure-modes
     '(clojure-mode
-      clojurescript-mode))
+      clojurescript-mode
+      cider-repl-mode))
 
   (define-mode-group cb:elisp-modes
     '(emacs-lisp-mode
