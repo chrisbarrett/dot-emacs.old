@@ -109,12 +109,6 @@
   (after 'cider
     (define-key cider-mode-map (kbd "C-c C-d") 'ac-nrepl-popup-doc)))
 
-(use-package midje-mode
-  :ensure   t
-  :commands midje-mode
-  :diminish midje-mode
-  :init    (add-hook 'clojure-mode-hook 'midje-mode))
-
 (provide 'cb-clojure)
 
 ;; Local Variables:
