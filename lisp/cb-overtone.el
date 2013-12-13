@@ -29,6 +29,11 @@
 (require 'cb-evil)
 (require 'cb-mode-groups)
 (autoload 'cider-eval "cider-client")
+(autoload 'cider-popup-eval-out-handler "cider-interaction")
+(autoload 'cider-read-symbol-name "cider-interaction")
+(autoload 'cider-tooling-eval "cider-client")
+(autoload 'projectile-project-p "projectile")
+(autoload 'projectile-project-root "projectile")
 
 (defvar overtone-mode-map
   (let ((km (make-sparse-keymap)))
@@ -38,14 +43,17 @@
 
 (define-minor-mode overtone-mode
   "Provide additional overtone-related functionality for clojure."
-  nil " overtone" overtone-mode-map
-  (require 'cider)
-  (when (boundp 'cider-mode-map)
-    (define-key cider-mode-map (kbd "C-c C-g") 'cb:stop-overtone)
-    (define-key cider-mode-map (kbd "S-.") 'cb:stop-overtone))
-  ;; Jack in if there's no active connection.
-  (unless (and (boundp 'nrepl-connection-list) nrepl-connection-list)
-    (cider-jack-in)))
+  nil " overtone" overtone-mode-map)
+
+(defun maybe-enable-overtone-mode ()
+  "Enable `overtone-mode' only if the current buffer or project references overtone."
+  (when (and (not overtone-mode)
+             (derived-mode-p 'clojure-mode 'cider-repl-mode)
+             (cbot:overtone-project-reference-p))
+    (overtone-mode t)))
+
+(define-globalized-minor-mode global-overtone-mode overtone-mode
+  maybe-enable-overtone-mode)
 
 (defun cbot:overtone-project-reference-p ()
   "Non-nil if the project.clj imports overtone."
@@ -54,21 +62,13 @@
     (when (f-exists? clj)
       (s-contains? "overtone" (f-read-text clj)))))
 
-(defun maybe-enable-overtone-mode ()
-  "Enable `overtone-mode' only if the current buffer or project references overtone."
-  (when (and (not overtone-mode)
-             (derived-mode-p 'clojure-mode)
-             (cbot:overtone-project-reference-p))
-    (overtone-mode t)))
-
 (defun cb:stop-overtone ()
   "Stop synthesis."
   (interactive)
   (cider-eval "(stop)" nil)
   (message "Synthesis stopped."))
 
-(add-hook 'clojure-mode-hook 'maybe-enable-overtone-mode)
-(add-hook 'after-save-hook 'maybe-enable-overtone-mode)
+(add-hook 'clojure-mode-hook 'global-overtone-mode)
 
 ;; Documentaion search.
 
