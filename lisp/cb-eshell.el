@@ -138,9 +138,11 @@
              (concat " " s))))))
 
     (defun cb-eshell:prompt-symbol ()
-      (if (= (user-uid) 0)
-          (propertize "#" 'face `(:bold t :foreground ,solarized-hl-red))
-        ":"))
+      (let ((ch (if (= (user-uid) 0) "#" ":"))
+            (colour (if (zerop eshell-last-command-status)
+                        solarized-hl-cyan
+                      solarized-hl-red)))
+        (propertize ch 'face (list :foreground colour))))
 
     (defun cb-eshell:format-header ()
       (concat
