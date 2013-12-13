@@ -26,6 +26,8 @@
 
 ;;; Code:
 
+(require 'cb-evil)
+(require 'cb-mode-groups)
 (autoload 'cider-eval "cider-client")
 
 (defvar overtone-mode-map
@@ -53,8 +55,7 @@
       (s-contains? "overtone" (f-read-text clj)))))
 
 (defun maybe-enable-overtone-mode ()
-  "Enable `overtone-mode' only if the current Clojure buffer or
-project references overtone."
+  "Enable `overtone-mode' only if the current buffer or project references overtone."
   (when (and (not overtone-mode)
              (derived-mode-p 'clojure-mode)
              (cbot:overtone-project-reference-p))
@@ -68,6 +69,25 @@ project references overtone."
 
 (add-hook 'clojure-mode-hook 'maybe-enable-overtone-mode)
 (add-hook 'after-save-hook 'maybe-enable-overtone-mode)
+
+;; Documentaion search.
+
+(defun overtone-doc-handler (symbol)
+  "Create a handler to lookup documentation for SYMBOL."
+  (let ((form (format "(odoc %s)" symbol))
+        (doc-buffer (cider-popup-buffer cider-doc-buffer t)))
+    (cider-tooling-eval form
+                        (cider-popup-eval-out-handler doc-buffer)
+                        nrepl-buffer-ns)))
+
+(defun overtone-doc (query)
+  "Open a window with the docstring for the given QUERY.
+Defaults to the symbol at point.  With prefix arg or no symbol
+under point, prompts for a var."
+  (interactive "P")
+  (cider-read-symbol-name "Symbol: " 'overtone-doc-handler query))
+
+(defalias 'odoc 'overtone-doc)
 
 (provide 'cb-overtone)
 
