@@ -109,6 +109,10 @@
   (after 'cider
     (define-key cider-mode-map (kbd "C-c C-d") 'ac-nrepl-popup-doc)))
 
+;; Enter insert mode in Clojure REPLs.
+(after 'evil
+  (add-hook 'cider-repl-mode-hook 'evil-insert-state))
+
 (provide 'cb-clojure)
 
 ;; Local Variables:
