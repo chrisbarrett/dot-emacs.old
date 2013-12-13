@@ -54,6 +54,7 @@
             ("*robe-doc*" :height 30)
             ("*idris-repl*" :height 30)
             ("\\*cider-repl " :height 7 :regexp t)
+            ("*cider doc*" :height 30)
             ("*bbdb*")
             ("*BBDB*")
             ("*Occur*" :noselect t)
