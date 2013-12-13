@@ -152,7 +152,8 @@ Otherwise delete backwards."
     (defun cbyas:maybe-goto-field-end ()
       "Move to the end of the current field if it has been modified."
       (-when-let (field (cbyas:current-field))
-        (when (yas--field-modified-p field)
+        (when (and (yas--field-modified-p field)
+                   (yas--field-contains-point-p field))
           (goto-char (cbyas:end-of-field)))))
 
     (defadvice yas-next-field (before clear-blank-field activate)
