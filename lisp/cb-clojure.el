@@ -28,6 +28,8 @@
 
 (require 'use-package)
 (require 'cb-lib)
+(require 'cb-mode-groups)
+(require 'cb-evil)
 
 ;; `clojure-mode' provides a major mode for editing Clojure files.
 (use-package clojure-mode
@@ -115,6 +117,9 @@
 ;; Enter insert mode in Clojure REPLs.
 (after 'evil
   (hook-fn 'cider-repl-mode-hook (evil-insert-state nil)))
+
+;; Add evil documentation lookup for Clojure.
+(define-evil-doc-handler cb:clojure-modes (call-interactively 'cider-doc))
 
 (provide 'cb-clojure)
 

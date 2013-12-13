@@ -84,11 +84,7 @@
     (sp-local-pair "{" "}" :post-handlers '(:add sp-generic-leading-space))))
 
 ;; Add documentation lookup handler for python.
-(after 'cb-evil
-  (hook-fn 'evil-find-doc-hook
-    (when (apply 'derived-mode-p cb:python-modes)
-      (jedi:show-doc)
-      t)))
+(define-evil-doc-handler cb:python-modes (jedi:show-doc))
 
 ;; Auto-insert header in python files.
 (after 'autoinsert

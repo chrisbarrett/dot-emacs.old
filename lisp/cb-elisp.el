@@ -160,23 +160,17 @@
                '(inferior-emacs-lisp-mode "(" ")" ";.*$" nil nil)))
 
 ;; Add evil documentation lookup for elisp.
-(after 'cb-evil
-
-  (defun get-elisp-doc (sym)
-    "Find the appropriate documentation for SYM."
-    (when (apply 'derived-mode-p cb:elisp-modes)
-      (cond
-       ((symbol-function sym)
-        (describe-function sym))
-       ((and (boundp sym) (not (facep sym)))
-        (describe-variable sym))
-       ((facep sym)
-        (describe-face sym))
-       (t
-        (user-error "No documentation available")))
-      major-mode))
-
-  (add-hook 'evil-find-doc-hook (C get-elisp-doc intern)))
+(define-evil-doc-handler cb:elisp-modes
+  (let ((sym (symbol-at-point)))
+    (cond
+     ((symbol-function sym)
+      (describe-function sym))
+     ((and (boundp sym) (not (facep sym)))
+      (describe-variable sym))
+     ((facep sym)
+      (describe-face sym))
+     (t
+      (user-error "No documentation available")))))
 
 ;; Add elisp functions to global search picker.
 (after 'cb-search

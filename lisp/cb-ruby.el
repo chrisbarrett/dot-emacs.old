@@ -39,11 +39,7 @@
 (add-to-list 'auto-mode-alist '("\\.html\\.erb" . erb-mode))
 
 ;; Add evil doc lookup handler for ruby.
-(after 'cb-evil
-  (hook-fn 'evil-find-doc-hook
-    (when (apply 'derived-mode-p cb:ruby-modes)
-      (call-interactively 'robe-doc)
-      major-mode)))
+(define-evil-doc-handler cb:ruby-modes (call-interactively 'robe-doc))
 
 (after 'smart-operator
   (defun cb-rb:smart-colon ()

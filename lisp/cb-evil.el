@@ -37,10 +37,6 @@
 (autoload 'woman-file-name-all-completions "woman")
 (autoload 'ispell-add-to-dict "cb-spelling")
 
-(defvar evil-find-doc-hook nil
-  "Hook run when finding documentation for the symbol at point.
-Each handler should take the search string as an argument.")
-
 ;;; Spelling commands.
 
 (defun evil-mark-word-as-good (word)
@@ -133,6 +129,34 @@ errors forward of POS."
 
 ;;; Mode-appropriate documentation search with K.
 
+(defvar evil-find-doc-hook nil
+  "Hook run when finding documentation for the symbol at point.
+Each handler should take the search string as an argument.")
+
+(defmacro define-evil-doc-handler (modes &rest body)
+  "Register a doc lookup function for MODES.
+
+* MODES is a quoted symbol or list of symbols representing the
+  modes in which this handler will be used.
+
+* BODY are the forms to execute to show documentation."
+  (let* ((modes (-listify (eval modes)))
+         (fname (intern (format "cbevil:doc-search-%s" (car modes)))))
+    (cl-assert modes nil "Must provide a mode or list of modes")
+    (cl-assert (-all? 'symbolp modes))
+    `(progn
+
+       (defun ,fname ()
+         ,(concat "Documentation search function for the following modes:"
+                  "\n\n  - "
+                  (s-join "\n\n  - " (-map 'symbol-name modes)))
+
+         (when (apply 'derived-mode-p ',modes)
+           ,@body
+           major-mode))
+
+       (add-hook 'evil-find-doc-hook ',fname))))
+
 (defun get-manpage (candidate)
   "Show the manpage for CANDIDATE."
   (let ((wfiles (mapcar 'car (woman-file-name-all-completions candidate))))
@@ -142,20 +166,19 @@ errors forward of POS."
              (helm-comp-read
               "ManFile: " wfiles :must-match t))
           (woman candidate))
-      ;; If woman is unable to format correctly
-      ;; use man instead.
+      ;; If woman is unable to format correctly use man instead.
       (error
        (kill-buffer)
        (Man-getpage-in-background candidate)))
     t))
 
-(cl-defun cbevil:get-documentation (&optional (candidate (thing-at-point 'symbol)))
+(defun cbevil:get-documentation ()
   "Get documentation for string CANDIDATE.
 Runs each handler added to `evil-find-doc-hook' until one of them returns non-nil."
   (interactive)
   (condition-case-unless-debug _
-      (or (run-hook-with-args-until-success 'evil-find-doc-hook candidate)
-          (get-manpage candidate))
+      (or (run-hook-with-args-until-success 'evil-find-doc-hook)
+          (get-manpage (thing-at-point 'symbol)))
     (error
      (user-error "No documentation available"))))
 
