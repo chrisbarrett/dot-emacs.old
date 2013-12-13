@@ -811,6 +811,16 @@ Return nil if there are no items to display."
 ;; Define commands for working with diary entries.
 (after 'org-agenda
 
+  (defun diary-limited-cyclic (recurrences interval m d y)
+    "For use in emacs diary. Cyclic item with limited number of recurrences.
+Occurs every INTERVAL days, starting on YYYY-MM-DD, for a total of
+RECURRENCES occasions."
+    (let ((startdate (calendar-absolute-from-gregorian (list m d y)))
+          (today (calendar-absolute-from-gregorian date)))
+      (and (not (cl-minusp (- today startdate)))
+           (zerop (% (- today startdate) interval))
+           (< (floor (- today startdate) interval) recurrences))))
+
   (defun org-insert-class ()
     "Read and insert a class diary sexp at point."
     (interactive "*")
