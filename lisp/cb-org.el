@@ -808,6 +808,40 @@ Return nil if there are no items to display."
       (hook-fn 'org-mode-hook
         (add-hook 'after-save-hook 'cb-org:refresh-agenda nil 'local)))))
 
+;; Define commands for working with diary entries.
+(after 'org-agenda
+
+  (defun org-insert-class ()
+    "Read and insert a class diary sexp at point."
+    (interactive "*")
+    (insert (org-read-class)))
+
+  (cl-defun cb-org:format-class-sexpr ((s1 m1 h1 d1 m1 y1 . _)
+                                       (s2 m2 h2 d2 m2 y2 . _)
+                                       desc)
+    "Parse dates into an org-class s-expression."
+    (let* ((time (unless (or (zerop m1) (zerop h1)) (format " %.2i:%.2i %s" h1 m1 desc)))
+           (date-range (list (list y1 m1 d1) (list y2 m2 d2)))
+           (date-cols (-map (C
+                             (~ s-pad-right 12 " ")
+                             (~ s-join " ")
+                             (~ -map (C (~ s-pad-left 2 " ")
+                                        'number-to-string)))
+                            date-range))
+           (day-of-week (number-to-string (calendar-day-of-week (list m1 d1 y1)))))
+      (concat "<%%(org-class   "
+              (s-join " "  (-concat date-cols (list day-of-week)))
+              ")>" time)))
+
+  (defun org-read-class ()
+    "Read a class diary sexp with a description.
+The starting day is taken to be the weekday on which the event will repeat."
+    (let ((desc (read-string "Description: ")))
+      (cb-org:format-class-sexpr
+       (org-parse-time-string (org-read-date nil nil nil "Start date: "))
+       (org-parse-time-string (org-read-date nil nil nil "End date: "))
+       desc))))
+
 ;; `org-protocol' allows other applications to connect to Emacs and prompt
 ;; org-mode to perform certain actions, including saving links.
 (after 'org
