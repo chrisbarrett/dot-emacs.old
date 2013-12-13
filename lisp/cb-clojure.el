@@ -29,6 +29,7 @@
 (require 'use-package)
 (require 'cb-lib)
 
+;; `clojure-mode' provides a major mode for editing Clojure files.
 (use-package clojure-mode
   :ensure t
   :commands (clojure-mode)
@@ -40,13 +41,14 @@
       "Start cider or switch to an existing cider buffer."
       (interactive)
       (-if-let (buf (get-buffer "*cider*"))
-        (cider-switch-to-repl-buffer buf)
+          (cider-switch-to-repl-buffer buf)
         (cider-jack-in)))
 
     (hook-fn 'clojure-mode-hook
       (subword-mode +1)
       (local-set-key (kbd "C-c C-z") 'cb:switch-to-cider))))
 
+;; `cider' provides a Clojure IDE and REPL for Emacs, built on top of nREPL.
 (use-package cider
   :ensure   t
   :commands nrepl-jack-in
@@ -88,12 +90,13 @@
       (local-set-key (kbd "C-c C-h") 'cider-doc)
       (local-set-key (kbd "C-c C-f") 'cider-eval-buffer))
 
-    (hook-fns '(cider-mode-hook cider-interaction-mode-hook)
+    (hook-fns '(cider-mode-hook cider-repl-mode-hook)
       (cider-turn-on-eldoc-mode)
       (local-set-key (kbd "C-l") 'nrepl-clear-buffer)
       (local-set-key (kbd "C-c C-z") 'cb:switch-to-clojure)
       (local-set-key (kbd "C-c C-f") 'cb:eval-last-clj-buffer))))
 
+;; `ac-nrepl' provides auto-complete sources for Clojure using nrepl completions.
 (use-package ac-nrepl
   :ensure t
   :commands
@@ -101,8 +104,8 @@
    ac-nrepl-doc)
   :init
   (progn
-    (add-hook 'cider-mode-hook 'ac-cider-setup)
-    (add-hook 'cider-interaction-mode-hook 'ac-cider-setup)
+    (add-hook 'cider-mode-hook 'ac-nrepl-setup)
+    (add-hook 'cider-repl-mode-hook 'ac-nrepl-setup)
     (after 'auto-complete
       (add-to-list 'ac-modes 'cider-mode)))
   :config
