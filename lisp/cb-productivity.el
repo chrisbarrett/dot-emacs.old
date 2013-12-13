@@ -237,6 +237,14 @@
             (-map 'f-filename)
             (--map (cons (format "\\.%s$" (f-ext it)) it))))))
 
+;; `expand-region' provides commands for making smart selections.
+(use-package expand-region
+  :ensure t
+  :config
+  (progn
+    (global-set-key (kbd "M-<up>") 'er/expand-region)
+    (global-set-key (kbd "M-<down>") 'er/contract-region)))
+
 (provide 'cb-productivity)
 
 ;; Local Variables:
