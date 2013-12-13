@@ -92,7 +92,7 @@
 
     (hook-fns '(cider-mode-hook cider-repl-mode-hook)
       (cider-turn-on-eldoc-mode)
-      (local-set-key (kbd "C-l") 'nrepl-clear-buffer)
+      (local-set-key (kbd "C-l") 'cider-repl-clear-buffer)
       (local-set-key (kbd "C-c C-z") 'cb:switch-to-clojure)
       (local-set-key (kbd "C-c C-f") 'cb:eval-last-clj-buffer))))
 
