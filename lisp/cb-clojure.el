@@ -101,7 +101,41 @@
       (cider-turn-on-eldoc-mode)
       (local-set-key (kbd "C-l") 'cider-repl-clear-buffer)
       (local-set-key (kbd "C-c C-z") 'cb:switch-to-clojure)
-      (local-set-key (kbd "C-c C-f") 'cb:eval-last-clj-buffer))))
+      (local-set-key (kbd "C-c C-f") 'cb:eval-last-clj-buffer))
+
+
+    ;; Redefine doc handler so that the documentation buffer does not scroll as
+    ;; new input is received.
+    (after 'cider-interaction
+
+      (defun cider-emit-doc-into-popup-buffer (buffer value)
+        "Emit into BUFFER the provided VALUE."
+        (with-current-buffer buffer
+          (let ((inhibit-read-only t)
+                (buffer-undo-list t))
+            (goto-char (point-max))
+            (insert (format "%s" value))
+            (indent-sexp)
+            (font-lock-fontify-buffer)
+            (goto-char (point-min)))))
+
+      (defun cider-doc--handler (buffer)
+        "Make a handler for evaluating and printing stdout/stderr in popup BUFFER."
+        (nrepl-make-response-handler buffer
+                                     '()
+                                     (lambda (buffer str)
+                                       (cider-emit-doc-into-popup-buffer buffer str))
+                                     (lambda (buffer str)
+                                       (cider-emit-doc-into-popup-buffer buffer str))
+                                     '()))
+
+      (defun cider-doc-handler (symbol)
+        "Create a handler to lookup documentation for SYMBOL."
+        (let ((form (format "(clojure.repl/doc %s)" symbol))
+              (doc-buffer (cider-popup-buffer cider-doc-buffer t)))
+          (cider-tooling-eval form
+                              (cider-doc--handler doc-buffer)
+                              nrepl-buffer-ns))))))
 
 ;; `ac-nrepl' provides auto-complete sources for Clojure using nrepl completions.
 (use-package ac-nrepl
