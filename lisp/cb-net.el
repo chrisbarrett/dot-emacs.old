@@ -139,7 +139,6 @@
 ;; `w3m' bindings for Emacs. w3m is a command-line web browser.
 (use-package w3m
   :ensure   t
-  :disabled t
   :if (executable-find "w3m")
   :commands
   (w3m
@@ -201,9 +200,25 @@
       "n"   'evil-search-next
       "N"   'evil-search-previous)
 
-    (hook-fn 'w3m-mode-hook
-      (buffer-face-set
-       `(:family ,(serif-font) :height 130)))))
+    (defun cbw3m:customise-display ()
+      "Customise display parameters of w3m buffers."
+      (buffer-face-set `(:family ,(serif-font) :height 135))
+      (setq line-spacing 5))
+
+    (add-hook 'w3m-mode-hook 'cbw3m:customise-display)
+
+    (defun cbw3m:format-buffer ()
+      "Fill the current buffer for readability."
+      (let ((inhibit-read-only nil))
+        (goto-char (point-min))
+        (fill-paragraph)
+        (while (forward-paragraph)
+          (-when-let (p (thing-at-point 'paragraph))
+            (unless (or (s-matches? (rx bol (* space) "(") s)
+                        (s-ends-with? ")" s))
+              (fill-paragraph))))))
+
+    (add-hook 'w3m-fontify-after-hook 'cbw3m:format-buffer)))
 
 (provide 'cb-net)
 
