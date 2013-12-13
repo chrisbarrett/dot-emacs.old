@@ -118,7 +118,8 @@
         (propertize cwd 'face `(:foreground ,colour))))
 
     (defun cb-eshell:git-status ()
-      (when (locate-dominating-file (eshell/pwd) ".git")
+      (when (and (executable-find "git")
+                 (locate-dominating-file (eshell/pwd) ".git"))
         (concat
          (propertize " | " 'face 'eshell-prompt-sep)
          ;; Branch
