@@ -53,6 +53,7 @@
             ("*jedi:doc*" :height 30)
             ("*robe-doc*" :height 30)
             ("*idris-repl*" :height 30)
+            ("\\*cider-repl " :height 7 :regexp t)
             ("*bbdb*")
             ("*BBDB*")
             ("*Occur*" :noselect t)
