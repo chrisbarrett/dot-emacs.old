@@ -828,8 +828,8 @@ Return nil if there are no items to display."
       (defun cb-org:save-diary ()
         (save-restriction
           (save-window-excursion
-           (org-agenda-to-appt t)
-           (appt-check 'force))))
+            (org-agenda-to-appt t)
+            (appt-check 'force))))
 
       ;; Update the appointments ledger when saving the diary file.
       (hook-fn 'org-mode-hook
@@ -1078,7 +1078,7 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
 
       ;; Do not add a final newline to org source buffers.
       (hook-fn 'org-src-mode-hook
-       (setq-local require-final-newline nil))
+        (setq-local require-final-newline nil))
       ;; Remove trailing spaces when exiting org code blocks.
       (add-hook 'org-edit-src-before-exit-hook 'delete-trailing-whitespace))))
 
