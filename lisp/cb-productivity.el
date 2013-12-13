@@ -83,7 +83,7 @@
       (iedit-replace-occurrences (read-string "Replace in buffer: ")))
 
     (defun cbiedit:restrict-to-region ()
-      (iedit-restrict-region (region-beginning) (region-end) t))
+      (iedit-restrict-region (region-beginning) (region-end)))
 
     (defun cbiedit:replace-in-region ()
       (cbiedit:restrict-to-region)
