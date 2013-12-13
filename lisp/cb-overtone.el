@@ -26,8 +26,7 @@
 
 ;;; Code:
 
-(autoload 'nrepl-eval "nrepl")
-(autoload 'nrepl-mode-map "nrepl")
+(autoload 'cider-eval "cider-client")
 
 (defvar overtone-mode-map
   (let ((km (make-sparse-keymap)))
@@ -38,13 +37,13 @@
 (define-minor-mode overtone-mode
   "Provide additional overtone-related functionality for clojure."
   nil " overtone" overtone-mode-map
-  (require 'nrepl)
-  (when (boundp 'nrepl-mode-map)
-    (define-key nrepl-mode-map (kbd "C-c C-g") 'cb:stop-overtone)
-    (define-key nrepl-mode-map (kbd "S-.") 'cb:stop-overtone))
+  (require 'cider)
+  (when (boundp 'cider-mode-map)
+    (define-key cider-mode-map (kbd "C-c C-g") 'cb:stop-overtone)
+    (define-key cider-mode-map (kbd "S-.") 'cb:stop-overtone))
   ;; Jack in if there's no active connection.
   (unless (and (boundp 'nrepl-connection-list) nrepl-connection-list)
-    (nrepl-jack-in)))
+    (cider-jack-in)))
 
 (defun maybe-enable-overtone-mode ()
   "Enable `overtone-mode' only if the current Clojure buffer references overtone."
@@ -56,7 +55,7 @@
 (defun cb:stop-overtone ()
   "Stop synthesis."
   (interactive)
-  (nrepl-eval "(stop)")
+  (cider-eval "(stop)")
   (message "Synthesis stopped."))
 
 (add-hook 'clojure-mode-hook 'maybe-enable-overtone-mode)
