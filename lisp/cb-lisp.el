@@ -60,7 +60,10 @@
         (search-backward id)
         (unless (s-matches?
                  (rx (or (group bol (* space))
-                         (any "," "`" "'" "@" "#" "~" "(" "[" "{")) eol)
+                         (any "," "`" "'" "@" "#" "~" "(" "[" "{")
+                         ;; HACK: nREPL prompt
+                         (and (any alnum "." "/" "-") ">" (* space)))
+                     eol)
                  (buffer-substring (line-beginning-position) (point)))
           (just-one-space)))
       ;; Insert space after separator, unless
