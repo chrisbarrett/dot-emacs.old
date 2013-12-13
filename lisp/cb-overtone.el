@@ -39,6 +39,7 @@
   (let ((km (make-sparse-keymap)))
     (define-key km (kbd "C-c C-g") 'cb:stop-overtone)
     (define-key km (kbd "s-.") 'cb:stop-overtone)
+    (define-key km (kbd "C-c C-h") 'odoc)
     km))
 
 (define-minor-mode overtone-mode
