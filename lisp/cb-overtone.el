@@ -45,11 +45,19 @@
   (unless (and (boundp 'nrepl-connection-list) nrepl-connection-list)
     (cider-jack-in)))
 
+(defun cbot:overtone-project-reference-p ()
+  "Non-nil if the project.clj imports overtone."
+  (-when-let (clj (and (projectile-project-p)
+                       (f-join (projectile-project-root) "project.clj")))
+    (when (f-exists? clj)
+      (s-contains? "overtone" (f-read-text clj)))))
+
 (defun maybe-enable-overtone-mode ()
-  "Enable `overtone-mode' only if the current Clojure buffer references overtone."
+  "Enable `overtone-mode' only if the current Clojure buffer or
+project references overtone."
   (when (and (not overtone-mode)
              (derived-mode-p 'clojure-mode)
-             (string-match-p "overtone.live" (buffer-string)))
+             (cbot:overtone-project-reference-p))
     (overtone-mode t)))
 
 (defun cb:stop-overtone ()
