@@ -63,7 +63,7 @@ project references overtone."
 (defun cb:stop-overtone ()
   "Stop synthesis."
   (interactive)
-  (cider-eval "(stop)")
+  (cider-eval "(stop)" nil)
   (message "Synthesis stopped."))
 
 (add-hook 'clojure-mode-hook 'maybe-enable-overtone-mode)
