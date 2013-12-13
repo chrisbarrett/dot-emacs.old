@@ -87,10 +87,15 @@
     (set-face-attribute 'cider-error-highlight-face t :inherit 'error)
     (set-face-underline 'cider-error-highlight-face nil)
 
-    (hook-fn 'clojure-mode-hook
-      (local-set-key (kbd "C-c C-z") 'cb:switch-to-cider)
-      (local-set-key (kbd "C-c C-h") 'cider-doc)
-      (local-set-key (kbd "C-c C-f") 'cider-eval-buffer))
+    (after 'clojure-mode
+      (define-key clojure-mode-map (kbd "C-c C-z") 'cb:switch-to-cider)
+      (define-key clojure-mode-map (kbd "C-c C-h") 'cider-doc)
+      (define-key clojure-mode-map (kbd "C-c C-f") 'cider-eval-buffer))
+
+    (defadvice cider-popup-buffer-display (after set-mode activate)
+      "Use `help-mode' as the major-mode for cider popup buffers."
+      (with-current-buffer (ad-get-arg 0)
+        (help-mode)))
 
     (hook-fns '(cider-mode-hook cider-repl-mode-hook)
       (cider-turn-on-eldoc-mode)
