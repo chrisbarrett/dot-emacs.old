@@ -114,7 +114,7 @@
 
 ;; Enter insert mode in Clojure REPLs.
 (after 'evil
-  (add-hook 'cider-repl-mode-hook 'evil-insert-state))
+  (hook-fn 'cider-repl-mode-hook (evil-insert-state nil)))
 
 (provide 'cb-clojure)
 
