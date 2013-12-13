@@ -85,6 +85,9 @@
     (defun cbiedit:restrict-to-region ()
       (iedit-restrict-region (region-beginning) (region-end)))
 
+    (defun cbiedit:remove-region ()
+      (iedit-restrict-region (region-beginning) (region-end) t))
+
     (defun cbiedit:replace-in-region ()
       (cbiedit:restrict-to-region)
       (cbiedit:replace-read))
@@ -95,11 +98,13 @@
       '(("e" "Expand"              iedit-expand-by-a-line         :unless region-active-p)
         ("p" "Expand (up)"         iedit-expand-up-a-line         :unless region-active-p)
         ("n" "Expand (down)"       iedit-expand-down-a-line       :unless region-active-p)
-        ("R" "Replace (in region)" cbiedit:replace-in-region      :when region-active-p)
-        ("R" "Replace"             cbiedit:replace-read           :unless region-active-p)
+        ("r" "Replace (in region)" cbiedit:replace-in-region      :when region-active-p)
+        ("r" "Replace"             cbiedit:replace-read           :unless region-active-p)
         ("k" "Delete Matches"      iedit-delete-occurrences       :unless region-active-p)
         ("l" "Restrict (line)"     iedit-restrict-current-line    :unless region-active-p)
-        ("r" "Restrict (region)"   cbiedit:restrict-to-region     :when region-active-p)
+        ("R" "Restrict (region)"   cbiedit:restrict-to-region     :when region-active-p)
+
+        ("x" "Remove (region)"     cbiedit:remove-region          :when region-active-p)
         ("f" "Restrict (function)" iedit-restrict-function        :when (lambda () (thing-at-point 'defun)))
         ("c" "Toggle Case-Sensitivity" iedit-toggle-case-sensitive)
         ("t" "Toggle at Point"     iedit-toggle-selection)
