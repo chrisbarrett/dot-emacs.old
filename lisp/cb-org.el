@@ -296,15 +296,16 @@ This will set which file org-capture will capture to."
 
     (defun tidy-org-buffer ()
       "Perform cosmetic fixes to the current org-mode buffer."
-      (org-table-map-tables 'org-table-align 'quiet)
-      ;; Realign tags.
-      (org-set-tags 4 t)
-      ;; Remove empty properties drawers.
-      (save-excursion
-        (goto-char (point-min))
-        (while (re-search-forward ":PROPERTIES:" nil t)
-          (save-excursion
-            (org-remove-empty-drawer-at "PROPERTIES" (match-beginning 0))))))
+      (save-restriction
+        (org-table-map-tables 'org-table-align 'quiet)
+        ;; Realign tags.
+        (org-set-tags 4 t)
+        ;; Remove empty properties drawers.
+        (save-excursion
+          (goto-char (point-min))
+          (while (re-search-forward ":PROPERTIES:" nil t)
+            (save-excursion
+              (org-remove-empty-drawer-at "PROPERTIES" (match-beginning 0)))))))
 
     (hook-fn 'org-mode-hook
       (add-hook 'before-save-hook 'tidy-org-buffer nil t))
@@ -824,14 +825,16 @@ Return nil if there are no items to display."
       (save-window-excursion
         (appt-activate +1))
 
+      (defun cb-org:save-diary ()
+        (save-restriction
+          (save-window-excursion
+           (org-agenda-to-appt t)
+           (appt-check 'force))))
+
       ;; Update the appointments ledger when saving the diary file.
       (hook-fn 'org-mode-hook
         (when (equal (buffer-file-name) org-agenda-diary-file)
-          (hook-fn 'after-save-hook
-            :local t
-            (save-window-excursion
-              (org-agenda-to-appt t)
-              (appt-check 'force))))))))
+          (add-hook 'after-save-hook 'cb-org:save-diary nil t))))))
 
 ;; `org-clock' provides time-keeping and clocking features for tasks in
 ;; org-mode.
