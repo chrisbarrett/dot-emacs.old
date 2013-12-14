@@ -1,0 +1,5 @@
+# key: dr
+# name: defrecord
+# condition: (cbyas:bol?)
+# --
+(defrecord ${1:Name} [${2:fields...}])

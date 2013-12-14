@@ -1,5 +1,8 @@
 # key: di
 # name: definst
+# condition: (cbyas:bol?)
 # --
-(definst ${1:name} [${2:args}]
+(definst ${1:name} ${2:
+  "$3"
+  }[${4:freq ${5:440} att ${6:0.01} sus ${7:0.4} rel ${8:0.1} amp ${9:0.4}}]
   $0)

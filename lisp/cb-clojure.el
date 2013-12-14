@@ -157,6 +157,26 @@
 (after 'evil
   (hook-fn 'cider-repl-mode-hook (evil-insert-state nil)))
 
+;; Define auxiliary functions for snippets.
+(after 'yasnippet
+
+  (defun cbclj:pad-for-arglist (text)
+    "Pad TEXT for insertion into an arglist after existing parameters."
+    (unless (s-blank? text)
+      (s-prepend " " (s-trim-left text))))
+
+  (defun cbclj:ns-for-current-buf ()
+    "Calculate the namespace to use for the current buffer."
+    (if (buffer-file-name)
+        (s-replace "/" "."
+                   (if (s-matches? "src" (buffer-file-name))
+                       (->> (buffer-file-name)
+                         f-no-ext
+                         (s-split "src/")
+                         -last-item)
+                     (f-no-ext (f-filename (buffer-file-name)))))
+      "name")))
+
 ;; Add evil documentation lookup for Clojure.
 (define-evil-doc-handler cb:clojure-modes (call-interactively 'cider-doc))
 
