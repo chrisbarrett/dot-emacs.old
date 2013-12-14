@@ -202,24 +202,9 @@
 
     (defun cbw3m:customise-display ()
       "Customise display parameters of w3m buffers."
-      (buffer-face-set `(:family ,(serif-font) :height 135))
       (setq line-spacing 5))
 
-    (add-hook 'w3m-mode-hook 'cbw3m:customise-display)
-
-    (defun cbw3m:format-buffer ()
-      "Fill the current buffer for readability."
-      (let ((inhibit-read-only nil))
-        (goto-char (point-min))
-        (fill-paragraph)
-        (until (eobp)
-          (forward-paragraph)
-          (-when-let (p (thing-at-point 'paragraph))
-            (unless (or (s-matches? (rx bol (* space) "(") p)
-                        (s-ends-with? ")" p))
-              (fill-paragraph))))))
-
-    (add-hook 'w3m-fontify-after-hook 'cbw3m:format-buffer)))
+    (add-hook 'w3m-mode-hook 'cbw3m:customise-display)))
 
 (provide 'cb-net)
 
