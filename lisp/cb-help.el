@@ -26,17 +26,19 @@
 
 ;;; Code:
 
-(define-prefix-command 'help-find-map)
-(bind-keys
-  "C-h e"   'help-find-map
-  "C-h e e" 'view-echo-area-messages
-  "C-h e f" 'find-function
-  "C-h e k" 'find-function-on-key
-  "C-h e l" 'find-library
-  "C-h e p" 'find-library
-  "C-h e v" 'find-variable
-  "C-h e a" 'apropos
-  "C-h e V" 'apropos-value)
+(require 'cb-lib)
+
+(define-command-picker help-picker
+  :title "*Help Commands*"
+  :options
+  `(("m" "Messages" view-echo-area-messages)
+    ("f" "Find Function" find-function)
+    ("l" "Find Library" find-library)
+    ("v" "Find Variable" find-variable)
+    ("a" "Apropos" apropos)
+    ("A" "Apropos (value)" apropos-value)))
+
+(bind-key "C-h e" 'help-picker)
 
 (provide 'cb-help)
 
