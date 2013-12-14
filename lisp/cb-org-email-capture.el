@@ -410,7 +410,8 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
                       -flatten
                       (-filter 'stringp)
                       (-mapcat (~ s-match (rx (+ (not (any "(")))))))))
-              (kw (-first (~ -contains? todo-keywords) (s-split-words template))))
+              (kw (when (stringp template)
+                    (-first (~ -contains? todo-keywords) (s-split-words template)))))
          (if (and kw (-none? (~ s-matches? str) todo-keywords))
              (format "%s %s" kw str)
            str)))
