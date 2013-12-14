@@ -300,10 +300,10 @@ is a Common Lisp arglist."
 
     (define-keys emacs-lisp-mode-map
       "C-c C-t" 'ert
-      "C-c e b" 'eval-buffer
+      "C-c C-f" 'eval-buffer
+      "C-c C-r" 'eval-region
       "C-c C-l" 'emacs-lisp-byte-compile-and-load
-      "C-c C-z" 'switch-to-ielm
-      "C-c e r" 'eval-region)
+      "C-c C-z" 'switch-to-ielm)
 
     ;;;; IELM
 
@@ -365,11 +365,16 @@ is a Common Lisp arglist."
         (check-parens)
         (byte-compile-file (buffer-file-name))))
 
-    ;;;; Advices
+    ;;;; Advice
+
+    (defadvice eval-region (after region-evaluated-message activate)
+      "Message that the region has been evaluated."
+      (when (called-interactively-p nil)
+        (message "Region evaluated.")))
 
     (defadvice eval-buffer (after buffer-evaluated-feedback activate)
       "Message that the buffer has been evaluated."
-      (when (buffer-file-name)
+      (when (called-interactively-p nil)
         (message "Buffer evaluated.")))))
 
 (use-package cl-lib-highlight
