@@ -84,6 +84,11 @@
 
     ;; Custom commands.
 
+    (defun ledger-insert-date (date)
+      "Read DATE from the user and insert at point."
+      (interactive (list (org-read-date)))
+      (insert (s-replace "-" "/" date)))
+
     (defun ledger-move-to-date (date)
       "Move to DATE in the ledger file."
       ;; Use slashes for consistency with ledger's date format.
@@ -335,6 +340,7 @@ Signal an error of doing so would break date ordering."
         "M-<down>" 'ledger-move-transaction-down
         "M-P" 'ledger-prev-transaction
         "M-N" 'ledger-next-transaction
+        "C-c C-." 'ledger-insert-date
         "C-c C-k" 'ledger-kill-transaction-at-pt
         "C-c C-c" 'ledger-report
         "C-c C-t" 'ledger-insert-transaction-header
