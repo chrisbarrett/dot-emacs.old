@@ -383,7 +383,7 @@ Signal an error of doing so would break date ordering."
 
   (font-lock-add-keywords
    'ledger-mode
-   `((,(rx bol (+ (any digit "/"))) . 'ledger-date)
+   `((,(rx bol (+ (any digit "=" "/"))) . 'ledger-date)
      (,(rx bol "~" (* nonl)) . 'ledger-periodic-header)
      (,(rx bol "year" (+ space) (+ digit) (* space) eol) . 'ledger-year-line))))
 
