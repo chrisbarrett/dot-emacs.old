@@ -525,10 +525,17 @@ Captured messages are marked as read."
   (interactive)
   (unless cbom:running?
     (setq cbom:running? t)
+
+    (when (called-interactively-p nil)
+      (message "Capturing messages..."))
+
     (unwind-protect
         (let ((ms (cbom:unprocessed-messages (AP cbom:org-mail-folder))))
           (cbom:capture-messages ms)
-          (-each ms 'cbom:mark-as-read))
+          (-each ms 'cbom:mark-as-read)
+
+          (when (called-interactively-p nil)
+            (message "Capturing messages...done")))
       (setq cbom:running? nil))))
 
 (hook-fn 'after-init-hook
