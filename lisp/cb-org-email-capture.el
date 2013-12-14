@@ -518,10 +518,11 @@ files to be imported."
 
 (defvar cbom:running? nil)
 
-(defun cbom:run-capture ()
+(defun org-capture-messages ()
   "Parse and capture unread messages in `cbom:org-mail-folder'.
 Captures messages subjects match one of the values in `org-capture-templates'.
 Captured messages are marked as read."
+  (interactive)
   (unless cbom:running?
     (setq cbom:running? t)
     (unwind-protect
@@ -535,7 +536,7 @@ Captured messages are marked as read."
     (run-with-timer 10 60 (lambda ()
                            (when (featurep 'org)
                              (with-demoted-errors
-                               (cbom:run-capture)))))))
+                               (org-capture-messages)))))))
 
 (provide 'cb-org-email-capture)
 
