@@ -364,18 +364,6 @@ Otherwise, use the value of said variable as argument to a funcall."
 
 (define-key prog-mode-map (kbd "M-q") 'indent-dwim)
 
-(define-prefix-command 'help-find-map)
-(bind-keys
-  "C-h e"   'help-find-map
-  "C-h e e" 'view-echo-area-messages
-  "C-h e f" 'find-function
-  "C-h e k" 'find-function-on-key
-  "C-h e l" 'find-library
-  "C-h e p" 'find-library
-  "C-h e v" 'find-variable
-  "C-h e a" 'apropos
-  "C-h e V" 'apropos-value)
-
 ;;; Calc
 
 (defun calc-dwim ()
