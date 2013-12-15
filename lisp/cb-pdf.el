@@ -47,6 +47,13 @@
                 (s-join " " (-map (C %-quote f-expand) pdfs))
                 (%-quote (f-expand destination)))))
 
+(cl-defun tiff->pdf (file)
+  "Convert the tiff at FILE to PDF. "
+  (let* ((dest (concat (f-no-ext file) ".pdf"))
+         (cmd (concat "cupsfilter -i image/tiff " (%-quote file) " > " (%-quote dest))))
+    (when (zerop (%-sh cmd))
+      dest)))
+
 (provide 'cb-pdf)
 
 ;;; cb-pdf.el ends here

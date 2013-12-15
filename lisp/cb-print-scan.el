@@ -27,7 +27,16 @@
 ;;; Code:
 
 (require 'cb-lib)
+(require 'cb-pdf)
 (autoload 'org-attach-attach "org-agenda")
+
+(defun cbscan:scan-to-file (colour-mode path)
+  "Scan to PATH. Return nil if scanning failed, or PATH if succeeded."
+  (when (zerop (%-sh (concat "scanimage"
+                             " --mode=" colour-mode
+                             " --format=tiff"
+                             " > " path)))
+    path))
 
 (defun scan-file (colour-mode destination &optional async?)
   "Scan as a TIFF to a temp file, then export to PDF with CUPS.
@@ -45,9 +54,9 @@
                             " > " tmpfile
                             " && cupsfilter -D -i image/tiff " tmpfile
                             " > " (%-quote (f-expand destination)))))
-
-      (if async? (%-async command) (%-sh command))
-      destination)))
+      (cond (async? (%-async command))
+            ((zerop (%-sh command))
+             destination)))))
 
 (defun scan-batch-to-file (colour-mode destination)
   "Scan several files from the document feeder then export to a single PDF.
@@ -69,8 +78,10 @@ The args COLOUR-MODE and DESTINATION are the same as for `scan-file'."
                                      " --format=tiff"
                                      " --batch=" (f-join tmpdir "scan--%d.tiff"))))
           (error "Scanning failed"))
+        (let ((pdfs)))
         ;; Export files to PDFs.
         (unless (->> (f-files tmpdir)
+
                   (--map (%-sh "cupsfilter -D -i image/tiff" (%-quote it)
                                ">" (%-quote (concat it ".pdf"))))
                   (-all? 'zerop))
@@ -97,18 +108,56 @@ The args COLOUR-MODE and DESTINATION are the same as for `scan-file'."
   (kill-new destination)
   (message "Scan started. Destination path copied to kill-ring."))
 
-(defun org-attach-from-scanner (mode)
+(defun cbscan:read-continue? ()
+  "Prompt the user whether to continue scanning."
+  (equal ?\^M (read-char-choice "Press <return> to scan or C-d to finish."
+                                (list ?\^M ?\^D))))
+
+(defun scan-then-combine (colour-mode destination)
+  "Scan several documents on the flatbed, then combine to a single PDF.
+
+* COLOUR-MODE should be either \"colour\" or \"grayscale\".
+
+* The document will be created at DESTINATION."
+  (interactive
+   (list
+    (ido-completing-read "Mode: " '("Colour" "Grayscale"))
+    (read-file-name "Destination: " "~/" nil nil ".pdf")))
+
+  (save-window-excursion
+    (let ((tmpdir (make-temp-file "scan-" t))
+          (n 1))
+      ;; Scan PDFs in flatbed.
+      (while (cbscan:read-continue?)
+        (message "Scanning...")
+        (if (cbscan:scan-to-file colour-mode (f-join tmpdir (format "%03i.tiff" n)))
+            (cl-incf n)
+          (error "Scanning failed")))
+
+      ;; Export files to PDFs.
+      (let ((pdfs (-map 'tiff->pdf (f-files tmpdir))))
+        (when (-any? 'null pdfs)
+          (error "PDF export failed"))
+
+        ;; Combine PDFs.
+        (unless (zerop (pdf-combine-command destination pdfs))
+          (error "PDF combination failed"))
+
+        (f-delete tmpdir 'force)
+
+        (when (called-interactively-p nil)
+          (kill-new destination)
+          (message "%s page(s) scanned. PDF path copied to kill-ring." (length pdfs)))
+
+        destination))))
+
+(defun org-attach-from-scanner (colour-mode)
   "Scan a document and attach it to the current org heading.
 
-* MODE is one of the strings \"color\" or \"grayscale\"."
-  (interactive
-   (list (prog1 (ido-completing-read "Mode: " '("Colour" "Grayscale"))
-           (read-char-choice "Press <return> to start." (list ?\^M))
-           (message "Scanning..."))))
-
-  (let ((inhibit-redisplay t))
-    (let ((file (scan-file mode (make-temp-file "scan--"))))
-      (org-attach-attach file nil 'mv)))
+* COLOUR-MODE is either \"colour\" or \"grayscale\"."
+  (interactive (list (ido-completing-read "Mode: " '("Colour" "Grayscale"))))
+  (let ((file (scan-then-combine colour-mode (make-temp-file "scan--"))))
+    (org-attach-attach file nil 'mv))
 
   (message "Scanning...Done"))
 
@@ -119,6 +168,7 @@ The args COLOUR-MODE and DESTINATION are the same as for `scan-file'."
   '(("p" "Print Buffer" print-buffer)
     ("r" "Print Region" print-region)
     ("s" "Scan (flatbed)" scan)
+    ("m" "Scan Multiple & Combine (flatbed)" scan-then-combine)
     ("u" "Scan (document feeder)" scan-batch-to-file)
     ("a" "Scan and Attach (org)" org-attach-from-scanner
      :when (lambda () (derived-mode-p 'org-mode)))))
