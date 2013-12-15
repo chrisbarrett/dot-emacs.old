@@ -664,7 +664,9 @@ See `cb-org:show-agenda-idle-delay'.")
       ;; Add GTD agenda views. They should be displayed modally.
 
       (setq org-agenda-custom-commands
-            (->> '(("w" "Weekly Review"
+            (->> '(("n" "Next actions"
+                    ((tags-todo "-someday/NEXT")))
+                   ("w" "Weekly Review"
                     ((agenda "" ((org-agenda-ndays 7)))
                      (stuck "")
                      (todo "WAITING")
