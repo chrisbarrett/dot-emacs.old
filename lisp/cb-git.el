@@ -69,6 +69,7 @@
 
     (evil-global-set-keys 'normal
       "g P" 'magit-key-mode-popup-pushing
+      "g c" 'magit-key-mode-popup-committing
       "g l" 'magit-log
       "g r" 'magit-reflog
       "g D" 'magit-diff-working-tree
@@ -193,9 +194,7 @@
       "g h" 'git-gutter+-popup-hunk
       "g x" 'git-gutter+-revert-hunk
       "g s" 'git-gutter+-stage-hunks
-      "g a" 'cb-git:add
-      "g c" 'git-gutter+-commit
-      "g C" 'git-gutter+-stage-and-commit)
+      "g a" 'cb-git:add)
 
     (defadvice git-gutter+-close-commit-edit-buffer (after kill-diff activate)
       "Kill the diff buffer."
