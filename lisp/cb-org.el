@@ -472,6 +472,8 @@ This will set which file org-capture will capture to."
           (set-face-underline-p 'org-link t))
         (iimage-mode)))))
 
+(add-hook 'org-mode-hook 'auto-fill-mode)
+
 ;; `org-capture' is used to interactively read items to be inserted into
 ;; org-mode buffers.
 (after 'org
