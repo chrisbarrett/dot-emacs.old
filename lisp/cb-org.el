@@ -687,9 +687,9 @@ See `cb-org:show-agenda-idle-delay'.")
                    ("gh" "Home"     tags-todo "@home")
                    ("gl" "Leisure"  tags-todo "@leisure"))
               (--map-when (listp (cdr it))
-                          (append it '(((org-agenda-customise-window-hook
-                                         (lambda ()
-                                           (delete-other-windows)))))))))
+                          (append it
+                                  '(((org-agenda-customise-window-hook
+                                      'delete-other-windows)))))))
 
       ;; Email agenda
       ;;
