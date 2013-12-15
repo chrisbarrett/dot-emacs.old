@@ -1186,6 +1186,11 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
                         (funcall this-fn args))))
       ad-do-it))
 
+  (defadvice org-insert-todo-heading-respect-content (after insert-state activate)
+    "Enter evil insert state"
+    (when (fboundp 'evil-insert-state)
+      (evil-insert-state nil)))
+
   (defun cborg-evil-fold ()
     (interactive)
     (save-excursion
