@@ -301,6 +301,7 @@ is a Common Lisp arglist."
     (define-keys emacs-lisp-mode-map
       "C-c C-t" 'ert
       "C-c C-f" 'eval-buffer
+      "C-c C-c" 'eval-defun
       "C-c C-r" 'eval-region
       "C-c C-l" 'emacs-lisp-byte-compile-and-load
       "C-c C-z" 'switch-to-ielm)
@@ -350,7 +351,7 @@ is a Common Lisp arglist."
         "C-j" 'newline-and-indent))
 
     (define-keys emacs-lisp-mode-map
-      "C-c C-c" 'send-to-ielm
+      "C-c C-e" 'send-to-ielm
       "C-c RET" 'eval-in-ielm)
 
 
