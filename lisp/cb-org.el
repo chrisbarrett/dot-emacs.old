@@ -1100,6 +1100,13 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
         (org-mime-change-element-style
          "pre" "border-left: 2px solid #B0B0B0; padding-left: 4px;")))))
 
+;; `ox-texinfo' provides a texinfo exporter for org-mode.
+(after 'org
+  (use-package ox-texinfo
+    :config
+    (add-to-list 'org-export-snippet-translation-alist
+                 '("info" . "texinfo"))))
+
 ;; `ox-koma-letter' adds TeX formal letter exporting using KOMA.
 (after 'org
   (use-package ox-koma-letter
