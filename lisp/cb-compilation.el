@@ -81,10 +81,9 @@
     (flycheck-mode-on-safe))
 
   :config
-  (defadvice flycheck-buffer (around dont-throw-in-ido-for-fuck-sake activate)
-    (condition-case _
-        ad-do-it
-      (user-error))))
+  (defadvice flycheck-buffer (around ignore-errors activate)
+    "Ignore errors when checking a buffer."
+    (ignore-errors ad-do-it)))
 
 (use-package make-mode
   :defer t
