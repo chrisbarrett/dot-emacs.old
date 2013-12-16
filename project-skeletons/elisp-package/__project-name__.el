@@ -1,4 +1,4 @@
-;;; __project-name__.el --- __description__
+;;; __PROJECT-NAME__.el --- __DESCRIPTION__
 
 ;; Copyright (C) 2013 Chris Barrett
 
@@ -22,12 +22,12 @@
 
 ;;; Commentary:
 
-;; __description__
+;; __DESCRIPTION__
 
 ;;; Code:
 
 
 
-(provide '__project-name__)
+(provide '__PROJECT-NAME__)
 
-;;; __project-name__.el ends here
+;;; __PROJECT-NAME__.el ends here

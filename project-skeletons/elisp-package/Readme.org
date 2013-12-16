@@ -1,7 +1,0 @@
-#+TITLE: __PROJECT-NAME__
-#+AUTHOR: __USER__
-
-* Description
-__DESCRIPTION__
-* Contributing
-Yes please!
