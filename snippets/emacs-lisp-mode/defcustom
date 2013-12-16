@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: defcustom
+# key: dc
+# condition: (cbyas:bol?)
+# --
+(defcustom ${1:name} ${2:value}
+  "$3"
+  :group '`(cbel:find-group-for-snippet)`
+  :type '$4)

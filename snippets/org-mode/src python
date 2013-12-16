@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: src python
+# key: python
+# condition: (cbyas:bol?)
+# --
+#+begin_src python
+$0
+#+end_src
