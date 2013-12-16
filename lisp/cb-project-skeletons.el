@@ -164,7 +164,7 @@ Performs the substitutions specified by REPLACEMENTS."
 
          (let* ((dest (f-join skel-project-folder project-name))
                 (default-directory dest)
-                (repls (-concat '(("__PROJECT-NAME__" . ,name))
+                (repls (-concat (list (cons "__PROJECT-NAME__" project-name))
                                 skel-default-replacements
                                 ,replacements)))
 
