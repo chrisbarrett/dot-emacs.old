@@ -26,10 +26,14 @@
 
 ;;; Code:
 
-(defun create-elisp-package (name description)
-  "Create an Elisp project skeleton with a NAME and DESCRIPTION."
-  (interactive "sProject name: \nsDescription: ")
-  (with-new-project name "elisp-package"
+(defun create-elisp-package (name description license)
+  "Create an Elisp project skeleton."
+  (interactive (list
+                (read-string "Project name: ")
+                (read-string "Description: ")
+                (skel-read-license "License: " "^gpl")))
+
+  (with-new-project name "elisp-package" license
     ((cons "__project-name__" name)
      (cons "__description__" description))
     (%-async "cask")))

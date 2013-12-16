@@ -1,4 +1,5 @@
 #+TITLE: __project-name__
+#+AUTHOR: Chris Barrett
 
 * Description
 __description__
