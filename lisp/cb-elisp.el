@@ -56,7 +56,8 @@
 (after 'flycheck
   (hook-fn 'flycheck-mode-hook
     (when (or (cb:special-elisp-buffer?) (buffer-narrowed-p))
-      (flycheck-select-checker 'emacs-lisp)))
+      (ignore-errors
+        (flycheck-select-checker 'emacs-lisp))))
 
   (setq-default flycheck-emacs-lisp-load-path (list cb:lib-dir "./")))
 
