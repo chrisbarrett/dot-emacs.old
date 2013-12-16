@@ -30,8 +30,9 @@
 (require 'use-package)
 (require 'cb-lib)
 
-(autoload 'projectile-project-p "projectile")
 (autoload 'projectile-project-root "projectile")
+(autoload 'projectile-project-p "projectile")
+(autoload 'auto-complete-mode "auto-complete")
 
 (use-package compile
   :bind
