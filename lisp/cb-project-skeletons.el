@@ -46,7 +46,7 @@
 
 (defvar skel-default-replacements
   (list (cons "__YEAR__" (format-time-string "%Y"))
-        (cons "__USER__" user-full-name)
+        (cons "__USER-NAME__" user-full-name)
         (cons "__ORGANISATION__" (or (true? user-organisation) user-full-name)))
   "A list of replacements available for expansion in project skeletons.")
 

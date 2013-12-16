@@ -1,5 +1,5 @@
 #+TITLE: __PROJECT-NAME__
-#+AUTHOR: __USER_NAME__
+#+AUTHOR: __USER-NAME__
 
 * Summary
 TODO
