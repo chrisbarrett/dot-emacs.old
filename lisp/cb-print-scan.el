@@ -132,7 +132,8 @@ The args COLOUR-MODE and DESTINATION are the same as for `scan-file'."
         (message "Scanning...")
         (if (cbscan:scan-to-file colour-mode (f-join tmpdir (format "%03i.tiff" n)))
             (cl-incf n)
-          (error "Scanning failed")))
+          (or (y-or-n-p "Scan failed.  Try again? ")
+              (error "Scanning failed"))))
 
       ;; Export files to PDFs.
       (let ((pdfs (-map 'tiff->pdf (f-files tmpdir))))
