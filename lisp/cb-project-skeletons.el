@@ -60,26 +60,6 @@ project.")
 
 ;;;;;;;;;;;;;;;;;;;;;;;; Internal ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun skel:join-patterns (patterns)
-  "Turn PATTERNS into a string that `find' can use."
-  (mapconcat (lambda (pat) (format "-name \"%s\"" pat))
-             patterns " -or "))
-
-(defun skel:files-matching (patterns folder &optional type)
-  "Find candidate files for performing replacements.
-
-* PATTERNS is sequence of strings to search for.
-
-* FOLDER is the path to a directory to search.
-
-* TYPE is an argument to the `find' command."
-  (split-string (shell-command-to-string
-                 (format "find %s %s \\( %s \\) | head -n %s"
-                         folder
-                         (or type "")
-                         (skel:join-patterns patterns)
-                         1000))))
-
 (defun skel:instantiate-template-file (file replacements)
   "Initialise an individual file.
 
@@ -236,13 +216,24 @@ Performs the substitutions specified by REPLACEMENTS."
     (unless (zerop (%-sh "virtualenv" "-p" (%-quote python-bin) dest))
       (error "Virtualenv failed"))))
 
+(defun cbpy:install-tooling-packages (dir)
+  (save-window-excursion
+    (async-shell-command
+     (format "cd %s && ./env/bin/pip install jedi && ./env/bin/pip install pylint"
+             (shell-quote-argument dir))
+     "*Install Python Tooling*")))
+
 (define-project-skeleton "python-project"
   :default-license "^bsd"
   :after-creation
   (lambda (dir)
+    (message "Initialising virtualenv...")
     (cbpy:init-virtualenv dir)
     (let ((inhibit-redisplay t))
-      (cbpy:create-virtualenv-dirlocals dir))))
+      (message "Preparing supporting files...")
+      (cbpy:create-virtualenv-dirlocals dir)
+      (cbpy:install-tooling-packages dir)
+      (message "Project ready.  Installing tooling in the background."))))
 
 (provide 'cb-project-skeletons)
 
