@@ -65,7 +65,7 @@
 ;; Add executors and a global picker for common org actions.
 
 (declare-modal-executor org-agenda-fullscreen
-  :command (org-agenda-list prefix-arg nil 1))
+  :command (org-agenda current-prefix-arg "A"))
 
 (declare-modal-executor org-show-todo-list
   :command (progn
@@ -664,7 +664,10 @@ See `cb-org:show-agenda-idle-delay'.")
       ;; Add GTD agenda views. They should be displayed modally.
 
       (setq org-agenda-custom-commands
-            (->> '(("n" "Next actions"
+            (->> '(("A" "Agenda+NEXT"
+                    ((agenda "" ((org-agenda-ndays 1)))
+                     (tags-todo "-someday/NEXT")))
+                   ("n" "Next actions"
                     ((tags-todo "-someday/NEXT")))
                    ("w" "Weekly Review"
                     ((agenda "" ((org-agenda-ndays 7)))
