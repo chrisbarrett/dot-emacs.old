@@ -1,9 +1,7 @@
-#+TITLE: __project-name__
-#+AUTHOR: Chris Barrett
+#+TITLE: __PROJECT-NAME__
+#+AUTHOR: __USER__
 
 * Description
-__description__
+__DESCRIPTION__
 * Contributing
 Yes please!
-* License
-__license__
