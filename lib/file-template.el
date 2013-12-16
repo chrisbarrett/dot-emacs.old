@@ -70,7 +70,7 @@ ask - ask whether to insert or not."
                  (const :tag "Ask" 'ask)))
 
 (defcustom file-template-insert-predicates
-  ((list (lambda (fname) (not (equal dir-locals-file (file-name-nondirectory fname))))))
+  (list (lambda (fname) (not (equal dir-locals-file (file-name-nondirectory fname)))))
   "A list of unary predicate functions that test whether to insert a template.
 Run before the user would be queried.
 
@@ -327,12 +327,12 @@ Otherwise, use `file-template-auto-insert'."
 ;;;###autoload
 (defun file-template-find-file-not-found-hook ()
   "Hook to (optionally) insert the default template when a new file is created."
-  (when (or (run-hook-with-args-until-failure 'file-template-insert-predicates
-                                              (or (buffer-file-name)
-                                                  (buffer-name)))
-            (equal file-template-insert-automatically t)
-            (and (equal file-template-insert-automatically 'ask)
-                 (y-or-n-p "Insert default template? ")))
+  (when (and (run-hook-with-args-until-failure 'file-template-insert-predicates
+                                               (or (buffer-file-name)
+                                                   (buffer-name)))
+             (or (equal file-template-insert-automatically t)
+                 (and (equal file-template-insert-automatically 'ask)
+                      (y-or-n-p "Insert default template? "))))
     (file-template-auto-insert)))
 
 (provide 'file-template)
