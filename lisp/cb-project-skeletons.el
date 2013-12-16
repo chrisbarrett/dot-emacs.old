@@ -199,7 +199,9 @@ Performs the substitutions specified by REPLACEMENTS."
   :default-license "^gpl"
   :after-creation
   (lambda (dir)
-    (%-async (format "cd %s && cask" (%-quote dir)))))
+    (%-async "cd" (%-quote dir)
+             "&& cask"
+             "&& cask exec ecukes new")))
 
 (defun cbpy:python-binaries ()
   "Find python binaries in bin directories."

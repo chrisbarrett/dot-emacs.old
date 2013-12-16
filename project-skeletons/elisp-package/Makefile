@@ -2,10 +2,10 @@ EMACS ?= emacs
 EMACSFLAGS = --batch -Q
 CASK = cask
 VERSION := $(shell EMACS=$(EMACS) $(CASK) version)
-PKGDIR := $(shell EMACS=$(EMACS) $(CASK) package-directory)
+PKG_DIR := $(shell EMACS=$(EMACS) $(CASK) package-directory)
 
 
-SRCS = __PROJECT-NAME__.el
+SRCS = $(filter-out %-pkg.el, $(wildcard *.el))
 OBJECTS = $(SRCS:.el=.elc)
 DOC_SRCS = doc/__PROJECT-NAME__.org
 INFO_MANUAL = doc/__PROJECT-NAME__.info
@@ -20,13 +20,13 @@ compile : $(OBJECTS)
 
 .PHONY: test
 test : compile
-	$(CASK) exec ert-runner
+	$(CASK) exec ecukes
 
 .PHONY: package
 package : $(PACKAGE)
 
 .PHONY: packages
-packages : $(PKGDIR)
+packages : $(PKG_DIR)
 
 $(PACKAGE) : $(PACKAGE_SRCS)
 	rm -rf __PROJECT-NAME__-$(VERSION)
@@ -45,7 +45,7 @@ clean :
 
 .PHONY: clean-pkgdir
 clean-pkgdir :
-	rm -rf $(PKGDIR)
+	rm -rf $(PKG_DIR)
 
 .PHONY: clean-info
 clean-info :
@@ -55,9 +55,9 @@ clean-info :
 clean-elc :
 	rm -f ./*.elc
 
-%.elc : %.el $(PKGDIR)
+%.elc : %.el $(PKG_DIR)
 	$(CASK) exec $(EMACS) $(EMACSFLAGS) \
-	--eval '(setq package-user-dir "$(PKGDIR)")' -f package-initialize \
+	--eval '(setq package-user-dir "$(PKG_DIR)")' -f package-initialize \
 	-f batch-byte-compile $<
 
 .PHONY: doc
@@ -71,14 +71,14 @@ $(INFO_MANUAL) :
 		(find-file "$(DOC_SRCS)")\
 		(org-export-to-file \'info "$(INFO_MANUAL)"))'
 
-%.elc : %.el $(PKGDIR)
+%.elc : %.el $(PKG_DIR)
 	$(CASK) exec $(EMACS) -Q --batch $(EMACSFLAGS) \
-	--eval '(setq package-user-dir "$(PKGDIR)")' -f package-initialize \
+	--eval '(setq package-user-dir "$(PKG_DIR)")' -f package-initialize \
 	-f batch-byte-compile $<
 
-$(PKGDIR) : Cask
+$(PKG_DIR) : Cask
 	$(CASK) install
-	touch $(PKGDIR)
+	touch $(PKG_DIR)
 
 __PROJECT-NAME__-pkg.el : Cask
 	$(CASK) package
