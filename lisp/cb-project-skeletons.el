@@ -60,6 +60,12 @@ project.")
 
 ;;;;;;;;;;;;;;;;;;;;;;;; Internal ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defun skel:replace-all (replacements s)
+  "Like s-replace-all, but uses fixcase."
+  (replace-regexp-in-string (regexp-opt (mapcar 'car replacements))
+                            (lambda (it) (s--aget replacements it))
+                            s 'fixcase))
+
 (defun skel:instantiate-template-file (file replacements)
   "Initialise an individual file.
 
@@ -85,7 +91,7 @@ Performs the substitutions specified by REPLACEMENTS."
 
           ;; Process file name and contents according to replacement rules.
           (--each (f-entries tmpd nil t)
-            (let ((updated (s-replace-all replacements it)))
+            (let ((updated (skel:replace-all replacements it)))
               (unless (equal updated it)
                 (rename-file it updated))))
 
@@ -98,7 +104,7 @@ Performs the substitutions specified by REPLACEMENTS."
 
 (defun skel:instantiate-license-file (license-file dest replacements)
   "Populate the given license file template."
-  (f-write (s-replace-all replacements (f-read license-file)) 'utf-8 dest))
+  (f-write (skel:replace-all replacements (f-read license-file)) 'utf-8 dest))
 
 (defun skel-read-license (prompt default)
   "Prompt the user to select a license.
