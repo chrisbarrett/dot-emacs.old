@@ -90,7 +90,8 @@
   :config
   (progn
     (define-key makefile-mode-map (kbd "C-c C-c") nil)
-    (add-to-list 'ac-modes 'makefile-mode)
+    (after 'auto-complete
+      (add-to-list 'ac-modes 'makefile-mode))
 
     (defun convert-leading-spaces-to-tabs ()
       "Convert sequences of spaces at the beginning of a line to tabs."
