@@ -53,13 +53,16 @@
 
 ;; Prevent flycheck from running checkdoc for certain elisp file types or when
 ;; the buffer is narrowed.
-(after 'flycheck
-  (hook-fn 'flycheck-mode-hook
-    (when (or (cb:special-elisp-buffer?) (buffer-narrowed-p))
-      (ignore-errors
-        (flycheck-select-checker 'emacs-lisp))))
 
-  (setq-default flycheck-emacs-lisp-load-path (list cb:lib-dir "./")))
+(defun cbel:configure-flycheck ()
+  (when (and (derived-mode-p 'emacs-lisp-mode)
+             (or (cb:special-elisp-buffer?) (buffer-narrowed-p)))
+    (ignore-errors
+      (flycheck-select-checker 'emacs-lisp))))
+
+(add-hook 'flycheck-mode-hook 'cbel:configure-flycheck)
+
+(setq-default flycheck-emacs-lisp-load-path (list cb:lib-dir "./"))
 
 ;; Add command to switch to corresponding unit test.
 (after 'projectile
@@ -358,14 +361,15 @@ is a Common Lisp arglist."
 
     ;;;; File handling
 
-    (hook-fn 'emacs-lisp-mode-hook
-      (when (cb:special-elisp-buffer?)
-        (setq-local no-byte-compile t))
-      ;; Check parens are balanced and byte-compile.
-      (hook-fn 'after-save-hook
-        :local t
-        (check-parens)
+    (defun cbel:after-save ()
+      "Run in after-save-hook."
+      (check-parens)
+      (unless no-byte-compile
         (byte-compile-file (buffer-file-name))))
+
+    (hook-fn 'emacs-lisp-mode-hook
+      (when (cb:special-elisp-buffer?) (setq-local no-byte-compile t))
+      (add-hook 'after-save-hook 'cbel:after-save nil t))
 
     ;;;; Advice
 
@@ -389,8 +393,8 @@ is a Common Lisp arglist."
   :defer t
   :commands edebug-next-mode
   :init
-  (hook-fn 'emacs-lisp-mode-hook
-    (local-set-key (kbd "C-x X d") 'edebug-defun)))
+  (after 'lisp-mode
+    (define-key emacs-lisp-mode-map (kbd "C-x X d") 'edebug-defun)))
 
 (use-package redshank
   :ensure   t
