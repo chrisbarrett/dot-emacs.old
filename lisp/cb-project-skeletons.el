@@ -169,7 +169,7 @@ Performs the substitutions specified by REPLACEMENTS."
                                 ,replacements)))
 
            (skel:instantiate-template-directory ,name dest repls)
-           (skel:instantiate-license-file license-file (f-join dest "LICENSE") repls)
+           (skel:instantiate-license-file license-file (f-join dest "COPYING") repls)
            (funcall ,after-creation dest)
            (skel:initialize-git-repo dest)
            (run-hook-with-args 'skel-after-project-instantiated-hook default-directory)))
