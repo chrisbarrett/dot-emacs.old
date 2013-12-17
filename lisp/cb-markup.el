@@ -28,7 +28,6 @@
 
 (require 'use-package)
 (require 'cb-lib)
-(require 'cb-typefaces)
 
 (after 'smart-operator
   (hook-fn 'cb:markup-modes-hook
@@ -116,11 +115,10 @@
         (kbd "M-N") 'outline-next-visible-heading))
 
     ;; Customise faces.
-    (set-face-attribute markdown-header-face-1 nil :height 200)
-    (set-face-attribute markdown-header-face-2 nil :height 160)
+    (set-face-attribute markdown-header-face-1 nil :height 1.3)
+    (set-face-attribute markdown-header-face-2 nil :height 1.1)
 
     (hook-fn 'markdown-mode-hook
-      (buffer-face-set `(:family ,(serif-font) :height 130))
       (setq imenu-generic-expression
             '(("title"  "^\\(.*\\)[\n]=+$" 1)
               ("h2-"    "^\\(.*\\)[\n]-+$" 1)
