@@ -60,6 +60,7 @@
       (setenv "SHELL"  shell-file-name)))
    (t
     (let ((path (->> (list "~/Library/Haskell/bin"
+                           "~/.cask/bin"
                            "~/bin"
                            "~/scripts"
                            "/opt/local/bin/"
