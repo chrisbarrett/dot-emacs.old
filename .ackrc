@@ -11,3 +11,4 @@
 --ignore-dir=info
 --ignore-dir=eshell
 --ignore-dir=scripts/*
+--ignore-file=match:flycheck-
