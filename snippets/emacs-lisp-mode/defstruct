@@ -1,0 +1,8 @@
+# key: ds
+# name: defstruct
+# condition: (cbyas:bol?)
+# --
+(cl-defstruct (${1:Name}
+                 (:constructor ${2:$1} (${3:arglist})))
+    "${4:Description}${3:$(unless (equal "slots" yas/text) (cbel:process-docstring yas/text))}"
+    ${3:$(s-join " " (-map 'symbol-name (cbel:simplify-arglist yas/text)))})
