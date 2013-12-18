@@ -1,8 +1,7 @@
-# -*- mode: snippet -*-
-# name: use-package
 # key: up
+# name: use-package
 # condition: (cbyas:bol?)
 # --
-;; `$1' $2
+;; `${1:$(format "%s" yas/text)}' $2
 (use-package $1
   $0)
