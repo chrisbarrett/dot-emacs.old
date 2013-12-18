@@ -31,7 +31,7 @@
 
 (use-package emr
   :ensure t
-  :bind ("M-RET" . emr-show-refactor-menu)
+  :bind ("M-S-<return>" . emr-show-refactor-menu)
   :init (add-hook 'prog-mode-hook 'emr-initialize))
 
 (use-package smart-operator
