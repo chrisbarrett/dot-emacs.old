@@ -59,9 +59,6 @@
   (set-frame-font (format "%s 11" (monospace-font)) t
                   (list (car (frame-list)))))
 
-(hook-fn 'Info-mode-hook
-  (buffer-face-set `(:family ,(serif-font) :height 140)))
-
 (provide 'cb-typefaces)
 
 ;; Local Variables:
