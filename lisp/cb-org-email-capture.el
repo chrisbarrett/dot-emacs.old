@@ -347,9 +347,8 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 
               "\n  Assets:Checking\n"
               ;; Format notes as comments.
-              (unless (s-blank? notes)
+              (unless (or (null notes) (-all? 's-blank? notes))
                 (concat (->> notes
-                          (s-split "\n")
                           (-map (C (~ s-prepend "      ; ") s-trim))
                           (s-join "\n"))
                         "\n")))))
