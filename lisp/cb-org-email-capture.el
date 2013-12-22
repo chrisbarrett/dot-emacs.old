@@ -236,6 +236,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
          (uri (cbom:find-uri body)))
     ;; Construct a plist of parsed values.
     (list :uri uri
+          :date (org-read-date t nil (cbom:message-header-value "date" msg))
           :subject subject
           :title (car content)
           :notes (cdr content)
@@ -320,9 +321,13 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
    (t
     (format "\n%s" (s-join "\n- " notes)))))
 
+;; String -> String
+(defun cbom:org-date->ledger-date (date)
+  (s-replace "-" "/" (car (s-split " " date))))
+
 ;; MessagePlist -> Env String
 (cl-defun cbom:format-for-insertion
-    ((&key kind uri title scheduled deadline notes &allow-other-keys))
+    ((&key kind date uri title scheduled deadline notes &allow-other-keys))
   "Format a parsed message according to its kind."
   (cond
 
@@ -340,7 +345,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
                      (+ space)
                      (group (* nonl)))
                  title)
-      (concat (format-time-string "%Y/%m/%d ") (s-capitalize (or payee "??"))
+      (concat (cbom:org-date->ledger-date date) " " (s-capitalize (or payee "??"))
               "\n  Expenses:??        "
 
               "$ " dollars "." (if (s-blank? cents) "00" (s-pad-left 2 cents "0"))
@@ -381,6 +386,17 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
                        (car)))
        (org-agenda nil key)))))
 
+;; String -> IO ()
+(defun cbom:append-to-ledger (str)
+  (save-excursion
+    (with-current-buffer (find-file-noselect (or (true? ledger-file) "~/ledger"))
+      (goto-char (point-max))
+      (newline)
+      (collapse-vertical-whitespace)
+      (newline 2)
+      (insert str)
+      (newline))))
+
 ;; String -> MessagePlist -> IO ()
 (cl-defun cbom:capture (str (&key kind tags &allow-other-keys))
   (when (boundp 'org-capture-templates)
@@ -388,40 +404,35 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
         (-first (C (~ equal kind) s-downcase cadr)
                 org-capture-templates)
       (cond
-       ;; Move to the capture site associated with KIND.
        ((s-matches? "expense" kind)
-        (org-capture-goto-target "n"))
-       (key
-        (org-capture-goto-target key))
+        (cbom:append-to-ledger str))
+       ;; Move to the capture site associated with KIND.
        (t
-        (org-capture-goto-target "n")))
+        (org-capture-goto-target (or key "n"))
 
-      ;; Prepare headline.
-      (end-of-line)
-      (org-insert-subheading '(16))     ; 16 = at end of list
+        ;; Prepare headline.
+        (end-of-line)
+        (org-insert-subheading '(16))   ; 16 = at end of list
 
-      ;; Insert item. Prepend a todo keyword appropriate for the template,
-      ;; unless the string already starts with one.
-      (insert
-       (let* ((todo-keywords
-               (and (boundp 'org-todo-keywords)
-                    (->> org-todo-keywords
-                      -flatten
-                      (-filter 'stringp)
-                      (-mapcat (~ s-match (rx (+ (not (any "(")))))))))
-              (kw (when (stringp template)
-                    (-first (~ -contains? todo-keywords) (s-split-words template)))))
-         (if (and kw (-none? (~ s-matches? str) todo-keywords))
-             (format "%s %s" kw str)
-           str)))
+        ;; Insert item. Prepend a todo keyword appropriate for the template,
+        ;; unless the string already starts with one.
+        (insert
+         (let* ((todo-keywords
+                 (and (boundp 'org-todo-keywords)
+                      (->> org-todo-keywords
+                        -flatten
+                        (-filter 'stringp)
+                        (-mapcat (~ s-match (rx (+ (not (any "(")))))))))
+                (kw (when (stringp template)
+                      (-first (~ -contains? todo-keywords) (s-split-words template)))))
+           (if (and kw (-none? (~ s-matches? str) todo-keywords))
+               (format "%s %s" kw str)
+             str)))
 
-      (org-set-tags-to tags)
-
-      (unless (s-matches? "expense" kind)
-        (org-set-property
-         "CAPTURED"
-         (s-with-temp-buffer
-           (org-insert-time-stamp (current-time) t 'inactive)))))))
+        (org-set-tags-to tags)
+        (org-set-property "CAPTURED"
+                          (s-with-temp-buffer
+                            (org-insert-time-stamp (current-time) t 'inactive))))))))
 
 ;; FilePath -> IO ()
 (cl-defun cbom:mark-as-read (filepath)
