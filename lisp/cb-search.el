@@ -172,6 +172,13 @@ PRED is a predicate to determine whether search method is currently available.
     (concat "https://github.com/search?q="
             (url-hexify-string (cbs-read "GitHub Search" q))))))
 
+(cbs-define-search-method
+ :name "Info"
+ :key "e"
+ :command
+ (lambda (_)
+   (call-interactively 'helm-info-at-point)))
+
 (provide 'cb-search)
 
 ;; Local Variables:
