@@ -86,6 +86,7 @@
 (require 'async)
 (require 'cb-org)
 (require 'cb-file-picker-widget)
+(require 'cb-ledger)
 (autoload 'org-insert-link "org")
 (autoload 'org-insert-time-stamp "org")
 (autoload 'org-insert-subheading "org")
@@ -389,7 +390,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
 ;; String -> IO ()
 (defun cbom:append-to-ledger (str)
   (save-excursion
-    (with-current-buffer (find-file-noselect (or (true? ledger-file) "~/ledger"))
+    (with-current-buffer (find-file-noselect ledger-file)
       (goto-char (point-max))
       (newline)
       (collapse-vertical-whitespace)
