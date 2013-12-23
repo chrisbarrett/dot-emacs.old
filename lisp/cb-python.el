@@ -46,9 +46,18 @@
 (defun cb-py:smart-asterisk ()
   "Insert an asterisk with padding unless we're in an arglist."
   (interactive "*")
-  (if (s-matches? (rx (* space) "def" space) (current-line))
-      (insert "*")
-    (smart-insert-operator "*")))
+  (cond
+   ((s-matches? (rx (* space) "def" space) (current-line))
+    (insert "*"))
+   ;; Collapse whitespace around exponentiation operator.
+   ((thing-at-point-looking-at (rx (* space) "*" (* space)))
+    (delete-horizontal-space)
+    (save-excursion
+      (search-backward "*")
+      (delete-horizontal-space))
+    (insert "*"))
+   (t
+    (smart-insert-operator "*"))))
 
 (defun cb-py:smart-comma ()
   "Insert a comma with padding."
