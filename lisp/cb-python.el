@@ -32,7 +32,8 @@
 
 ;; Enable auto-complete in python modes.
 (after 'auto-complete
-  (-each cb:python-modes (~ add-to-list 'ac-modes)))
+  (-each cb:python-modes (~ add-to-list 'ac-modes))
+  (hook-fn 'cb:python-modes-hook (auto-complete-mode +1)))
 
 ;; Add special smart-operator behaviours for python buffers.
 (defun cb-py:smart-equals ()
