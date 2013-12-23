@@ -72,21 +72,22 @@
   (just-one-space))
 
 (after 'python
-  (define-keys python-mode-map
-    "," 'cb-py:smart-comma
-    "&" (command (smart-insert-operator "&"))
-    "%" (command (smart-insert-operator "%"))
-    "?" (command (smart-insert-operator "?"))
-    "*" 'cb-py:smart-asterisk
-    ":" 'cb-py:smart-colon
-    "+" (command (smart-insert-operator "+"))
-    "/" (command (smart-insert-operator "/"))
-    "-" (command (smart-insert-operator "-"))
-    "=" 'cb-py:smart-equals
-    "<" (command (smart-insert-operator "<"))
-    ">" (command (smart-insert-operator ">"))
-    "|" (command (smart-insert-operator "|"))
-    "$" (command (smart-insert-operator "$"))))
+  (--each (list python-mode-map inferior-python-mode-map)
+    (define-keys it
+      "," 'cb-py:smart-comma
+      "&" (command (smart-insert-operator "&"))
+      "%" (command (smart-insert-operator "%"))
+      "?" (command (smart-insert-operator "?"))
+      "*" 'cb-py:smart-asterisk
+      ":" 'cb-py:smart-colon
+      "+" (command (smart-insert-operator "+"))
+      "/" (command (smart-insert-operator "/"))
+      "-" (command (smart-insert-operator "-"))
+      "=" 'cb-py:smart-equals
+      "<" (command (smart-insert-operator "<"))
+      ">" (command (smart-insert-operator ">"))
+      "|" (command (smart-insert-operator "|"))
+      "$" (command (smart-insert-operator "$")))))
 
 ;; Configure smartparens formatting for python.
 (after 'smartparens
