@@ -860,6 +860,44 @@ The starting day is taken to be the weekday on which the event will repeat."
        (org-parse-time-string (org-read-date nil nil nil "End date: "))
        desc))))
 
+;; Define commands for navigating agenda sections.
+(after 'org-agenda
+
+  (defun cb-org:agenda-next-section ()
+    "Move to the next section in the agenda."
+    (interactive)
+    (save-match-data
+      (cond ((search-forward-regexp (rx bol (+ "="))
+                                    nil t)
+             (goto-char (line-beginning-position))
+             (org-agenda-next-item 1))
+            (t
+             (goto-char (point-max))
+             (goto-char (line-beginning-position))))))
+
+  (defun cb-org:agenda-prev-section ()
+    "Move to the previous section in the agenda."
+    (interactive)
+    (save-match-data
+      (cl-flet ((goto-section-start ()
+                                    (when (search-backward-regexp (rx bol (+ "=")) nil t)
+                                      (org-agenda-next-item 1)
+                                      (goto-char (line-beginning-position))
+                                      (point))))
+        (let ((current-section-start (save-excursion (goto-section-start))))
+          (cond
+           ((and (equal (point) current-section-start)
+                 (search-backward-regexp (rx bol (+ "=")) nil t 2)))
+           ((search-backward-regexp (rx bol (+ "=")) nil t))
+           (t
+            (goto-char (point-min)))
+
+           (forward-line 1)
+           (goto-char (line-beginning-position)))))))
+
+  (define-key org-agenda-mode-map (kbd "M-N") 'cb-org:agenda-next-section)
+  (define-key org-agenda-mode-map (kbd "M-P") 'cb-org:agenda-prev-section))
+
 ;; `org-protocol' allows other applications to connect to Emacs and prompt
 ;; org-mode to perform certain actions, including saving links.
 (after 'org
