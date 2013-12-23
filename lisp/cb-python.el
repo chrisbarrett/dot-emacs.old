@@ -270,6 +270,10 @@ Each element is either a string or a cons of (var . default)."
   :commands (virtualenv-workon
              virtualenv-deactivate
              virtualenv-minor-mode)
+  :config
+  (progn
+    (put 'virtualenv-default-directory 'safe-local-variable (K t))
+    (put 'virtualenv-workon 'safe-local-variable (K t)))
   :init
   (after 'python
     (add-hook 'find-file-hook 'virtualenv-minor-mode)))
