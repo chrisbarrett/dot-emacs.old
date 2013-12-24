@@ -245,6 +245,13 @@
     (global-set-key (kbd "M-<up>") 'er/expand-region)
     (global-set-key (kbd "M-<down>") 'er/contract-region)))
 
+;; `artist' provides ascii-art drawing functions.
+(use-package artist
+  :config
+  (hook-fn 'artist-mode-hook
+    (when (true? evil-mode)
+      (evil-emacs-state))))
+
 (provide 'cb-productivity)
 
 ;; Local Variables:
