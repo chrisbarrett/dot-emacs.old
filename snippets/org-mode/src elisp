@@ -1,6 +1,5 @@
-# -*- mode: snippet -*-
+# key: el
 # name: src elisp
-# key: elisp
 # condition: (cbyas:bol?)
 # --
 #+begin_src elisp
