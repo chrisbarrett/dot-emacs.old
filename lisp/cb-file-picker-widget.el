@@ -27,7 +27,6 @@
 ;;; Code:
 
 (require 'cb-lib)
-(require 'cb-colour)
 (autoload 'cl-gensym "cl-macs")
 (autoload 'undo-tree-redo "undo-tree")
 (autoload 'undo-tree-undo "undo-tree")

@@ -45,3 +45,4 @@ tramp
 swank
 var
 el-get
+/config.el

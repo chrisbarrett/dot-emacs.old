@@ -16,9 +16,6 @@
 [submodule "lib/osx-bbdb"]
 	path = lib/osx-bbdb
 	url = git@github.com:chrisbarrett/osx-bbdb.git
-[submodule "lib/org-mode"]
-	path = lib/org-mode
-	url = git://orgmode.org/org-mode.git
 [submodule "lib/whizzytex"]
 	path = lib/whizzytex
 	url = https://github.com/emacsmirror/whizzytex.git
@@ -34,3 +31,6 @@
 [submodule "lib/agda-mode"]
 	path = lib/agda-mode
 	url = https://github.com/jwiegley/agda-mode.git
+[submodule "lib/skeletor.el"]
+	path = lib/skeletor.el
+	url = git@github.com:chrisbarrett/skeletor.el.git

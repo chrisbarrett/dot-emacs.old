@@ -26,10 +26,6 @@
 
 ;;; Code:
 
-(require 'use-package)
-(require 'cb-lib)
-(require 'cb-modeline)
-(require 'cb-paths)
 (autoload 'bbdb-record-name "bbdb")
 (autoload 'std11-field-body "std11")
 (autoload 'bbdb-complete-mail "bbdb-com")

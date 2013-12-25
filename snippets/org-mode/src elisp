@@ -2,6 +2,6 @@
 # name: src elisp
 # condition: (cbyas:bol?)
 # --
-#+begin_src elisp
+#+begin_src emacs-lisp
 $0
 #+end_src

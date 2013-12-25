@@ -82,7 +82,6 @@
 ;;; Code:
 
 (require 'cb-lib)
-(require 'cb-paths)
 (require 'async)
 (require 'cb-org)
 (require 'cb-file-picker-widget)
