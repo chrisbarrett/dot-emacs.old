@@ -8401,7 +8401,7 @@ is a Common Lisp arglist."
     "Format a function docstring for a snippet.
 TEXT is the content of the docstring."
     (let ((docs (->> (cbel:simplify-arglist text)
-                  (-map (C (~ format "* %s") s-upcase symbol-name))
+                  (-map (C s-upcase symbol-name))
                   (s-join "\n\n"))))
       (unless (s-blank? docs)
         (concat "\n\n" docs))))
