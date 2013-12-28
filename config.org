@@ -2234,7 +2234,7 @@ We define the following mode groups:
 ** Start the server after Emacs has been initialised
 #+begin_src emacs-lisp
 (hook-fn 'after-init-hook
-  (unless (server-running-p)
+  (unless (or noninteractive (server-running-p))
     (server-start)))
 #+end_src
 ** Disable colour themes for console frames
@@ -3424,11 +3424,14 @@ ctags-related commands. Adapted from [[http://mattbriggs.net/blog/2012/03/18/awe
   (let ((sep " --exclude="))
     (concat sep (s-join sep ctags-exclude-patterns))))
 
+(defun cbtags:project-root ()
+  (or (projectile-project-p) default-directory))
+
 (defun build-ctags ()
   "Create a tags file at the root of the current project."
   (interactive)
   (message "Building project tags...")
-  (let* ((dir  (or (projectile-project-p) default-directory))
+  (let* ((dir (cbtags:project-root))
          (tags (concat dir "TAGS")))
     ;; Confirm when creating tags outside the home dir, or at the root of the
     ;; home dir.
@@ -3448,7 +3451,7 @@ ctags-related commands. Adapted from [[http://mattbriggs.net/blog/2012/03/18/awe
   "Visit the tags file at the root of the current project."
   (interactive)
   (let ((tags-revert-without-query t))
-    (visit-tags-table (cb:tags-project-root))
+    (visit-tags-table (cbtags:project-root))
     (message "Loaded %s" tags-file-name)))
 #+end_src
 ** Define a command for creating and loading tags
@@ -3463,7 +3466,7 @@ ctags-related commands. Adapted from [[http://mattbriggs.net/blog/2012/03/18/awe
 (defun find-ctag ()
   "Find the tags at point, creating a tags file if none exists."
   (interactive)
-  (if (file-exists-p (f-join (cb:tags-project-root) "TAGS"))
+  (if (file-exists-p (f-join (cbtags:project-root) "TAGS"))
       (visit-ctags)
     (build-ctags))
   (etags-select-find-tag-at-point))
@@ -5098,6 +5101,10 @@ Provides file skeletons.
 #+begin_src emacs-lisp
 (unless noninteractive (require 'file-template))
 #+end_src
+** DEFER
+#+begin_src emacs-lisp
+(after 'file-template
+#+end_src
 ** Insert file templates automatically when creating new files
 #+begin_src emacs-lisp
 (add-hook 'find-file-not-found-hooks
@@ -5122,6 +5129,10 @@ Provides file skeletons.
 (hook-fn 'file-template-insert-hook
       (setq buffer-undo-list nil
             buffer-undo-tree nil))
+#+end_src
+** END
+#+begin_src emacs-lisp
+)
 #+end_src
 * expand-region
 Provides commands for expanding and contracting the active region.
