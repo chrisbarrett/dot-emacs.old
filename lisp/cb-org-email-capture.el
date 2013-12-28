@@ -464,7 +464,7 @@ at FILEPATH and moves it to the cur dir."
      ((equal "link" (plist-get msg :kind))
       (async-start
        `(lambda ()
-          (load-file "~/.emacs.d/init.el")
+          (load-file ,user-init-file)
           (let ((msg ',msg))
             (require 'cb-org-email-capture)
             (list msg (cbom:format-for-insertion msg))))

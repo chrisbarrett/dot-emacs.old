@@ -934,12 +934,9 @@ prevents the app bundle from being used as the default dir.
   (-keep 'car
          (save-window-excursion
            (save-excursion
-            (package-list-packages t)
-            (package-menu--find-upgrades)))))
-#+end_src
-The function uses the =async= package to perform the installation in the
-another Emacs instance.
-#+begin_src emacs-lisp
+             (package-list-packages t)
+             (package-menu--find-upgrades)))))
+
 (defun update-packages ()
   "Update all installed packages in the background."
   (interactive)
@@ -947,55 +944,27 @@ another Emacs instance.
          "Updating packages in the background."
          cbpkg:package-icon)
   (async-start
-#+end_src
-The function below is executed in the other Emacs. It is populated with a sane
-load path and package variables derived from the parent instance.
 
-The functions to call are obtained using =symbol-function= rather than by name.
-This is used to inject the functions' implementations directly into the async
-process. By doing so, there is no need to load any of my config files.
-#+begin_src emacs-lisp
-`(lambda ()
-   ,(async-inject-variables "^package-")
-   ,(async-inject-variables "^load-path")
-   ,(async-inject-variables "^cbpkg")
+   `(lambda ()
+      (load-file ,user-init-file)
+      (let ((pkgs (cbpkg:updateable-packages)))
+        (cbpkg:install-packages pkgs)
+        (length pkgs)))
 
-   (package-refresh-contents)
-   (package-initialize)
-   (require 'dash)
-   (require 's)
-   (require 'cl-lib)
+   (lambda (len)
+     (package-initialize)
+     (if (zerop len)
+         (growl "Updates Finished"
+                "No packages needed to be updated."
+                cbpkg:package-icon)
 
-   ;; Inject function definitions.
-   (fset 'growl ,(symbol-function 'growl))
-   (fset 'cbpkg:updateable-packages ,(symbol-function 'cbpkg:updateable-packages))
-   (fset 'cbpkg:install-packages ,(symbol-function 'cbpkg:install-packages))
-
-   (let ((pkgs (cbpkg:updateable-packages)))
-     (cbpkg:install-packages pkgs)
-     (length pkgs)))
-#+end_src
-Once updates are complete, call back into the parent Emacs and show a
-notification to inform the user.
-#+begin_src emacs-lisp
-(lambda (len)
-  (package-initialize)
-  (if (zerop len)
-      (growl "Updates Finished"
-             "No packages needed to be updated."
-             cbpkg:package-icon)
-
-    (growl "Updates Finished"
-           (concat
-            (format "%s package%s %s updated " len
-                    (if (= 1 len) "" "s")
-                    (if (= 1 len) "was" "were"))
-            "and will be loaded next time Emacs is started.")
-           cbpkg:package-icon)))
-#+end_src
-
-#+begin_src emacs-lisp
-))
+       (growl "Updates Finished"
+              (concat
+               (format "%s package%s %s updated " len
+                       (if (= 1 len) "" "s")
+                       (if (= 1 len) "was" "were"))
+               "and will be loaded next time Emacs is started.")
+              cbpkg:package-icon)))))
 #+end_src
 * OS X
 ** CONDITIONAL
