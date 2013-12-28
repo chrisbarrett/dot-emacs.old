@@ -4208,7 +4208,7 @@ Provides a major mode for editing commit messages. Used by magit.
 *** Evil
 Enter insertion state when prompted to enter commit messages.
 #+begin_src emacs-lisp
-(add-hook 'git-commit-mode-hook 'evil-append-line)
+(add-hook 'git-commit-mode-hook 'evil-insert-state)
 #+end_src
 ** Gist
 Provides an Elisp interface to GitHub Gists.
@@ -4311,7 +4311,9 @@ Define bindings for working with git hunks under the /g/ prefix.
     "g h" 'git-gutter+-popup-hunk
     "g x" 'git-gutter+-revert-hunk
     "g s" 'git-gutter+-stage-hunks
-    "g a" 'cb-git:add))
+    "g a" 'cb-git:add)
+
+  (add-hook 'magit-commit-mode-hook 'evil-insert-state))
 #+end_src
 ** git-gutter-fringe+
 Improve git-gutter+ to show git status in the fringe.
@@ -5121,11 +5123,6 @@ Minor mode that reverts the buffer if it changes on disk.
 #+begin_src emacs-lisp
 (hook-fn 'auto-revert-mode-hook
   (diminish 'auto-revert-mode))
-#+end_src
-* imenu
-Provides navigation between sections of the current buffer.
-#+begin_src emacs-lisp
-;(require 'imenu)
 #+end_src
 * file-template
 Provides file skeletons.

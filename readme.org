@@ -1,60 +1,64 @@
-#+TITLE: dot-emacs
 #+AUTHOR: Chris Barrett
+* Dot-Emacs
+** Description
+This is my personal Emacs configuration. It is obviously very personalised and
+you'd be crazy to use it as-is.
 
-* Description
-This is my personal Emacs configuration. It is obviously very personalised and you'd be crazy to use it as-is.
-* Installation
+The configuration is mostly contained in =config.org=. At startup, Emacs will
+generate a file called =config.el= based on the contents of this file.
+** Installation
 Requires GNU Make, curl and Git.
 
 #+begin_src sh
-  cd
-  mv .emacs.d .emacs.d.backup
-  git clone git@github.com:chrisbarrett/dot-emacs.git .emacs.d
-  cd .emacs.d
-  make
+cd
+mv .emacs.d .emacs.d.backup
+git clone git@github.com:chrisbarrett/dot-emacs.git .emacs.d
+cd .emacs.d
+make
 #+end_src
 
-Additional features can be installed using =make all=, or using the individual tasks in the makefile (e.g. =make ruby=). I pretty much only test on my machine, so YMMV.
+Additional features can be installed using =make all=, or using the individual
+tasks in the makefile (e.g. =make ruby=). I pretty much only test on my machine,
+so YMMV.
 
-The load sequence will search for a file called =personal-config.el=, which is a good place to put things like your gnus server configuration, email address, etc.
+The load sequence will search for a file called =personal-config.el=, which is a
+good place to put things like your gnus server configuration, email address,
+etc.
 
-#+begin_src elisp
-  (setq user-full-name    "Jane Coder"
-        user-mail-address "foo@bar.com")
+#+begin_src emacs-lisp
+(setq user-full-name    "Jane Coder"
+      user-mail-address "foo@bar.com")
 
-  ;; SMTP
+;; SMTP
 
-  (setq smtpmail-mail-address user-mail-address
-        smtpmail-smtp-server "smtp.foo.bar.com")
+(setq smtpmail-mail-address user-mail-address
+      smtpmail-smtp-server "smtp.foo.bar.com")
 
-  (provide 'personal-config)
+(provide 'personal-config)
 #+end_src
-* Features
-** Automated loading
-Elisp files in the =lisp= directory will be automatically compiled and loaded at startup. The =configuration-group= macro allows you to declare prerequisites for loading forms in these files.
-** Mail composition with org-mode
-=C-x m= will open an org-mode buffer for sending HTML emails, giving you access to all the good stuff like rich formatting, tables and code blocks.
-
-If you are a Mutt user, add the following to your =.muttrc= to use org-mode message editing:
-#+begin_src sh
-  set editor="emacsclient -nw %s -a 'vim %s'"
-#+end_src
-** Evilness
-I use [[https://gitorious.org/evil/pages/Home][Evil-mode]] so I can have vim in my Emacs so I can edit while I edit. You can restore Emacs' normal key bindings by setting =cb:use-vim-keybindings?= to nil in /init.el/. I try to remember to make my bindings test for that so people testing this config out aren't completely stuffed.
-** Custom mode-line
+** Features
+*** Evilness
+I use [[https://gitorious.org/evil/pages/Home][Evil-mode]] so I can have vim in my Emacs so I can edit while I edit. You
+can restore Emacs' normal key bindings by setting =cb:use-vim-keybindings?= to
+nil in /init.el/. I try to remember to make my bindings test for that so people
+testing this config out aren't completely stuffed.
+*** Custom mode-line
 The mode-line is set up to remove clutter.
 
-If you set =user-mail-directory= to point to your maildir the modeline will display an unread mail count.
-** Modal buffers
+If you set =user-mail-directory= to point to your maildir the modeline will
+display an unread mail count.
+*** Modal buffers
 Certain commands display buffers in a /modal/ manner; they expand to fill the
 frame and restore the previous state when killed. This behaviour is provided for
 most magit commands, ansi-term, org-agenda and others. Check the implementation
-of =declare-modal-view= and =declare-modal-executor= in /cb-lib.el/ to see how
-this works.
-** Git commands
-=git-gutter+-mode= is enabled for files in git repositories. This allows you to see modified hunks and stage them individually while you're editing.
+of =declare-modal-view= and =declare-modal-executor= to see how this works.
+*** Git commands
+=git-gutter+-mode= is enabled for files in git repositories. This allows you to
+see modified hunks and stage them individually while you're editing.
 
-Common git commands are available under the =g= prefix key in Evil's normal state, allowing you perform most git actions directly on the buffer you're editing.
+Common git commands are available under the =g= prefix key in Evil's normal
+state, allowing you perform most git actions directly on the buffer you're
+editing.
 - =g b= :: branch manager
 - =g c= :: commit
 - =g D= :: diff
@@ -65,41 +69,42 @@ Common git commands are available under the =g= prefix key in Evil's normal stat
 - =g r= :: reflog
 - =g s= :: stage hunk
 - =g x= :: reset hunk
-** Org
+*** Org
 Common org commands are accessible with a picker widget bound to =<f8>=.
 
 I use a Rube Goldberg machine, implemented in Elisp, to capture links, todos,
 notes and other information by sending myself emails. See the documentation in
-`cb-org-email-capture.el` for details.
+=cb-org-email-capture.el= for details.
 
 I use my own customised fork of [[https://github.com/chrisbarrett/org-pomodoro][org-pomodoro]] for clocking.
-** Language Support
+*** Language Support
 I have sane configurations for several languages and environments:
-- Haskell
 - Clojure
-- Scala
+- Elisp
+- Haskell
+- Idris
 - Python
 - Ruby/Rails
-- Elisp
+- Scala
 - Scheme
-** Key bindings
-Since Evil frees up the Meta key, I use =M-/key/= to display modal views such as terminals, w3m and dired.
+*** Key bindings
+Since Evil frees up the Meta key, I use =M-/key/= to display modal views such as
+terminals, w3m and dired.
 - =C-SPC= :: helm-mini
 - =S-SPC= :: execute-extended-command (i.e. =M-x=)
 - =C-RET= :: interactively edit symbol at point
-- =M-RET= :: refactoring commands
+- =C-M-RET= :: refactoring commands
+- =C-t= :: helm-imenu
 - =M-b= :: buffers list with helm
 - =M-d= :: shows current file in dired
 - =M-e= :: go to URL
 - =M-G= :: magit status
-- =M-I= :: find lisp config file with ido
-- =M-i= :: helm-imenu
 - =M-R= :: rename symbol at point  (in whole buffer)
 - =M-r= :: rename symbol at point (in defun)
 - =M-s= :: Search manpage, Google, YouTube, Wikipedia etc.
 - =M-T= :: eshell
 - =M-W= :: w3m
-** OS X-specific
+*** OS X-specific
 - org-mode and pomodoro notifications are displayed using [[http://growl.info/][Growl]] where available
 - =cmd-shift-return= runs OS X's =open= command.
   - URL at point will open in the default browser
