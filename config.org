@@ -10518,6 +10518,10 @@ Invokes `idris-mode-hook'."
   (set (make-local-variable 'indent-tabs-mode) nil)
   (set (make-local-variable 'comment-start) "--"))
 #+end_src
+** ignore .idr files
+#+begin_src emacs-lisp
+(add-to-list 'completion-ignored-extensions ".idr")
+#+end_src
 ** DEFER
 #+begin_src emacs-lisp
 (after 'idris-mode
