@@ -81,11 +81,8 @@
 
 ;;; Code:
 
-(require 'cb-lib)
 (require 'async)
-(require 'cb-org)
 (require 'cb-file-picker-widget)
-(require 'cb-ledger)
 (autoload 'org-insert-link "org")
 (autoload 'org-insert-time-stamp "org")
 (autoload 'org-insert-subheading "org")
@@ -467,9 +464,8 @@ at FILEPATH and moves it to the cur dir."
      ((equal "link" (plist-get msg :kind))
       (async-start
        `(lambda ()
-          ,(async-inject-variables "load-path")
+          (load-file "~/.emacs.d/init.el")
           (let ((msg ',msg))
-            (package-initialize)
             (require 'cb-org-email-capture)
             (list msg (cbom:format-for-insertion msg))))
        (lambda+ ((msg fmt))

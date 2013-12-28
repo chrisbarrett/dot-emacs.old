@@ -6636,8 +6636,7 @@ blocks and encrypted regions.
 ** Evil
 *** Enter insertion mode in capture buffer
 #+begin_src emacs-lisp
-(hook-fn 'org-capture-mode-hook
-  (evil-insert-state))
+(add-hook 'org-capture-mode-hook 'evil-insert-state)
 #+end_src
 *** Use evil key bindings in agenda
 
@@ -6823,6 +6822,17 @@ re-encrypted after a period of inactivity.
   (unless noninteractive
     (run-with-idle-timer cb-org:notes-save-idle-delay t 'cb-org:save-notes))
   "Timer that automatically saves the notes buffer on idle.")
+#+end_src
+** Capture tasks, notes, etc from emails
+#+begin_src emacs-lisp
+(require 'cb-org-email-capture)
+
+(unless noninteractive
+  (hook-fn 'after-init-hook
+    (defvar cbom:capture-timer
+      (run-with-timer 5 60 (lambda ()
+                              (with-demoted-errors
+                                  (org-capture-messages)))))))
 #+end_src
 * Circe
 Circe is an Emacs IRC client.
