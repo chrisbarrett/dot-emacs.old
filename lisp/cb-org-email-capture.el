@@ -544,13 +544,6 @@ Captured messages are marked as read."
             (message "Capturing messages...done")))
       (setq cbom:running? nil))))
 
-(hook-fn 'after-init-hook
-  (defvar cbom:capture-timer
-    (run-with-timer 10 60 (lambda ()
-                           (when (featurep 'org)
-                             (with-demoted-errors
-                               (org-capture-messages)))))))
-
 (provide 'cb-org-email-capture)
 
 ;; Local Variables:
