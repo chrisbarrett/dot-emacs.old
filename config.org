@@ -1105,8 +1105,8 @@ When used interactively, makes a guess at what to pass."
 Set evil-mode bindings for the previous commands.
 #+begin_src emacs-lisp
 (after 'evil
-  (evil-global-set-key 'normal "g o" 'mac-open-dwim)
-  (evil-global-set-key 'normal "g O" 'mac-reveal-in-finder))
+  (evil-global-set-key 'normal (kbd "g o") 'mac-open-dwim)
+  (evil-global-set-key 'normal (kbd "g O") 'mac-reveal-in-finder))
 #+end_src
 ** END
 #+begin_src emacs-lisp
@@ -4288,13 +4288,9 @@ Define bindings for working with git hunks under the /g/ prefix.
   (add-hook 'magit-commit-mode-hook 'evil-insert-state))
 #+end_src
 ** git-gutter-fringe+
-Improve git-gutter+ to show git status in the fringe.
-
-This is disabled because there were unresolvable dependencies at the time of
-writing.
 #+begin_src emacs-lisp
-;(cb:install-package 'git-gutter-fringe+)
-;(after 'git-gutter+ (require 'git-gutter-fringe+))
+(cb:install-package 'fringe-helper)
+(after 'git-gutter+ (require 'git-gutter-fringe+))
 #+end_src
 * Diffs
 ** Ediff
@@ -5129,6 +5125,15 @@ Provides file skeletons.
 (hook-fn 'file-template-insert-hook
       (setq buffer-undo-list nil
             buffer-undo-tree nil))
+#+end_src
+** define helper function for org template
+#+begin_src emacs-lisp
+(defun cbtmpl:org-skeleton-title (filename)
+  "Format the title to use for the given FILENAME."
+  (->> (f-filename (f-no-ext filename))
+    s-split-words
+    (-map 's-capitalize)
+    (s-join " ")))
 #+end_src
 ** END
 #+begin_src emacs-lisp
