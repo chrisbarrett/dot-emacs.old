@@ -1270,7 +1270,7 @@ in a subdir of the Emacs directory to keep things clean.
 #+end_src
 * Save position in files between sessions
 #+begin_src emacs-lisp
-(setq save-place-file (concat cb:tmp-dir "saved-places"))
+(setq save-place-file (f-join cb:tmp-dir "saved-places"))
 (setq-default save-place t)
 
 (unless noninteractive
@@ -1352,7 +1352,7 @@ show recent files.
 #+begin_src emacs-lisp
 (setq savehist-additional-variables '(search ring regexp-search-ring)
       savehist-autosave-interval    60
-      savehist-file                 (concat cb:tmp-dir "savehist"))
+      savehist-file                 (f-join cb:tmp-dir "savehist"))
 #+end_src
 ** Safely enable savehist
 This can sometimes fail with a void-variable error. In such a
@@ -2396,7 +2396,7 @@ Do not load if we're running Emacs in a terminal.
 Define a utility for saving the current theme. This allows the theme that was
 last used to be selected when Emacs is started.
 #+begin_src emacs-lisp
-(defconst cbcl:saved-theme-file (concat cb:tmp-dir "last-theme")
+(defconst cbcl:saved-theme-file (f-join cb:tmp-dir "last-theme")
   "Filepath to a file containing the last selected colour theme.")
 
 (defun cbcl:save-theme-settings (theme)
@@ -2687,7 +2687,7 @@ Enable ANSI colour codes in terminals and compilation buffers.
 ** Configure variables
 #+begin_src emacs-lisp
 (setq ido-enable-prefix nil
-      ido-save-directory-list-file (concat cb:tmp-dir "ido.last")
+      ido-save-directory-list-file (f-join cb:tmp-dir "ido.last")
       ido-enable-flex-matching t
       ido-create-new-buffer 'always
       ido-use-filename-at-point 'guess
@@ -2831,7 +2831,7 @@ Provides intellisense-style completion popops.
       ac-show-menu-immediately-on-auto-complete t
       ac-auto-start 3
       ac-candidate-menu-min 0
-      ac-comphist-file (concat cb:tmp-dir "ac-comphist.dat"))
+      ac-comphist-file (f-join cb:tmp-dir "ac-comphist.dat"))
 #+end_src
 ** Fix issues with flyspell
 #+begin_src emacs-lisp
@@ -5110,7 +5110,7 @@ Declare abbreviations that will be automatically expanded when typed. I don't
 actually use this, but python mode seems to load it.
 ** Create abbrev file in tmp.
 #+begin_src emacs-lisp
-(setq abbrev-file-name (concat cb:tmp-dir "abbrev_defs"))
+(setq abbrev-file-name (f-join cb:tmp-dir "abbrev_defs"))
 #+end_src
 * dictionary
 Provides dictionary search functions.
@@ -8944,7 +8944,7 @@ below probably doesn't work for other Schemes.
 #+begin_src emacs-lisp
 (setq geiser-mode-start-repl-p t
       geiser-repl-startup-time 20000
-      geiser-repl-history-filename (concat cb:tmp-dir "geiser-history")
+      geiser-repl-history-filename (f-join cb:tmp-dir "geiser-history")
       geiser-active-implementations '(racket))
 #+end_src
 *** ac-geiser
