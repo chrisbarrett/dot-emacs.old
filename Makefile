@@ -16,10 +16,10 @@ emacs_version = $(shell $(emacs) -Q --batch --exec \
 # ----------------------------------------------------------------------------
 
 .PHONY: default
-default : $(modules) el-get tags $(emacs_src)
+default : $(modules) tags $(emacs_src)
 
 .PHONY: all
-all : $(modules) el-get $(emacs_src) tags \
+all : $(modules) $(emacs_src) tags \
 	  ruby supercollider python clang haskell \
 
 .PHONY: src
@@ -37,10 +37,6 @@ $(tmp) :; mkdir $(tmp)
 
 $(modules) :
 	git submodule update --init
-
-el-get :
-	git clone 'https://github.com/dimitri/el-get' el-get/el-get
-	$(emacs) --batch -nw -l 'el-get/el-get/el-get-install.el' --exec '(eval-buffer)'
 
 # ----------------------------------------------------------------------------
 # Cleaning
@@ -169,11 +165,3 @@ haskell : $(scion_server)
 $(scion_server) :
 	git clone $(scion_url) $(scion_dest)
 	cd $(scion_dest) && cabal install
-
-# ----------------------------------------------------------------------------
-
-org_d = $(lib)/org-mode
-
-.PHONY: org
-org :
-	cd $(org_d) && make all
