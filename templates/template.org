@@ -1,4 +1,4 @@
-#+TITLE: %((s-capitalize (f-filename (f-no-ext (buffer-file-name))))%)
+#+TITLE: %((cbtmpl:org-skeleton-title (buffer-file-name))%)
 #+AUTHOR: %U
 
 %@
