@@ -4288,6 +4288,8 @@ Define bindings for working with git hunks under the /g/ prefix.
   (add-hook 'magit-commit-mode-hook 'evil-insert-state))
 #+end_src
 ** git-gutter-fringe+
+I'm using a submodule version right now because the MELPA version has
+unsatisfiable dependencies.
 #+begin_src emacs-lisp
 (cb:install-package 'fringe-helper)
 (after 'git-gutter+ (require 'git-gutter-fringe+))
