@@ -6973,14 +6973,59 @@ Use ido for completion.
 #+begin_src emacs-lisp
 (after 'org-capture
 
-  (defun ledger-capture-expense ()
-    (with-current-buffer (find-file-noselect ledger-file)
-      (call-interactively 'ledger-add-expense)))
+  (defmacro cbledger:with-ledger-buffer (&rest body)
+    "Execute BODY forms in a ledger buffer.
+Use `ledger-buffer' if the current buffer is not in ledger-mode."
+    (declare (indent 0))
+    `(with-current-buffer ,(if (derived-mode-p 'ledger-mode)
+                               (current-buffer)
+                             (find-file-noselect ledger-file))
+       ,@body))
+
+  (defun cbledger:read-date ()
+    (s-replace "-" "/" (car (s-split " " (org-read-date)))))
+
+  (defun cbledger:read-payee ()
+    (cbledger:with-ledger-buffer
+      (ido-completing-read "Payee: " (ledger-payees-in-buffer))))
+
+  (defun cbledger:read-clear-state ()
+    (if (y-or-n-p "Transaction cleared? ") " * " " "))
+
+  (defun cbledger:read-amount ()
+    (format "$ %.2f" (read-number "Amount $: ")))
+
+  (defun cbledger:accounts ()
+    "Find all accounts in the current ledger buffer, or in the `ledger-file'."
+    (cbledger:with-ledger-buffer
+      (->> (s-match-strings-all
+            (rx bol (+ space) (group (+ (not space)) ":" (+? nonl))
+                (or eol "  "))
+            (buffer-string))
+        (-map 'cadr)
+        (-uniq)
+        (-sort 'string<))))
+
+  (defun cbledger:read-account (prompt initial-input)
+    (ido-completing-read prompt (cbledger:accounts) nil nil initial-input))
+
+  (defun cbledger:read-expense ()
+    (let ((date (cbledger:read-date))
+          (payee (cbledger:read-payee))
+          (to-account (cbledger:read-account "To: " "Expenses:"))
+          (amount (cbledger:read-amount))
+          (from-account (cbledger:read-account "From: " "Assets:"))
+          (cleared? (cbledger:read-clear-state)))
+      (concat date cleared? payee "\n"
+              "  " to-account "  " amount "\n"
+              "  " from-account)))
 
   (add-to-list 'org-capture-templates
                `("$" "Expense" plain (file ,ledger-file)
-                 (function ledger-capture-expense)
+                 (function cbledger:read-expense)
+                 :empty-lines 1
                  :clock-keep t
+                 :jump-to-captured t
                  :immediate-finish t)))
 #+end_src
 
@@ -6988,23 +7033,7 @@ Use ido for completion.
 #+begin_src emacs-lisp
 (after 'ledger-mode
 #+end_src
-** Utility functions
-Define utility functions used by interactive commands.
-
-#+begin_src emacs-lisp
-(defun cbledger:accounts ()
-  "Find all accounts in the current buffer."
-  (->> (s-match-strings-all
-        (rx bol (+ space) (group (+ (not space)) ":" (+? nonl))
-            (or eol "  "))
-        (buffer-string))
-    (-map 'cadr)
-    (-uniq)
-    (-sort 'string<)))
-#+end_src
-
-Commands for finding the bounds of transactions.
-
+** Utilities for finding the bounds of transactions
 #+begin_src emacs-lisp
 (defvar cbledger:transaction-start (rx bol (any digit "~" "="))
   "Regex matching the start of a transaction line.")
@@ -7059,87 +7088,6 @@ Define a command to move to transactions of a certain date.
 *** Key binding
 #+begin_src emacs-lisp
 (define-key ledger-mode-map (kbd "C-c C-d") 'ledger-move-to-date)
-#+end_src
-** Insert date
-*** Impl
-#+begin_src emacs-lisp
-(defun ledger-insert-date (date)
-  "Read DATE from the user and insert at point."
-  (interactive (list (org-read-date)))
-  (insert (s-replace "-" "/" date)))
-#+end_src
-*** Key binding
-#+begin_src emacs-lisp
-(define-key ledger-mode-map (kbd "C-c C-.") 'ledger-insert-date)
-#+end_src
-** Insert transactions
-Define a command to insert transaction headers.
-*** Impl
-#+begin_src emacs-lisp
-(defun ledger-insert-transaction-header (date payee reference &optional arg)
-  "Insert a header at point. DATE, PAYEE and REFERENCE are all strings.
-With prefix ARG, insert at point. Otherwise move to an appropriate buffer pos."
-  (interactive (list
-                (org-read-date nil nil nil "Transaction")
-                (ido-completing-read "Payee: " (ledger-payees-in-buffer))
-                (s-trim (read-string "[Reference]: "))
-                current-prefix-arg))
-  ;; Only insert header if there is no identical header at point.
-  (let ((dt (s-replace "-" "/" date))
-        (ref (if (s-blank? reference) " " (format " (%s) " reference))))
-    (unless arg
-      (ledger-move-to-date dt))
-    (unless (and (s-matches? (regexp-quote dt) (current-line -1))
-                 (s-matches? (regexp-quote payee) (current-line -1))
-                 (s-matches? (regexp-quote ref) (current-line -1)))
-      (collapse-vertical-whitespace)
-      (newline 2)
-      (goto-char (line-beginning-position))
-      (insert (concat dt ref payee))
-      (newline)
-      (indent-to ledger-post-account-alignment-column)))
-  (run-hooks 'ledger-transaction-inserted-hook))
-#+end_src
-*** Key binding
-#+begin_src emacs-lisp
-(define-key ledger-mode-map (kbd "C-c C-t") 'ledger-insert-transaction-header)
-#+end_src
-** Expenses
-Define a command to interactively insert an expense.
-*** Impl
-#+begin_src emacs-lisp
-(defun ledger-add-expense ()
-  "Insert an expense transaction at the appropriate place for the given date.
-With prefix ARG, insert at point."
-  (interactive "*")
-  (atomic-change-group
-    (call-interactively 'ledger-insert-transaction-header)
-
-    (let ((amount (read-number "Amount $: "))
-          (account
-           (ido-completing-read "To Account: " (cbledger:accounts)
-                                nil nil "Expenses:"))
-          (balancing-account
-           (ido-completing-read "From Account: " (cbledger:accounts)
-                                nil nil "Assets:")))
-
-      (when (or (s-matches? "checking" balancing-account)
-                (y-or-n-p "Transaction cleared? "))
-        (ledger-toggle-current-transaction))
-
-      (insert account)
-      (insert (format "  $ %.2f" amount))
-      (newline)
-      (indent-to ledger-post-account-alignment-column)
-      (insert balancing-account)
-      (open-line 2)
-      (ledger-format-buffer)))
-
-  (run-hooks 'ledger-expense-inserted-hook))
-#+end_src
-*** Key binding
-#+begin_src emacs-lisp
-(define-key ledger-mode-map (kbd "C-c C-e") 'ledger-add-expense)
 #+end_src
 ** Buffer formatting
 *** Define format buffer command
