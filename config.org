@@ -5835,16 +5835,16 @@ Switch projects and subprojects from NEXT back to TODO."
 (setq org-link-abbrev-alist '(("att" . org-attach-expand-link))
       org-attach-directory (f-join org-directory "data"))
 #+end_src
-*** Redefine `org-attach-attach' to use helm to read files
+*** Redefine `org-attach-attach' to use ido to read files
 #+begin_src emacs-lisp
 (defun org-attach-attach (file &optional visit-dir method)
   "Move/copy/link FILE into the attachment directory of the current task.
-If VISIT-DIR is non-nil, visit the directory with dired.
-METHOD may be `cp', `mv', `ln', or `lns' default taken from
+If VISIT-DIR is non-nil, visit the directory with dired. METHOD
+may be `cp', `mv', `ln', or `lns' default taken from
 `org-attach-method'."
   (interactive
    (list
-    (helm-read-file-name "File to keep as an attachment: ")
+    (ido-read-file-name "File to keep as an attachment: " nil nil t)
     current-prefix-arg))
   (setq method (or method org-attach-method))
   (let ((basename (file-name-nondirectory file)))
