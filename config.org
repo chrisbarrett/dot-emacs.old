@@ -3918,7 +3918,7 @@ Use a custom mode line.
 The first function returning non-nil is used for the description
 section in the modeline.")
 #+end_src
-** Auxiliary functions
+** VC state
 #+begin_src emacs-lisp
 (cl-defun cb:vc-state->letter (&optional (file (buffer-file-name)))
   "Return a single letter to represent the current version-control status."
@@ -3936,7 +3936,9 @@ section in the modeline.")
   (ignore-errors
     (vc-state-refresh file 'git)
     (equal 'up-to-date (vc-state file))))
-
+#+end_src
+** Filepath and buffer name
+#+begin_src emacs-lisp
 (cl-defun cb:shorten-directory (dir &optional (max-length 30))
   "Show up to MAX-LENGTH characters of a directory name DIR."
   (let ((path (reverse (split-string (abbreviate-file-name dir) "/")))
