@@ -403,6 +403,11 @@ TO-N-LINES is the number of blank lines to insert afterwards."
   (when (fboundp 'evil-insert-state)
     (evil-insert-state)))
 #+end_src
+* Convenience aliases for interactive functions
+#+begin_src emacs-lisp
+(defalias 'qrr 'query-replace-regexp)
+(defalias 'bb 'bury-buffer)
+#+end_src
 * Path variables
 Define important paths that should be global throughout the configuration.
 ** Define special paths
