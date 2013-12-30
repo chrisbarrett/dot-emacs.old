@@ -9441,8 +9441,7 @@ Each element is either a string or a cons of (var . default)."
          (s-join "\n" (--map (format "    %s (default %s) --" (car it) (cdr it))
                              keywords)))))))
 #+end_src
-** insertion commands
-Define a command to insert a docstring for the function at point.
+** insert a docstring for the function at point
 *** Define command
 #+begin_src emacs-lisp
 (defun cb-py:arglist-for-function-at-point ()
@@ -9471,6 +9470,10 @@ Define a command to insert a docstring for the function at point.
 #+begin_src emacs-lisp
 (add-to-list 'insertion-picker-options
              '("d" "Docstring" cb-py:insert-docstring :modes (python-mode)))
+#+end_src
+** key bindings
+#+begin_src emacs-lisp
+(define-key python-mode-map (kbd "M-q") 'indent-dwim)
 #+end_src
 ** python-info
 Installs an info manual for Python 2.7
