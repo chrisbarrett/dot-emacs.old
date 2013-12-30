@@ -5644,13 +5644,6 @@ Define keys for org-mode.
   "C-c ;" nil)
 #+end_src
 ** Notes
-*** Enter insert state for popup notes
-#+begin_src emacs-lisp
-(after 'evil
-  (hook-fn 'org-mode-hook
-    (when (and (equal (buffer-name) "*Org Note*"))
-      (evil-insert-state))))
-#+end_src
 *** Prevent attempts to expand the minibuffer
 #+begin_src emacs-lisp
 (defadvice org-add-log-note (before exit-minibuffer activate)
@@ -6659,14 +6652,23 @@ blocks and encrypted regions.
     (auto-complete-mode -1)))
 #+end_src
 ** Evil
+*** DEFER
+#+begin_src emacs-lisp
+(after 'evil
+#+end_src
 *** Enter insertion mode in capture buffer
 #+begin_src emacs-lisp
 (add-hook 'org-capture-mode-hook 'evil-insert-state)
 #+end_src
-*** Use evil key bindings in agenda
-
+*** Enter insert state for popup notes
 #+begin_src emacs-lisp
-(after '(evil org-agenda)
+(hook-fn 'org-mode-hook
+    (when (equal (buffer-name) "*Org Note*")
+      (evil-insert-state)))
+#+end_src
+*** Use evil key bindings in agenda
+#+begin_src emacs-lisp
+(after 'org-agenda
   (bind-keys
     :map org-agenda-mode-map
     "C" 'org-agenda-capture
@@ -6682,14 +6684,10 @@ blocks and encrypted regions.
 *** Advise header insertion commands to enter evil insert state
 #+begin_src emacs-lisp
 (defadvice org-insert-heading (after insert-state activate)
-  "Enter evil insert state"
-  (when (fboundp 'evil-insert-state)
-    (evil-insert-state nil)))
+  (evil-insert-state))
 
 (defadvice org-insert-todo-heading (after insert-state activate)
-  "Enter evil insert state"
-  (when (fboundp 'evil-insert-state)
-    (evil-insert-state nil)))
+  (evil-insert-state))
 #+end_src
 *** Adapt outline fold commands for Evil
 #+begin_src emacs-lisp
@@ -6728,6 +6726,10 @@ blocks and encrypted regions.
                     (when (evil-insert-state-p)
                       (funcall this-fn args))))
       ad-do-it))
+#+end_src
+*** END
+#+begin_src emacs-lisp
+)
 #+end_src
 ** Growl
 Show growl notifications.
