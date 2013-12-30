@@ -3986,6 +3986,45 @@ entry in `modeline-custom-description-functions'."
     (propertize (buffer-name) 'face 'mode-line-filename))))
 #+end_src
 ** Unread mail count
+*** Icon for modeline indicator
+#+begin_src emacs-lisp
+(defvar cbm:mail-icon (create-image (f-join cb:assets-dir "letter.xpm")
+                                    'xpm nil :ascent 'center))
+#+end_src
+*** Define function to get unread count
+#+begin_src emacs-lisp
+(defun cbm:unread-mail-count ()
+  "Return the number of unread messages in all folders in your maildir."
+  (->> (f-directories user-mail-directory)
+    (-mapcat 'f-directories)
+    (-mapcat 'f-directories)
+    (-filter (~ s-ends-with? "new"))
+    (-remove (~ s-matches? (rx (or "low" "archive" "draft" "org"
+                                   "deleted" "trash" "sent"))))
+    (-map (C length f-files))
+    (-sum)))
+#+end_src
+*** Define commands to set the modeline indicator
+#+begin_src emacs-lisp
+(defvar cbm:mode-line-indicator nil
+  "The entry to display in the modeline.")
+
+(defun cbm:make-indicator (n)
+  (when (cl-plusp n)
+    (concat
+     (propertize "@" 'display cbm:mail-icon)
+     (int-to-string n))))
+
+(defun cbm:update-unread-count ()
+  "Find the number of unread messages and update the modeline."
+  (when (f-exists? user-mail-directory)
+    (setq cbm:mode-line-indicator (cbm:make-indicator (cbm:unread-mail-count)))))
+#+end_src
+*** Set the indicator in a timer
+#+begin_src emacs-lisp
+(defvar cbm:unread-count-timer
+  (run-with-timer 0 10 'cbm:update-unread-count))
+#+end_src
 ** Mode line format
 #+begin_src emacs-lisp
 (setq-default

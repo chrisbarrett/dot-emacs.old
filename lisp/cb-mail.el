@@ -295,48 +295,6 @@ Rewrap in an org-style quote block."
 
 (add-to-list 'modeline-custom-description-functions 'org-mutt:buffer-description)
 
-;; -----------------------------------------------------------------------------
-;; Display unread mail count in mode-line.
-
-(defvar cbm:mail-icon (create-image (f-join cb:assets-dir "letter.xpm")
-                                    'xpm nil :ascent 'center))
-
-(defvar cbm:mode-line-indicator nil
-  "The entry to display in the modeline.")
-
-(defun cbm:unread-mail-count ()
-  "Return the number of unread messages in all folders in your maildir."
-  (->> (f-directories user-mail-directory)
-    (-mapcat 'f-directories)
-    (-mapcat 'f-directories)
-    (-filter (~ s-ends-with? "new"))
-    (-remove (~ s-matches? (rx (or "low" "archive" "draft" "org"
-                                   "deleted" "trash" "sent"))))
-    (-map (C length f-files))
-    (-sum)))
-
-(defun cbm:make-indicator (n)
-  (when (cl-plusp n)
-    (concat
-     (propertize "@" 'display cbm:mail-icon)
-     (int-to-string n))))
-
-(defun cbm:update-unread-count ()
-  "Find the number of unread messages and update the modeline."
-  (when (f-exists? user-mail-directory)
-    (setq cbm:mode-line-indicator (cbm:make-indicator (cbm:unread-mail-count)))))
-
-;; Use a combination of timers to update the modeline unread count.
-
-(defvar cbm:unread-count-idle-timer
-  (run-with-idle-timer 1 t 'cbm:update-unread-count))
-
-(defvar cbm:unread-count-timer
-  (run-with-timer 0 10 'cbm:update-unread-count))
-
 (provide 'cb-mail)
-
-;; Local Variables:
-;; End:
 
 ;;; cb-mail.el ends here
