@@ -394,15 +394,6 @@ TO-N-LINES is the number of blank lines to insert afterwards."
     ;; Open a user-specified number of blanks.
     (open-line to-n-lines)))
 #+end_src
-** move point to the end of the buffer for inserting text
-#+begin_src emacs-lisp
-(defun cb:append-buffer ()
-  "Enter insertion mode at the end of the current buffer."
-  (interactive)
-  (goto-char (point-max))
-  (when (fboundp 'evil-insert-state)
-    (evil-insert-state)))
-#+end_src
 * Convenience aliases for interactive functions
 #+begin_src emacs-lisp
 (defalias 'qrr 'query-replace-regexp)
@@ -2748,15 +2739,15 @@ Helm provides a general UI for searching through lists of items interactively.
 #+end_src
 ** Evil
 #+begin_src emacs-lisp
-  (after 'evil
-    (bind-keys
-      :overriding? t
-      "C-SPC" 'helm-mini
-      "C-x C-b" 'helm-buffers-list
-      "M-b" 'helm-buffers-list)
+(after 'evil
+  (bind-keys
+    :overriding? t
+    "C-SPC" 'helm-mini
+    "C-x C-b" 'helm-buffers-list
+    "M-b" 'helm-buffers-list)
 
-    (evil-global-set-key 'normal (kbd "C-e") 'helm-etags-select)
-    (evil-global-set-key 'normal (kbd "C-t") 'helm-imenu))
+  (evil-global-set-key 'normal (kbd "C-e") 'helm-etags-select)
+  (evil-global-set-key 'normal (kbd "C-t") 'helm-imenu))
 #+end_src
 ** Hide boring files in helm files lists
 #+begin_src emacs-lisp
@@ -2783,231 +2774,32 @@ Provides helm sources for projectile.
 (cb:install-package 'helm-projectile)
 (bind-key "M-j" 'helm-projectile)
 #+end_src
-* Auto-complete
-Provides intellisense-style completion popops.
-#+begin_src emacs-lisp
-(cb:install-package 'auto-complete t)
-(global-auto-complete-mode +1)
-#+end_src
-** Start with default configuration
-#+begin_src emacs-lisp
-(require 'auto-complete-config)
-(ac-config-default)
-#+end_src
-** Customise vars
-#+begin_src emacs-lisp
-(setq ac-auto-show-menu t
-      ac-dwim t
-      ac-use-menu-map t
-      ac-quick-help-delay 0.4
-      ac-quick-help-height 60
-      ac-disable-inline t
-      ac-show-menu-immediately-on-auto-complete t
-      ac-auto-start 3
-      ac-candidate-menu-min 0
-      ac-comphist-file (f-join cb:tmp-dir "ac-comphist.dat"))
-#+end_src
-** Fix issues with flyspell
-#+begin_src emacs-lisp
-(ac-flyspell-workaround)
-#+end_src
-** Define user dictionary directory
-#+begin_src emacs-lisp
-(add-to-list 'ac-dictionary-directories (concat user-emacs-directory "ac-dict"))
-#+end_src
-** Diminish
-#+begin_src emacs-lisp
-(diminish 'auto-complete-mode)
-#+end_src
-** Ignore errors when showing help popups
-#+begin_src emacs-lisp
-(defadvice ac-quick-help (around ignore-errors activate)
-  "Ignore errors when showing help popups."
-  (ignore-errors ad-do-it))
-#+end_src
-** Define keys for auto-complete popups
-#+begin_src emacs-lisp
-(define-keys ac-completing-map
-  "<escape>" 'ac-stop
-  "C-n" 'ac-next
-  "C-p" 'ac-previous
-  "\t"  'ac-complete)
-#+end_src
-* Yasnippet
-Provides textmate-style snippets.
-#+begin_src emacs-lisp
-(cb:install-package 'yasnippet)
-(add-hook 'prog-mode-hook 'yas-minor-mode)
-(add-hook 'text-mode-hook 'yas-minor-mode)
-#+end_src
-** Override yasnippet faces
-#+begin_src emacs-lisp
-(defface yas-field-highlight-face
-  `((t :underline ,solarized-hl-cyan
-       :italic t))
-  "The face used to highlight the currently active field of a snippet"
-  :group 'yasnippet)
-#+end_src
-** Use only my snippet dir, since the built-in snippets are crappy
-#+begin_src emacs-lisp
-(setq yas/snippet-dirs (list cb:yasnippet-dir))
-#+end_src
-** Load yasnippet, suppressing most of the startup messages
-#+begin_src emacs-lisp
-(noflet ((message (&rest _) nil)) (yas-global-mode t))
-#+end_src
-** Customise vars
-#+begin_src emacs-lisp
-(setq yas-prompt-functions '(yas-ido-prompt)
-      yas-wrap-around-region t)
-#+end_src
-** Diminish
-#+begin_src emacs-lisp
-(diminish 'yas-minor-mode)
-#+end_src
-** Auxiliary commands
-#+begin_src emacs-lisp
-(defun cbyas:reload-all ()
-  (interactive)
-  (yas-recompile-all)
-  (yas-reload-all))
-#+end_src
-** Define a command picker for yasnippet actions
-*** Impl
-#+begin_src emacs-lisp
-(define-command-picker yasnippet-picker
-  :title "*Yasnippet Commands*"
-  :options
-  '(("e" "Expand" yas-expand)
-    ("f" "Visit File" yas-visit-snippet-file)
-    ("i" "Insert" yas-insert-snippet)
-    ("n" "New" yas-new-snippet)
-    ("r" "Reload All" cbyas:reload-all)
-    ("t" "Show Tables" yas-describe-tables)))
-#+end_src
-*** Key binding
-#+begin_src emacs-lisp
-(bind-key* "C-c y" 'yasnippet-picker)
-#+end_src
-** Snippet utilities
-#+begin_src emacs-lisp
-(defun cbyas:bol? ()
-  "Non-nil if point is on an empty line or at the first word."
-  (s-matches? (rx bol (* space) (* word) eol)
-              (buffer-substring (line-beginning-position)
-                                (point))))
-#+end_src
-** Utilities for yasnippet advice
-#+begin_src emacs-lisp
-(defun cbyas:current-field ()
-  "Return the current active field."
-  (and (boundp 'yas--active-field-overlay)
-       yas--active-field-overlay
-       (overlay-buffer yas--active-field-overlay)
-       (overlay-get yas--active-field-overlay 'yas--field)))
-
-(defun cbyas:beginning-of-field ()
-  (-when-let (field (cbyas:current-field))
-    (marker-position (yas--field-start field))))
-
-(defun cbyas:end-of-field ()
-  (-when-let (field (cbyas:current-field))
-    (marker-position (yas--field-end field))))
-
-(defun cbyas:current-field-text ()
-  "Return the text in the active snippet field."
-  (-when-let (field (cbyas:current-field))
-    (yas--field-text-for-display field)))
-#+end_src
-** Blank field trimming
-Advise yasnippet to trim blank fields when moving between fields in a snippet.
-#+begin_src emacs-lisp
-(defun cbyas:clear-blank-field ()
-  "Clear the current field if it is blank."
-  (-when-let* ((beg (cbyas:beginning-of-field))
-               (end (cbyas:end-of-field))
-               (str (cbyas:current-field-text)))
-    (when (s-matches? (rx bos (+ space) eos) str)
-      (delete-region beg end)
-      t)))
-
-(defadvice yas-next-field (before clear-blank-field activate)
-  (cbyas:clear-blank-field))
-
-(defadvice yas-prev-field (before clear-blank-field activate)
-  (cbyas:clear-blank-field))
-#+end_src
-** Cursor positioning
-advise yasnippet to position the cursor at the end of fields when switching
-fields in a snippet.
-#+begin_src emacs-lisp
-(defun cbyas:maybe-goto-field-end ()
-  "Move to the end of the current field if it has been modified."
-  (-when-let (field (cbyas:current-field))
-    (when (and (yas--field-modified-p field)
-               (yas--field-contains-point-p field))
-      (goto-char (cbyas:end-of-field)))))
-
-(defadvice yas-next-field (after goto-field-end activate)
-  (cbyas:maybe-goto-field-end))
-
-(defadvice yas-prev-field (after goto-field-end activate)
-  (cbyas:maybe-goto-field-end))
-#+end_src
-** Backspace clears unmodified fields or deletes backwards
-#+begin_src emacs-lisp
-(defun cbyas:backspace ()
-  "Clear the current field if the current snippet is unmodified.
-Otherwise delete backwards."
-  (interactive "*")
-  (let ((field (cbyas:current-field)))
-    (cond ((and field
-                (not (yas--field-modified-p field))
-                (eq (point) (marker-position (yas--field-start field))))
-           (yas--skip-and-clear field)
-           (yas-next-field 1))
-          ((true? smartparens-mode)
-           (call-interactively 'sp-backward-delete-char))
-          (t
-           (call-interactively 'backward-delete-char)))))
-
-(bind-key "<backspace>" 'cbyas:backspace yas-keymap)
-#+end_src
-** Typing space clears and skips unmodified fields.
-#+begin_src emacs-lisp
-(defun cbyas:space ()
-  "Clear and skip this field if it is unmodified. Otherwise insert a space."
-  (interactive "*")
-  (let ((field (cbyas:current-field)))
-    (cond ((and field
-                (not (yas--field-modified-p field))
-                (eq (point) (marker-position (yas--field-start field))))
-           (yas--skip-and-clear field)
-           (yas-next-field 1))
-          (t
-           (insert " ")))))
-
-(bind-key "SPC" 'cbyas:space yas-keymap)
-#+end_src
-** Evil
-Customise yasnippet behaviour to work better with evil-mode.
-#+begin_src emacs-lisp
-(after 'evil
-
-  (defadvice yas-prev-field (after insert-state activate)
-    (when (true? evil-mode)
-      (evil-insert-state)))
-
-  (defadvice yas-prev-field (after insert-state activate)
-    (when (true? evil-mode)
-      (evil-insert-state)))
-
-  (add-hook 'yas-before-expand-snippet-hook 'evil-insert-state))
-#+end_src
 * Evil
 Evil-mode adds modal editing to emulate vim. Since this drastically changes
 Emacs' key bindings, the =cb:use-vim-keybindings?= var can be set to nil to
 prevent Evil from being loaded.
+** Define a commands to enter insert state only if evil-mode-is-on
+#+begin_src emacs-lisp
+(defun cb:maybe-evil-insert-state ()
+  "Only enter insert state if evil-mode is active."
+  (interactive)
+  (when (and (fboundp 'evil-insert-state)
+             (true? evil-mode))
+    (evil-insert-state)))
+
+(defun cb:maybe-evil-append-line ()
+  "Go to the end of the line. Enter insert state if evil-mode is active."
+  (if (and (fboundp 'evil-append-line)
+           (true? evil-mode))
+      (evil-append-line 1)
+    (end-of-line)))
+
+(defun cb:append-buffer ()
+  "Enter insertion mode at the end of the current buffer."
+  (interactive)
+  (goto-char (point-max))
+  (cb:maybe-evil-insert-state))
+#+end_src
 ** CONDITIONAL
 #+begin_src emacs-lisp
 (when cb:use-vim-keybindings?
@@ -3335,6 +3127,222 @@ Provides a major mode for editing vimscript.
 ** END
 #+begin_src emacs-lisp
 )
+#+end_src
+* Auto-complete
+Provides intellisense-style completion popops.
+#+begin_src emacs-lisp
+(cb:install-package 'auto-complete t)
+(global-auto-complete-mode +1)
+#+end_src
+** Start with default configuration
+#+begin_src emacs-lisp
+(require 'auto-complete-config)
+(ac-config-default)
+#+end_src
+** Customise vars
+#+begin_src emacs-lisp
+(setq ac-auto-show-menu t
+      ac-dwim t
+      ac-use-menu-map t
+      ac-quick-help-delay 0.4
+      ac-quick-help-height 60
+      ac-disable-inline t
+      ac-show-menu-immediately-on-auto-complete t
+      ac-auto-start 3
+      ac-candidate-menu-min 0
+      ac-comphist-file (f-join cb:tmp-dir "ac-comphist.dat"))
+#+end_src
+** Fix issues with flyspell
+#+begin_src emacs-lisp
+(ac-flyspell-workaround)
+#+end_src
+** Define user dictionary directory
+#+begin_src emacs-lisp
+(add-to-list 'ac-dictionary-directories (concat user-emacs-directory "ac-dict"))
+#+end_src
+** Diminish
+#+begin_src emacs-lisp
+(diminish 'auto-complete-mode)
+#+end_src
+** Ignore errors when showing help popups
+#+begin_src emacs-lisp
+(defadvice ac-quick-help (around ignore-errors activate)
+  "Ignore errors when showing help popups."
+  (ignore-errors ad-do-it))
+#+end_src
+** Define keys for auto-complete popups
+#+begin_src emacs-lisp
+(define-keys ac-completing-map
+  "<escape>" 'ac-stop
+  "C-n" 'ac-next
+  "C-p" 'ac-previous)
+#+end_src
+* Yasnippet
+Provides textmate-style snippets.
+#+begin_src emacs-lisp
+(cb:install-package 'yasnippet)
+(add-hook 'prog-mode-hook 'yas-minor-mode)
+(add-hook 'text-mode-hook 'yas-minor-mode)
+#+end_src
+** Override yasnippet faces
+#+begin_src emacs-lisp
+(defface yas-field-highlight-face
+  `((t :underline ,solarized-hl-cyan
+       :italic t))
+  "The face used to highlight the currently active field of a snippet"
+  :group 'yasnippet)
+#+end_src
+** Use only my snippet dir, since the built-in snippets are crappy
+#+begin_src emacs-lisp
+(setq yas/snippet-dirs (list cb:yasnippet-dir))
+#+end_src
+** Load yasnippet, suppressing most of the startup messages
+#+begin_src emacs-lisp
+(noflet ((message (&rest _) nil)) (yas-global-mode t))
+#+end_src
+** Customise vars
+#+begin_src emacs-lisp
+(setq yas-prompt-functions '(yas-ido-prompt)
+      yas-wrap-around-region t)
+#+end_src
+** Diminish
+#+begin_src emacs-lisp
+(diminish 'yas-minor-mode)
+#+end_src
+** Auxiliary commands
+#+begin_src emacs-lisp
+(defun cbyas:reload-all ()
+  (interactive)
+  (yas-recompile-all)
+  (yas-reload-all))
+#+end_src
+** Define a command picker for yasnippet actions
+*** Impl
+#+begin_src emacs-lisp
+(define-command-picker yasnippet-picker
+  :title "*Yasnippet Commands*"
+  :options
+  '(("e" "Expand" yas-expand)
+    ("f" "Visit File" yas-visit-snippet-file)
+    ("i" "Insert" yas-insert-snippet)
+    ("n" "New" yas-new-snippet)
+    ("r" "Reload All" cbyas:reload-all)
+    ("t" "Show Tables" yas-describe-tables)))
+#+end_src
+*** Key binding
+#+begin_src emacs-lisp
+(bind-key* "C-c y" 'yasnippet-picker)
+#+end_src
+** Snippet utilities
+#+begin_src emacs-lisp
+(defun cbyas:bol? ()
+  "Non-nil if point is on an empty line or at the first word."
+  (s-matches? (rx bol (* space) (* word) eol)
+              (buffer-substring (line-beginning-position)
+                                (point))))
+#+end_src
+** Utilities for yasnippet advice
+#+begin_src emacs-lisp
+(defun cbyas:current-field ()
+  "Return the current active field."
+  (and (boundp 'yas--active-field-overlay)
+       yas--active-field-overlay
+       (overlay-buffer yas--active-field-overlay)
+       (overlay-get yas--active-field-overlay 'yas--field)))
+
+(defun cbyas:beginning-of-field ()
+  (-when-let (field (cbyas:current-field))
+    (marker-position (yas--field-start field))))
+
+(defun cbyas:end-of-field ()
+  (-when-let (field (cbyas:current-field))
+    (marker-position (yas--field-end field))))
+
+(defun cbyas:current-field-text ()
+  "Return the text in the active snippet field."
+  (-when-let (field (cbyas:current-field))
+    (yas--field-text-for-display field)))
+#+end_src
+** Blank field trimming
+Advise yasnippet to trim blank fields when moving between fields in a snippet.
+#+begin_src emacs-lisp
+(defun cbyas:clear-blank-field ()
+  "Clear the current field if it is blank."
+  (-when-let* ((beg (cbyas:beginning-of-field))
+               (end (cbyas:end-of-field))
+               (str (cbyas:current-field-text)))
+    (when (s-matches? (rx bos (+ space) eos) str)
+      (delete-region beg end)
+      t)))
+
+(defadvice yas-next-field (before clear-blank-field activate)
+  (cbyas:clear-blank-field))
+
+(defadvice yas-prev-field (before clear-blank-field activate)
+  (cbyas:clear-blank-field))
+#+end_src
+** Cursor positioning
+advise yasnippet to position the cursor at the end of fields when switching
+fields in a snippet.
+#+begin_src emacs-lisp
+(defun cbyas:maybe-goto-field-end ()
+  "Move to the end of the current field if it has been modified."
+  (-when-let (field (cbyas:current-field))
+    (when (and (yas--field-modified-p field)
+               (yas--field-contains-point-p field))
+      (goto-char (cbyas:end-of-field)))))
+
+(defadvice yas-next-field (after goto-field-end activate)
+  (cbyas:maybe-goto-field-end))
+
+(defadvice yas-prev-field (after goto-field-end activate)
+  (cbyas:maybe-goto-field-end))
+#+end_src
+** Backspace clears unmodified fields or deletes backwards
+#+begin_src emacs-lisp
+(defun cbyas:backspace ()
+  "Clear the current field if the current snippet is unmodified.
+Otherwise delete backwards."
+  (interactive "*")
+  (let ((field (cbyas:current-field)))
+    (cond ((and field
+                (not (yas--field-modified-p field))
+                (eq (point) (marker-position (yas--field-start field))))
+           (yas--skip-and-clear field)
+           (yas-next-field 1))
+          ((true? smartparens-mode)
+           (call-interactively 'sp-backward-delete-char))
+          (t
+           (call-interactively 'backward-delete-char)))))
+
+(bind-key "<backspace>" 'cbyas:backspace yas-keymap)
+#+end_src
+** Typing space clears and skips unmodified fields.
+#+begin_src emacs-lisp
+(defun cbyas:space ()
+  "Clear and skip this field if it is unmodified. Otherwise insert a space."
+  (interactive "*")
+  (let ((field (cbyas:current-field)))
+    (cond ((and field
+                (not (yas--field-modified-p field))
+                (eq (point) (marker-position (yas--field-start field))))
+           (yas--skip-and-clear field)
+           (yas-next-field 1))
+          (t
+           (insert " ")))))
+
+(bind-key "SPC" 'cbyas:space yas-keymap)
+#+end_src
+** Evil
+Customise yasnippet behaviour to work better with evil-mode.
+#+begin_src emacs-lisp
+(defadvice yas-prev-field (after insert-state activate)
+  (cb:maybe-evil-insert-state))
+
+(defadvice yas-prev-field (after insert-state activate)
+  (cb:maybe-evil-insert-state))
+
+(add-hook 'yas-before-expand-snippet-hook 'cb:maybe-evil-insert-state)
 #+end_src
 * Flycheck
 #+begin_src emacs-lisp
@@ -4226,7 +4234,7 @@ Provides a major mode for editing commit messages. Used by magit.
 *** Evil
 Enter insertion state when prompted to enter commit messages.
 #+begin_src emacs-lisp
-(add-hook 'git-commit-mode-hook 'evil-insert-state)
+(add-hook 'git-commit-mode-hook 'cb:maybe-evil-insert-state)
 #+end_src
 ** Gist
 Provides an Elisp interface to GitHub Gists.
@@ -4331,7 +4339,7 @@ Define bindings for working with git hunks under the /g/ prefix.
     "g s" 'git-gutter+-stage-hunks
     "g a" 'cb-git:add)
 
-  (add-hook 'magit-commit-mode-hook 'evil-insert-state))
+  (add-hook 'magit-commit-mode-hook 'cb:maybe-evil-insert-state))
 #+end_src
 ** git-gutter-fringe+
 I'm using a submodule version right now because the MELPA version has
@@ -4649,6 +4657,11 @@ Configue info-mode.
   (setq line-spacing 2))
 
 (add-hook 'Info-mode-hook 'cbinfo:configure)
+#+end_src
+** Override bindings
+#+begin_src emacs-lisp
+(bind-key "SPC" 'Info-scroll-down Info-mode-map)
+(bind-key "S-SPC" 'Info-scroll-up Info-mode-map)
 #+end_src
 * Compilation
 ** Configure variables
@@ -6665,13 +6678,13 @@ blocks and encrypted regions.
 #+end_src
 *** Enter insertion mode in capture buffer
 #+begin_src emacs-lisp
-(add-hook 'org-capture-mode-hook 'evil-insert-state)
+(add-hook 'org-capture-mode-hook 'cb:maybe-evil-insert-state)
 #+end_src
 *** Enter insert state for popup notes
 #+begin_src emacs-lisp
 (hook-fn 'org-mode-hook
     (when (equal (buffer-name) "*Org Note*")
-      (evil-insert-state)))
+      (cb:maybe-evil-insert-state)))
 #+end_src
 *** Use evil key bindings in agenda
 #+begin_src emacs-lisp
@@ -6691,10 +6704,12 @@ blocks and encrypted regions.
 *** Advise header insertion commands to enter evil insert state
 #+begin_src emacs-lisp
 (defadvice org-insert-heading (after insert-state activate)
-  (evil-insert-state))
+  (when (called-interactively-p nil)
+    (cb:maybe-evil-insert-state)))
 
 (defadvice org-insert-todo-heading (after insert-state activate)
-  (evil-insert-state))
+  (when (called-interactively-p nil)
+    (cb:maybe-evil-insert-state)))
 #+end_src
 *** Adapt outline fold commands for Evil
 #+begin_src emacs-lisp
@@ -8771,16 +8786,14 @@ Define a command to evaluate the last clojure buffer.
 Enter insert state when starting cider repl.
 
 #+begin_src emacs-lisp
-(after 'evil
-  (add-hook 'cider-repl-mode-hook evil-insert-state))
+(add-hook 'cider-repl-mode-hook 'cb:maybe-evil-insert-state)
 #+end_src
 
 Enter insertion state when switching to cider.
 
 #+begin_src emacs-lisp
-(after 'evil
-  (defadvice cider-switch-to-repl-buffer (after insert-at-end-of-cider-line activate)
-    (evil-insert-state)))
+(defadvice cider-switch-to-repl-buffer (after insert-at-end-of-cider-line activate)
+  (cb:maybe-evil-insert-state))
 #+end_src
 
 Advise back-to-indentation so evil bol commands work.
@@ -8985,7 +8998,7 @@ With prefix, goes to the REPL buffer afterwards (as
 (after 'evil
   (defadvice switch-to-geiser (after append-with-evil activate)
     (when (derived-mode-p 'comint-mode)
-      (evil-insert-state))))
+      (cb:maybe-evil-insert-state))))
 #+end_src
 *** END
 #+begin_src emacs-lisp
@@ -9299,8 +9312,7 @@ vice-versa.
       (set-window-buffer win buf)
       (select-window win)
       (goto-char (point-max))
-      (when (fboundp 'evil-append-line)
-        (evil-append-line 1)))))
+      (cb:maybe-evil-append-line 1))))
 #+end_src
 *** Bind keys
 #+begin_src emacs-lisp
@@ -10144,7 +10156,7 @@ Provides el-doc-style minibuffer typesignatures.
 #+begin_src emacs-lisp
 (after 'evil
   (defadvice switch-to-haskell (after insert-at-end-of-line activate)
-    (evil-insert-state)))
+    (cb:maybe-evil-insert-state)))
 #+end_src
 ** Stop errors during save from changing window state
 #+begin_src emacs-lisp
