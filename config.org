@@ -6097,9 +6097,9 @@ because the default keybinding conflicts with my window manager on OS X.
           :clock-keep t)
 
          ("p" "Phone Call (in)" entry
-          (file+headline org-default-notes-file "Calls")
+          (file+datetree org-default-notes-file "Calls")
           ,(s-unlines
-            "* %U"
+            "* IN %U"
             "- From :: %?"
             "- To :: "
             "- Subject :: ")
@@ -6107,9 +6107,9 @@ because the default keybinding conflicts with my window manager on OS X.
           :clock-resume t)
 
          ("o" "Phone Call (out)" entry
-          (file+headline org-default-notes-file "Calls")
+          (file+datetree org-default-notes-file "Calls")
           ,(s-unlines
-            "* %U"
+            "* OUT %U"
             "- To :: %^{To}"
             "- Subject :: %^{Subject}"
             "%?")
