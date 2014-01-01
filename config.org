@@ -6683,8 +6683,8 @@ blocks and encrypted regions.
 *** Enter insert state for popup notes
 #+begin_src emacs-lisp
 (hook-fn 'org-mode-hook
-    (when (equal (buffer-name) "*Org Note*")
-      (cb:maybe-evil-insert-state)))
+  (when (equal (buffer-name) "*Org Note*")
+    (cb:maybe-evil-insert-state)))
 #+end_src
 *** Use evil key bindings in agenda
 #+begin_src emacs-lisp
@@ -6749,7 +6749,8 @@ blocks and encrypted regions.
 (defadvice org-return (around newlines-only-in-insert-state activate)
   "Only insert newlines if we're in insert state."
   (noflet ((newline (&rest args)
-                    (when (evil-insert-state-p)
+                    (when (and (fboundp 'evil-insert-state-p)
+                               (evil-insert-state-p))
                       (funcall this-fn args))))
       ad-do-it))
 #+end_src
