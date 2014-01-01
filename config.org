@@ -6707,6 +6707,10 @@ blocks and encrypted regions.
   (when (called-interactively-p nil)
     (cb:maybe-evil-insert-state)))
 
+(defadvice org-insert-heading-respect-content (after insert-state activate)
+  (when (called-interactively-p nil)
+    (cb:maybe-evil-insert-state)))
+
 (defadvice org-insert-todo-heading (after insert-state activate)
   (when (called-interactively-p nil)
     (cb:maybe-evil-insert-state)))
