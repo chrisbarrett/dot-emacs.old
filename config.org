@@ -18,10 +18,9 @@ to generate the elisp file that will actually be loaded by Emacs.
 (when (fboundp 'blink-cursor-mode) (blink-cursor-mode -1))
 (when (fboundp 'menu-bar-mode)     (menu-bar-mode (if (display-graphic-p) +1 -1)))
 #+end_src
-
 * Increase GC threshold
 This is recommended to prevent extensions like =flx= from triggering excessive
-GCs during normal opertion.
+GCs during normal operation.
 #+begin_src emacs-lisp
 (setq gc-cons-threshold (* 1024 1024 20))
 #+end_src
@@ -3194,7 +3193,7 @@ Provides textmate-style snippets.
 #+end_src
 ** Use only my snippet dir, since the built-in snippets are crappy
 #+begin_src emacs-lisp
-(setq yas/snippet-dirs (list cb:yasnippet-dir))
+(setq-default yas-snippet-dirs (list cb:yasnippet-dir))
 #+end_src
 ** Load yasnippet, suppressing most of the startup messages
 #+begin_src emacs-lisp
