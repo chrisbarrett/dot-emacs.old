@@ -942,6 +942,7 @@ prevents the app bundle from being used as the default dir.
 
    `(lambda ()
       (load-file ,user-init-file)
+      (package-refresh-contents)
       (let ((pkgs (cbpkg:updateable-packages)))
         (cbpkg:install-packages pkgs)
         (length pkgs)))
@@ -3348,7 +3349,7 @@ Customise yasnippet behaviour to work better with evil-mode.
 (cb:install-package 'flycheck)
 (global-flycheck-mode)
 #+end_src
-** Ignore errors when checking a buffer.
+** Ignore thrown errors when checking a buffer.
 #+begin_src emacs-lisp
 (defadvice flycheck-buffer (around ignore-errors activate)
   (ignore-errors ad-do-it))
