@@ -7075,7 +7075,7 @@ Use `ledger-buffer' if the current buffer is not in ledger-mode."
         (-uniq)
         (-sort 'string<))))
 
-  (defun cbledger:read-account (prompt initial-input)
+  (cl-defun cbledger:read-account (&optional (prompt "Account: ") initial-input)
     (ido-completing-read prompt (cbledger:accounts) nil nil initial-input))
 
   (defun cbledger:read-expense ()
@@ -7097,7 +7097,6 @@ Use `ledger-buffer' if the current buffer is not in ledger-mode."
                  :jump-to-captured t
                  :immediate-finish t)))
 #+end_src
-
 ** DEFER
 #+begin_src emacs-lisp
 (after 'ledger-mode
@@ -7348,8 +7347,7 @@ Define key bindings for stock ledger commands.
 (define-key ledger-mode-map (kbd "C-c C-c") 'ledger-report)
 (define-key ledger-mode-map (kbd "M-RET") 'ledger-toggle-current-transaction)
 #+end_src
-** Custom reports
-Define custom reports.
+** Define custom reports
 #+begin_src emacs-lisp
 (--each
     '(("net worth" "ledger -f %(ledger-file) bal ^assets ^liabilities")
@@ -7357,6 +7355,14 @@ Define custom reports.
       ("week budget"
        "ledger -f %(ledger-file) -p 'this month' --add-budget --weekly reg checking"))
   (add-to-list 'ledger-reports it t))
+#+end_src
+** Use ido for built-in reports
+#+begin_src emacs-lisp
+(cl-delete-if (C (~ equal "payee") car) ledger-report-format-specifiers)
+(add-to-list 'ledger-report-format-specifiers '("payee" cbledger:read-payee))
+
+(cl-delete-if (C (~ equal "account") car) ledger-report-format-specifiers)
+(add-to-list 'ledger-report-format-specifiers '("account" cbledger:read-account))
 #+end_src
 ** Fixes
 Modify =ledger-report-payee-format-specifier= to prevent errors passing nil
