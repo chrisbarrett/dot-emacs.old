@@ -3359,6 +3359,11 @@ Customise yasnippet behaviour to work better with evil-mode.
 (bind-key "M-P" 'flycheck-previous-error flycheck-mode-map)
 (bind-key "M-N" 'flycheck-next-error flycheck-mode-map)
 #+end_src
+** Enable flycheck in Cask buffers
+#+begin_src emacs-lisp
+(cb:install-package 'flycheck-cask)
+(add-hook 'flycheck-mode-hook 'flycheck-cask-setup)
+#+end_src
 * Spelling
 ** Ispell
 #+begin_src emacs-lisp
