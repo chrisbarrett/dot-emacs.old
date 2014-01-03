@@ -7072,6 +7072,7 @@ Use `ledger-buffer' if the current buffer is not in ledger-mode."
                 (or eol "  "))
             (buffer-string))
         (-map 'cadr)
+        (-concat '("Income" "Assets" "Liabilities" "Expenses"))
         (-uniq)
         (-sort 'string<))))
 
