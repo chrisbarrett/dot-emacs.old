@@ -4470,11 +4470,6 @@ Use =dired-omit-mode= to hide boring files from dired views.
       (regexp-opt (list "^\\.?#" "^\\.$" "^\\.\\.$"
                         "\\.DS_Store$" "\\$RECYCLE.BIN")))
 #+end_src
-*** Diminish
-#+begin_src emacs-lisp
-(hook-fn 'dired-omit-mode-hook
-  (diminish 'dired-omit-mode))
-#+end_src
 ** hl-line compatability
 Advise hl-line functions not to apply highlight to dired directory headers.
 #+begin_src emacs-lisp
