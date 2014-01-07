@@ -7342,6 +7342,18 @@ Signal an error of doing so would break date ordering."
 (define-key ledger-mode-map (kbd "M-<up>") 'ledger-move-transaction-up)
 (define-key ledger-mode-map (kbd "M-<down>") 'ledger-move-transaction-down)
 #+end_src
+** Inserting timestamps
+#+begin_src emacs-lisp
+(defun cbledger:insert-timestamp (date)
+  "Insert a timestamp at point."
+  (interactive (list (org-read-date)))
+  (insert (s-replace "-" "/" date))
+  (just-one-space)
+  (when (true? evil-mode)
+    (evil-insert-state)))
+
+(define-key ledger-mode-map (kbd "C-c C-.") 'cbledger:insert-timestamp)
+#+end_src
 ** Key bindings
 Define key bindings for stock ledger commands.
 #+begin_src emacs-lisp
