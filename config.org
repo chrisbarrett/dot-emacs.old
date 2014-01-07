@@ -7464,6 +7464,7 @@ Argument N is provided for compatibility and is not used."
   "e" 'ledger-report-edit
   "q" 'ledger-report-kill
   "r" 'ledger-report-redo
+  "R" 'ledger-report-reverse-lines
   "s" 'ledger-report-save)
 #+end_src
 *** Enter insert state after inserting a new transaction
