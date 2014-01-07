@@ -7372,10 +7372,10 @@ Define key bindings for stock ledger commands.
 ** Use ido for built-in reports
 #+begin_src emacs-lisp
 (cl-delete-if (C (~ equal "payee") car) ledger-report-format-specifiers)
-(add-to-list 'ledger-report-format-specifiers '("payee" cbledger:read-payee))
+(add-to-list 'ledger-report-format-specifiers '("payee" . cbledger:read-payee))
 
 (cl-delete-if (C (~ equal "account") car) ledger-report-format-specifiers)
-(add-to-list 'ledger-report-format-specifiers '("account" cbledger:read-account))
+(add-to-list 'ledger-report-format-specifiers '("account" . cbledger:read-account))
 #+end_src
 ** Fixes
 Modify =ledger-report-payee-format-specifier= to prevent errors passing nil
