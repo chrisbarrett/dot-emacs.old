@@ -6262,9 +6262,10 @@ Don't show deadlines or scheduled tasks that have been completed.
 They should be displayed modally.
 #+begin_src emacs-lisp
 (setq org-agenda-custom-commands
-      (->> '(("A" "Agenda+NEXT"
+      (->> '(("A" "Agenda and next actions"
               ((agenda "" ((org-agenda-ndays 1)))
-               (tags-todo "-someday/NEXT")))
+               (tags-todo "-someday-media/NEXT")
+               (tags-todo "media/NEXT")))
              ("n" "Next actions"
               ((tags-todo "-someday/NEXT")))
              ("w" "Weekly Review"
