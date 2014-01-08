@@ -6283,6 +6283,7 @@ They should be displayed modally.
                (tags-todo "@leisure")
                (tags-todo "@phone")
                (tags-todo "@work")))
+             ("gc" "Computer" tags-todo "@computer")
              ("ge" "Errands"  tags-todo "@errand")
              ("gp" "Phone"    tags-todo "@phone")
              ("gw" "Work"     tags-todo "@work")
