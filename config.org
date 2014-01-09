@@ -4560,6 +4560,7 @@ Load the following after =evil=.
 Auctex provides a development environment for tex
 #+begin_src emacs-lisp
 (cb:install-package 'auctex)
+(add-to-list 'auto-mode-alist '("\\.lco$" . latex-mode))
 #+end_src
 ** DEFER
 #+begin_src emacs-lisp
