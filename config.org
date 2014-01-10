@@ -8626,6 +8626,43 @@ Configure comment syntax for IELM, which is needed by hideshow.
 #+begin_src emacs-lisp
 (put 'ielm-mode 'comment-start ";")
 #+end_src
+** define M-RET command for context-sensitive newlines
+#+begin_src emacs-lisp
+(defconst cb-el:let-expression-re
+  (regexp-opt '("(let" "(-if-let*" "(-when-let*"))
+  "Regex matching the start of a let expression.")
+
+(defun cb-el:let-expr-start ()
+  "Move to the start of a let expression."
+  (cl-flet ((at-let? () (thing-at-point-looking-at cb-el:let-expression-re)))
+    (while (and (sp-backward-up-sexp) (not (at-let?))))
+    (when (at-let?) (point))))
+
+(defun cb-el:at-let-binding-form? ()
+  "Non-nil if point is at the top of a binding form in a let expression."
+  (and (save-excursion (cb-el:let-expr-start))
+       (save-excursion
+         (sp-backward-up-sexp 3)
+         (thing-at-point-looking-at cb-el:let-expression-re))))
+(defun cb-el:M-RET ()
+  "Perform context-sensitive newline behaviour."
+  (interactive)
+  (cond
+   ;; Insert let-binding
+   ((save-excursion (cb-el:let-expr-start))
+    (until (cb-el:at-let-binding-form?) (sp-backward-up-sexp))
+    (sp-up-sexp)
+    (newline-and-indent)
+    (insert "()")
+    (forward-char -1))
+   (t
+    (sp-up-sexp)
+    (newline-and-indent)
+    (when (true? evil-mode)
+      (evil-insert-state)))))
+
+(define-key emacs-lisp-mode-map (kbd "M-RET") 'cb-el:M-RET)
+#+end_src
 ** Evaluation
 *** Set key bindings for common eval commands
 #+begin_src emacs-lisp
