@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: match-case
+# key: c
+# condition: (cbyas:bol?)
+# --
+| ${1:case} -> ${2:expr}
