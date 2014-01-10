@@ -5476,6 +5476,13 @@ Provides commands to rotate buffers within frames.
 (bind-key "C-x f" 'rotate-frame)
 (bind-key "s-r"   'rotate-frame)
 #+end_src
+* vline
+Highlights the current column.
+#+begin_src emacs-lisp
+(cb:install-package 'vline)
+(add-to-list 'face-remapping-alist '(vline . hl-line-face))
+(add-to-list 'face-remapping-alist '(vline-visual . hl-line-face))
+#+end_src
 * Org
 org-mode is a suite of editing and management tools centred around
 human-readable text files. See http://orgmode.org/.
@@ -7104,6 +7111,10 @@ Use `ledger-buffer' if the current buffer is not in ledger-mode."
 ** DEFER
 #+begin_src emacs-lisp
 (after 'ledger-mode
+#+end_src
+** highlight current column in ledger reports
+#+begin_src emacs-lisp
+(add-hook 'ledger-report-mode-hook 'vline-mode)
 #+end_src
 ** Utilities for finding the bounds of transactions
 #+begin_src emacs-lisp
