@@ -3250,6 +3250,23 @@ Provides textmate-style snippets.
               (buffer-substring (line-beginning-position)
                                 (point))))
 #+end_src
+** Define command for inserting snippet by name
+#+begin_src emacs-lisp
+(defun yas-insert-first-snippet (predicate)
+  "Choose a snippet to expand according to PREDICATE."
+  (setq yas--condition-cache-timestamp (current-time))
+  (let ((yas-buffer-local-condition 'always))
+    (-if-let (yas--current-template
+              (-first predicate (yas--all-templates (yas--get-snippet-tables))))
+        (let ((where (if (region-active-p)
+                         (cons (region-beginning) (region-end))
+                       (cons (point) (point)))))
+          (yas-expand-snippet (yas--template-content yas--current-template)
+                              (car where)
+                              (cdr where)
+                              (yas--template-expand-env yas--current-template)))
+      (error "No snippet matching predicate"))))
+#+end_src
 ** Utilities for yasnippet advice
 #+begin_src emacs-lisp
 (defun cbyas:current-field ()
@@ -11368,26 +11385,31 @@ utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
   (indent-to col)
   (goto-char (line-end-position)))
 
+(defun cb-ocaml:newline-insert-case ()
+  "Insert a case template below the current line."
+  (goto-char (line-end-position))
+  (newline-and-indent)
+  (forward-char -2)
+  (yas-insert-first-snippet (C (~ equal "match-case") yas--template-name)))
+
 (defun cb-ocaml:meta-ret ()
   "Open a new line in a context-sensitive way."
   (interactive)
   (cond
    ;; Insert case after match statement.
    ((s-matches? (rx symbol-start "match" symbol-end) (current-line))
-    (cb-ocaml:new-case-at-col
-     (save-excursion
-       (goto-char (line-beginning-position))
-       (search-forward-regexp (rx symbol-start "match" symbol-end))
-       (goto-char (match-beginning 0))
-       (+ 2 (current-column)))))
+    (cb-ocaml:newline-insert-case))
    ;; Insert new case below the current type decl.
    ((s-matches? (rx bol (* space) "type") (current-line))
     (cb-ocaml:new-case-at-col
      (save-excursion
-       (search-backward-regexp (rx bol (* space) (group "type")))
-       (goto-char (match-beginning 1))
+       (goto-char (line-beginning-position))
+       (forward-to-indentation 0)
        (+ 2 (current-column)))))
-   ;; Insert new case below the current one.
+   ;; Insert match case below the current one.
+   ((s-matches? (rx bol (* space) "|" (* nonl) "->") (current-line))
+    (cb-ocaml:newline-insert-case))
+   ;; Insert any other kind of case below the current one.
    ((s-matches? (rx bol (* space) "|") (current-line))
     (cb-ocaml:new-case-at-col
      (save-excursion
