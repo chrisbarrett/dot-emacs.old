@@ -11244,7 +11244,7 @@ SILENT? controls whether provide feedback to the user on the action performed."
 ** Configure OPAM
 OPAM is a source-based package manager for OCaml.
 #+begin_src emacs-lisp
-(when (executable-find "utop")
+(when (executable-find "opam")
   (cl-loop with env = (read-from-string (%-string "opam config env --sexp"))
            for (var val) in (car env)
            do (setenv var val)))
