@@ -2215,6 +2215,7 @@ We define the following mode groups:
     inferior-python-mode
     ielm-mode
     erc-mode
+    utop-mode
     slime-repl-mode
     inferior-scheme-mode
     inferior-haskell-mode
