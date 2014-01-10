@@ -975,7 +975,9 @@ prevents the app bundle from being used as the default dir.
 Emacs.app does not inherit the PATH set by shell config files. Set the path
 manually as a workaround.
 #+begin_src emacs-lisp
-(let ((path (->> (list "~/Library/Haskell/bin"
+(defun cb:set-path-from-shell ()
+  "Set the `exec-path' according to the PATH shell variable."
+  (let ((path (->> (list "~/Library/Haskell/bin"
                          "~/.cask/bin"
                          "~/bin"
                          "~/scripts"
@@ -985,7 +987,9 @@ manually as a workaround.
                 (s-split ":")
                 (-map 'f-expand))))
     (setq exec-path (-union path exec-path))
-    (setenv "PATH" (s-join ":" exec-path)))
+    (setenv "PATH" (s-join ":" exec-path))))
+
+(cb:set-path-from-shell)
 #+end_src
 ** Override shell
 Most packages assume the shell is POSIX-compliant. If the shell is fish, change
@@ -11249,6 +11253,9 @@ OPAM is a source-based package manager for OCaml.
   (cl-loop with env = (read-from-string (%-string "opam config env --sexp"))
            for (var val) in (car env)
            do (setenv var val)))
+
+(when (fboundp 'cb:set-path-from-shell)
+  (cb:set-path-from-shell))
 #+end_src
 ** Configure utop
 utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
