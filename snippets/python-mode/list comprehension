@@ -1,6 +1,5 @@
-# -*- mode: snippet -*-
-# name: list comprehension
 # key: lc
+# name: list comprehension
 # --
-[${1:x} for $1 in ${2:xs}]
+[${1:x} for ${2:x} in ${3:xs}]
 $0

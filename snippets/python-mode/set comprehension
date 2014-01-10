@@ -1,6 +1,5 @@
-# -*- mode: snippet -*-
-# name: set comprehension
 # key: sc
+# name: set comprehension
 # --
-{${1:x} for $1 in ${2:xs}}
+{${1:x} for ${2:x} in ${3:xs}}
 $0
