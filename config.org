@@ -11463,6 +11463,36 @@ utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
 (after 'tuareg (define-key tuareg-mode-map (kbd "M-RET") 'cb-ocaml:meta-ret))
 (after 'utop   (define-key utop-mode-map   (kbd "M-RET") 'cb-ocaml:meta-ret))
 #+end_src
+** configure eval commands
+#+begin_src emacs-lisp
+(after 'tuareg
+  (define-key tuareg-mode-map (kbd "C-c C-f") 'tuareg-eval-buffer)
+  (define-key tuareg-mode-map (kbd "C-c C-r") 'tuareg-eval-region)
+  (define-key tuareg-mode-map (kbd "C-c C-c") 'tuareg-eval-phrase))
+#+end_src
+** Configure switching between REPL and source buffer
+#+begin_src emacs-lisp
+(after 'tuareg
+
+  (defun cb-ocaml:switch-to-utop ()
+    (interactive)
+    (unless (get-buffer "*utop*")
+      (save-window-excursion (utop)))
+    (pop-to-buffer "*utop*")
+    (when (true? evil-mode)
+      (evil-insert-mode)))
+
+  (define-key tuareg-mode-map (kbd "C-c C-z") 'cb-ocaml:switch-to-utop))
+
+(after 'utop
+
+  (defun cb-ocaml:switch-to-src ()
+    (interactive)
+    (-when-let (buf (--first-buffer (derived-mode-p 'tuareg-mode)))
+      (pop-to-buffer buf)))
+
+  (define-key utop-mode-map (kbd "C-c C-z") 'cb-ocaml:switch-to-src))
+#+end_src
 * Mutt
 #+begin_src emacs-lisp
 (cb:install-package 'muttrc-mode)
