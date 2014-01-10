@@ -967,6 +967,10 @@ prevents the app bundle from being used as the default dir.
 #+begin_src emacs-lisp
 (when (equal system-type 'darwin)
 #+end_src
+** Invoke login shells, so that .profile is read
+#+begin_src emacs-lisp
+(setq shell-command-switch "-lc")
+#+end_src
 ** Set paths
 Emacs.app does not inherit the PATH set by shell config files. Set the path
 manually as a workaround.
