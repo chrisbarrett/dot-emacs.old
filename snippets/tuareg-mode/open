@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: open
+# key: o
+# condition: (cbyas:bol?)
+# --
+open $0
