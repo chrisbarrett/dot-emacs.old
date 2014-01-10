@@ -11227,6 +11227,42 @@ SILENT? controls whether provide feedback to the user on the action performed."
 #+begin_src emacs-lisp
 )
 #+end_src
+* OCaml
+#+begin_src emacs-lisp
+(cb:install-package 'tuareg)
+#+end_src
+** Configure OPAM
+OPAM is a source-based package manager for OCaml.
+#+begin_src emacs-lisp
+(when (executable-find "utop")
+  (cl-loop with env = (read-from-string (%-string "opam config env --sexp"))
+           for (var val) in (car env)
+           do (setenv var val)))
+#+end_src
+** Configure utop
+utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
+#+begin_src emacs-lisp
+(push (concat (getenv "OCAML_TOPLEVEL_PATH") "/../../share/emacs/site-lisp")
+      load-path)
+(autoload 'utop "utop" "Toplevel for OCaml" t)
+(autoload 'utop-setup-ocaml-buffer "utop" "Toplevel for OCaml" t)
+(add-hook 'tuareg-mode-hook 'utop-setup-ocaml-buffer)
+#+end_src
+** Configure Merlin
+#+begin_src emacs-lisp
+(autoload 'merlin-mode "merlin" nil t)
+(add-hook 'tuareg-mode-hook 'merlin-mode)
+#+end_src
+** Enable auto-complete
+#+begin_src emacs-lisp
+(add-to-list 'ac-modes 'tuareg-mode)
+(add-hook 'tuareg-mode-hook 'auto-complete-mode)
+#+end_src
+** configure ocp-indent
+#+begin_src emacs-lisp
+(after 'tuareg
+  (require 'ocp-indent))
+#+end_src
 * Mutt
 #+begin_src emacs-lisp
 (cb:install-package 'muttrc-mode)
