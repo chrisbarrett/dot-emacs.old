@@ -11480,8 +11480,9 @@ utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
     (unless (get-buffer "*utop*")
       (save-window-excursion (utop)))
     (pop-to-buffer "*utop*")
+    (goto-char (point-max))
     (when (true? evil-mode)
-      (evil-insert-mode)))
+      (evil-insert-state)))
 
   (define-key tuareg-mode-map (kbd "C-c C-z") 'cb-ocaml:switch-to-utop))
 
@@ -11489,8 +11490,9 @@ utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
 
   (defun cb-ocaml:switch-to-src ()
     (interactive)
-    (-when-let (buf (--first-buffer (derived-mode-p 'tuareg-mode)))
-      (pop-to-buffer buf)))
+    (-if-let (buf (--first-buffer (derived-mode-p 'tuareg-mode)))
+        (pop-to-buffer buf)
+      (message "No active OCaml buffers")))
 
   (define-key utop-mode-map (kbd "C-c C-z") 'cb-ocaml:switch-to-src))
 #+end_src
