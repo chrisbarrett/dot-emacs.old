@@ -11289,11 +11289,22 @@ utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
 #+end_src
 ** configure smart operators
 #+begin_src emacs-lisp
-(hook-fns '(tuareg-mode-hook utop-mode-hook)
-  (smart-insert-operator-hook)
-  (local-set-key (kbd ":") (smart-op ":"))
-  (local-unset-key (kbd "."))
-  (local-unset-key (kbd "#")))
+(defun cb-ocaml:smart-dot ()
+  "Smart period for OCaml."
+  (interactive)
+  (delete-horizontal-space)
+  (insert ".")
+  (when (thing-at-point-looking-at (rx (any "+" "/" "-" "*") "."))
+    (just-one-space)))
+
+(defun cb-ocaml:set-keys (keymap)
+  "Set smart operators for OCaml."
+  (define-key keymap (kbd ".") 'cb-ocaml:smart-dot)
+  (--each (-concat smart-operator-alist (list ":"))
+    (define-key keymap (kbd ":") (eval `(smart-op ,it)))))
+
+(after 'tuareg (cb-ocaml:set-keys tuareg-mode-map))
+(after 'utop   (cb-ocaml:set-keys utop-mode-map))
 #+end_src
 * Mutt
 #+begin_src emacs-lisp
