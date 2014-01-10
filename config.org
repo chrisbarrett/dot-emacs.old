@@ -11285,7 +11285,24 @@ utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
 ** configure ocp-indent
 #+begin_src emacs-lisp
 (after 'tuareg
-  (require 'ocp-indent))
+  (require 'ocp-indent (f-join cb:lib-dir "ocp-indent.el"))
+
+  (defun ocp-indent-dwim ()
+    "Perform a context-sensitive indentation command."
+    (interactive)
+    (cond
+     ((region-active-p)
+      (call-interactively 'ocp-indent-region)
+      (message "Indented region (ocp)"))
+     ((thing-at-point 'defun)
+      (ocp-indent-region (save-excursion (beginning-of-defun) (point))
+                         (save-excursion (end-of-defun) (point)))
+      (message "Indented defun (ocp)"))
+     (t
+      (ocp-indent-region (point-min) (point-max))
+      (message "Indented buffer (ocp)"))))
+
+  (define-key tuareg-mode-map (kbd "M-q") 'ocp-indent-dwim))
 #+end_src
 ** configure smart parens
 #+begin_src emacs-lisp
