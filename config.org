@@ -11380,6 +11380,13 @@ utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
        (search-forward-regexp (rx symbol-start "match" symbol-end))
        (goto-char (match-beginning 0))
        (+ 2 (current-column)))))
+   ;; Insert new case below the current type decl.
+   ((s-matches? (rx bol (* space) "type") (current-line))
+    (cb-ocaml:new-case-at-col
+     (save-excursion
+       (search-backward-regexp (rx bol (* space) (group "type")))
+       (goto-char (match-beginning 1))
+       (+ 2 (current-column)))))
    ;; Insert new case below the current one.
    ((s-matches? (rx bol (* space) "|") (current-line))
     (cb-ocaml:new-case-at-col
