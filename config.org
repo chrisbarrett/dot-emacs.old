@@ -11297,11 +11297,21 @@ utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
   (when (thing-at-point-looking-at (rx (any "+" "/" "-" "*") "."))
     (just-one-space)))
 
+(defun cb-ocaml:smart-semicolon ()
+  "Smart semicolon for OCaml."
+  (interactive)
+  (delete-horizontal-space)
+  (insert ";")
+  (unless (thing-at-point-looking-at ";;")
+    (just-one-space)))
+
 (defun cb-ocaml:set-keys (keymap)
   "Set smart operators for OCaml."
+  (--each smart-operator-alist
+    (define-key keymap (kbd it) (eval `(smart-op ,it))))
+
   (define-key keymap (kbd ".") 'cb-ocaml:smart-dot)
-  (--each (-concat smart-operator-alist (list ":"))
-    (define-key keymap (kbd ":") (eval `(smart-op ,it)))))
+  (define-key keymap (kbd ";") 'cb-ocaml:smart-semicolon))
 
 (after 'tuareg (cb-ocaml:set-keys tuareg-mode-map))
 (after 'utop   (cb-ocaml:set-keys utop-mode-map))
