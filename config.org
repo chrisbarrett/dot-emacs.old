@@ -4194,6 +4194,12 @@ Magit provides a convenient interface to git commands.
   "k"   'evil-previous-line
   "/"   'evil-search-forward)
 #+end_src
+**** Use emacs state in rebase buffers
+#+begin_src emacs-lisp
+(hook-fn 'git-rebase-mode-hook
+  (when (true? evil-mode)
+    (evil-emacs-state)))
+#+end_src
 **** END
 #+begin_src emacs-lisp
 )
