@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: let (top-level)
+# key: let
+# condition: (cbyas:bol?)
+# --
+let ${1:binding} = $0
