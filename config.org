@@ -11378,7 +11378,7 @@ utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
     (evil-insert-state)))
 
 (after 'tuareg (define-key tuareg-mode-map (kbd "M-RET") 'cb-ocaml:meta-ret))
-(after 'utop (define-key utop-mode-map (kbd "M-RET") 'cb-ocaml:meta-ret))
+(after 'utop   (define-key utop-mode-map   (kbd "M-RET") 'cb-ocaml:meta-ret))
 #+end_src
 * Mutt
 #+begin_src emacs-lisp
