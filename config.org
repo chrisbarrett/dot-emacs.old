@@ -11276,6 +11276,12 @@ utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
 (add-to-list 'ac-modes 'tuareg-mode)
 (add-hook 'tuareg-mode-hook 'auto-complete-mode)
 #+end_src
+** configure utilities for yasnippet
+#+begin_src emacs-lisp
+(defun cb-ocaml:at-prompt-bol? ()
+  (s-matches? (rx bol "utop[" (+ digit) "]>" (* space) (* word) eol)
+              (buffer-substring (line-beginning-position) (point))))
+#+end_src
 ** configure ocp-indent
 #+begin_src emacs-lisp
 (after 'tuareg
