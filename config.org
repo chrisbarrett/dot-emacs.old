@@ -11281,6 +11281,14 @@ utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
 (after 'tuareg
   (require 'ocp-indent))
 #+end_src
+** configure smart operators
+#+begin_src emacs-lisp
+(hook-fns '(tuareg-mode-hook utop-mode-hook)
+  (smart-insert-operator-hook)
+  (local-set-key (kbd ":") (smart-op ":"))
+  (local-unset-key (kbd "."))
+  (local-unset-key (kbd "#")))
+#+end_src
 * Mutt
 #+begin_src emacs-lisp
 (cb:install-package 'muttrc-mode)
