@@ -11302,6 +11302,13 @@ utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
   (when (thing-at-point-looking-at (rx (any "+" "/" "-" "*") "."))
     (just-one-space)))
 
+(defun cb-ocaml:smart-colon ()
+  "Insert a context-sensitive smart colon."
+  (interactive)
+  (if (thing-at-point-looking-at (rx "~" (+ word)))
+      (insert ":")
+    (smart-insert-operator ":")))
+
 (defun cb-ocaml:smart-semicolon ()
   "Smart semicolon for OCaml."
   (interactive)
@@ -11310,12 +11317,25 @@ utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
   (unless (thing-at-point-looking-at ";;")
     (just-one-space)))
 
+(defun cb-ocaml:smart-pipe ()
+  "Insert either the pipe chars in an array literal or a smart pipe."
+  (interactive)
+  (cond ((thing-at-point-looking-at (rx "[]"))
+         (insert "|")
+         (save-excursion
+           (insert "|")))
+        (t
+         (smart-insert-operator "|"))))
+
 (defun cb-ocaml:set-keys (keymap)
   "Set smart operators for OCaml."
   (--each smart-operator-alist
     (define-key keymap (kbd it) (eval `(smart-op ,it))))
 
+  (define-key keymap (kbd "!") nil)
   (define-key keymap (kbd ".") 'cb-ocaml:smart-dot)
+  (define-key keymap (kbd "|") 'cb-ocaml:smart-pipe)
+  (define-key keymap (kbd ":") 'cb-ocaml:smart-colon)
   (define-key keymap (kbd ";") 'cb-ocaml:smart-semicolon))
 
 (after 'tuareg (cb-ocaml:set-keys tuareg-mode-map))
