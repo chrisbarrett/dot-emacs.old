@@ -11367,6 +11367,7 @@ utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
 
 (after 'merlin
   (setq merlin-use-auto-complete-mode t)
+  (setq merlin-default-flags "-w @A-4-33-41-42-43-34-44")
 
   (add-to-list 'face-remapping-alist '(merlin-type-face . intense-flash))
 
