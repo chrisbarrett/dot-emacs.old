@@ -11408,11 +11408,12 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
     ;; Insert a leading space, unless
     ;; 1. this is the first position of another list
     ;; 2. this form begins a new line.
+    ;; 3. this form is prededed by a `?`, as in a let binding.
     (save-excursion
       (search-backward id)
       (unless (s-matches?
                (rx (or (group bol (* space))
-                       (any "," "(" "[" "[|" "{")
+                       (any "," "(" "[" "[|" "{" "?")
                        ;; HACK: utop prompt
                        (and "utop[" (+ digit) "]" ">" (* space)))
                    eol)
@@ -11423,9 +11424,8 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
     ;; 2. this form is at the end of the line.
     (save-excursion
       (search-forward (sp-get-pair id :close))
-      (unless (s-matches? (rx (or (any ")" "]" "|]" "}")
-                                  eol))
-                          (buffer-substring (point) (1+ (point))))
+      (unless (s-matches? (rx (or (any ")" "]" "|]" "}") eol))
+                          (char-to-string (char-after)))
         (just-one-space)))))
 
 (sp-with-modes '(tuareg-mode utop-mode)
