@@ -11412,6 +11412,12 @@ utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
   (unless (thing-at-point-looking-at ";;")
     (just-one-space)))
 
+(defun cb-ocaml:smart-insert-operator (op)
+  "Perform a smart insertion of operator OP, unless inside parens."
+  (if (thing-at-point-looking-at (rx (any "(" ")")))
+      (insert op)
+    (smart-insert-operator op)))
+
 (defun cb-ocaml:smart-pipe ()
   "Insert either the pipe chars in an array literal or a smart pipe."
   (interactive)
@@ -11420,12 +11426,13 @@ utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
          (save-excursion
            (insert "|")))
         (t
-         (smart-insert-operator "|"))))
+         (cb-ocaml:smart-insert-operator "|"))))
 
 (defun cb-ocaml:set-keys (keymap)
   "Set smart operators for OCaml."
   (--each cb-ocaml:smart-operator-list
-    (define-key keymap (kbd it) (eval `(smart-op ,it))))
+    (define-key keymap (kbd it)
+      (eval `(command (cb-ocaml:smart-insert-operator ,it)))))
 
   (define-key keymap (kbd "!") nil)
   (define-key keymap (kbd ".") 'cb-ocaml:smart-dot)
