@@ -11475,7 +11475,7 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
 (defun cb-ocaml:smart-dot ()
   "Smart period for OCaml."
   (interactive)
-  (delete-horizontal-space)
+  (delete-horizontal-space 'back)
   (insert ".")
   (when (thing-at-point-looking-at (rx (any "+" "/" "-" "*") "."))
     (just-one-space)))
@@ -11490,14 +11490,14 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
 (defun cb-ocaml:smart-semicolon ()
   "Smart semicolon for OCaml."
   (interactive)
-  (delete-horizontal-space)
+  (delete-horizontal-space 'back)
   (insert ";")
   (unless (thing-at-point-looking-at ";;")
     (just-one-space)))
 
 (defun cb-ocaml:smart-insert-operator (op)
   "Perform a smart insertion of operator OP, unless inside parens."
-  (if (thing-at-point-looking-at (rx (any "(" ")")))
+  (if (thing-at-point-looking-at (rx "("))
       (insert op)
     (smart-insert-operator op)))
 
