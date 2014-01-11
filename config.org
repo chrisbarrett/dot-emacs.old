@@ -2369,6 +2369,16 @@ other places in the configuration.
 (defvar solarized-hl-cyan      "#2aa198")
 (defvar solarized-hl-green     "#859900")
 #+end_src
+** Flash theme
+#+begin_src emacs-lisp
+(defface intense-flash
+  `((((class color) (background dark))
+     (:bold t :background "#073642" :foreground ,solarized-hl-cyan))
+    (((class color) (background light))
+     (:bold t :background "#eee8d5" :foreground ,solarized-hl-cyan)))
+  "Face for intense highlighted text."
+  :group 'cb-faces)
+#+end_src
 ** CONDITIONAL
 Do not load if we're running Emacs in a terminal.
 #+begin_src emacs-lisp
@@ -2451,10 +2461,6 @@ themes.
     (set-face-background  'helm-selection "white")
     (set-face-foreground  'helm-selection "black"))
 
-  (after 'eval-sexp-fu
-    (set-face-background 'eval-sexp-fu-flash "#eee8d5")
-    (set-face-foreground 'eval-sexp-fu-flash solarized-hl-cyan))
-
   (after 'parenface-plus
     (set-face-foreground  'paren-face "grey80")))
 #+end_src
@@ -2473,10 +2479,6 @@ themes.
   (after 'ledger-fonts
     (set-face-background 'ledger-font-xact-highlight-face "#073642")
     (set-face-background 'ledger-occur-xact-face "#073642"))
-
-  (after 'eval-sexp-fu
-    (set-face-background 'eval-sexp-fu-flash "#073642")
-    (set-face-foreground 'eval-sexp-fu-flash solarized-hl-cyan))
 
   (after 'parenface-plus
     (set-face-foreground  'paren-face "#505070"))
@@ -8315,6 +8317,8 @@ Adds a flash when running eval-expression.
 (require 'eval-sexp-fu)
 (add-hook 'cb:lisp-modes-hook 'turn-on-eval-sexp-fu-flash-mode)
 (setq eval-sexp-fu-flash-duration 0.2)
+
+(add-to-list 'face-remapping-alist '(eval-sexp-fu-flash . intense-flash))
 #+end_src
 ** slime
 Adds support for inferior Common Lisp processes.
@@ -11353,15 +11357,23 @@ utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
 (autoload 'utop-setup-ocaml-buffer "utop" "Toplevel for OCaml" t)
 (add-hook 'tuareg-mode-hook 'utop-setup-ocaml-buffer)
 #+end_src
-** Configure Merlin
-#+begin_src emacs-lisp
-(autoload 'merlin-mode "merlin" nil t)
-(add-hook 'tuareg-mode-hook 'merlin-mode)
-#+end_src
 ** Enable auto-complete
 #+begin_src emacs-lisp
 (add-to-list 'ac-modes 'tuareg-mode)
 (add-hook 'tuareg-mode-hook 'auto-complete-mode)
+#+end_src
+** Configure Merlin
+#+begin_src emacs-lisp
+(autoload 'merlin-mode "merlin" nil t)
+(add-hook 'tuareg-mode-hook 'merlin-mode)
+
+(after 'merlin
+  (setq merlin-use-auto-complete-mode t)
+
+  (add-to-list 'face-remapping-alist '(merlin-type-face . intense-flash))
+
+  (define-key merlin-mode-map (kbd "M-N") 'merlin-error-next)
+  (define-key merlin-mode-map (kbd "M-P") 'previous-error))
 #+end_src
 ** configure utilities for yasnippet
 #+begin_src emacs-lisp
