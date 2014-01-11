@@ -5168,6 +5168,12 @@ Provides code folding. Used by evil-mode.
 (hook-fn 'hs-minor-mode-hook
   (diminish 'hs-minor-mode))
 #+end_src
+** Ignore errors when starting
+#+begin_src emacs-lisp
+(defadvice hs-minor-mode (around no-errs activate)
+  (ignore-errors ad-do-it))
+#+end_src
+
 * abbrev
 Declare abbreviations that will be automatically expanded when typed. I don't
 actually use this, but python mode seems to load it.
