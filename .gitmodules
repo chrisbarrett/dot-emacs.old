@@ -37,6 +37,3 @@
 [submodule "lib/git-gutter-fringe-plus"]
 	path = lib/git-gutter-fringe-plus
 	url = https://github.com/nonsequitur/git-gutter-fringe-plus.git
-[submodule "lib/merlin"]
-	path = lib/merlin
-	url = https://github.com/the-lambda-church/merlin.git

@@ -11362,17 +11362,16 @@ utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
 #+end_src
 ** Configure Merlin
 #+begin_src emacs-lisp
-(autoload 'merlin-mode "merlin" nil t)
-(add-hook 'tuareg-mode-hook 'merlin-mode)
+(after 'tuareg
+  (cb:install-package 'merlin t)
+  (add-hook 'tuareg-mode-hook 'merlin-mode)
 
-(after 'merlin
   (setq merlin-use-auto-complete-mode t)
   (setq merlin-default-flags "-w @A-4-33-41-42-43-34-44")
 
   (add-to-list 'face-remapping-alist '(merlin-type-face . intense-flash))
 
-  (define-key merlin-mode-map (kbd "M-N") 'merlin-error-next)
-  (define-key merlin-mode-map (kbd "M-P") 'previous-error))
+  (define-key merlin-mode-map (kbd "M-N") 'merlin-error-next))
 #+end_src
 ** configure utilities for yasnippet
 #+begin_src emacs-lisp
