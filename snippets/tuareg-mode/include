@@ -1,0 +1,5 @@
+# key: inc
+# name: include
+# condition: (cbyas:bol?)
+# --
+include $0
