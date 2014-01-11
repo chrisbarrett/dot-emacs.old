@@ -11387,9 +11387,63 @@ utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
   (define-key tuareg-mode-map (kbd "M-q") 'ocp-indent-dwim))
 #+end_src
 ** configure smart parens
+*** Define pair for arrays
 #+begin_src emacs-lisp
 (sp-with-modes '(tuareg-mode utop-mode)
   (sp-local-pair "[|" "|]"))
+#+end_src
+*** Pad pairs with spaces
+Pad parens and other delimiters with spaces to emulate paredit's behaviour.
+#+begin_src emacs-lisp
+(defun cb-ocaml:just-inserted-double-quotes? (id action ctx)
+  (and (sp-in-string-p id action ctx)
+       (s-matches? (rx (not (any "\\")) "\"" eol)
+                   (buffer-substring (line-beginning-position) (point)))))
+
+(defun sp-ocaml-just-one-space (id action ctx)
+  "Pad delimiters with spaces."
+  (when (and (equal 'insert action)
+             (or (sp-in-code-p id action ctx)
+                 (cb-ocaml:just-inserted-double-quotes? id action ctx)))
+    ;; Insert a leading space, unless
+    ;; 1. this is the first position of another list
+    ;; 2. this form begins a new line.
+    (save-excursion
+      (search-backward id)
+      (unless (s-matches?
+               (rx (or (group bol (* space))
+                       (any "," "(" "[" "[|" "{")
+                       ;; HACK: utop prompt
+                       (and "utop[" (+ digit) "]" ">" (* space)))
+                   eol)
+               (buffer-substring (line-beginning-position) (point)))
+        (just-one-space)))
+    ;; Insert space after separator, unless
+    ;; 1. this form is at the end of another list.
+    ;; 2. this form is at the end of the line.
+    (save-excursion
+      (search-forward (sp-get-pair id :close))
+      (unless (s-matches? (rx (or (any ")" "]" "|]" "}")
+                                  eol))
+                          (buffer-substring (point) (1+ (point))))
+        (just-one-space)))))
+
+(sp-with-modes '(tuareg-mode utop-mode)
+  (sp-local-pair "\"" "\"" :post-handlers '(:add sp-ocaml-just-one-space))
+  (sp-local-pair "{" "}" :post-handlers '(:add sp-ocaml-just-one-space))
+  (sp-local-pair "[" "]" :post-handlers '(:add sp-ocaml-just-one-space))
+  (sp-local-pair "(" ")" :post-handlers '(:add sp-ocaml-just-one-space))
+  (sp-local-pair "'" nil :actions nil))
+#+end_src
+** advise insertion commands to ensure a space is inserted around parens
+#+begin_src emacs-lisp
+(defun cb-ocaml:maybe-pad-parens ()
+  (when (-contains? '(?\) ?\]) (char-before))
+    (just-one-space)))
+
+(hook-fns '(tuareg-mode-hook utop-mode-hook)
+  (add-hook 'before-self-insert-hook 'cb-ocaml:maybe-pad-parens
+            nil t))
 #+end_src
 ** configure smart operators
 #+begin_src emacs-lisp
