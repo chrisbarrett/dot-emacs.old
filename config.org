@@ -3236,7 +3236,6 @@ Provides textmate-style snippets.
   (yas-reload-all))
 #+end_src
 ** Define a command picker for yasnippet actions
-*** Impl
 #+begin_src emacs-lisp
 (define-command-picker yasnippet-picker
   :title "*Yasnippet Commands*"
@@ -3246,10 +3245,9 @@ Provides textmate-style snippets.
     ("i" "Insert" yas-insert-snippet)
     ("n" "New" yas-new-snippet)
     ("r" "Reload All" cbyas:reload-all)
+    ("q" "Exit Snippets" yas-exit-all-snippets)
     ("t" "Show Tables" yas-describe-tables)))
-#+end_src
-*** Key binding
-#+begin_src emacs-lisp
+
 (bind-key* "C-c y" 'yasnippet-picker)
 #+end_src
 ** Snippet utilities
