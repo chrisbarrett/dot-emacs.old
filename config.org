@@ -11449,7 +11449,10 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
 #+begin_src emacs-lisp
 (defconst cb-ocaml:smart-operator-list
   (list "!" "$" "%" "&" "*" "+" "-" "." "/"
-        ":" "<" "=" ">" "?" "@" "^" "|" ))
+        ":" "<" "=" ">" "?" "@" "^" "|" "~"))
+
+(--each '(tuareg-mode utop-mode)
+  (put it 'smart-operator-alist cb-ocaml:smart-operator-list))
 
 (defun cb-ocaml:smart-dot ()
   "Smart period for OCaml."
@@ -11490,6 +11493,29 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
         (t
          (cb-ocaml:smart-insert-operator "|"))))
 
+(defun cb-ocaml:at-let-binding? ()
+  (and (s-matches? (rx bol (* space) "let" symbol-end) (current-line))
+       (or (not (s-matches? "=" (current-line)))
+           (save-excursion (search-forward "=" (line-end-position) t)))))
+
+(defmacro cb-ocaml:define-smart-op-as-annotation (symbol op)
+  "Define a command for inserting a smart operator.
+This is for operators that also have special meanings in binding forms
+where they should not be padded."
+  `(defun ,symbol ()
+     "Auto-generated smart operator command for OCaml."
+     (interactive)
+     (let ((op ,op))
+       (cond ((cb-ocaml:at-let-binding?)
+              (cb-ocaml:smart-insert-operator op)
+              (when (thing-at-point-looking-at (rx space))
+                (delete-horizontal-space 'back)))
+             (t
+              (cb-ocaml:smart-insert-operator op))))))
+
+(cb-ocaml:define-smart-op-as-annotation cb-ocaml:smart-tilde "~")
+(cb-ocaml:define-smart-op-as-annotation cb-ocaml:smart-question "?")
+
 (defun cb-ocaml:set-keys (keymap)
   "Set smart operators for OCaml."
   (--each cb-ocaml:smart-operator-list
@@ -11500,7 +11526,9 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
   (define-key keymap (kbd ".") 'cb-ocaml:smart-dot)
   (define-key keymap (kbd "|") 'cb-ocaml:smart-pipe)
   (define-key keymap (kbd ":") 'cb-ocaml:smart-colon)
-  (define-key keymap (kbd ";") 'cb-ocaml:smart-semicolon))
+  (define-key keymap (kbd ";") 'cb-ocaml:smart-semicolon)
+  (define-key keymap (kbd "?") 'cb-ocaml:smart-question)
+  (define-key keymap (kbd "~") 'cb-ocaml:smart-tilde))
 
 (after 'tuareg (cb-ocaml:set-keys tuareg-mode-map))
 (after 'utop   (cb-ocaml:set-keys utop-mode-map))
