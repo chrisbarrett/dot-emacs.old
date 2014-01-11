@@ -11465,7 +11465,7 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
 (defun cb-ocaml:smart-colon ()
   "Insert a context-sensitive smart colon."
   (interactive)
-  (if (thing-at-point-looking-at (rx "~" (+ word)))
+  (if (thing-at-point-looking-at (rx (or "?" "~") (+ word)))
       (insert ":")
     (smart-insert-operator ":")))
 
