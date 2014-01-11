@@ -11555,6 +11555,7 @@ where they should not be padded."
 (defun cb-ocaml:meta-ret ()
   "Open a new line in a context-sensitive way."
   (interactive)
+  (yas-exit-all-snippets)
   (cond
    ;; Insert case after match statement.
    ((s-matches? (rx symbol-start "match" symbol-end) (current-line))
@@ -11603,6 +11604,34 @@ where they should not be padded."
     (newline-and-indent)
     (forward-char -2)
     (yas-insert-first-snippet (C (~ equal "val") yas--template-name)))
+
+   ;; Insert new let...in binding below the current one.
+   ((s-matches? (rx bol (* space) (group "let") symbol-end (* nonl) "in" (* space) eol)
+                (current-line))
+    (let ((col (save-excursion
+                 (or (search-backward-regexp
+                      (rx symbol-start "let" symbol-end)
+                      (line-beginning-position) t)
+                     (goto-char (line-beginning-position)))
+                 (current-column))))
+      (goto-char (line-end-position))
+      (newline)
+      (indent-to col)
+      (yas-insert-first-snippet (C (~ equal "let...in") yas--template-name))))
+
+   ;; Insert new top-level let binding below the current one.
+   ((s-matches? (rx bol (* space) (group "let") symbol-end) (current-line))
+    (let ((col (save-excursion
+                 (or (search-backward-regexp
+                      (rx symbol-start "let" symbol-end)
+                      (line-beginning-position) t)
+                     (goto-char (line-beginning-position)))
+                 (current-column))))
+      (goto-char (line-end-position))
+      (newline)
+      (indent-to col)
+      (yas-insert-first-snippet
+       (C (~ equal "let (top-level)") yas--template-name))))
 
    (t
     (goto-char (line-end-position))
