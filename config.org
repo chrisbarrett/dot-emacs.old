@@ -11385,6 +11385,10 @@ utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
 #+end_src
 ** configure smart operators
 #+begin_src emacs-lisp
+(defconst cb-ocaml:smart-operator-list
+  (list "!" "$" "%" "&" "*" "+" "-" "." "/"
+        ":" "<" "=" ">" "?" "@" "^" "|" "~"))
+
 (defun cb-ocaml:smart-dot ()
   "Smart period for OCaml."
   (interactive)
@@ -11420,7 +11424,7 @@ utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
 
 (defun cb-ocaml:set-keys (keymap)
   "Set smart operators for OCaml."
-  (--each smart-operator-alist
+  (--each cb-ocaml:smart-operator-list
     (define-key keymap (kbd it) (eval `(smart-op ,it))))
 
   (define-key keymap (kbd "!") nil)
