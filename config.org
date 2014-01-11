@@ -11449,7 +11449,7 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
 #+begin_src emacs-lisp
 (defconst cb-ocaml:smart-operator-list
   (list "!" "$" "%" "&" "*" "+" "-" "." "/"
-        ":" "<" "=" ">" "?" "@" "^" "|" "~"))
+        ":" "<" "=" ">" "?" "@" "^" "|" ))
 
 (defun cb-ocaml:smart-dot ()
   "Smart period for OCaml."
