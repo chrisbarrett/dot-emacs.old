@@ -6652,6 +6652,19 @@ Provides a Reveal.js exporter for making presentations.
            "highlight-red" "highlight-green" "highlight-blue"))
    :isearch t))
 #+end_src
+** autoload org-drill commands
+#+begin_src emacs-lisp
+(--each '(org-drill
+          org-drill-strip-all-data
+          org-drill-cram
+          org-drill-tree
+          org-drill-resume
+          org-drill-merge-buffers
+          org-drill-entry
+          org-drill-directory
+          org-drill-again)
+  (autoload it "org-drill" nil t))
+#+end_src
 ** Display inline images in org buffers
 #+begin_src emacs-lisp
 (after 'org
