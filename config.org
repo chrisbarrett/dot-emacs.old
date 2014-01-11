@@ -11552,20 +11552,15 @@ where they should not be padded."
   (indent-to col)
   (goto-char (line-end-position)))
 
-(defun cb-ocaml:newline-insert-case ()
-  "Insert a case template below the current line."
-  (goto-char (line-end-position))
-  (newline-and-indent)
-  (forward-char -2)
-  (yas-insert-first-snippet (C (~ equal "match-case") yas--template-name)))
-
 (defun cb-ocaml:meta-ret ()
   "Open a new line in a context-sensitive way."
   (interactive)
   (cond
    ;; Insert case after match statement.
    ((s-matches? (rx symbol-start "match" symbol-end) (current-line))
-    (cb-ocaml:newline-insert-case))
+    (goto-char (line-end-position))
+    (newline-and-indent)
+    (yas-insert-first-snippet (C (~ equal "match-case") yas--template-name)))
    ;; Insert new case below the current type decl.
    ((s-matches? (rx bol (* space) "type") (current-line))
     (cb-ocaml:new-case-at-col
@@ -11575,7 +11570,10 @@ where they should not be padded."
        (+ 2 (current-column)))))
    ;; Insert match case below the current one.
    ((s-matches? (rx bol (* space) "|" (not (any ">")) (* nonl) "->") (current-line))
-    (cb-ocaml:newline-insert-case))
+    (goto-char (line-end-position))
+    (newline-and-indent)
+    (forward-char -2)
+    (yas-insert-first-snippet (C (~ equal "match-case") yas--template-name)))
    ;; Insert line starting with pipeline below the current one.
    ((s-matches? (rx bol (* space) "|>") (current-line))
     (let ((col (save-excursion

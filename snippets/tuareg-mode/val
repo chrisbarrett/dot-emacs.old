@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: val
+# key: v
+# condition: (cbyas:bol?)
+# --
+val ${1:ident} : $0

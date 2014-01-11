@@ -1,6 +1,4 @@
-# -*- mode: snippet -*-
-# name: match
 # key: m
+# name: match
 # --
-match ${1:val} with
-| ${2:case} -> $0
+match $0 with

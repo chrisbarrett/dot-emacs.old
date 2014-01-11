@@ -1,6 +1,5 @@
-# -*- mode: snippet -*-
-# name: match-case
 # key: c
+# name: match-case
 # condition: (cbyas:bol?)
 # --
-| ${1:case} -> ${2:expr}
+| ${1:case} -> $0
