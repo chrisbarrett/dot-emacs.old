@@ -16,6 +16,7 @@ alias gs git show $*
 alias gstat git status $*
 alias grm git rm $*
 alias gmv git mv $*
+alias gsub git submodule $*
 alias s git status --short $*
 alias gcm git commit -m $*
 alias gd git diff $*
