@@ -46,3 +46,4 @@ swank
 var
 el-get
 /config.el
+/custom.el
