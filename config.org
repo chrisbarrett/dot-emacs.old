@@ -11561,6 +11561,7 @@ where they should not be padded."
     (goto-char (line-end-position))
     (newline-and-indent)
     (yas-insert-first-snippet (C (~ equal "match-case") yas--template-name)))
+
    ;; Insert new case below the current type decl.
    ((s-matches? (rx bol (* space) "type") (current-line))
     (cb-ocaml:new-case-at-col
@@ -11568,12 +11569,14 @@ where they should not be padded."
        (goto-char (line-beginning-position))
        (forward-to-indentation 0)
        (+ 2 (current-column)))))
+
    ;; Insert match case below the current one.
    ((s-matches? (rx bol (* space) "|" (not (any ">")) (* nonl) "->") (current-line))
     (goto-char (line-end-position))
     (newline-and-indent)
     (forward-char -2)
     (yas-insert-first-snippet (C (~ equal "match-case") yas--template-name)))
+
    ;; Insert line starting with pipeline below the current one.
    ((s-matches? (rx bol (* space) "|>") (current-line))
     (let ((col (save-excursion
@@ -11585,6 +11588,7 @@ where they should not be padded."
       (save-excursion (insert "|> "))
       (indent-to col)
       (goto-char (line-end-position))))
+
    ;; Insert any other kind of case below the current one.
    ((s-matches? (rx bol (* space) "|") (current-line))
     (cb-ocaml:new-case-at-col
@@ -11592,6 +11596,14 @@ where they should not be padded."
        (goto-char (line-beginning-position))
        (search-forward "|")
        (1- (current-column)))))
+
+   ;; Insert new val binding below the current one.
+   ((s-matches? (rx bol (* space) "val" symbol-end) (current-line))
+    (goto-char (line-end-position))
+    (newline-and-indent)
+    (forward-char -2)
+    (yas-insert-first-snippet (C (~ equal "val") yas--template-name)))
+
    (t
     (goto-char (line-end-position))
     (newline-and-indent)))
