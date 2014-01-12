@@ -11402,10 +11402,11 @@ utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
   (define-key tuareg-mode-map (kbd "M-q") 'ocp-indent-dwim))
 #+end_src
 ** configure smart parens
-*** Define pair for arrays
+*** Define pairs
 #+begin_src emacs-lisp
 (sp-with-modes '(tuareg-mode utop-mode)
-  (sp-local-pair "[|" "|]"))
+  (sp-local-pair "[|" "|]")
+  (sp-local-pair "`" nil :actions nil))
 #+end_src
 *** Pad pairs with spaces
 Pad parens and other delimiters with spaces to emulate paredit's behaviour.
