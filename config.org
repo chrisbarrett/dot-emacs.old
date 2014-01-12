@@ -11556,6 +11556,12 @@ where they should not be padded."
   (interactive)
   (yas-exit-all-snippets)
   (cond
+   ;; Insert case after function keyword.
+   ((s-matches? (rx symbol-start "function" (* space) eol) (current-line))
+    (goto-char (line-end-position))
+    (newline-and-indent)
+    (yas-insert-first-snippet (C (~ equal "match-case") yas--template-name)))
+
    ;; Insert case after match statement.
    ((s-matches? (rx symbol-start "match" symbol-end) (current-line))
     (goto-char (line-end-position))
