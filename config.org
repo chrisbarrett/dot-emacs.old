@@ -7815,7 +7815,7 @@ Define a command to scan and attach documents to the subtree at point.
 
 - COLOUR-MODE is either \"colour\" or \"grayscale\"."
   (interactive (list (ido-completing-read "Mode: " '("Colour" "Grayscale"))))
-  (let ((file (scan-then-combine colour-mode (make-temp-file "scan--"))))
+  (let ((file (scan-then-combine colour-mode (make-temp-file "scan--" nil ".pdf"))))
     (org-attach-attach file nil 'mv))
 
   (message "Scanning...Done"))
