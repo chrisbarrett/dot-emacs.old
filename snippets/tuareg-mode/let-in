@@ -1,6 +1,0 @@
-# -*- mode: snippet -*-
-# name: let...in
-# key: l
-# --
-let ${1:binding} = ${2:val} in
-$0
