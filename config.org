@@ -11633,6 +11633,13 @@ where they should not be padded."
     (yas-insert-first-snippet (C (~ equal "val") yas--template-name)))
 
    ;; Insert new let...in binding below the current one.
+   ((s-matches? (rx (group "try") symbol-end (* nonl) "with" (* space) eol)
+                (current-line))
+    (goto-char (line-end-position))
+    (newline-and-indent)
+    (yas-insert-first-snippet (C (~ equal "match-case") yas--template-name)))
+
+   ;; Insert new let...in binding below the current one.
    ((s-matches? (rx bol (* space) (group "let") symbol-end (* nonl) "in" (* space) eol)
                 (current-line))
     (cb-ocaml:newline-and-expand-snippet-at-col
