@@ -11640,6 +11640,22 @@ where they should not be padded."
     (yas-insert-first-snippet (C (~ equal "match-case") yas--template-name)))
 
    ;; Insert new let...in binding below the current one.
+   ((s-matches? (rx bol (* space) "with" (* space) "\n"
+                    (* nonl) "->")
+                (buffer-substring (save-excursion (forward-line -1)
+                                                  (line-beginning-position))
+                                  (line-end-position)))
+    ;; Insert pipe for case if needed.
+    (back-to-indentation)
+    (unless (thing-at-point-looking-at "|")
+      (insert "| "))
+    ;; Insert case.
+    (goto-char (line-end-position))
+    (newline-and-indent)
+    (forward-char -2)
+    (yas-insert-first-snippet (C (~ equal "match-case") yas--template-name)))
+
+   ;; Insert new let...in binding below the current one.
    ((s-matches? (rx bol (* space) (group "let") symbol-end (* nonl) "in" (* space) eol)
                 (current-line))
     (cb-ocaml:newline-and-expand-snippet-at-col
