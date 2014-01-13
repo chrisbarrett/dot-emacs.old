@@ -1,5 +1,4 @@
-# key: c
+# key: |
 # name: match-case
-# condition: (cbyas:bol?)
 # --
 | ${1:case} -> $0

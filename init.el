@@ -36,9 +36,15 @@
 (when (not package-archive-contents) (package-refresh-contents))
 (unless (package-installed-p 'org-plus-contrib) (package-install 'org-plus-contrib))
 
-;; Load init.org
+;; Load config.org
 (require 'ob-tangle)
-(org-babel-load-file (concat user-emacs-directory "config.org"))
+
+(defun tangle-and-load-config-file ()
+  "Tangle and reload 'config.el'."
+  (interactive)
+  (org-babel-load-file (concat user-emacs-directory "config.org")))
+
+(tangle-and-load-config-file)
 
 (provide 'init)
 
