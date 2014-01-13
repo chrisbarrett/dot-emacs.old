@@ -3367,6 +3367,17 @@ Otherwise delete backwards."
 
 (bind-key "SPC" 'cbyas:space yas-keymap)
 #+end_src
+** Define command for restricting the buffer to the current field
+#+begin_src emacs-lisp
+(defmacro yas-with-field-restriction (&rest body)
+  "Narrow the buffer to the current active field and execute BODY.
+If no field is active, no narrowing will take place."
+  (declare (indent 0))
+  `(save-restriction
+     (when (cbyas:current-field)
+       (narrow-to-region (cbyas:beginning-of-field) (cbyas:end-of-field)))
+     ,@body))
+#+end_src
 ** Evil
 Customise yasnippet behaviour to work better with evil-mode.
 #+begin_src emacs-lisp
@@ -3785,6 +3796,15 @@ Automatically format inserted operators.
 (defmacro smart-op (op)
   "Make a smart operator command that will insert OP."
   `(command (smart-insert-operator ,op)))
+#+end_src
+** Prevent errors with yasnippet
+#+begin_src emacs-lisp
+(defadvice smart-insert-operator (around narrow-to-yas-field activate)
+  "Narrow to the current active snippet field.
+This prevents errors when attempting to delete whitespace outside
+the current field."
+  (yas-with-field-restriction
+    ad-do-it))
 #+end_src
 * EMR
 Adds refactoring commands for Lisps.
@@ -11474,10 +11494,11 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
 (defun cb-ocaml:smart-dot ()
   "Smart period for OCaml."
   (interactive)
-  (delete-horizontal-space 'back)
-  (insert ".")
-  (when (thing-at-point-looking-at (rx (any "+" "/" "-" "*") "."))
-    (just-one-space)))
+  (yas-with-field-restriction
+    (delete-horizontal-space 'back)
+    (insert ".")
+    (when (thing-at-point-looking-at (rx (any "+" "/" "-" "*") "."))
+      (just-one-space))))
 
 (defun cb-ocaml:smart-colon ()
   "Insert a context-sensitive smart colon."
@@ -11489,10 +11510,11 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
 (defun cb-ocaml:smart-semicolon ()
   "Smart semicolon for OCaml."
   (interactive)
-  (delete-horizontal-space 'back)
-  (insert ";")
-  (unless (thing-at-point-looking-at ";;")
-    (just-one-space)))
+  (yas-with-field-restriction
+    (delete-horizontal-space 'back)
+    (insert ";")
+    (unless (thing-at-point-looking-at ";;")
+      (just-one-space))))
 
 (defun cb-ocaml:smart-insert-operator (op)
   "Perform a smart insertion of operator OP, unless inside parens."
