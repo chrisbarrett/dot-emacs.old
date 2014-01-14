@@ -6042,6 +6042,28 @@ emails.
   (org-mime-change-element-style
    "pre" "border-left: 2px solid #B0B0B0; padding-left: 4px;"))
 #+end_src
+** Write subtrees to new files
+#+begin_src emacs-lisp
+(defun org-narrow-to-subtree-content ()
+  (widen)
+  (unless (org-at-heading-p) (org-back-to-heading))
+  (org-narrow-to-subtree)
+  (forward-line)
+  (narrow-to-region (line-beginning-position) (point-max)))
+
+(defun org-subtree-content ()
+  (save-excursion
+    (save-restriction
+      (org-narrow-to-subtree)
+      (buffer-substring-no-properties (point-min) (point-max)))))
+
+(defun org-write-subtree-content (dest)
+  "Write the contents of the subtree at point to a file at DEST."
+  (interactive (list (ido-read-file-name "Write subtree to: " nil nil nil ".org")))
+  (f-write-text (org-subtree-content) 'utf-8 dest)
+  (when (called-interactively-p nil)
+    (message "Subtree written to %s" dest)))
+#+end_src
 ** Export
 #+begin_src emacs-lisp
 (setq org-export-exclude-tags '("noexport" "crypt"))
@@ -6077,6 +6099,37 @@ The postamble usually displays the creator, org version, etc.
 [NO-DEFAULT-PACKAGES]
 [EXTRA]
 [PACKAGES]"))
+
+(defun org-export-koma-letter-at-subtree (dest)
+  "Define a command to export the koma letter subtree at point to PDF.
+With a prefix arg, prompt for the output destination. Otherwise
+generate use the name of the current file to generate the
+exported file's name.
+The PDF will be created at DEST."
+  (interactive
+   (list (if current-prefix-arg
+             (ido-read-file-name "Destination: " nil nil nil ".pdf")
+           (concat (f-no-ext (buffer-file-name)) ".pdf"))))
+
+  (let ((tmpfile (make-temp-file "org-export-" nil ".org")))
+    (org-write-subtree-content tmpfile)
+    (with-current-buffer (find-file-noselect tmpfile)
+      (unwind-protect
+          (-if-let (exported (org-koma-letter-export-to-pdf))
+              (f-move exported dest)
+            (error "Export failed"))
+        (kill-buffer)))
+    (%-sh "open" (%-quote dest))
+    (message "opening %s..." dest)))
+
+(add-hook 'org-ctrl-c-ctrl-c-hook
+          (lambda ()
+            (when (ignore-errors
+                    (s-matches? (rx "latex_class:" (* space) "koma")
+                                (org-subtree-content)))
+              (call-interactively 'org-export-koma-letter-at-subtree)
+              'export-koma-letter))
+          t)
 #+end_src
 ** Habits
 #+begin_src emacs-lisp
