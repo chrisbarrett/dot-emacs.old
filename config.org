@@ -1308,6 +1308,7 @@ show recent files.
                         ".emacs.d/url/"
                         "/\\.git/"
                         "/Emacs.app/"
+                        "/var/folders/"
                         ;; Tramp
                         "^/?sudo"
                         ;; Special files
