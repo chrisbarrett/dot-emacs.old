@@ -31,9 +31,6 @@
 [submodule "lib/agda-mode"]
 	path = lib/agda-mode
 	url = https://github.com/jwiegley/agda-mode.git
-[submodule "lib/skeletor.el"]
-	path = lib/skeletor.el
-	url = git@github.com:chrisbarrett/skeletor.el.git
 [submodule "lib/git-gutter-fringe-plus"]
 	path = lib/git-gutter-fringe-plus
 	url = https://github.com/nonsequitur/git-gutter-fringe-plus.git

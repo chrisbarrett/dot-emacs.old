@@ -5276,6 +5276,11 @@ Provides file skeletons.
 #+begin_src emacs-lisp
 )
 #+end_src
+* skeletor
+Provides project skeletons.
+#+begin_src emacs-lisp
+(cb:install-package 'skeletor)
+#+end_src
 * expand-region
 Provides commands for expanding and contracting the active region.
 #+begin_src emacs-lisp
