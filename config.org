@@ -11581,6 +11581,26 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
       (insert ":")
     (smart-insert-operator ":")))
 
+(defun cb-ocaml:smart-asterisk ()
+  "Smart asterisk for OCaml."
+  (interactive)
+  (yas-with-field-restriction
+
+    (cond
+     ;; Additional star for docstring comments of the type:
+     ;;
+     ;;    (*| *) -> (** | *)
+     ;;
+     ((s-matches? (rx "(" (+ "*") (* space) eol) (buffer-substring
+                                           (line-beginning-position)
+                                           (point)))
+      (delete-horizontal-space 'back)
+      (insert "*")
+      (just-one-space 2)
+      (forward-char -1))
+     (t
+      (cb-ocaml:smart-insert-operator "*")))))
+
 (defun cb-ocaml:smart-semicolon ()
   "Smart semicolon for OCaml."
   (interactive)
@@ -11627,6 +11647,7 @@ where they should not be padded."
       (eval `(command (cb-ocaml:smart-insert-operator ,it)))))
 
   (define-key keymap (kbd "!") nil)
+  (define-key keymap (kbd "*") 'cb-ocaml:smart-asterisk)
   (define-key keymap (kbd ".") 'cb-ocaml:smart-dot)
   (define-key keymap (kbd "|") 'cb-ocaml:smart-pipe)
   (define-key keymap (kbd ":") 'cb-ocaml:smart-colon)
