@@ -900,14 +900,6 @@ prevents the app bundle from being used as the default dir.
 #+begin_src emacs-lisp
 (setq initial-scratch-message nil)
 #+end_src
-* Run a hook before self-insert-command
-#+begin_src emacs-lisp
-(defvar before-self-insert-hook nil
-  "Hook run before `self-insert-command'.")
-
-(defadvice self-insert-command (before run-hook activate)
-  (run-hooks 'before-self-insert-hook))
-#+end_src
 * Highlight active regions, like most editors
 #+begin_src emacs-lisp
 (setq-default transient-mark-mode t)
@@ -11555,12 +11547,14 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
 ** advise insertion commands to ensure a space is inserted around parens
 #+begin_src emacs-lisp
 (defun cb-ocaml:maybe-pad-parens ()
-  (when (-contains? '(?\) ?\]) (char-before))
-    (just-one-space)))
+  (save-excursion
+    (unless (equal (string-to-char " ") (char-before))
+      (forward-char -1)
+      (when (-contains? '(?\) ?\]) (char-before))
+        (just-one-space)))))
 
 (hook-fns '(tuareg-mode-hook utop-mode-hook)
-  (add-hook 'before-self-insert-hook 'cb-ocaml:maybe-pad-parens
-            nil t))
+  (add-hook 'post-self-insert-hook 'cb-ocaml:maybe-pad-parens nil t))
 #+end_src
 ** configure smart operators
 #+begin_src emacs-lisp
