@@ -3215,7 +3215,8 @@ Provides textmate-style snippets.
 ** Customise vars
 #+begin_src emacs-lisp
 (setq yas-prompt-functions '(yas-ido-prompt)
-      yas-wrap-around-region t)
+      yas-wrap-around-region t
+      yas-verbosity 1)
 #+end_src
 ** Diminish
 #+begin_src emacs-lisp
