@@ -11518,11 +11518,12 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
     ;; 2. this form begins a new line.
     ;; 3. this form is preceded by a `?`, as in a let binding.
     ;; 4. this form is preceded by a `:`, as in a keyword argument
+    ;; 4. this form is preceded by a `.`, as in an array index expression
     (save-excursion
       (search-backward id)
       (unless (s-matches?
                (rx (or (group bol (* space))
-                       (any "," ":" "(" "[" "[|" "{" "?")
+                       (any "." "," ":" "(" "[" "[|" "{" "?")
                        ;; HACK: utop prompt
                        (and "utop[" (+ digit) "]" ">" (* space)))
                    eol)
