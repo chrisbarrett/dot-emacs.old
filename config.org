@@ -11722,10 +11722,15 @@ where they should not be padded."
 
    ;; Insert new val binding below the current one.
    ((s-matches? (rx bol (* space) "val" symbol-end) (current-line))
-    (goto-char (line-end-position))
-    (newline-and-indent)
-    (forward-char -2)
-    (yas-insert-first-snippet (C (~ equal "val") yas--template-name)))
+    (let ((col (save-excursion
+                 (goto-char (line-beginning-position))
+                 (forward-to-indentation 0)
+                 (current-column))))
+
+      (goto-char (line-end-position))
+      (newline)
+      (indent-to col)
+      (yas-insert-first-snippet (C (~ equal "val") yas--template-name))))
 
    ;; Insert new let...in binding below the current one.
    ((s-matches? (rx (group "try") symbol-end (* nonl) "with" (* space) eol)
