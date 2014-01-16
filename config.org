@@ -7054,6 +7054,10 @@ re-encrypted after a period of inactivity.
                               (with-demoted-errors
                                   (org-capture-messages)))))))
 #+end_src
+** Enable abbrev-mode
+#+begin_src emacs-lisp
+(add-hook 'org-mode-hook 'abbrev-mode)
+#+end_src
 * Circe
 Circe is an Emacs IRC client.
 #+begin_src emacs-lisp
