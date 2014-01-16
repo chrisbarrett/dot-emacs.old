@@ -5280,6 +5280,9 @@ Provides file skeletons.
 Provides project skeletons.
 #+begin_src emacs-lisp
 (cb:install-package 'skeletor)
+
+(skeletor-define-template "ocaml-project"
+  :title "OCaml Project")
 #+end_src
 * expand-region
 Provides commands for expanding and contracting the active region.
