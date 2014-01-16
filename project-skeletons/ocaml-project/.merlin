@@ -1,0 +1,4 @@
+PRJ __PROJECT-NAME__
+S src
+B _build/src
+PKG core
