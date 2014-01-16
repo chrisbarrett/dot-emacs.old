@@ -11451,6 +11451,13 @@ utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
 #+begin_src emacs-lisp
 (add-to-list 'ac-modes 'tuareg-mode)
 (add-hook 'tuareg-mode-hook 'auto-complete-mode)
+
+(defun cb-ocaml:configure-merlin ()
+  (when (ignore-errors
+          (equal (f-ext (buffer-file-name)) "ml"))
+    (setq ac-sources '(ac-source-merlin))))
+
+(add-hook 'merlin-mode-hook 'cb-ocaml:configure-merlin)
 #+end_src
 ** Configure Merlin
 #+begin_src emacs-lisp
