@@ -11577,9 +11577,19 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
 (defun cb-ocaml:smart-colon ()
   "Insert a context-sensitive smart colon."
   (interactive)
-  (if (thing-at-point-looking-at (rx (or "?" "~") (+ word)))
-      (insert ":")
-    (smart-insert-operator ":")))
+  (cond
+   ;; Application of named parameter.
+   ((thing-at-point-looking-at (rx (or "?" "~") (+ word)))
+    (insert ":"))
+   ;; Named parameter in val binding.
+   ((and (s-matches? (rx bol (* space) "val" symbol-end)
+                     (current-line))
+         (save-excursion
+           (search-backward "->" (line-beginning-position) t)))
+    (delete-horizontal-space 'back)
+    (insert ":"))
+   (t
+    (smart-insert-operator ":"))))
 
 (defun cb-ocaml:smart-asterisk ()
   "Smart asterisk for OCaml."
