@@ -3251,6 +3251,12 @@ Provides textmate-style snippets.
   (s-matches? (rx bol (* space) (* word) eol)
               (buffer-substring (line-beginning-position)
                                 (point))))
+
+(defun cbyas:msg (fmt &rest args)
+  "Like `message', but returns the empty string.
+Embed in elisp blocks to trigger messages within snippets."
+  (apply 'message (s-prepend "[yas] " fmt) args)
+  "")
 #+end_src
 ** Define command for inserting snippet by name
 #+begin_src emacs-lisp

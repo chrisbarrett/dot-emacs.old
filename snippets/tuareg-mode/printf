@@ -1,5 +1,4 @@
-# -*- mode: snippet -*-
-# name: printf
 # key: p
+# name: printf
 # --
-printf "$0"
+printf "$0 %!"`(cbyas:msg "Note that \"%%!\" causes printf to flush the channel")`
