@@ -1,6 +1,6 @@
-SRC      = src
-TARGET   = __PROJECT-NAME__.byte
-MAIN = $(SRC)/$(TARGET)
+SRC    = src
+TARGET = __PROJECT-NAME__.byte
+MAIN   = $(SRC)/main.byte
 
 .PHONY: compile
 compile : $(TARGET)
