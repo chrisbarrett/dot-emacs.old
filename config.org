@@ -3472,6 +3472,14 @@ Improves the performance of flyspell.
 (cb:install-package 'flyspell-lazy)
 (add-hook 'flyspell-mode-hook 'flyspell-lazy-mode)
 #+end_src
+*** Fix errors when buffer is narrowed
+#+begin_src emacs-lisp
+(defadvice flyspell-lazy-check-pending (around ignore-errors activate)
+  (ignore-errors
+    (save-restriction
+      (widen)
+      ad-do-it)))
+#+end_src
 * Tags
 ctags-related commands. Adapted from [[http://mattbriggs.net/blog/2012/03/18/awesome-emacs-plugins-ctags/][Awesome Emacs Plugins: CTags]]
 ** Make tags searches case-sensitive
