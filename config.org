@@ -6759,6 +6759,13 @@ Provides a Reveal.js exporter for making presentations.
    :isearch t))
 #+end_src
 ** org-drill
+*** save buffer without prompting after drill session
+#+begin_src emacs-lisp
+(setq org-drill-save-buffers-after-drill-sessions-p nil)
+
+(defadvice org-drill (after save-buffer activate)
+  (save-buffer))
+#+end_src
 *** autoload org-drill commands
 #+begin_src emacs-lisp
 (--each '(org-drill
