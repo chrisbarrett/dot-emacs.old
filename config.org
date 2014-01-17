@@ -6784,6 +6784,17 @@ Provides a Reveal.js exporter for making presentations.
 (require 'org-drill-table)
 (add-hook 'org-ctrl-c-ctrl-c-hook 'org-drill-table-update)
 #+end_src
+*** Add org-drill-again to org action picker
+#+begin_src emacs-lisp
+(defun cb-org:drill-buffer? ()
+  "Non-nil if the current buffer contains any drill items."
+  (and
+   (derived-mode-p 'org-mode)
+   (s-matches? ":drill:" (buffer-string))))
+
+(add-to-list 'org-action-picker-options
+             '("r" "Org Drill" org-drill-again :when cb-org:drill-buffer?))
+#+end_src
 ** Display inline images in org buffers
 #+begin_src emacs-lisp
 (after 'org
