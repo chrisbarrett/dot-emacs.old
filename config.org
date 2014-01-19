@@ -5921,6 +5921,45 @@ Switch projects and subprojects from NEXT back to TODO."
                                        "5:00 6:00 7:00 8:00 9:00 "
                                        "0:05 0:10 0:30")))
 #+end_src
+** Clocking in/out for work
+#+begin_src emacs-lisp
+(defvar org-work-file (f-join org-directory "work.org")
+  "Defines the path to file for work-related todos, etc.")
+
+(defvar cb-org:at-work? nil "Non-nil if currently 'at work'.")
+
+(defun cb-org:goto-or-create-work-log ()
+  (goto-char (point-max))
+  ;; Create top-level item.
+  (if (search-backward-regexp (rx bol "* Work Log") nil t)
+      (end-of-line)
+    (org-insert-heading-after-current)
+    (insert "Work Log")))
+
+(defun cb-org:toggle-at-work (file)
+  "Toggle whether I am currently at work.
+FILE is the file to use as the notes file while at work."
+  (interactive (list org-work-file))
+  (cond
+   ((equal org-default-notes-file org-init-notes-file)
+    (cb-org:set-notes-file file)
+    (with-current-buffer (find-file-noselect file)
+      (cb-org:goto-or-create-work-log)
+      (org-clock-in))
+    (setq cb-org:at-work? t)
+    (message "At work"))
+
+   (t
+    (with-current-buffer (find-file-noselect file)
+      (cb-org:goto-or-create-work-log)
+      (org-clock-out nil t))
+
+    (cb-org:set-notes-file org-init-notes-file)
+    (setq cb-org:at-work? nil)
+    (message "Left work"))))
+
+(bind-key "<f12>" 'cb-org:toggle-at-work)
+#+end_src
 ** Projects
 #+begin_src emacs-lisp
 (setq org-stuck-projects
