@@ -2247,41 +2247,44 @@ We define the following mode groups:
 Using emacsclient with colour themes can be flaky in terminals, especially on OS
 X. This code tweaks the colours when creating frames in a terminal.
 #+begin_src emacs-lisp
-(after 'server
-  (defun cb-server:configure-frame (&rest frame)
-    "Disable themeing for console emacsclient."
-    (unless (display-graphic-p)
-      (let ((fm (or (car frame) (selected-frame)))
-            (tranparent "ARGBBB000000")
-            (blue "#168DCC")
-            )
-        (set-face-foreground 'default nil fm)
-        (set-face-background 'default tranparent fm)
-        (set-face-background 'menu blue fm)
-        (set-face-foreground 'menu "white" fm)
-        (set-face-background 'hl-line tranparent fm)
-        (set-face-background 'fringe tranparent fm)
-        (set-face-background 'cursor "#2F4F4F" fm)
-        ;; Modeline
-        (set-face-foreground 'mode-line-filename "white" fm)
-        (set-face-foreground 'mode-line-position "white" fm)
-        (set-face-foreground 'mode-line-mode "black" fm)
-        (set-face-bold 'mode-line-mode t fm)
-        (set-face-background 'mode-line blue fm)
-        (set-face-background 'mode-line blue fm)
+  (after 'server
+    (defun cb-server:configure-frame (&rest frame)
+      "Disable themeing for console emacsclient."
+      (unless (display-graphic-p)
+        (let ((fm (or (car frame) (selected-frame)))
+              (tranparent "ARGBBB000000")
+              (blue "#168DCC")
+              )
+          (set-face-foreground 'default nil fm)
+          (set-face-background 'default tranparent fm)
+          (set-face-background 'menu blue fm)
+          (set-face-foreground 'menu "white" fm)
 
-        (when (featurep 'smartparens)
-          (set-face-background 'sp-pair-overlay-face "green" fm))
-        (when (featurep 'org)
-          (set-face-background 'org-block-begin-line tranparent fm)
-          (set-face-background 'org-block-end-line tranparent fm)
-          (set-face-background 'org-block-background tranparent fm)))))
+          (when (featurep 'hl-line)
+            (set-face-background 'hl-line tranparent fm))
 
-  (defadvice server-create-window-system-frame (after configure-frame activate)
-    "Set custom frame colours when creating the first frame on a display"
-    (cb-server:configure-frame))
+          (set-face-background 'fringe tranparent fm)
+          (set-face-background 'cursor "#2F4F4F" fm)
+          ;; Modeline
+          (set-face-foreground 'mode-line-filename "white" fm)
+          (set-face-foreground 'mode-line-position "white" fm)
+          (set-face-foreground 'mode-line-mode "black" fm)
+          (set-face-bold 'mode-line-mode t fm)
+          (set-face-background 'mode-line blue fm)
+          (set-face-background 'mode-line blue fm)
 
-  (add-hook 'after-make-frame-functions 'cb-server:configure-frame t))
+          (when (featurep 'smartparens)
+            (set-face-background 'sp-pair-overlay-face "green" fm))
+          (when (featurep 'org)
+            (set-face-background 'org-block-begin-line tranparent fm)
+            (set-face-background 'org-block-end-line tranparent fm)
+            (set-face-background 'org-block-background tranparent fm)))))
+
+    (defadvice server-create-window-system-frame (after configure-frame activate)
+      "Set custom frame colours when creating the first frame on a display"
+      (cb-server:configure-frame))
+
+    (add-hook 'after-make-frame-functions 'cb-server:configure-frame t))
 #+end_src
 * Font lock
 ** Use maximum font-lock prettiness
@@ -2403,7 +2406,10 @@ themes.
 #+begin_src emacs-lisp
 (defun cb-colour:common-setup ()
   "Perform customisation common to all themes."
-  (set-face-underline 'hl-line nil)
+
+  (when (featurep 'hl-line)
+    (set-face-underline 'hl-line nil))
+
   (set-face-font 'default (format "%s 11" (monospace-font)))
 
   (after 'eval-sexp-fu
@@ -2616,6 +2622,7 @@ Otherwise, use the value of said variable as argument to a funcall."
 * hl-line
 Highlight the current line.
 #+begin_src emacs-lisp
+(require 'hl-line)
 (when (display-graphic-p)
   (global-hl-line-mode t))
 #+end_src
