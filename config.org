@@ -6561,12 +6561,9 @@ Define commands for skipping through agenda sections.
 *** Configure agenda auto-exclusion
 #+begin_src emacs-lisp
 (defun cb-org:agenda-auto-exclude (tag)
-  "Hide todos by tag, depending on whether I'm at work or not."
-  (message tag)
-  (and (cond
-        ((string= tag "drill") cb-org:at-work?)
-        ((string= tag "@work") (not cb-org:at-work?)))
-       (concat "-" tag)))
+  "Hide drills."
+  (when (equal "drill" tag)
+    (concat "-" tag)))
 
 (defun cb-org:apply-auto-exclude ()
   (org-agenda-filter-by-tag nil ?\r t))
