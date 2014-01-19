@@ -6470,13 +6470,16 @@ They should be displayed modally.
 
              ("n" "Next actions"
               ((tags-todo "-someday/NEXT")))
+
              ("w" "Weekly Review"
               ((agenda "" ((org-agenda-ndays 7)))
                (stuck "")
                (todo "WAITING")
                (tags-todo "someday-media-skill")
                (tags-todo "someday&skill")
-               (tags-todo "someday&media")))
+               (tags-todo "someday&media"))
+              ((org-agenda-tag-filter-preset '("-drill"))))
+
              ("g" . "GTD contexts")
              ("gg" "Anywhere"
               ((tags-todo "@computer")
