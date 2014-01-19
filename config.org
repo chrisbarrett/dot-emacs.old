@@ -6457,7 +6457,11 @@ Don't show deadlines or scheduled tasks that have been completed.
       org-agenda-skip-scheduled-if-done t
       org-agenda-skip-deadline-prewarning-if-scheduled t)
 #+end_src
-*** Add GTD agenda views
+*** Hide ubiquitous tags from agenda
+#+begin_src emacs-lisp
+(setq org-agenda-hide-tags-regexp "someday")
+#+end_src
+*** Define agenda views
 They should be displayed modally.
 #+begin_src emacs-lisp
 (setq org-agenda-custom-commands
@@ -6475,7 +6479,7 @@ They should be displayed modally.
               ((agenda "" ((org-agenda-ndays 7)))
                (stuck "")
                (todo "WAITING")
-               (tags-todo "someday-media-skill")
+               (tags-todo "someday-media-skill/MAYBE|NEXT")
                (tags-todo "someday&skill")
                (tags-todo "someday&media"))
               ((org-agenda-tag-filter-preset '("-drill"))))
