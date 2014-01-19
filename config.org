@@ -6418,7 +6418,10 @@ They should be displayed modally.
       (->> '(("A" "Agenda and next actions"
               ((agenda "" ((org-agenda-ndays 1)))
                (tags-todo "-someday-media/NEXT")
-               (tags-todo "media/NEXT")))
+               (tags-todo "media/NEXT"))
+              ((org-agenda-tag-filter-preset (when cb-org:at-work?
+                                               '("-drill")))))
+
              ("n" "Next actions"
               ((tags-todo "-someday/NEXT")))
              ("w" "Weekly Review"
@@ -6501,6 +6504,22 @@ Define commands for skipping through agenda sections.
 (after 'smartparens
   (hook-fn 'org-agenda-mode-hook
     (smartparens-mode -1)))
+#+end_src
+*** Configure agenda auto-exclusion
+#+begin_src emacs-lisp
+(defun cb-org:agenda-auto-exclude (tag)
+  "Hide todos by tag, depending on whether I'm at work or not."
+  (message tag)
+  (and (cond
+        ((string= tag "drill") cb-org:at-work?)
+        ((string= tag "@work") (not cb-org:at-work?)))
+       (concat "-" tag)))
+
+(defun cb-org:apply-auto-exclude ()
+  (org-agenda-filter-by-tag nil ?\r t))
+
+(add-hook 'org-agenda-mode-hook 'cb-org:apply-auto-exclude)
+(setq org-agenda-auto-exclude-function 'cb-org:agenda-auto-exclude)
 #+end_src
 ** Define commands for use in diary entries
 *** Find the closest date to the given date an a certain day of the week
