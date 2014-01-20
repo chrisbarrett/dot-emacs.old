@@ -82,8 +82,8 @@
       (message "<C-c d> to send message, <C-c q> to cancel."))))
 
 (defun cbom:promote-heading-to-the-max ()
-       (when (org-at-heading-p)
-         (while (ignore-errors (org-promote-subtree) t))))
+  (when (org-at-heading-p)
+    (while (ignore-errors (org-promote-subtree) t))))
 
 (defun org-compose-mail-subtree (to subject)
   "Compose a new message based on the current org subtree.
