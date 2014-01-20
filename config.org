@@ -6302,8 +6302,6 @@ because the default keybinding conflicts with my window manager on OS X.
             "SCHEDULED: %t"
             ":PROPERTIES:"
             ":STYLE: habit"
-            ":END:"
-            ":PROPERTIES:"
             ":CAPTURED: %U"
             ":END:")
           :clock-keep t)
@@ -6312,6 +6310,8 @@ because the default keybinding conflicts with my window manager on OS X.
           (file+datetree org-default-notes-file "Calls")
           ,(s-unlines
             "* IN %U"
+            ":LOGBOOK:"
+            ":END:"
             "- From :: %(cb-org:read-caller)"
             "- To :: %(cb-org:read-caller)"
             "- Subject :: %^{Subject}"
@@ -6325,6 +6325,8 @@ because the default keybinding conflicts with my window manager on OS X.
           (file+datetree org-default-notes-file "Calls")
           ,(s-unlines
             "* OUT %U"
+            ":LOGBOOK:"
+            ":END:"
             "- To :: %(cb-org:read-caller)"
             "- Subject :: %^{Subject}"
             "** Notes"
