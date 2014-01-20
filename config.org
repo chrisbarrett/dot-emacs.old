@@ -6137,8 +6137,8 @@ emails.
 #+end_src
 *** Define a command picker for sending mail
 #+begin_src emacs-lisp
-(autoload 'org-compose-mail "cb-mail")
-(autoload 'org-compose-mail-subtree "cb-mail")
+(autoload 'org-compose-mail "cb-org-mail")
+(autoload 'org-compose-mail-subtree "cb-org-mail")
 
 (define-command-picker mail-picker
   :title "*Mail Commands*"

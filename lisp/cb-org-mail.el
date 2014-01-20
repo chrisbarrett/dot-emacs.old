@@ -1,4 +1,4 @@
-;;; cb-mail.el --- Configuration for email
+;;; cb-org-mail.el --- Configuration for email
 
 ;; Copyright (C) 2013 Chris Barrett
 
@@ -51,7 +51,7 @@
       (buffer-substring (region-beginning) (region-end)))
     ;; Get email address at point or read from user.
     (or (goto-address-find-address-at-point)
-        (cb-org:read-email))
+        (cbom:read-email))
     ;; Read the message subject interactively.
     (read-string "Subject: ")))
 
@@ -64,9 +64,9 @@
       ;; the compose buffer.
       (org-mode)
       (hook-fn 'kill-buffer-hook :local t (restore))
-      (buffer-local-set-key (kbd "<tab>") 'cb-org:message-tab)
+      (buffer-local-set-key (kbd "<tab>") 'cbom:message-tab)
       (buffer-local-set-key (kbd "C-c q") 'kill-this-buffer)
-      (buffer-local-set-key (kbd "C-c d") 'cb-org:message-send)
+      (buffer-local-set-key (kbd "C-c d") 'cbom:message-send)
       (buffer-local-set-key (kbd "C-c C-a") 'mail-add-attachment-ido)
       ;; Set org buffer properties.
       (insert (concat "#+TO: " to "\n"
@@ -81,7 +81,7 @@
           (insert region)))
       (message "<C-c d> to send message, <C-c q> to cancel."))))
 
-(defun cb-org:promote-heading-to-the-max ()
+(defun cbom:promote-heading-to-the-max ()
        (when (org-at-heading-p)
          (while (ignore-errors (org-promote-subtree) t))))
 
@@ -95,7 +95,7 @@
    (list
     ;; Get email address at point or read from user.
     (or (goto-address-find-address-at-point)
-        (cb-org:read-email))
+        (cbom:read-email))
     ;; Read the message subject interactively.
     (read-string "Subject: " (substring-no-properties (org-get-heading t t)))))
   (save-restriction
@@ -105,11 +105,11 @@
                 (org-mode)
                 (insert s)
                 (goto-char (point-min))
-                (cb-org:promote-heading-to-the-max)
+                (cbom:promote-heading-to-the-max)
                 (buffer-string))))
       (org-compose-mail s to subject))))
 
-(defun cb-org:read-email ()
+(defun cbom:read-email ()
   "Read an email address from BBDB using ido."
   (require 'bbdb)
   (ido-completing-read
@@ -121,30 +121,14 @@
                     (bbdb-record-mail record))))
      (-flatten))))
 
-(defun cb-org:buffer-substring-to-quote (beg end)
-  "Format the portion of the current buffer from BEG to END as a quote or code block."
-  (let ((str (s-trim (buffer-substring-no-properties beg end))))
-    ;; If the captured text is source code, wrap it in a code block. Otherwise
-    ;; wrap it in a block quote.
-    (if (derived-mode-p 'prog-mode)
-        (format "#+BEGIN_SRC %s\n%s\n#+END_SRC\n"
-                ;; Determine name of mode to use.
-                (cl-case major-mode
-                  (c-mode 'C)
-                  (emacs-lisp-mode 'elisp)
-                  (otherwise
-                   (car (s-split-words (symbol-name major-mode)))))
-                str)
-      (format "#+BEGIN_QUOTE\n%s\n#+END_QUOTE\n" str))))
-
-(defun cb-org:message-send ()
+(defun cbom:message-send ()
   "Export the org message compose buffer to HTML and send as an email.
 Kill the buffer when finished."
   ;; Create a new message, extracting header values from the compose buffer's
   ;; headers.
   (interactive)
   (let* ((str (buffer-string))
-         (headers (cb-org:header->alist str)))
+         (headers (cbom:header->alist str)))
     (save-window-excursion
       (compose-mail (cdr (assoc "TO" headers))
                     (cdr (assoc "SUBJECT" headers))
@@ -161,7 +145,7 @@ Kill the buffer when finished."
   ;; Restore previous window state.
   (kill-this-buffer))
 
-(defun cb-org:message-tab ()
+(defun cbom:message-tab ()
   "Complete email addresses in the header, otherwise cycle headlines."
   (interactive)
   (if (s-starts-with? "#+"(current-line))
@@ -181,7 +165,7 @@ Kill the buffer when finished."
               (replace-match ", ")))))
     (call-interactively 'org-cycle)))
 
-(defun cb-org:header->alist (str)
+(defun cbom:header->alist (str)
   "Extract the header values from the contents of the given buffer string STR."
   (->> (s-lines str)
     ;; Get header lines
@@ -196,6 +180,6 @@ Kill the buffer when finished."
                         it)
              (cons (s-upcase key) val)))))
 
-(provide 'cb-mail)
+(provide 'cb-org-mail)
 
-;;; cb-mail.el ends here
+;;; cb-org-mail.el ends here
