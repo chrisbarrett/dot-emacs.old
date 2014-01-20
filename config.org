@@ -5930,6 +5930,9 @@ Switch projects and subprojects from NEXT back to TODO."
 (defvar org-work-file (f-join org-directory "work.org")
   "Defines the path to file for work-related todos, etc.")
 
+(defvar cb-org:work-persistence-file (f-join cb:tmp-dir ".org-at-work")
+  "File to create that saves work state between sessions.")
+
 (defvar cb-org:at-work? nil "Non-nil if currently 'at work'.")
 
 (defun cb-org:goto-or-create-work-log ()
@@ -5940,19 +5943,22 @@ Switch projects and subprojects from NEXT back to TODO."
     (org-insert-heading-after-current)
     (insert "Work Log")))
 
+(defun cb-org:set-to-at-work (file)
+  (cb-org:set-notes-file file)
+  (with-current-buffer (find-file-noselect file)
+    (cb-org:goto-or-create-work-log)
+    (org-clock-in))
+  (setq cb-org:at-work? t)
+  (f-touch cb-org:work-persistence-file)
+  (message "At work"))
+
 (defun cb-org:toggle-at-work (file)
   "Toggle whether I am currently at work.
 FILE is the file to use as the notes file while at work."
   (interactive (list org-work-file))
   (cond
    ((equal org-default-notes-file org-init-notes-file)
-    (cb-org:set-notes-file file)
-    (with-current-buffer (find-file-noselect file)
-      (cb-org:goto-or-create-work-log)
-      (org-clock-in))
-    (setq cb-org:at-work? t)
-    (message "At work"))
-
+    (cb-org:set-to-at-work file))
    (t
     (with-current-buffer (find-file-noselect file)
       (cb-org:goto-or-create-work-log)
@@ -5960,7 +5966,15 @@ FILE is the file to use as the notes file while at work."
 
     (cb-org:set-notes-file org-init-notes-file)
     (setq cb-org:at-work? nil)
+    (f-delete cb-org:work-persistence-file)
     (message "Left work"))))
+
+(defun cb-org:maybe-set-to-work ()
+  "Set status to 'at-work' if the work persistence file exists."
+  (when (f-exists? cb-org:work-persistence-file)
+    (cb-org:set-to-at-work org-work-file)))
+
+(add-hook 'after-init-hook 'cb-org:maybe-set-to-work)
 
 (bind-key "<f12>" 'cb-org:toggle-at-work)
 #+end_src
