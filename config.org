@@ -3079,7 +3079,7 @@ This makes switching to a buffer in Emacs state more tolerable.
 (after 'man
   (evil-define-key 'normal Man-mode-map (kbd "q") 'Man-kill))
 
-(add-hook 'message-mode-hook 'evil-append-line)
+(add-hook 'message-mode-hook 'cb:maybe-evil-append-line)
 
 (after 'undo-tree
   ;; Ensure undo-tree commands are remapped. The referenced keymap in
