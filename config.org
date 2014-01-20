@@ -6332,7 +6332,6 @@ because the default keybinding conflicts with my window manager on OS X.
             "- Action :: "
             "** Notes"
             "%?")
-          :clock-in t
           :clock-keep t)
 
          ("o" "Phone Call (out)" entry
@@ -6345,7 +6344,6 @@ because the default keybinding conflicts with my window manager on OS X.
             "- Subject :: %^{Subject}"
             "** Notes"
             "%?")
-          :clock-in t
           :clock-keep t)
 
          ("b" "Bill" entry
