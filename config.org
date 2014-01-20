@@ -6119,6 +6119,15 @@ emails.
   (org-mime-change-element-style
    "pre" "border-left: 2px solid #B0B0B0; padding-left: 4px;"))
 #+end_src
+*** Fix undefined function
+#+begin_src emacs-lisp
+(defun org-export-grab-title-from-buffer ()
+  "")
+#+end_src
+*** Omit table of contents by default
+#+begin_src emacs-lisp
+(setq org-mime-default-header "#+OPTIONS: toc:nil latex:t\n")
+#+end_src
 ** Write subtrees to new files
 #+begin_src emacs-lisp
 (defun org-narrow-to-subtree-content ()
