@@ -5471,9 +5471,6 @@ Declare a modal command to show w3m.
          url
        (concat "http://" url)))
     (local-set-key (kbd "q") (command (restore)))))
-
-(after 'evil
-  (bind-key* "M-e" 'cb:w3m-browse-dwim))
 #+end_src
 ** END
 #+begin_src emacs-lisp
