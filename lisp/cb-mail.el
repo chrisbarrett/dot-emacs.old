@@ -26,32 +26,29 @@
 
 ;;; Code:
 
-(autoload 'bbdb-record-name "bbdb")
-(autoload 'std11-field-body "std11")
-(autoload 'bbdb-complete-mail "bbdb-com")
-(autoload 'bbdb-message-clean-name-default "bbdb-mua")
-(autoload 'bbdb-record-mail "bbdb")
+(require 'message)
+(require 'org)
+(require 'org-mime)
+(require 'bbdb)
+(require 's)
+(require 'dash)
 (autoload 'goto-address-find-address-at-point "goto-addr.el")
-(autoload 'bbdb-records "bbdb")
-
-;; Use org-mode-style tables and structure editing in message-mode.
-(after 'message
-  (add-hook 'message-mode-hook 'orgstruct++-mode)
-  (add-hook 'message-mode-hook 'orgtbl-mode)
-  (define-key message-mode-map (kbd "C-c RET RET") 'org-ctrl-c-ret))
 
 ;; Define a command for sending HTML emails.  Uses ido to read email addresses
 ;; and org-mode for message composition.
-(defun cb-org:compose-mail (region to subject)
+(defun org-compose-mail (region to subject)
   "Start composing a new message.
-* REGION is inserted into the compose buffer, if a region was active.
-* TO is either the email address at point or an address read by from the user.
-* SUBJECT is a string read from the user."
+
+- REGION is inserted into the compose buffer, if a region was active.
+
+- TO is either the email address at point or an address read by from the user.
+
+- SUBJECT is a string read from the user."
   (interactive
    (list
     ;; Extract the current region as a quote.
     (when (region-active-p)
-      (cb-org:buffer-substring-to-quote (region-beginning) (region-end)))
+      (buffer-substring (region-beginning) (region-end)))
     ;; Get email address at point or read from user.
     (or (goto-address-find-address-at-point)
         (cb-org:read-email))
@@ -72,12 +69,9 @@
       (buffer-local-set-key (kbd "C-c d") 'cb-org:message-send)
       (buffer-local-set-key (kbd "C-c C-a") 'mail-add-attachment-ido)
       ;; Set org buffer properties.
-      (insert (format (s-unlines
-                       "#+TO: %s"
-                       "#+SUBJECT: %s"
-                       "#+OPTIONS: toc:nil num:nil latex:t"
-                       "\n")
-                      to subject))
+      (insert (concat "#+TO: " to "\n"
+                      "#+SUBJECT: " subject "\n"
+                      org-mime-default-header))
       ;; Position in body.
       (cb:append-buffer)
       ;; Insert current region as quote.
@@ -86,6 +80,34 @@
           (newline)
           (insert region)))
       (message "<C-c d> to send message, <C-c q> to cancel."))))
+
+(defun cb-org:promote-heading-to-the-max ()
+       (when (org-at-heading-p)
+         (while (ignore-errors (org-promote-subtree) t))))
+
+(defun org-compose-mail-subtree (to subject)
+  "Compose a new message based on the current org subtree.
+
+- TO is either the email address at point or an address read by from the user.
+
+- SUBJECT is a string read from the user."
+  (interactive
+   (list
+    ;; Get email address at point or read from user.
+    (or (goto-address-find-address-at-point)
+        (cb-org:read-email))
+    ;; Read the message subject interactively.
+    (read-string "Subject: " (substring-no-properties (org-get-heading t t)))))
+  (save-restriction
+    (org-narrow-to-subtree)
+    (let* ((s (s-trim (buffer-substring (point-min) (point-max))))
+           (s (with-temp-buffer
+                (org-mode)
+                (insert s)
+                (goto-char (point-min))
+                (cb-org:promote-heading-to-the-max)
+                (buffer-string))))
+      (org-compose-mail s to subject))))
 
 (defun cb-org:read-email ()
   "Read an email address from BBDB using ido."

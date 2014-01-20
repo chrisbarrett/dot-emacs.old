@@ -5499,9 +5499,16 @@ Send messages in the background instead of blocking Emacs.
         (with-temp-buffer
           (insert ,(buffer-string))
           ;; Pass in the variable environment for smtpmail.
-          ,(async-inject-variables (rx (or "user" "mail")))
-          (smtpmail-send-it)))
-     `(lambda (&optional ignore)
+          (setq user-mail-address ,user-mail-address
+                smtpmail-mail-address ,smtpmail-mail-address
+                smtpmail-smtp-server ,smtpmail-smtp-server
+                smtpmail-smtp-service ,smtpmail-smtp-service
+                message-directory ,message-directory
+                message-auto-save-directory ,message-auto-save-directory)
+
+          (smtpmail-send-it)
+          nil))
+     `(lambda (&rest _)
         (message "Delivering message to %s...done" ,to)
         (run-hooks 'async-smtpmail-sent-hook)))))
 
@@ -6128,9 +6135,19 @@ emails.
 #+begin_src emacs-lisp
 (setq org-mime-default-header "#+OPTIONS: num:nil toc:nil latex:t\n")
 #+end_src
-*** Use custom message sending commands
+*** Define a command picker for sending mail
 #+begin_src emacs-lisp
-(require 'cb-mail)
+(autoload 'org-compose-mail "cb-mail")
+(autoload 'org-compose-mail-subtree "cb-mail")
+
+(define-command-picker mail-picker
+  :title "*Mail Commands*"
+  :options
+  '(("m" "Compose Mail" compose-mail)
+    ("o" "Compose Mail (org)" org-compose-mail)
+    ("s" "Compose Mail (subtree)" org-compose-mail-subtree :modes org-mode)))
+
+(bind-key* "C-x m" 'mail-picker)
 #+end_src
 ** Write subtrees to new files
 #+begin_src emacs-lisp
