@@ -6258,6 +6258,22 @@ because the default keybinding conflicts with my window manager on OS X.
 #+end_src
 ** Customise capture templates
 #+begin_src emacs-lisp
+(defun cb-org:find-caller-names ()
+  "Find the caller names in the current buffer."
+  (->> (buffer-string)
+    s-no-props
+    (s-match-strings-all
+     (rx bol (* space) "-" (+ space) (or "from" "to") (+ space) "::"
+         (+ space) (group (not (any "%")) (+ nonl)) (* space) eol))
+    (-map 'cadr)))
+
+(defun cb-org:read-caller ()
+  "Read a caller name, offering completions based on the current buffer."
+  (with-current-buffer (find-file-noselect org-default-notes-file)
+    (save-restriction
+      (widen)
+      (ido-completing-read "Caller: " (cb-org:find-caller-names)))))
+
 (require 'org-capture)
 (-each `(("t" "Todo" entry
           (file+headline org-default-notes-file "Tasks")
@@ -6299,9 +6315,12 @@ because the default keybinding conflicts with my window manager on OS X.
           (file+datetree org-default-notes-file "Calls")
           ,(s-unlines
             "* IN %U"
-            "- From :: %?"
-            "- To :: "
-            "- Subject :: ")
+            "- From :: %(cb-org:read-caller)"
+            "- To :: %(cb-org:read-caller)"
+            "- Subject :: %^{Subject}"
+            "- Action :: "
+            "** Notes"
+            "%?")
           :clock-in t
           :clock-keep t)
 
@@ -6309,8 +6328,9 @@ because the default keybinding conflicts with my window manager on OS X.
           (file+datetree org-default-notes-file "Calls")
           ,(s-unlines
             "* OUT %U"
-            "- To :: %^{To}"
+            "- To :: %(cb-org:read-caller)"
             "- Subject :: %^{Subject}"
+            "** Notes"
             "%?")
           :clock-in t
           :clock-keep t)
