@@ -28,7 +28,6 @@
 
 (require 'noflet)
 (require 'dash)
-(require 'cl-lib)
 (require 's)
 
 (cl-defun format-progress-bar (title pos length)
