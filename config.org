@@ -6104,7 +6104,7 @@ emails.
 #+begin_src emacs-lisp
 (require 'org-mime)
 #+end_src
-*** Define key bindings for HTML convertsion commands.
+*** Define key bindings for HTML conversion commands.
 #+begin_src emacs-lisp
 (define-key org-mode-map (kbd "C-c M-o") 'org-mime-org-buffer-htmlize)
 
