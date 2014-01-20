@@ -6124,9 +6124,9 @@ emails.
 (defun org-export-grab-title-from-buffer ()
   "")
 #+end_src
-*** Omit table of contents by default
+*** Set default org header options
 #+begin_src emacs-lisp
-(setq org-mime-default-header "#+OPTIONS: toc:nil latex:t\n")
+(setq org-mime-default-header "#+OPTIONS: num:nil toc:nil latex:t\n")
 #+end_src
 *** Use custom message sending commands
 #+begin_src emacs-lisp
