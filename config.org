@@ -9632,14 +9632,6 @@ Use the more recent python mode available on Marmalade.
 #+begin_src emacs-lisp
 (cb:install-package 'python)
 #+end_src
-*** Work around packaging issue
-FIX: the package file is malformed. Work around by manually autoloading
-=python-mode=.
-#+begin_src emacs-lisp
-(let ((pkg-dir (-first (~ s-matches? (rx "python-" digit))
-                       (f-directories cb:elpa-dir))))
-  (autoload 'python-mode (f-join pkg-dir "python.el") nil t))
-#+end_src
 *** Emulate prog-mode
 =python-mode= is not derived from prog mode, but we still want all the
 programming goodies, so run the hook manually.
