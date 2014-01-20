@@ -536,7 +536,8 @@ Captured messages are marked as read."
       (message "Capturing messages..."))
 
     (unwind-protect
-        (let ((ms (cbom:unprocessed-messages (AP cbom:org-mail-folder))))
+        (let ((ms (cbom:unprocessed-messages (AP cbom:org-mail-folder)))
+              (org-default-notes-file org-init-notes-file))
           (cbom:capture-messages ms)
           (-each ms 'cbom:mark-as-read)
 
