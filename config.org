@@ -6303,7 +6303,7 @@ because the default keybinding conflicts with my window manager on OS X.
             "- To :: "
             "- Subject :: ")
           :clock-in t
-          :clock-resume t)
+          :clock-keep t)
 
          ("o" "Phone Call (out)" entry
           (file+datetree org-default-notes-file "Calls")
@@ -6313,7 +6313,7 @@ because the default keybinding conflicts with my window manager on OS X.
             "- Subject :: %^{Subject}"
             "%?")
           :clock-in t
-          :clock-resume t)
+          :clock-keep t)
 
          ("b" "Bill" entry
           (file+olp org-default-notes-file "Finance" "Bills")
