@@ -69,13 +69,13 @@
       (hook-fn 'kill-buffer-hook :local t (restore))
       (buffer-local-set-key (kbd "<tab>") 'cb-org:message-tab)
       (buffer-local-set-key (kbd "C-c q") 'kill-this-buffer)
-      (buffer-local-set-key (kbd "C-c c") 'cb-org:message-send)
+      (buffer-local-set-key (kbd "C-c d") 'cb-org:message-send)
       (buffer-local-set-key (kbd "C-c C-a") 'mail-add-attachment-ido)
       ;; Set org buffer properties.
       (insert (format (s-unlines
                        "#+TO: %s"
                        "#+SUBJECT: %s"
-                       "#+OPTIONS: toc:nil num:nil"
+                       "#+OPTIONS: toc:nil num:nil latex:t"
                        "\n")
                       to subject))
       ;; Position in body.
@@ -85,7 +85,7 @@
         (save-excursion
           (newline)
           (insert region)))
-      (message "<C-c c> to send message, <C-c q> to cancel."))))
+      (message "<C-c d> to send message, <C-c q> to cancel."))))
 
 (defun cb-org:read-email ()
   "Read an email address from BBDB using ido."
@@ -176,10 +176,6 @@ Kill the buffer when finished."
 
 (bind-key* "C-x m" 'cb-org:compose-mail)
 (bind-key* "C-x M" 'compose-mail)
-
-(use-package muttrc-mode
-  :ensure t
-  :mode ("muttrc$" . muttrc-mode))
 
 ;; -----------------------------------------------------------------------------
 ;; Define custom mode for mutt message composition.

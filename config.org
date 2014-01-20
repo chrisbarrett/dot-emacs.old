@@ -6128,6 +6128,10 @@ emails.
 #+begin_src emacs-lisp
 (setq org-mime-default-header "#+OPTIONS: toc:nil latex:t\n")
 #+end_src
+*** Use custom message sending commands
+#+begin_src emacs-lisp
+(require 'cb-mail)
+#+end_src
 ** Write subtrees to new files
 #+begin_src emacs-lisp
 (defun org-narrow-to-subtree-content ()
