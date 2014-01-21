@@ -6506,7 +6506,8 @@ They should be displayed modally.
       (->> '(("A" "Agenda and next actions"
               ((agenda "" ((org-agenda-ndays 1)))
                (tags-todo "-someday-media/NEXT")
-               (tags-todo "media/NEXT")))
+               (tags-todo "media/NEXT"))
+              ((org-agenda-tag-filter-preset '("-@work"))))
 
              ("W" "Agenda and work actions"
               ((agenda "" ((org-agenda-ndays 14)))
