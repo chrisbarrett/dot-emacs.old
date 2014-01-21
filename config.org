@@ -5945,12 +5945,9 @@ Switch projects and subprojects from NEXT back to TODO."
 (defvar cb-org:at-work? nil "Non-nil if currently 'at work'.")
 
 (defun cb-org:goto-or-create-work-log ()
-  (goto-char (point-max))
-  ;; Create top-level item.
-  (if (search-backward-regexp (rx bol "* Work Log") nil t)
-      (end-of-line)
-    (org-insert-heading-after-current)
-    (insert "Work Log")))
+  (cl-destructuring-bind (_s _m _h d mo y &rest _)
+      (decode-time (current-time))
+    (org-datetree-find-date-create (list mo d y))))
 
 (defun cb-org:set-to-at-work (file)
   (cb-org:set-notes-file file)
@@ -5975,7 +5972,10 @@ FILE is the file to use as the notes file while at work."
 
     (cb-org:set-notes-file org-init-notes-file)
     (setq cb-org:at-work? nil)
-    (f-delete cb-org:work-persistence-file)
+
+    (when (f-exists? cb-org:work-persistence-file)
+      (f-delete cb-org:work-persistence-file))
+
     (message "Left work"))))
 
 (defun cb-org:maybe-set-to-work ()
