@@ -6319,20 +6319,12 @@ because the default keybinding conflicts with my window manager on OS X.
 (require 'org-capture)
 (-each `(("t" "Todo" entry
           (file+headline org-default-notes-file "Tasks")
-          ,(s-unlines
-            "* TODO %?"
-            ":PROPERTIES:"
-            ":CAPTURED: %U"
-            ":END:")
+          "* TODO %?"
           :clock-keep t)
 
          ("s" "Someday" entry
           (file+headline org-default-notes-file "Someday")
-          ,(s-unlines
-            "* MAYBE %?"
-            ":PROPERTIES:"
-            ":CAPTURED: %U"
-            ":END:")
+          "* MAYBE %?"
           :clock-keep t)
 
          ("d" "Diary" entry
@@ -6347,64 +6339,38 @@ because the default keybinding conflicts with my window manager on OS X.
             "SCHEDULED: %t"
             ":PROPERTIES:"
             ":STYLE: habit"
-            ":CAPTURED: %U"
             ":END:")
           :clock-keep t)
 
          ("b" "Bill" entry
           (file+olp org-default-notes-file "Finance" "Bills")
-          ,(s-unlines
-            "* TODO %?"
-            ":PROPERTIES:"
-            ":CAPTURED: %U"
-            ":END:")
+          "* TODO %?"
           :clock-keep t)
 
          ("l" "Link" entry
           (file+headline org-default-notes-file "Links")
-          ,(s-unlines
-            "* %c"
-            ":PROPERTIES:"
-            ":CAPTURED: %U"
-            ":END:"
-            "%i")
+          "* %c\n%i"
           :immediate-finish t
           :clock-keep t)
 
          ("m" "Listening" entry
           (file+olp org-default-notes-file "Someday" "Listening")
-          ,(s-unlines
-            "* MAYBE Listen to %i%?"
-            ":PROPERTIES:"
-            ":CAPTURED: %U"
-            ":END:")
+          "* MAYBE Listen to %i%?"
           :clock-keep t)
 
          ("v" "Viewing" entry
           (file+olp org-default-notes-file "Someday" "Viewing")
-          ,(s-unlines
-            "* MAYBE Watch %i%?"
-            ":PROPERTIES:"
-            ":CAPTURED: %U"
-            ":END:")
+          "* MAYBE Watch %i%?"
           :clock-keep t)
 
          ("r" "Reading" entry
           (file+olp org-default-notes-file "Someday" "Reading")
-          ,(s-unlines
-            "* MAYBE Read %i%?"
-            ":PROPERTIES:"
-            ":CAPTURED: %U"
-            ":END:")
+          "* MAYBE Read %i%?"
           :clock-keep t)
 
          ("n" "Note" entry
           (file+headline org-default-notes-file "Notes")
-          ,(s-unlines
-            "* %i%?"
-            ":PROPERTIES:"
-            ":CAPTURED: %U"
-            ":END:")
+          "* %i%?"
           :clock-keep t)
 
          ;; Work-related tasks
@@ -6510,11 +6476,11 @@ They should be displayed modally.
               ((org-agenda-tag-filter-preset '("-@work"))))
 
              ("W" "Agenda and work actions"
-              ((agenda "" ((org-agenda-ndays 14)))
-               (tags-todo "collect")
+              ((tags-todo "collect")
                (tags-todo "@phone")
                (todo "NEXT")
-               (todo "WAITING"))
+               (todo "WAITING")
+               (agenda "" ((org-agenda-ndays 14))))
               ((org-agenda-tag-filter-preset '("+@work"))
                (org-agenda-hide-tags-regexp
                 (regexp-opt (list org-agenda-hide-tags-regexp
