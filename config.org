@@ -5669,7 +5669,9 @@ than =fill-column=.
 Add executors for common org views.
 #+begin_src emacs-lisp
 (declare-modal-executor org-agenda-fullscreen
-  :command (org-agenda current-prefix-arg "A"))
+  :command (if cb-org:at-work?
+               (org-agenda current-prefix-arg "W")
+             (org-agenda current-prefix-arg "A")))
 
 (declare-modal-executor org-show-todo-list
   :command (progn
@@ -6307,12 +6309,12 @@ because the default keybinding conflicts with my window manager on OS X.
          (+ space) (group (not (any "%")) (+ nonl)) (* space) eol))
     (-map 'cadr)))
 
-(defun cb-org:read-caller ()
+(defun cb-org:read-caller (prompt)
   "Read a caller name, offering completions based on the current buffer."
   (with-current-buffer (find-file-noselect org-default-notes-file)
     (save-restriction
       (widen)
-      (ido-completing-read "Caller: " (cb-org:find-caller-names)))))
+      (ido-completing-read prompt (cb-org:find-caller-names)))))
 
 (require 'org-capture)
 (-each `(("t" "Todo" entry
@@ -6347,32 +6349,6 @@ because the default keybinding conflicts with my window manager on OS X.
             ":STYLE: habit"
             ":CAPTURED: %U"
             ":END:")
-          :clock-keep t)
-
-         ("p" "Phone Call (in)" entry
-          (file+datetree org-default-notes-file "Calls")
-          ,(s-unlines
-            "* IN %U"
-            ":LOGBOOK:"
-            ":END:"
-            "- From :: %(cb-org:read-caller)"
-            "- To :: %(cb-org:read-caller)"
-            "- Subject :: %^{Subject}"
-            "- Action :: "
-            "** Notes"
-            "%?")
-          :clock-keep t)
-
-         ("o" "Phone Call (out)" entry
-          (file+datetree org-default-notes-file "Calls")
-          ,(s-unlines
-            "* OUT %U"
-            ":LOGBOOK:"
-            ":END:"
-            "- To :: %(cb-org:read-caller)"
-            "- Subject :: %^{Subject}"
-            "** Notes"
-            "%?")
           :clock-keep t)
 
          ("b" "Bill" entry
@@ -6431,25 +6407,27 @@ because the default keybinding conflicts with my window manager on OS X.
             ":END:")
           :clock-keep t)
 
-         ("z" "Task Note" entry
-          (clock)
-          ,(s-unlines
-            "* %i%?"
-            ":PROPERTIES:"
-            ":CAPTURED: %U"
-            ":END:")
-          :clock-keep t
-          :kill-buffer t)
+         ;; Work-related tasks
 
-         ("L" "Task Link" entry
-          (clock)
+         ("c" "Collection" entry
+          (file+datetree org-default-notes-file)
           ,(s-unlines
-            "* %a%?"
-            ":PROPERTIES:"
-            ":CAPTURED: %U"
-            ":END:")
-          :clock-keep t
-          :kill-buffer t)
+            "* TODO %^{Item} -> %^{To} %U  :collect:"
+            "** Notes"
+            "%?")
+          :clock-keep t)
+
+         ("p" "Phone Call" entry
+          (file+datetree org-default-notes-file)
+          ,(s-unlines
+            "* TRANSFERRED Call %U  :@phone:"
+            "- From :: %(cb-org:read-caller \"From: \")"
+            "- To :: %(cb-org:read-caller \"To: \")"
+            "- Subject :: %^{Subject}"
+            "- Action :: "
+            "** Notes"
+            "%?")
+          :clock-keep t)
          )
        (~ add-to-list 'org-capture-templates))
 #+end_src
@@ -6519,7 +6497,7 @@ Don't show deadlines or scheduled tasks that have been completed.
 #+end_src
 *** Hide ubiquitous tags from agenda
 #+begin_src emacs-lisp
-(setq org-agenda-hide-tags-regexp "someday")
+(setq org-agenda-hide-tags-regexp (rx (or "noexport" "someday")))
 #+end_src
 *** Define agenda views
 They should be displayed modally.
@@ -6528,9 +6506,46 @@ They should be displayed modally.
       (->> '(("A" "Agenda and next actions"
               ((agenda "" ((org-agenda-ndays 1)))
                (tags-todo "-someday-media/NEXT")
-               (tags-todo "media/NEXT"))
-              ((org-agenda-tag-filter-preset (when cb-org:at-work?
-                                               '("-drill")))))
+               (tags-todo "media/NEXT")))
+
+             ("W" "Agenda and work actions"
+              ((agenda "" ((org-agenda-ndays 14)))
+               (tags-todo "collect")
+               (tags-todo "@phone")
+               (todo "NEXT")
+               (todo "WAITING"))
+              ((org-agenda-tag-filter-preset '("+@work"))
+               (org-agenda-hide-tags-regexp
+                (regexp-opt (list org-agenda-hide-tags-regexp
+                                  "@work"
+                                  "rpm")))))
+
+             ("n" "Next actions"
+              ((tags-todo "-someday/NEXT")))
+
+             ("w" "Weekly Review"
+              ((agenda "" ((org-agenda-ndays 7)))
+               (stuck "")
+               (todo "WAITING")
+               (tags-todo "someday-media-skill/MAYBE|NEXT")
+               (tags-todo "someday&skill")
+               (tags-todo "someday&media"))
+              ((org-agenda-tag-filter-preset '("-drill"))))
+
+             ("g" . "GTD contexts")
+             ("gg" "Anywhere"
+              ((tags-todo "@computer")
+               (tags-todo "@errand")
+               (tags-todo "@home")
+               (tags-todo "@leisure")
+               (tags-todo "@phone")
+               (tags-todo "@work")))
+             ("gc" "Computer" tags-todo "@computer")
+             ("ge" "Errands"  tags-todo "@errand")
+             ("gp" "Phone"    tags-todo "@phone")
+             ("gw" "Work"     tags-todo "@work")
+             ("gh" "Home"     tags-todo "@home")
+             ("gl" "Leisure"  tags-todo "@leisure")
 
              ("n" "Next actions"
               ((tags-todo "-someday/NEXT")))
@@ -6756,11 +6771,12 @@ The starting day is taken to be the weekday on which the event will repeat."
 *** Define todo keywords
 #+begin_src emacs-lisp
 (setq org-todo-keywords
-      '((sequence
-         "TODO(t)" "NEXT(n!)" "MAYBE(m!)"
-         "OUTSTANDING(o)" "WAITING(w@/!)" "APPT(a!)"
-         "|"
-         "DONE(d!)" "PAID(p!)" "VOID(v@)" "CANCELLED(c@)" "DELEGATED(D@)")))
+      '((sequence "READY(r)" "|" "COLLECTED(c!)" "CANCELLED(k@)")
+        (sequence "CALLBACK" "MESSAGE" "|" "TRANSFERRED" "HANDLED(h@)")
+        (type "MAYBE(m!)")
+        (sequence "OUTSTANDING(o)" "|" "PAID(p!)" "VOID(v@)")
+        (sequence "TODO(t)" "NEXT(n!)" "WAITING(w@/!)" "APPT(a!)"
+                  "|" "DONE(d!)" "CANCELLED(c@)" "DELEGATED(D@)")))
 #+end_src
 *** Use special face for NEXT keyword
 #+begin_src emacs-lisp
