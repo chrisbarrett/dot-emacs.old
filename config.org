@@ -6738,12 +6738,10 @@ The starting day is taken to be the weekday on which the event will repeat."
 *** Define todo keywords
 #+begin_src emacs-lisp
 (setq org-todo-keywords
-      '((sequence "READY(r)" "|" "COLLECTED(c!)" "CANCELLED(k@)")
-        (sequence "CALLBACK" "MESSAGE" "|" "TRANSFERRED" "HANDLED(h@)")
-        (type "MAYBE(m!)")
-        (sequence "OUTSTANDING(o)" "|" "PAID(p!)" "VOID(v@)")
-        (sequence "TODO(t)" "NEXT(n!)" "WAITING(w@/!)" "APPT(a!)"
-                  "|" "DONE(d!)" "CANCELLED(c@)" "DELEGATED(D@)")))
+      '((type "READY(r)" "|" "COLLECTED(c!)" "CANCELLED(k@)")
+        (type "CALLBACK" "MESSAGE" "|" "TRANSFERRED" "HANDLED(h@)")
+        (type "MAYBE(m)" "TODO(t)" "NEXT(n)" "WAITING(w@/!)" "APPT(a)"
+              "|" "DONE(d!)" "CANCELLED(c@)" "DELEGATED(D@)")))
 #+end_src
 *** Use special face for NEXT keyword
 #+begin_src emacs-lisp
