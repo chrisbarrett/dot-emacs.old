@@ -6465,6 +6465,10 @@ Don't show deadlines or scheduled tasks that have been completed.
 #+begin_src emacs-lisp
 (setq org-agenda-hide-tags-regexp (rx (or "noexport" "someday")))
 #+end_src
+*** Hide inherited tags from the agenda
+#+begin_src emacs-lisp
+(setq org-agenda-show-inherited-tags nil)
+#+end_src
 *** Define agenda views
 They should be displayed modally.
 #+begin_src emacs-lisp
