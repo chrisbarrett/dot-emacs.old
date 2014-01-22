@@ -6482,10 +6482,9 @@ They should be displayed modally.
                (todo "WAITING")
                (agenda "" ((org-agenda-ndays 14))))
               ((org-agenda-tag-filter-preset '("+@work"))
+               (org-agenda-files (list org-work-file))
                (org-agenda-hide-tags-regexp
-                (regexp-opt (list org-agenda-hide-tags-regexp
-                                  "@work"
-                                  "rpm")))))
+                (regexp-opt (list org-agenda-hide-tags-regexp "@work")))))
 
              ("n" "Next actions"
               ((tags-todo "-someday/NEXT")))
