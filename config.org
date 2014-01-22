@@ -6471,32 +6471,30 @@ They should be displayed modally.
 (setq org-agenda-custom-commands
       (->> '(("A" "Agenda and next actions"
               ((agenda "" ((org-agenda-ndays 1)))
-               (tags-todo "-someday-media/NEXT")
-               (tags-todo "media/NEXT"))
+               (tags-todo "-someday-media/NEXT"
+                          ((org-agenda-overriding-header "Next Actions")))
+               (tags-todo "media/NEXT"
+                          ((org-agenda-overriding-header "Media"))))
               ((org-agenda-tag-filter-preset '("-@work"))))
 
              ("W" "Agenda and work actions"
-              ((tags-todo "collect")
-               (tags-todo "@phone")
-               (todo "NEXT")
-               (todo "WAITING")
-               (agenda "" ((org-agenda-ndays 14))))
+              ((agenda "" ((org-agenda-ndays 14)))
+               (tags-todo "collect"
+                          ((org-agenda-overriding-header "Collections")))
+               (tags-todo "@phone"
+                          ((org-agenda-overriding-header "Phone calls")))
+               (todo "NEXT"
+                     ((org-agenda-overriding-header "Next Actions")))
+               (todo "WAITING"
+                     ((org-agenda-overriding-header "Waiting"))))
               ((org-agenda-tag-filter-preset '("+@work"))
                (org-agenda-files (list org-work-file))
                (org-agenda-hide-tags-regexp
                 (regexp-opt (list org-agenda-hide-tags-regexp "@work")))))
 
              ("n" "Next actions"
-              ((tags-todo "-someday/NEXT")))
-
-             ("w" "Weekly Review"
-              ((agenda "" ((org-agenda-ndays 7)))
-               (stuck "")
-               (todo "WAITING")
-               (tags-todo "someday-media-skill/MAYBE|NEXT")
-               (tags-todo "someday&skill")
-               (tags-todo "someday&media"))
-              ((org-agenda-tag-filter-preset '("-drill"))))
+              ((tags-todo "-someday/NEXT"))
+              ((org-agenda-overriding-header "Next Actions")))
 
              ("g" . "GTD contexts")
              ("gg" "Anywhere"
@@ -6513,16 +6511,17 @@ They should be displayed modally.
              ("gh" "Home"     tags-todo "@home")
              ("gl" "Leisure"  tags-todo "@leisure")
 
-             ("n" "Next actions"
-              ((tags-todo "-someday/NEXT")))
-
              ("w" "Weekly Review"
               ((agenda "" ((org-agenda-ndays 7)))
                (stuck "")
-               (todo "WAITING")
-               (tags-todo "someday-media-skill/MAYBE|NEXT")
-               (tags-todo "someday&skill")
-               (tags-todo "someday&media"))
+               (todo "WAITING"
+                     ((org-agenda-overriding-header "Waiting")))
+               (tags-todo "someday-skill/MAYBE|NEXT"
+                          ((org-agenda-overriding-header "Someday")))
+               (tags-todo "someday&skill"
+                          ((org-agenda-overriding-header "Skills")))
+               (tags-todo "media"
+                          ((org-agenda-overriding-header "Media"))))
               ((org-agenda-tag-filter-preset '("-drill"))))
 
              ("g" . "GTD contexts")
