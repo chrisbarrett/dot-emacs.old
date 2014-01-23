@@ -6426,7 +6426,7 @@ because the default keybinding conflicts with my window manager on OS X.
 (hook-fn 'org-agenda-mode-hook
   (run-hooks 'org-agenda-customise-window-hook))
 #+end_src
-*** Exclude tasks with :hold: tag
+*** Exclude tasks with 'hold' tag
 #+begin_src emacs-lisp
 (defun cb-org:exclude-tasks-on-hold (tag)
   (and (equal tag "hold") (concat "-" tag)))
