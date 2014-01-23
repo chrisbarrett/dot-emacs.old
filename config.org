@@ -6186,6 +6186,28 @@ The postamble usually displays the creator, org version, etc.
 #+begin_src emacs-lisp
 (setq org-html-postamble nil)
 #+end_src
+**** Use alternating table row colours
+#+begin_src emacs-lisp
+(setq org-html-head-extra
+      "
+<style type=\"text/css\">
+table tr.tr-odd td {
+      background-color: #FCF6CF;
+}
+table tr.tr-even td {
+      background-color: #FEFEF2;
+}
+</style>
+")
+
+(setq org-html-table-row-tags
+      (cons '(cond (top-row-p "<tr class=\"tr-top\">")
+                   (bottom-row-p "<tr class=\"tr-bottom\">")
+                   (t (if (= (mod row-number 2) 1)
+                          "<tr class=\"tr-odd\">"
+                        "<tr class=\"tr-even\">")))
+            "</tr>"))
+#+end_src
 *** texinfo
 #+begin_src emacs-lisp
 (require 'ox-texinfo)
