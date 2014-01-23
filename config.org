@@ -6470,8 +6470,8 @@ They should be displayed modally.
 
              ("W" "Agenda and work actions"
               ((agenda "" ((org-agenda-ndays 14)))
-               (tags-todo "collect"
-                          ((org-agenda-overriding-header "Collections")))
+               (todo "READY"
+                     ((org-agenda-overriding-header "Collections")))
                (tags-todo "@phone"
                           ((org-agenda-overriding-header "Phone calls")))
                (todo "NEXT"
