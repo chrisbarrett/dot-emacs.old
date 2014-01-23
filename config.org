@@ -6318,12 +6318,12 @@ because the default keybinding conflicts with my window manager on OS X.
 
 (require 'org-capture)
 (-each `(("t" "Todo" entry
-          (file+headline org-default-notes-file "Tasks")
+          (file+olp org-default-notes-file "Tasks")
           "* TODO %?"
           :clock-keep t)
 
          ("s" "Someday" entry
-          (file+headline org-default-notes-file "Someday")
+          (file+olp org-default-notes-file "Someday")
           "* MAYBE %?"
           :clock-keep t)
 
@@ -6333,7 +6333,7 @@ because the default keybinding conflicts with my window manager on OS X.
           :clock-keep t)
 
          ("h" "Habit" entry
-          (file+headline org-default-notes-file "Habits/Recurring")
+          (file+olp org-default-notes-file "Habits/Recurring")
           ,(s-unlines
             "* TODO %?"
             "SCHEDULED: %t"
@@ -6348,7 +6348,7 @@ because the default keybinding conflicts with my window manager on OS X.
           :clock-keep t)
 
          ("l" "Link" entry
-          (file+headline org-default-notes-file "Links")
+          (file+olp org-default-notes-file "Links")
           "* %c\n%i"
           :immediate-finish t
           :clock-keep t)
@@ -6369,7 +6369,7 @@ because the default keybinding conflicts with my window manager on OS X.
           :clock-keep t)
 
          ("n" "Note" entry
-          (file+headline org-default-notes-file "Notes")
+          (file+olp org-default-notes-file "Notes")
           "* %i%?"
           :clock-keep t)
 
