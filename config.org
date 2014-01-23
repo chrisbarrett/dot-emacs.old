@@ -8076,33 +8076,6 @@ Define a command picker for printer and scanner functions.
 #+begin_src emacs-lisp
 (add-to-list 'ac-modes 'json-mode)
 #+end_src
-* fsharp-mode
-#+begin_src emacs-lisp
-(cb:install-package 'fsharp-mode)
-#+end_src
-** auto-complete
-#+begin_src emacs-lisp
-(after 'auto-complete
-  (add-to-list 'ac-modes 'fsharp-mode))
-#+end_src
-** Do not show ac popup in terminal
-#+begin_src emacs-lisp
-(unless (display-graphic-p)
-  (setq fsharp-ac-use-popup nil))
-#+end_src
-* SML
-#+begin_src emacs-lisp
-(cb:install-package 'sml-mode)
-#+end_src
-** Customise variables
-#+begin_src emacs-lisp
-(setq sml-indent-level 2)
-#+end_src
-** Ignore compiled ML files
-#+begin_src emacs-lisp
-(add-to-list 'completion-ignored-extensions "\\.cm")
-(add-to-list 'completion-ignored-extensions "\\.CM")
-#+end_src
 * XML
 Enable nxml-mode if when visiting a file with a DTD.
 #+begin_src emacs-lisp
@@ -11564,6 +11537,19 @@ SILENT? controls whether provide feedback to the user on the action performed."
 #+begin_src emacs-lisp
 )
 #+end_src
+* SML
+#+begin_src emacs-lisp
+(cb:install-package 'sml-mode)
+#+end_src
+** Customise variables
+#+begin_src emacs-lisp
+(setq sml-indent-level 2)
+#+end_src
+** Ignore compiled ML files
+#+begin_src emacs-lisp
+(add-to-list 'completion-ignored-extensions "\\.cm")
+(add-to-list 'completion-ignored-extensions "\\.CM")
+#+end_src
 * OCaml
 #+begin_src emacs-lisp
 (cb:install-package 'tuareg)
@@ -11978,6 +11964,55 @@ where they should not be padded."
       (message "No active OCaml buffers")))
 
   (define-key utop-mode-map (kbd "C-c C-z") 'cb-ocaml:switch-to-src))
+#+end_src
+* F#
+F# is syntactically close enough to OCaml that we can reuse the utilities
+defined for that language.
+#+begin_src emacs-lisp
+(cb:install-package 'fsharp-mode)
+#+end_src
+** auto-complete
+#+begin_src emacs-lisp
+(after 'auto-complete
+  (add-to-list 'ac-modes 'fsharp-mode))
+#+end_src
+** Do not show ac popup in terminal
+#+begin_src emacs-lisp
+(unless (display-graphic-p)
+  (setq fsharp-ac-use-popup nil))
+#+end_src
+** configure smart parens
+*** Define pairs
+#+begin_src emacs-lisp
+(sp-with-modes '(fsharp-mode)
+  (sp-local-pair "[|" "|]")
+  (sp-local-pair "[<" ">]")
+  (sp-local-pair "`" nil :actions nil))
+#+end_src
+*** Pad pairs with spaces
+Pad parens and other delimiters with spaces to emulate paredit's behaviour.
+#+begin_src emacs-lisp
+(sp-with-modes '(fsharp-mode)
+  (sp-local-pair "\"" "\"" :post-handlers '(:add sp-ocaml-just-one-space))
+  (sp-local-pair "{" "}" :post-handlers '(:add sp-ocaml-just-one-space))
+  (sp-local-pair "[" "]" :post-handlers '(:add sp-ocaml-just-one-space))
+  (sp-local-pair "(" ")" :post-handlers '(:add sp-ocaml-just-one-space))
+  (sp-local-pair "'" nil :actions nil))
+#+end_src
+** advise insertion commands to ensure a space is inserted around parens
+#+begin_src emacs-lisp
+(hook-fns '(fsharp-mode)
+  (add-hook 'post-self-insert-hook 'cb-ocaml:maybe-pad-parens nil t))
+#+end_src
+** configure smart operators
+#+begin_src emacs-lisp
+(put 'fsharp-mode 'smart-operator-alist cb-ocaml:smart-operator-list)
+(after 'fsharp-mode (cb-ocaml:set-keys fsharp-mode-map))
+#+end_src
+** configure context-sensitive M-RET
+#+begin_src emacs-lisp
+(after 'fsharp-mode
+  (define-key fsharp-mode-map (kbd "M-RET") 'cb-ocaml:meta-ret))
 #+end_src
 * Mutt
 #+begin_src emacs-lisp
