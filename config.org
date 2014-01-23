@@ -6476,6 +6476,8 @@ They should be displayed modally.
               ((agenda "" ((org-agenda-ndays 1)))
                (tags-todo "-someday-media/NEXT"
                           ((org-agenda-overriding-header "Next Actions")))
+               (todo "WAITING"
+                     ((org-agenda-overriding-header "Waiting")))
                (tags-todo "media/NEXT"
                           ((org-agenda-overriding-header "Media"))))
               ((org-agenda-tag-filter-preset '("-@work"))))
