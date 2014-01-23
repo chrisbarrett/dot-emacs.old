@@ -6477,7 +6477,9 @@ They should be displayed modally.
                (todo "NEXT"
                      ((org-agenda-overriding-header "Next Actions")))
                (todo "WAITING"
-                     ((org-agenda-overriding-header "Waiting"))))
+                     ((org-agenda-overriding-header "Waiting")))
+               (todo "LEASED"
+                     ((org-agenda-overriding-header "Leased Equipment"))))
               ((org-agenda-tag-filter-preset '("+@work"))
                (org-agenda-files (list org-work-file))
                (org-agenda-show-all-dates nil)
@@ -6729,6 +6731,7 @@ The starting day is taken to be the weekday on which the event will repeat."
 #+begin_src emacs-lisp
 (setq org-todo-keywords
       '((type "READY(r)" "|" "COLLECTED(c!)" "CANCELLED(k@)")
+        (type "LEASED(l@)" "|" "RETURNED(!)" "LOST(!)")
         (type "CALLBACK" "MESSAGE" "|" "TRANSFERRED" "HANDLED(h@)")
         (type "MAYBE(m)" "TODO(t)" "NEXT(n)" "WAITING(w@/!)" "APPT(a)"
               "|" "DONE(d!)" "CANCELLED(c@)" "DELEGATED(D@)")))
