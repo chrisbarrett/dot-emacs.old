@@ -6468,6 +6468,10 @@ Don't show deadlines or scheduled tasks that have been completed.
 #+begin_src emacs-lisp
 (setq org-agenda-show-inherited-tags nil)
 #+end_src
+*** Only show dates with entries in agenda
+#+begin_src emacs-lisp
+(setq org-agenda-show-all-dates nil)
+#+end_src
 *** Define agenda views
 They should be displayed modally.
 #+begin_src emacs-lisp
@@ -6496,7 +6500,6 @@ They should be displayed modally.
                      ((org-agenda-overriding-header "Leased Equipment"))))
               ((org-agenda-tag-filter-preset '("+@work"))
                (org-agenda-files (list org-work-file))
-               (org-agenda-show-all-dates nil)
                (org-agenda-hide-tags-regexp
                 (regexp-opt (list org-agenda-hide-tags-regexp "@work")))))
 
