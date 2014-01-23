@@ -6480,6 +6480,7 @@ They should be displayed modally.
                      ((org-agenda-overriding-header "Waiting"))))
               ((org-agenda-tag-filter-preset '("+@work"))
                (org-agenda-files (list org-work-file))
+               (org-agenda-show-all-dates nil)
                (org-agenda-hide-tags-regexp
                 (regexp-opt (list org-agenda-hide-tags-regexp "@work")))))
 
