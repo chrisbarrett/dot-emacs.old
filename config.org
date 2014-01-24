@@ -5816,8 +5816,9 @@ functions shallow.
 #+end_src
 *** Persist the clock across Emacs sessions
 #+begin_src emacs-lisp
-(setq org-clock-persist t)
-(org-clock-persistence-insinuate)
+(unless noninteractive
+  (setq org-clock-persist t)
+  (org-clock-persistence-insinuate))
 #+end_src
 *** Clock out of tasks automatically when they are marked as DONE
 #+begin_src emacs-lisp
