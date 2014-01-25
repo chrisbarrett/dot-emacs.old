@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: module
+# key: mo
+# condition: (cbyas:bol?)
+# --
+module $0
