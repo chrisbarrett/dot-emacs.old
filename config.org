@@ -405,7 +405,7 @@ These paths should be named.
 #+begin_src emacs-lisp
 (defconst user-home-directory    (concat (getenv "HOME") "/"))
 (defconst user-dropbox-directory (concat user-home-directory "Dropbox/"))
-(defconst user-mail-directory    (f-join user-home-directory "Maildir"))
+(defconst user-mail-directory    (f-join user-home-directory "Mail"))
 #+end_src
 These common paths should be named and created if necessary.
 #+begin_src emacs-lisp

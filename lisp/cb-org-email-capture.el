@@ -97,7 +97,7 @@
 ;; IO FilePath
 (defvar cbom:org-mail-folder
   (lambda ()
-    (->> (f-join user-home-directory "Maildir")
+    (->> (f-join user-home-directory "Mail")
       (f-directories)
       (-mapcat 'f-directories)
       (-first (~ s-ends-with? "org"))))
