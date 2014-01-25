@@ -6401,7 +6401,7 @@ because the default keybinding conflicts with my window manager on OS X.
          ("c" "Collection" entry
           (file+datetree org-default-notes-file)
           ,(s-unlines
-            "* READY %^{Item} -> %^{To}  :collect:"
+            "* READY %^{Item} -> %^{To}"
             "%?")
           :clock-keep t)
 
