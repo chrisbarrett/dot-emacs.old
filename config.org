@@ -6924,7 +6924,7 @@ Provides a Reveal.js exporter for making presentations.
 #+end_src
 *** Use org-drill-table to generate drill cards
 #+begin_src emacs-lisp
-(require 'org-drill-table)
+(cb:install-package 'org-drill-table t)
 (add-hook 'org-ctrl-c-ctrl-c-hook 'org-drill-table-update)
 #+end_src
 *** Add org-drill-again to org action picker

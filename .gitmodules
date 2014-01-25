@@ -34,6 +34,3 @@
 [submodule "lib/git-gutter-fringe-plus"]
 	path = lib/git-gutter-fringe-plus
 	url = https://github.com/nonsequitur/git-gutter-fringe-plus.git
-[submodule "lib/org-drill-table"]
-	path = lib/org-drill-table
-	url = git@github.com:chrisbarrett/org-drill-table.git
