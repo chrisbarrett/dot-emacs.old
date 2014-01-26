@@ -6377,17 +6377,17 @@ because the default keybinding conflicts with my window manager on OS X.
           :clock-keep t)
 
          ("m" "Listening" entry
-          (file+olp org-default-notes-file "Someday" "Listening")
+          (file+olp org-default-notes-file "Media" "Listening")
           "* MAYBE Listen to %i%?"
           :clock-keep t)
 
          ("v" "Viewing" entry
-          (file+olp org-default-notes-file "Someday" "Viewing")
+          (file+olp org-default-notes-file "Media" "Viewing")
           "* MAYBE Watch %i%?"
           :clock-keep t)
 
          ("r" "Reading" entry
-          (file+olp org-default-notes-file "Someday" "Reading")
+          (file+olp org-default-notes-file "Media" "Reading")
           "* MAYBE Read %i%?"
           :clock-keep t)
 
