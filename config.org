@@ -10895,8 +10895,9 @@ last.
 )
 #+end_src
 * Idris
+Load =idris-mode= aggressively so redefinitions hold.
 #+begin_src emacs-lisp
-(cb:install-package 'idris-mode)
+(cb:install-package 'idris-mode t)
 #+end_src
 ** HACK: redefine idris-mode to derive from prog-mode.
 #+begin_src emacs-lisp
