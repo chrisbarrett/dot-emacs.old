@@ -4489,6 +4489,8 @@ Allows you to declare buffers as popups and customise their properties.
         ("*jedi:doc*" :height 30)
         ("*robe-doc*" :height 30)
         ("*idris-repl*" :height 30)
+        ("*idris-notes*")
+        ("*idris-info*")
         ("*utop*" :height 30)
         ("\\*cider-repl " :height 7 :regexp t :stick t)
         ("*cider doc*" :height 30)
