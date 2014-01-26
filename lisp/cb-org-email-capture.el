@@ -425,11 +425,7 @@ DIR should be an IMAP maildir folder containing a subdir called 'new'."
            (if (and kw (-none? (~ s-matches? str) todo-keywords))
                (format "%s %s" kw str)
              str)))
-
-        (org-set-tags-to tags)
-        (org-set-property "CAPTURED"
-                          (s-with-temp-buffer
-                            (org-insert-time-stamp (current-time) t 'inactive))))))))
+        (org-set-tags-to tags))))))
 
 ;; FilePath -> IO ()
 (cl-defun cbom:mark-as-read (filepath)
