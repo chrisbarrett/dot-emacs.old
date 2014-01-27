@@ -5954,44 +5954,54 @@ Switch projects and subprojects from NEXT back to TODO."
 
 (defvar cb-org:at-work? nil "Non-nil if currently 'at work'.")
 
+(defvar org-work-capture-templates nil
+  "Capture templates that should only be available when at work.")
+
 (defun cb-org:goto-or-create-work-log ()
   (cl-destructuring-bind (_s _m _h d mo y &rest _)
       (decode-time (current-time))
     (org-datetree-find-date-create (list mo d y))))
 
-(defun cb-org:set-to-at-work (file)
+(defun cb-org:start-work (file)
   (cb-org:set-notes-file file)
   (with-current-buffer (find-file-noselect file)
     (cb-org:goto-or-create-work-log)
     (org-clock-in))
   (setq cb-org:at-work? t)
+  (setq org-capture-templates
+        (-union org-capture-templates
+                org-work-capture-templates))
   (f-touch cb-org:work-persistence-file)
-  (message "At work"))
+  (message "Started work"))
+
+(defun cb-org:leave-work (file)
+  (with-current-buffer (find-file-noselect file)
+    (cb-org:goto-or-create-work-log)
+    (org-clock-out nil t))
+
+  (cb-org:set-notes-file org-init-notes-file)
+  (setq cb-org:at-work? nil)
+  (setq org-capture-templates
+        (-difference org-capture-templates
+                     org-work-capture-templates))
+
+  (when (f-exists? cb-org:work-persistence-file)
+    (f-delete cb-org:work-persistence-file))
+
+  (message "Left work"))
 
 (defun cb-org:toggle-at-work (file)
   "Toggle whether I am currently at work.
 FILE is the file to use as the notes file while at work."
   (interactive (list org-work-file))
-  (cond
-   ((equal org-default-notes-file org-init-notes-file)
-    (cb-org:set-to-at-work file))
-   (t
-    (with-current-buffer (find-file-noselect file)
-      (cb-org:goto-or-create-work-log)
-      (org-clock-out nil t))
-
-    (cb-org:set-notes-file org-init-notes-file)
-    (setq cb-org:at-work? nil)
-
-    (when (f-exists? cb-org:work-persistence-file)
-      (f-delete cb-org:work-persistence-file))
-
-    (message "Left work"))))
+  (if (equal org-default-notes-file org-init-notes-file)
+      (cb-org:start-work file)
+    (cb-org:leave-work file)))
 
 (defun cb-org:maybe-set-to-work ()
   "Set status to 'at-work' if the work persistence file exists."
   (when (f-exists? cb-org:work-persistence-file)
-    (cb-org:set-to-at-work org-work-file)))
+    (cb-org:start-work org-work-file)))
 
 (add-hook 'after-init-hook 'cb-org:maybe-set-to-work)
 
