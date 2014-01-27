@@ -2,6 +2,6 @@
 # name: functor
 # condition: (cbyas:bol?)
 # --
-module ${1:FunctorName} (${2:M} : ${3:Constraint}) : $3 = struct
+module ${1:FunctorName} (${2:M} : ${3:Constraint}) = struct
   $0
 end
