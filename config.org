@@ -5944,6 +5944,71 @@ Switch projects and subprojects from NEXT back to TODO."
                                        "5:00 6:00 7:00 8:00 9:00 "
                                        "0:05 0:10 0:30")))
 #+end_src
+** Customise capture templates
+#+begin_src emacs-lisp
+(defvar org-work-capture-templates nil
+  "Capture templates that should only be available when at work.")
+
+(defvar org-home-capture-templates
+  `(
+    ("s" "Someday" entry
+     (file+olp org-default-notes-file "Someday")
+     "* MAYBE %?"
+     :clock-keep t)
+
+    ("m" "Listening" entry
+     (file+olp org-default-notes-file "Media" "Listening")
+     "* MAYBE Listen to %i%?"
+     :clock-keep t)
+
+    ("v" "Viewing" entry
+     (file+olp org-default-notes-file "Media" "Viewing")
+     "* MAYBE Watch %i%?"
+     :clock-keep t)
+
+    ("r" "Reading" entry
+     (file+olp org-default-notes-file "Media" "Reading")
+     "* MAYBE Read %i%?"
+     :clock-keep t)
+    )
+  "Capture templates that should only be available when not at work.")
+
+(require 'org-capture)
+(-each `(("t" "Todo" entry
+          (file+olp org-default-notes-file "Tasks")
+          "* TODO %?"
+          :clock-keep t)
+
+         ("d" "Diary" entry
+          (file+datetree org-agenda-diary-file)
+          "* %?\n%^t"
+          :clock-keep t)
+
+         ("h" "Habit" entry
+          (file+olp org-default-notes-file "Habits/Recurring")
+          ,(s-unlines
+            "* TODO %?"
+            "SCHEDULED: %t"
+            ":PROPERTIES:"
+            ":STYLE: habit"
+            ":END:")
+          :clock-keep t)
+
+         ("l" "Link" entry
+          (file+olp org-default-notes-file "Links")
+          "* %c\n%i"
+          :immediate-finish t
+          :clock-keep t)
+
+         ("n" "Note" entry
+          (file+olp org-default-notes-file "Notes")
+          "* %i%?"
+          :clock-keep t)
+         )
+       (~ add-to-list 'org-capture-templates))
+
+(-each org-home-capture-templates (~ add-to-list 'org-capture-templates))
+#+end_src
 ** Clocking in/out for work
 #+begin_src emacs-lisp
 (defvar org-work-file (f-join org-directory "work.org")
@@ -5953,9 +6018,6 @@ Switch projects and subprojects from NEXT back to TODO."
   "File to create that saves work state between sessions.")
 
 (defvar cb-org:at-work? nil "Non-nil if currently 'at work'.")
-
-(defvar org-work-capture-templates nil
-  "Capture templates that should only be available when at work.")
 
 (defun cb-org:goto-or-create-work-log ()
   (cl-destructuring-bind (_s _m _h d mo y &rest _)
@@ -5968,9 +6030,12 @@ Switch projects and subprojects from NEXT back to TODO."
     (cb-org:goto-or-create-work-log)
     (org-clock-in))
   (setq cb-org:at-work? t)
+
   (setq org-capture-templates
-        (-union org-capture-templates
-                org-work-capture-templates))
+        (-difference (-union org-capture-templates
+                             org-work-capture-templates)
+                     org-home-capture-templates))
+
   (f-touch cb-org:work-persistence-file)
   (message "Started work"))
 
@@ -5982,8 +6047,9 @@ Switch projects and subprojects from NEXT back to TODO."
   (cb-org:set-notes-file org-init-notes-file)
   (setq cb-org:at-work? nil)
   (setq org-capture-templates
-        (-difference org-capture-templates
-                     org-work-capture-templates))
+        (-union (-difference org-capture-templates
+                             org-work-capture-templates)
+                org-home-capture-templates))
 
   (when (f-exists? cb-org:work-persistence-file)
     (f-delete cb-org:work-persistence-file))
@@ -6000,8 +6066,10 @@ FILE is the file to use as the notes file while at work."
 
 (defun cb-org:maybe-set-to-work ()
   "Set status to 'at-work' if the work persistence file exists."
-  (when (f-exists? cb-org:work-persistence-file)
-    (cb-org:start-work org-work-file)))
+  (if (f-exists? cb-org:work-persistence-file)
+      (cb-org:start-work org-work-file)
+    (-each org-home-capture-templates
+      (~ add-to-list 'org-capture-templates))))
 
 (add-hook 'after-init-hook 'cb-org:maybe-set-to-work)
 
@@ -6339,62 +6407,6 @@ because the default keybinding conflicts with my window manager on OS X.
 #+begin_src emacs-lisp
 (hook-fn 'org-mode-hook
   (add-hook 'before-save-hook 'tidy-org-buffer nil t))
-#+end_src
-** Customise capture templates
-#+begin_src emacs-lisp
-(require 'org-capture)
-(-each `(("t" "Todo" entry
-          (file+olp org-default-notes-file "Tasks")
-          "* TODO %?"
-          :clock-keep t)
-
-         ("s" "Someday" entry
-          (file+olp org-default-notes-file "Someday")
-          "* MAYBE %?"
-          :clock-keep t)
-
-         ("d" "Diary" entry
-          (file+datetree org-agenda-diary-file)
-          "* %?\n%^t"
-          :clock-keep t)
-
-         ("h" "Habit" entry
-          (file+olp org-default-notes-file "Habits/Recurring")
-          ,(s-unlines
-            "* TODO %?"
-            "SCHEDULED: %t"
-            ":PROPERTIES:"
-            ":STYLE: habit"
-            ":END:")
-          :clock-keep t)
-
-         ("l" "Link" entry
-          (file+olp org-default-notes-file "Links")
-          "* %c\n%i"
-          :immediate-finish t
-          :clock-keep t)
-
-         ("m" "Listening" entry
-          (file+olp org-default-notes-file "Media" "Listening")
-          "* MAYBE Listen to %i%?"
-          :clock-keep t)
-
-         ("v" "Viewing" entry
-          (file+olp org-default-notes-file "Media" "Viewing")
-          "* MAYBE Watch %i%?"
-          :clock-keep t)
-
-         ("r" "Reading" entry
-          (file+olp org-default-notes-file "Media" "Reading")
-          "* MAYBE Read %i%?"
-          :clock-keep t)
-
-         ("n" "Note" entry
-          (file+olp org-default-notes-file "Notes")
-          "* %i%?"
-          :clock-keep t)
-         )
-       (~ add-to-list 'org-capture-templates))
 #+end_src
 ** Agenda
 #+begin_src emacs-lisp
