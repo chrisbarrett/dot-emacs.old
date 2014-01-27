@@ -6342,22 +6342,6 @@ because the default keybinding conflicts with my window manager on OS X.
 #+end_src
 ** Customise capture templates
 #+begin_src emacs-lisp
-(defun cb-org:find-caller-names ()
-  "Find the caller names in the current buffer."
-  (->> (buffer-string)
-    s-no-props
-    (s-match-strings-all
-     (rx bol (* space) "-" (+ space) (or "from" "to") (+ space) "::"
-         (+ space) (group (not (any "%")) (+ nonl)) (* space) eol))
-    (-map 'cadr)))
-
-(defun cb-org:read-caller (prompt)
-  "Read a caller name, offering completions based on the current buffer."
-  (with-current-buffer (find-file-noselect org-default-notes-file)
-    (save-restriction
-      (widen)
-      (ido-completing-read prompt (cb-org:find-caller-names)))))
-
 (require 'org-capture)
 (-each `(("t" "Todo" entry
           (file+olp org-default-notes-file "Tasks")
@@ -6384,11 +6368,6 @@ because the default keybinding conflicts with my window manager on OS X.
             ":END:")
           :clock-keep t)
 
-         ("b" "Bill" entry
-          (file+olp org-default-notes-file "Finance" "Bills")
-          "* TODO %?"
-          :clock-keep t)
-
          ("l" "Link" entry
           (file+olp org-default-notes-file "Links")
           "* %c\n%i"
@@ -6413,27 +6392,6 @@ because the default keybinding conflicts with my window manager on OS X.
          ("n" "Note" entry
           (file+olp org-default-notes-file "Notes")
           "* %i%?"
-          :clock-keep t)
-
-         ;; Work-related tasks
-
-         ("c" "Collection" entry
-          (file+datetree org-default-notes-file)
-          ,(s-unlines
-            "* READY %^{Item} -> %^{To}"
-            "%?")
-          :clock-keep t)
-
-         ("p" "Phone Call" entry
-          (file+datetree org-default-notes-file)
-          ,(s-unlines
-            "* TRANSFERRED Call %U  :@phone:"
-            "- From :: %(cb-org:read-caller \"From: \")"
-            "- To :: %(cb-org:read-caller \"To: \")"
-            "- Subject :: %^{Subject}"
-            "- Action :: "
-            "** Notes"
-            "%?")
           :clock-keep t)
          )
        (~ add-to-list 'org-capture-templates))
