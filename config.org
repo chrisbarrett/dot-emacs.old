@@ -11665,6 +11665,7 @@ utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
 #+begin_src emacs-lisp
 (sp-with-modes '(tuareg-mode utop-mode)
   (sp-local-pair "[|" "|]")
+  (sp-local-pair "{<" ">}")
   (sp-local-pair "`" nil :actions nil))
 #+end_src
 *** Pad pairs with spaces
