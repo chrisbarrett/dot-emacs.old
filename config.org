@@ -397,6 +397,13 @@ TO-N-LINES is the number of blank lines to insert afterwards."
 #+begin_src emacs-lisp
 (defalias 'qrr 'query-replace-regexp)
 (defalias 'bb 'bury-buffer)
+
+(defalias 'dfb 'delete-file-and-buffer)
+(defalias 'dbf 'delete-file-and-buffer)
+(defalias 'rfb 'rename-file-and-buffer)
+(defalias 'rbf 'rename-file-and-buffer)
+
+(defalias 'plp 'package-list-packages)
 #+end_src
 * Path variables
 Define important paths that should be global throughout the configuration.
