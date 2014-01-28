@@ -6504,12 +6504,17 @@ They should be displayed modally.
                      ((org-agenda-overriding-header "Collections")))
                (tags-todo "@phone"
                           ((org-agenda-overriding-header "Phone calls")))
-               (todo "NEXT"
+               (tags-todo "-PeterBarrett-PeterRoberts/NEXT"
                      ((org-agenda-overriding-header "Next Actions")))
                (todo "WAITING"
                      ((org-agenda-overriding-header "Waiting")))
                (todo "LEASED"
-                     ((org-agenda-overriding-header "Leased Equipment"))))
+                     ((org-agenda-overriding-header "Leased Equipment")))
+               (tags-todo "PeterBarrett"
+                          ((org-agenda-overriding-header "Peter Barrett")))
+               (tags-todo "PeterRoberts"
+                          ((org-agenda-overriding-header "Peter Roberts"))))
+
               ((org-agenda-tag-filter-preset '("+@work"))
                (org-agenda-files (list org-work-file))
                (org-agenda-hide-tags-regexp
