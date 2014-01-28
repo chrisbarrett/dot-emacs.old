@@ -4814,6 +4814,10 @@ Provides a shell implemented in emacs-lisp.
 #+begin_src emacs-lisp
 (setenv "EDITOR" "emacsclient")
 #+end_src
+** Declare type as ansi term
+#+begin_src emacs-lisp
+(setenv "TERM" "ansi")
+#+end_src
 ** Use case-insenitive file completion
 #+begin_src emacs-lisp
 (setq eshell-cmpl-ignore-case t)
