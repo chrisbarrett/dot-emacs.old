@@ -6502,7 +6502,7 @@ They should be displayed modally.
               ((agenda "" ((org-agenda-ndays 14)))
                (todo "READY"
                      ((org-agenda-overriding-header "Collections")))
-               (tags-todo "@phone"
+               (todo "CALLBACK|MESSAGE"
                           ((org-agenda-overriding-header "Phone calls")))
                (tags-todo "-PeterBarrett-PeterRoberts/NEXT"
                      ((org-agenda-overriding-header "Next Actions")))
@@ -6766,7 +6766,7 @@ The starting day is taken to be the weekday on which the event will repeat."
 (setq org-todo-keywords
       '((type "READY(r)" "|" "COLLECTED(c!)" "CANCELLED(k@)")
         (type "LEASED(l@)" "|" "RETURNED(!)" "LOST(!)")
-        (type "CALLBACK" "MESSAGE" "|" "TRANSFERRED" "HANDLED(h@)")
+        (type "CALLBACK" "MESSAGE" "|" "HANDLED(h@)" "TRANSFERRED")
         (type "MAYBE(m)" "TODO(t)" "NEXT(n)" "WAITING(w@/!)" "APPT(a)"
               "|" "DONE(d!)" "CANCELLED(c@)" "DELEGATED(D@)")))
 #+end_src
