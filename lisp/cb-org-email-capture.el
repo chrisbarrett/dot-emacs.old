@@ -106,7 +106,7 @@
 ;; IO FilePath
 (defvar cbom:org-processed-mail-folder
   (lambda ()
-    (->> (f-join user-home-directory "Maildir")
+    (->> (f-join user-home-directory "Mail")
       (f-directories)
       (-mapcat 'f-directories)
       (-first (C (~ s-matches? (rx (or "trash" "deleted"))) -last-item
