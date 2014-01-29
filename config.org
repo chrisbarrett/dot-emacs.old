@@ -9003,6 +9003,7 @@ Byte-compile and check parens on save, unless this is a special buffer.
                           "lambda+"
                           "after"
                           "noflet"
+                          "ert-deftest"
                           "ac-define-source"
                           "evil-global-set-keys"
                           "flycheck-declare-checker"
