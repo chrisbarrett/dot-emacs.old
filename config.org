@@ -6504,8 +6504,10 @@ They should be displayed modally.
 
              ("W" "Agenda and work actions"
               ((agenda "" ((org-agenda-ndays 14)))
+               (todo "AWAITING"
+                     ((org-agenda-overriding-header "Incoming")))
                (todo "READY"
-                     ((org-agenda-overriding-header "Collections")))
+                     ((org-agenda-overriding-header "Outgoing")))
                (todo "CALLBACK|MESSAGE"
                           ((org-agenda-overriding-header "Phone calls")))
                (tags-todo "-PeterBarrett-PeterRoberts/NEXT"
