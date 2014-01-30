@@ -2626,6 +2626,23 @@ Otherwise, use the value of said variable as argument to a funcall."
 (bind-key* "<f2>" 'calc-dwim)
 (bind-key* "C-/"  'quick-calc)
 #+end_src
+** Define additional units
+#+begin_src emacs-lisp
+(after 'calc-units
+  (setq math-additional-units
+        '((bit nil "*Bit")
+          (B   "8 * bit" "Byte")
+          (KiB "1024 * B"   "Kebibyte")
+          (MiB "1024 * KiB" "Mebibyte")
+          (GiB "1024 * MiB" "Gibibyte")
+          (TiB "1024 * GiB" "Tebibyte")
+          (PiB "1024 * TiB" "Pebibyte")
+          (EiB "1024 * PiB" "Exbibyte")
+          (ZiB "1024 * EiB" "Zebibyte")
+          (YiB "1024 * ZiB" "Yobibyte")
+          )
+        math-units-table nil))
+#+end_src
 * hl-line
 Highlight the current line.
 #+begin_src emacs-lisp
