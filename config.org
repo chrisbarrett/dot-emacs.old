@@ -6807,7 +6807,8 @@ The starting day is taken to be the weekday on which the event will repeat."
     (save-excursion
       (when (and (ignore-errors (outline-forward-same-level 1) t)
                  (equal (org-get-todo-state) "TODO"))
-        (org-todo "NEXT")))))
+        (unless (org-is-habit-p)
+          (org-todo "NEXT"))))))
 
 (add-hook 'org-after-todo-state-change-hook 'cb-org:set-next-todo-state)
 #+end_src
