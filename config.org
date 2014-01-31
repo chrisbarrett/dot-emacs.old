@@ -6526,7 +6526,7 @@ They should be displayed modally.
               ((agenda "" ((org-agenda-ndays 14)))
                (todo "AWAITING"
                      ((org-agenda-overriding-header "Incoming")))
-               (todo "READY"
+               (todo "READY|ORGANISE"
                      ((org-agenda-overriding-header "Outgoing")))
                (todo "CALLBACK|MESSAGE"
                           ((org-agenda-overriding-header "Phone calls")))
