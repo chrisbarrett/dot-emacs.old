@@ -6086,7 +6086,9 @@ FILE is the file to use as the notes file while at work."
   (interactive (list org-work-file))
   (if (equal org-default-notes-file org-init-notes-file)
       (cb-org:start-work file)
-    (cb-org:leave-work file)))
+    (cb-org:leave-work file))
+  (when (derived-mode-p 'org-agenda-mode)
+    (executor:org-agenda-fullscreen)))
 
 (defun cb-org:maybe-set-to-work ()
   "Set status to 'at-work' if the work persistence file exists."
