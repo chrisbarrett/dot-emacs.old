@@ -10931,22 +10931,8 @@ last.
 )
 #+end_src
 * Idris
-Load =idris-mode= aggressively so redefinitions hold.
 #+begin_src emacs-lisp
-(cb:install-package 'idris-mode t)
-#+end_src
-** HACK: redefine idris-mode to derive from prog-mode.
-#+begin_src emacs-lisp
-(define-derived-mode idris-mode prog-mode "Idris"
-  "Major mode for Idris
-     \\{idris-mode-map}
-Invokes `idris-mode-hook'."
-  :syntax-table idris-syntax-table
-  :group 'idris
-  (set (make-local-variable 'font-lock-defaults)
-       idris-font-lock-defaults)
-  (set (make-local-variable 'indent-tabs-mode) nil)
-  (set (make-local-variable 'comment-start) "--"))
+(cb:install-package 'idris-mode)
 #+end_src
 ** ignore .idr files
 #+begin_src emacs-lisp
