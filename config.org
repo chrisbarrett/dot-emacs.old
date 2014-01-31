@@ -5568,8 +5568,11 @@ Send messages in the background instead of blocking Emacs.
 * notmuch
 Provides mail indexing and search.
 #+begin_src emacs-lisp
-(when (executable-find "notmuch")
-  (cb:install-package 'notmuch))
+(cb:install-package 'notmuch)
+#+end_src
+** Use notmuch-maildir-fcc to add sent messages to the maildir Sent Messages dir
+#+begin_src emacs-lisp
+(require 'notmuch-maildir-fcc)
 #+end_src
 ** Evil
 Define evil-style navigation keys for notmuch.
