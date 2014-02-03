@@ -12236,6 +12236,11 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
   (sp-local-pair "(" ")" :post-handlers '(:add sp-ocaml-just-one-space))
   (sp-local-pair "'" nil :actions nil))
 #+end_src
+** undefine proof completion so iedit is retained
+#+begin_src emacs-lisp
+(after 'proof-script
+  (define-key proof-mode-map (kbd "C-<return>") nil))
+#+end_src
 ** customise faces
 #+begin_src emacs-lisp
 (after 'proof-faces
