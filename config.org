@@ -12183,6 +12183,7 @@ where they should not be padded."
    ((s-matches? (rx symbol-start "match" symbol-end) (current-line))
     (goto-char (line-end-position))
     (newline-and-indent)
+    (goto-char (max (line-beginning-position) (- (point) 2)))
     (yas-insert-first-snippet (C (~ equal "match-case") yas--template-name)))
 
    ;; Insert new case below the current type decl.
@@ -12191,11 +12192,21 @@ where they should not be padded."
      (save-excursion
        (goto-char (line-beginning-position))
        (forward-to-indentation 0)
-       (+ 2 (current-column)))
+       (current-column))
+     "| "))
+
+   ;; Insert dependent type below the current one.
+   ((s-matches? (rx bol (* space) "|" (* space) (+ word) (+ space) ":" (+ space))
+                (current-line))
+    (cb-coq:newline-and-insert-at-col
+     (save-excursion
+       (goto-char (line-beginning-position))
+       (forward-to-indentation 0)
+       (current-column))
      "| "))
 
    ;; Insert match case below the current one.
-   ((s-matches? (rx bol (* space) "|" (* nonl) "->") (current-line))
+   ((s-matches? (rx bol (* space) "|" (* nonl) "=>") (current-line))
     (cb-coq:newline-and-expand-snippet-at-col
      (C (~ equal "match-case") yas--template-name)
      (cb-coq:case-start-col)))
