@@ -4519,6 +4519,7 @@ Allows you to declare buffers as popups and customise their properties.
         ("*haskell*" :height 7 :stick t)
         ("*Directory*")
         ("*Org Note*")
+        ("*response*" :height 7 :noselect t)
         ("*jedi:doc*" :height 30)
         ("*robe-doc*" :height 30)
         ("*idris-repl*" :height 30)
