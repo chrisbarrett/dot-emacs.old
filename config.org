@@ -131,6 +131,10 @@ Also require the package when REQUIRE? is set."
          (cons it acc)))
      nil
      list)))
+
+(defun -non-null (list)
+  "Return the non-nil elements in LIST."
+  (-keep 'identity list))
 #+end_src
 * s.el extensions
 #+begin_src emacs-lisp
@@ -4964,8 +4968,7 @@ Define utilities to format the prompt.
              (locate-dominating-file (eshell/pwd) ".git"))
     (let ((branch (%-string "git rev-parse --abbrev-ref HEAD"))
           (sha (substring (%-string "git rev-parse HEAD") 0 7))
-          (state
-           (-keep 'identity
+          (state (-non-null
                   (list
                    (when (cb-eshell:git-anything-untracked?)
                      (propertize "new" 'face
@@ -4976,19 +4979,18 @@ Define utilities to format the prompt.
                    (when (magit-anything-staged-p)
                      (propertize "staged" 'face
                                  `(:foreground ,solarized-hl-green)))))))
+      (-non-null
+       (list
 
-      (-keep 'identity
-             (list
+        (cons "branch"
+              (propertize branch 'face
+                          `(:foreground ,solarized-hl-yellow)))
+        (cons "rev" sha)
 
-              (cons "branch"
-                    (propertize branch 'face
-                                `(:foreground ,solarized-hl-yellow)))
-              (cons "rev" sha)
-
-              (when state
-                (cons "state"
-                      (s-join (propertize "," 'face 'eshell-prompt-sep)
-                              state))))))))
+        (when state
+          (cons "state"
+                (s-join (propertize "," 'face 'eshell-prompt-sep)
+                        state))))))))
 
 (defun cb-eshell:prompt-symbol ()
   (let ((ch (if (= (user-uid) 0) "#" ":"))
