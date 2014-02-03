@@ -1,0 +1,7 @@
+# key: d
+# name: Definition
+# condition: (cbyas:bol?)
+# --
+Definition ${1:def} ${2:: ${3:type} }:=
+  $0
+  .
