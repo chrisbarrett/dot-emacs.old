@@ -12074,6 +12074,108 @@ where they should not be padded."
 
   (define-key utop-mode-map (kbd "C-c C-z") 'cb-ocaml:switch-to-src))
 #+end_src
+* Coq
+#+begin_src emacs-lisp
+(require 'proof-site (f-join cb:lib-dir "proofgeneral" "generic" "proof-site"))
+#+end_src
+** configure smart operators
+#+begin_src emacs-lisp
+(defvar cb-coq:smart-operator-list
+  '("!" "$" "%" "&" "*" "+" "-" "." "/" ":" "<" "=" ">" "?" "@" "^" "|" "~")
+  "The list of operators in the Coq language.")
+
+(put 'coq-mode 'smart-operator-alist cb-coq:smart-operator-list)
+
+(defun cb-coq:smart-insert-operator (op)
+  "Perform a smart insertion of operator OP, unless inside parens."
+  (if (thing-at-point-looking-at (rx "("))
+      (insert op)
+    (smart-insert-operator op)))
+
+(defun cb-coq:smart-pipe ()
+  "Insert either the pipe chars in an array literal or a smart pipe."
+  (interactive)
+  (cond ((thing-at-point-looking-at (rx "[]"))
+         (insert "|")
+         (save-excursion
+           (insert "|")))
+        (t
+         (cb-coq:smart-insert-operator "|"))))
+
+(defun cb-coq:set-keys ()
+  "Set smart operators for Coq."
+  (--each cb-coq:smart-operator-list
+    (define-key coq-mode-map (kbd it)
+      (eval `(command (cb-ocaml:smart-insert-operator ,it)))))
+
+  (define-key coq-mode-map (kbd "!") nil)
+  (define-key coq-mode-map (kbd "|") 'cb-ocaml:smart-pipe))
+
+(after 'coq (cb-coq:set-keys))
+#+end_src
+** configure context-sensitive M-RET, based on OCaml
+#+begin_src emacs-lisp
+(defun cb-coq:case-start-col ()
+  (save-excursion
+    (goto-char (line-beginning-position))
+    (search-forward "|")
+    (1- (current-column))))
+
+(defun cb-coq:newline-and-insert-at-col (col str)
+  "Insert STR on a new line at COL."
+  (goto-char (line-end-position))
+  (newline)
+  (indent-to col)
+  (insert str))
+
+(defun cb-coq:newline-and-expand-snippet-at-col (predicate col)
+  "Insert a new line, find the template matching PREDICATE and insert at COL."
+  (goto-char (line-end-position))
+  (newline)
+  (indent-to col)
+  (yas-insert-first-snippet predicate))
+
+(defun cb-coq:meta-ret ()
+  "Open a new line in a context-sensitive way."
+  (interactive)
+  (yas-exit-all-snippets)
+  (cond
+
+   ;; Insert case after match statement.
+   ((s-matches? (rx symbol-start "match" symbol-end) (current-line))
+    (goto-char (line-end-position))
+    (newline-and-indent)
+    (yas-insert-first-snippet (C (~ equal "match-case") yas--template-name)))
+
+   ;; Insert new case below the current type decl.
+   ((s-matches? (rx bol (* space) "Inductive") (current-line))
+    (cb-coq:newline-and-insert-at-col
+     (save-excursion
+       (goto-char (line-beginning-position))
+       (forward-to-indentation 0)
+       (+ 2 (current-column)))
+     "| "))
+
+   ;; Insert match case below the current one.
+   ((s-matches? (rx bol (* space) "|" (* nonl) "->") (current-line))
+    (cb-coq:newline-and-expand-snippet-at-col
+     (C (~ equal "match-case") yas--template-name)
+     (cb-coq:case-start-col)))
+
+   ;; Insert any other kind of case below the current one.
+   ((s-matches? (rx bol (* space) "|") (current-line))
+    (cb-coq:newline-and-insert-at-col (cb-coq:case-start-col) "| "))
+
+   (t
+    (goto-char (line-end-position))
+    (newline-and-indent)))
+
+  (when (true? evil-mode)
+    (evil-insert-state)))
+
+(after 'coq (define-key coq-mode-map   (kbd "M-RET") 'cb-coq:meta-ret))
+#+end_src
+
 * F#
 F# is syntactically close enough to OCaml that we can reuse the utilities
 defined for that language.
