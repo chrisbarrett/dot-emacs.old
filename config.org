@@ -12236,6 +12236,12 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
   (sp-local-pair "(" ")" :post-handlers '(:add sp-ocaml-just-one-space))
   (sp-local-pair "'" nil :actions nil))
 #+end_src
+** customise faces
+#+begin_src emacs-lisp
+(after 'proof-faces
+  (add-to-list 'face-remapping-alist '(proof-locked-face . hl-line))
+  (add-to-list 'face-remapping-alist '(proof-error-face . error)))
+#+end_src
 * F#
 F# is syntactically close enough to OCaml that we can reuse the utilities
 defined for that language.
