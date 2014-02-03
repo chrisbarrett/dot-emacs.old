@@ -1,0 +1,6 @@
+# key: t
+# name: Theorem
+# condition: (cbyas:bol?)
+# --
+Theorem ${1:name} : forall ${2:terms}, ${3:expr} = $0
+.

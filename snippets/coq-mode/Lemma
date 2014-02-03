@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: Lemma
+# key: l
+# condition: (cbyas:bol?)
+# --
+Lemma ${1:name} : forall ${2:terms}, ${3:expr} = $0
+.
