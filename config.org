@@ -12080,6 +12080,7 @@ where they should not be padded."
   (define-key utop-mode-map (kbd "C-c C-z") 'cb-ocaml:switch-to-src))
 #+end_src
 * Coq
+Much of the configuration of Coq is copied from the OCaml config.
 #+begin_src emacs-lisp
 (require 'proof-site (f-join cb:lib-dir "proofgeneral" "generic" "proof-site"))
 #+end_src
@@ -12151,7 +12152,7 @@ where they should not be padded."
 
 (after 'coq (cb-coq:set-keys))
 #+end_src
-** configure context-sensitive M-RET, based on OCaml
+** configure context-sensitive M-RET
 #+begin_src emacs-lisp
 (defun cb-coq:case-start-col ()
   (save-excursion
@@ -12225,6 +12226,16 @@ where they should not be padded."
 (after 'coq (define-key coq-mode-map   (kbd "M-RET") 'cb-coq:meta-ret))
 #+end_src
 
+** configure smart parens
+Pad parens and other delimiters with spaces to emulate paredit's behaviour.
+#+begin_src emacs-lisp
+(sp-with-modes '(coq-mode)
+  (sp-local-pair "\"" "\"" :post-handlers '(:add sp-ocaml-just-one-space))
+  (sp-local-pair "{" "}" :post-handlers '(:add sp-ocaml-just-one-space))
+  (sp-local-pair "[" "]" :post-handlers '(:add sp-ocaml-just-one-space))
+  (sp-local-pair "(" ")" :post-handlers '(:add sp-ocaml-just-one-space))
+  (sp-local-pair "'" nil :actions nil))
+#+end_src
 * F#
 F# is syntactically close enough to OCaml that we can reuse the utilities
 defined for that language.
