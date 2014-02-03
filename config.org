@@ -12117,6 +12117,10 @@ Much of the configuration of Coq is copied from the OCaml config.
 
   (add-hook 'proof-activate-scripting-hook 'proof-cd-sync nil t))
 #+end_src
+** do not show splash screen
+#+begin_src emacs-lisp
+(setq proof-splash-enable nil)
+#+end_src
 ** configure smart operators
 #+begin_src emacs-lisp
 (defvar cb-coq:smart-operator-list
