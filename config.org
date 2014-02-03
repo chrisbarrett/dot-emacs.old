@@ -4937,30 +4937,48 @@ Define utilities to format the prompt.
   (let* ((cwd (f-short (eshell/pwd)))
          (colour (if (s-starts-with? "/" cwd)
                      solarized-hl-orange
-                   solarized-hl-cyan)))
-    (propertize cwd 'face `(:foreground ,colour))))
+                   solarized-hl-cyan))
+         (dir (propertize cwd 'face (list :foreground colour))))
+
+    (list
+     (cons "cwd" dir))))
+
+(defun cb-eshell:directory-info ()
+  (cl-destructuring-bind (perms _links owner group &rest _)
+      (s-split (rx (+ space)) (%-string "ls -ld" (eshell/pwd)))
+    (unless (equal owner (%-string "whoami"))
+      (list
+       (cons "mode" (propertize perms 'face `(:foreground ,solarized-hl-cyan)))
+       (cons "owner" (propertize owner 'face `(:foreground ,solarized-hl-cyan)))
+       (cons "group" (propertize group 'face `(:foreground ,solarized-hl-cyan)))))))
 
 (defun cb-eshell:git-status ()
   (require 'magit)
   (when (and (executable-find "git")
              (locate-dominating-file (eshell/pwd) ".git"))
-    (concat
-     (propertize " | " 'face 'eshell-prompt-sep)
-     ;; Branch
-     (propertize (%-string "git rev-parse --abbrev-ref HEAD")
-                 'face `(:foreground ,solarized-hl-yellow))
-     ;; @
-     (propertize "@" 'face 'eshell-prompt-sep)
-     ;; Rev
-     (substring (%-string "git rev-parse HEAD") 0 7)
-     ;; State
+    (let ((branch (%-string "git rev-parse --abbrev-ref HEAD"))
+          (sha (substring (%-string "git rev-parse HEAD") 0 7))
+          (state
+           (-keep 'identity
+                  (list (when (magit-anything-unstaged-p)
+                          (propertize "mod" 'face
+                                      `(:foreground ,solarized-hl-orange)))
+                        (when (magit-anything-staged-p)
+                          (propertize "staged" 'face
+                                      `(:foreground ,solarized-hl-green)))))))
 
-     (let ((s (concat (when (magit-anything-unstaged-p)
-                        (propertize "M" 'face `(:foreground ,solarized-hl-orange)))
-                      (when (magit-anything-staged-p)
-                        (propertize "+" 'face `(:foreground ,solarized-hl-green))))))
-       (unless (s-blank? s)
-         (concat " " s))))))
+      (-keep 'identity
+             (list
+
+              (cons "branch"
+                    (propertize branch 'face
+                                `(:foreground ,solarized-hl-yellow)))
+              (cons "rev" sha)
+
+              (when state
+                (cons "state"
+                      (s-join (propertize "," 'face 'eshell-prompt-sep)
+                              state))))))))
 
 (defun cb-eshell:prompt-symbol ()
   (let ((ch (if (= (user-uid) 0) "#" ":"))
@@ -4969,24 +4987,45 @@ Define utilities to format the prompt.
                   solarized-hl-red)))
     (propertize ch 'face (list :foreground colour))))
 
-(defvar cb-eshell:last-header nil)
-
-(defun cb-eshell:format-header ()
-  (concat
-   (when cb-eshell:last-header "\n")
-   (propertize " [ " 'face 'eshell-prompt-sep)
+(defun cb-eshell:make-header-list ()
+  "Create a list of alists, representing lines in the header.
+Each alist has a string as the key and a "
+  (list
    (cb-eshell:current-dir)
-   (cb-eshell:git-status)
+   (cb-eshell:directory-info)
+   (cb-eshell:git-status)))
+
+(cl-defun cb-eshell:format-cons ((k . v))
+  (if (equal k "cwd")
+      v
+    (concat (propertize (concat k "=") 'face 'eshell-prompt-sep)
+            v)))
+
+(defun cb-eshell:header-list->string (header-list)
+  (concat
+   (propertize " [ " 'face 'eshell-prompt-sep)
+
+   (->> header-list
+     (--map (->> it (-map 'cb-eshell:format-cons) (s-join " ")))
+     (s-join (propertize " | " 'face 'eshell-prompt-sep)))
+
    (propertize " ]" 'face 'eshell-prompt-sep)
    "\n"))
 
+(defvar cb-eshell:last-header nil)
+
 (defun cb-eshell:format-prompt ()
   "Format the prompt to display in eshell."
-  (let* ((h (cb-eshell:format-header))
-         (changed? (not (equal h cb-eshell:last-header)))
-         (p (concat (when changed? h) " " (cb-eshell:prompt-symbol) " ")))
-    (setq cb-eshell:last-header h)
-    (propertize p 'read-only t 'front-sticky 'read-only 'rear-nonsticky 'read-only)))
+  (let* ((hlist (cb-eshell:make-header-list))
+         (diff (-difference hlist cb-eshell:last-header)))
+    (setq cb-eshell:last-header hlist)
+    (concat
+     (when cb-eshell:last-header "\n")
+     (when diff (cb-eshell:header-list->string diff))
+     (propertize (concat " " (cb-eshell:prompt-symbol) " ")
+                 'read-only t
+                 'front-sticky 'read-only
+                 'rear-nonsticky 'read-only))))
 #+end_src
 
 Use the above prompt functions.
