@@ -12154,6 +12154,7 @@ Much of the configuration of Coq is copied from the OCaml config.
       (eval `(command (cb-ocaml:smart-insert-operator ,it)))))
 
   (define-key coq-mode-map (kbd "!") nil)
+  (define-key coq-mode-map (kbd ".") nil)
   (define-key coq-mode-map (kbd "|") 'cb-ocaml:smart-pipe))
 
 (after 'coq (cb-coq:set-keys))
