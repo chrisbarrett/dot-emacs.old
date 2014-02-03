@@ -4952,6 +4952,12 @@ Define utilities to format the prompt.
        (cons "owner" (propertize owner 'face `(:foreground ,solarized-hl-cyan)))
        (cons "group" (propertize group 'face `(:foreground ,solarized-hl-cyan)))))))
 
+(defun cb-eshell:git-anything-untracked? ()
+  "Non-nil if there are any untracked files in the current git repo."
+  (->> (%-string "git status -u -s --porcelain")
+    (s-split "\n")
+    (--any? (s-matches? (rx (* space) "??") it))))
+
 (defun cb-eshell:git-status ()
   (require 'magit)
   (when (and (executable-find "git")
@@ -4960,12 +4966,16 @@ Define utilities to format the prompt.
           (sha (substring (%-string "git rev-parse HEAD") 0 7))
           (state
            (-keep 'identity
-                  (list (when (magit-anything-unstaged-p)
-                          (propertize "mod" 'face
-                                      `(:foreground ,solarized-hl-orange)))
-                        (when (magit-anything-staged-p)
-                          (propertize "staged" 'face
-                                      `(:foreground ,solarized-hl-green)))))))
+                  (list
+                   (when (cb-eshell:git-anything-untracked?)
+                     (propertize "new" 'face
+                                 `(:foreground ,solarized-hl-cyan)))
+                   (when (magit-anything-unstaged-p)
+                     (propertize "mod" 'face
+                                 `(:foreground ,solarized-hl-orange)))
+                   (when (magit-anything-staged-p)
+                     (propertize "staged" 'face
+                                 `(:foreground ,solarized-hl-green)))))))
 
       (-keep 'identity
              (list
