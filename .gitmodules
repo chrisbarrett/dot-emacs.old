@@ -37,3 +37,6 @@
 [submodule "lib/easy-convert"]
 	path = lib/easy-convert
 	url = https://github.com/Frozenlock/easy-convert.git
+[submodule "lib/proofgeneral"]
+	path = lib/proofgeneral
+	url = https://github.com/emacsmirror/proofgeneral.git
