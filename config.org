@@ -12334,12 +12334,20 @@ NOTES
 (cl-defun cm--format-transaction
     (date amount notes &key payee account)
   "Format a ledger transaction."
-  (concat date " * " payee
-          "\n  " account "   " (format "$ %.2f" (string-to-number amount))
-          "\n  Assets:Checking\n"
-          ;; Format notes as comments.
-          (unless (s-blank? notes)
-            (s-prepend "      ; " (s-trim notes)))))
+  (cl-destructuring-bind (&optional n &rest ns)
+      (unless (s-blank? notes) (-map 's-trim (s-split "\n" notes)))
+
+    (concat date " * " payee
+            ;; Note
+            (when n (s-prepend "\n  ; " n))
+            ;; Accounts
+            "\n  " account "   " (format "$ %.2f" (string-to-number amount))
+            "\n  Assets:Checking\n"
+            ;; Notes
+            (when ns
+              (->> ns
+                (-map (~ s-prepend "  ; "))
+                (s-join "\n"))))))
 
 (defun cm--capitalize-fst (str)
   "Make the first char in STR uppercase."
