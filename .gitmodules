@@ -40,3 +40,6 @@
 [submodule "lib/proofgeneral"]
 	path = lib/proofgeneral
 	url = https://github.com/emacsmirror/proofgeneral.git
+[submodule "lib/capture-mail"]
+	path = lib/capture-mail
+	url = git@github.com:chrisbarrett/capture-mail.git
