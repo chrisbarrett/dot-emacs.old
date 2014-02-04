@@ -12318,12 +12318,44 @@ Use =capture-email= to capture items from emails to org.
          (s-truncate 40 desc)
          (f-join user-emacs-directory "assets" "org_unicorn.png")))
 #+end_src
+** Define helper fn to capture with org-mode
+#+begin_src emacs-lisp
+(cl-defun cm--org-capture (str template-name &optional tags)
+  "Capture STR with org-mode.
+TEMPLATE-NAME is a string matching the name of a capture
+template."
+  (when (boundp 'org-capture-templates)
+    (cl-destructuring-bind (&optional key name file tree template &rest rest)
+        (-first (C (~ equal template-name) s-downcase cadr)
+                org-capture-templates)
+      (org-capture-goto-target (or key "n"))
+
+      ;; Prepare headline.
+      (end-of-line)
+      (org-insert-subheading '(16))   ; 16 = at end of list
+
+      ;; Insert item. Prepend a todo keyword appropriate for the template,
+      ;; unless the string already starts with one.
+      (insert
+       (let* ((todo-keywords
+               (and (boundp 'org-todo-keywords)
+                    (->> org-todo-keywords
+                      -flatten
+                      (-filter 'stringp)
+                      (-mapcat (~ s-match (rx (+ (not (any "(")))))))))
+              (kw (when (stringp template)
+                    (-first (~ -contains? todo-keywords) (s-split-words template)))))
+         (if (and kw (-none? (~ s-matches? str) todo-keywords))
+             (format "%s %s" kw str)
+           str)))
+      (org-set-tags-to tags))))
+#+end_src
 ** Capture ledger transactions
 A ledger transaction email should have /Expense/ as its subject. It takes the
 following format:
 #+begin_example
 AMOUNT PAYEE
-NOTES
+NOTES*
 #+end_example
 
 #+begin_src emacs-lisp
@@ -12410,6 +12442,7 @@ Return an alist of (:payee :account)"
 #+end_src
 ** Capture links
 Emails containing a URL will be captured to the Links heading in the notes file.
+Use another Emacs process to fetch the title for webpages.
 
 #+begin_src emacs-lisp
 (defun cm--find-uri-in-body (alist)
@@ -12434,38 +12467,6 @@ Emails containing a URL will be captured to the Links heading in the notes file.
           uri
         (s-prepend "http://" uri)))))
 
-(cl-defun cm--org-capture (str kind &optional tags)
-  (when (boundp 'org-capture-templates)
-    (cl-destructuring-bind (&optional key name file tree template &rest rest)
-        (-first (C (~ equal kind) s-downcase cadr)
-                org-capture-templates)
-      (org-capture-goto-target (or key "n"))
-
-      ;; Prepare headline.
-      (end-of-line)
-      (org-insert-subheading '(16))   ; 16 = at end of list
-
-      ;; Insert item. Prepend a todo keyword appropriate for the template,
-      ;; unless the string already starts with one.
-      (insert
-       (let* ((todo-keywords
-               (and (boundp 'org-todo-keywords)
-                    (->> org-todo-keywords
-                      -flatten
-                      (-filter 'stringp)
-                      (-mapcat (~ s-match (rx (+ (not (any "(")))))))))
-              (kw (when (stringp template)
-                    (-first (~ -contains? todo-keywords) (s-split-words template)))))
-         (if (and kw (-none? (~ s-matches? str) todo-keywords))
-             (format "%s %s" kw str)
-           str)))
-      (org-set-tags-to tags))))
-#+end_src
-
-Declare the message parser. It will use another Emacs process to fetch the title
-for webpages.
-
-#+begin_src emacs-lisp
 (cm-declare-message-parser 'link
   :predicate 'cm--find-uri-in-body
   :parser 'cm--find-uri-in-body
@@ -12508,6 +12509,28 @@ for webpages.
            (let ((org-default-notes-file org-init-notes-file))
              (cm--org-capture link "link")
              (cm--growl "Link" uri))))))))
+#+end_src
+** Capture to diary
+Dairy entries must have /diary/ as the subject, and take the form
+#+begin_example
+HEADLINE
+DATE
+NOTES*
+#+end_example
+
+#+begin_src emacs-lisp
+(cm-declare-message-parser 'diary
+  :predicate (~ cm-matches? (rx bol "diary") 'subject)
+  :parser (lambda (alist)
+            (cl-destructuring-bind (header date &rest notes)
+                (s-split "\n" (cm-value 'body alist))
+              (format "%s\n<%s>%s"
+                      title
+                      (org-read-date nil nil (or date "."))
+                      (s-join "\n" notes))))
+  :handler (lambda (str)
+             (cm--org-capture str "diary")
+             (cm--growl "Diary Item" str)))
 #+end_src
 ** Run on timer
 #+begin_src emacs-lisp
