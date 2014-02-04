@@ -12356,7 +12356,7 @@ template."
 (setq cm-default-parser
       (list :type 'note
             :predicate '-true-fn
-            :parser (C cdr (~ cm-value 'body))
+            :parser (~ cm-value 'body)
             :handler
             (lambda (str)
               (cm--org-capture str "note")
