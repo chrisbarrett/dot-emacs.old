@@ -12376,7 +12376,7 @@ Return an alist of (:payee :account)"
   (let* ((date (cm--sent-date->ledger-date (cm-value 'date alist)))
          (body (s-split "\n" (cm-value 'body alist) t))
          (transaction (car body))
-         (notes (s-join "\n" (cadr body))))
+         (notes (s-join "\n" (cdr body))))
     (cl-destructuring-bind (_ amount payee)
         (s-match (rx (group (+ (any "." num)))
                      (+ space)
