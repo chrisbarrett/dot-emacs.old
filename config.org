@@ -7317,17 +7317,6 @@ re-encrypted after a period of inactivity.
     (run-with-idle-timer cb-org:notes-save-idle-delay t 'cb-org:save-notes))
   "Timer that automatically saves the notes buffer on idle.")
 #+end_src
-** Capture tasks, notes, etc from emails
-#+begin_src emacs-lisp
-(require 'cb-org-email-capture)
-
-(unless noninteractive
-  (hook-fn 'after-init-hook
-    (defvar cbom:capture-timer
-      (run-with-timer 5 60 (lambda ()
-                              (with-demoted-errors
-                                  (org-capture-messages)))))))
-#+end_src
 ** Enable abbrev-mode
 #+begin_src emacs-lisp
 (add-hook 'org-mode-hook 'abbrev-mode)
@@ -12308,6 +12297,108 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
 * Mutt
 #+begin_src emacs-lisp
 (cb:install-package 'muttrc-mode)
+#+end_src
+* Email capture
+Use =capture-email= to capture items from emails to org.
+#+begin_src emacs-lisp
+(require 'capture-mail)
+#+end_src
+** Set maildir paths
+#+begin_src emacs-lisp
+(let ((account-dir (--first
+                    (not (s-starts-with? "." (f-filename it)))
+                    (f-directories user-mail-directory))))
+  (setq cm-archived-messages-dir (f-join account-dir "org" "cur")
+        cm-capture-messages-dir  (f-join account-dir "org" "new")))
+#+end_src
+** Capture ledger transactions
+A ledger transaction email should have /Expense/ as its subject. It takes the
+following format:
+#+begin_example
+AMOUNT PAYEE
+NOTES
+#+end_example
+
+#+begin_src emacs-lisp
+(defun cm--sent-date->ledger-date (date)
+  "Convert DATE to a ledger-style date."
+  (s-replace "-" "/" (car (s-split " " (org-read-date nil nil date)))))
+
+(cl-defun cm--format-transaction
+    (date amount notes &key payee account)
+  "Format a ledger transaction."
+  (concat date " * " payee
+          "\n  " account "   " (format "$ %.2f" (string-to-number amount))
+          "\n  Assets:Checking\n"
+          ;; Format notes as comments.
+          (unless (s-blank? notes)
+            (s-prepend "      ; " (s-trim notes)))))
+
+(defun cm--capitalize-fst (str)
+  "Make the first char in STR uppercase."
+  (let ((fst (ignore-errors (substring str 0 1)))
+        (rst (ignore-errors (substring str 1))))
+    (concat (s-upcase fst) rst)))
+
+(defvar cm-ledger-payee-translation-alist
+  nil
+  "Used to set the account and payee name for a transaction.
+
+It is an alist of (REGEX . (:payee :account)), where REGEX is
+matched against the payee in the email. :payee is an alternative
+name to use for the payee and may be omitted. :account is the
+name of the account for this transaction.")
+
+(defun cm--translate-payee (payee)
+  "Find the account corresponding to PAYEE.
+Return an alist of (:payee :account)"
+  (let ((default-payee (->> (s-split-words (or payee "??"))
+                         (-map 'cm--capitalize-fst)
+                         (s-join " " ))))
+    (-if-let (transformed (--first (s-matches? (car it) payee)
+                                   cm-ledger-payee-translation-alist))
+
+        (cl-destructuring-bind (&key payee account) (cdr transformed)
+          (list :payee (or payee default-payee)
+                :account account))
+
+      (list :payee default-payee :account "Expenses:??"))))
+
+(defun cm--message->ledger (alist)
+  "Convert message ALIST to a ledger transaction."
+  (let* ((date (cm--sent-date->ledger-date (cm-value 'date alist)))
+         (body (s-split "\n" (cm-value 'body alist) t))
+         (transaction (car body))
+         (notes (s-join "\n" (cadr body))))
+    (cl-destructuring-bind (_ amount payee)
+        (s-match (rx (group (+ (any "." num)))
+                     (+ space)
+                     (group (* nonl)))
+                 transaction)
+      (apply 'cm--format-transaction
+             date amount notes (cm--translate-payee payee)))))
+
+(cm-declare-message-parser 'expense
+  :predicate (~ cm-matches? (rx bol (or (and "ex" eol) "expense"))
+                'subject)
+  :parser 'cm--message->ledger
+  :handler (lambda (str)
+             (save-excursion
+               (with-current-buffer (find-file-noselect ledger-file)
+                 (goto-char (point-max))
+                 (newline)
+                 (collapse-vertical-whitespace)
+                 (newline 2)
+                 (insert str)
+                 (newline)))))
+#+end_src
+** Run on timer
+#+begin_src emacs-lisp
+(unless noninteractive
+  (hook-fn 'after-init-hook
+    (defvar cm-capture-timer
+      (run-with-timer 5 60 (lambda ()
+                             (capture-mail cm-capture-messages-dir))))))
 #+end_src
 * Load personal config
 The personal config file may be used to store sensitive information such as
