@@ -12311,6 +12311,13 @@ Use =capture-email= to capture items from emails to org.
   (setq cm-archived-messages-dir (f-join account-dir "org" "cur")
         cm-capture-messages-dir  (f-join account-dir "org" "new")))
 #+end_src
+** Define growl helper fn
+#+begin_src emacs-lisp
+(cl-defun cm--growl (kind desc)
+  (growl (format "%s Captured" (s-capitalize kind))
+         (s-truncate 40 desc)
+         (f-join user-emacs-directory "assets" "org_unicorn.png")))
+#+end_src
 ** Capture ledger transactions
 A ledger transaction email should have /Expense/ as its subject. It takes the
 following format:
@@ -12390,7 +12397,8 @@ Return an alist of (:payee :account)"
                  (collapse-vertical-whitespace)
                  (newline 2)
                  (insert str)
-                 (newline)))))
+                 (newline))
+               (cm--growl "Expense" str))))
 #+end_src
 ** Run on timer
 #+begin_src emacs-lisp
