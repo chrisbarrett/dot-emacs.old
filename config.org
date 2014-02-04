@@ -4955,8 +4955,10 @@ Define utilities to format the prompt.
 
 (defun cb-eshell:directory-info ()
   (cl-destructuring-bind (perms _links owner group &rest _)
-      (s-split (rx (+ space)) (%-string "ls -ld" (eshell/pwd)))
-    (unless (equal owner (%-string "whoami"))
+      (s-split (rx (+ space)) (%-string "ls -ld" (%-quote (eshell/pwd))))
+    (unless (and
+             (f-child-of? (eshell/pwd) user-home-directory)
+             (equal owner (%-string "whoami")))
       (list
        (cons "mode" (propertize perms 'face `(:foreground ,solarized-hl-cyan)))
        (cons "owner" (propertize owner 'face `(:foreground ,solarized-hl-cyan)))
