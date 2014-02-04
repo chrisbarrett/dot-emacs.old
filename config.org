@@ -12324,31 +12324,45 @@ Use =capture-email= to capture items from emails to org.
   "Capture STR with org-mode.
 TEMPLATE-NAME is a string matching the name of a capture
 template."
-  (when (boundp 'org-capture-templates)
-    (cl-destructuring-bind (&optional key name file tree template &rest rest)
-        (-first (C (~ equal template-name) s-downcase cadr)
-                org-capture-templates)
-      (org-capture-goto-target (or key "n"))
+  (let ((org-default-notes-file org-init-notes-file))
+    (save-excursion
+      (save-window-excursion
+        (when (boundp 'org-capture-templates)
+          (cl-destructuring-bind (&optional key name file tree template &rest rest)
+              (-first (C (~ equal template-name) s-downcase cadr)
+                      org-capture-templates)
+            (org-capture-goto-target (or key "n"))
 
-      ;; Prepare headline.
-      (end-of-line)
-      (org-insert-subheading '(16))   ; 16 = at end of list
+            ;; Prepare headline.
+            (end-of-line)
+            (org-insert-subheading '(16))   ; 16 = at end of list
 
-      ;; Insert item. Prepend a todo keyword appropriate for the template,
-      ;; unless the string already starts with one.
-      (insert
-       (let* ((todo-keywords
-               (and (boundp 'org-todo-keywords)
-                    (->> org-todo-keywords
-                      -flatten
-                      (-filter 'stringp)
-                      (-mapcat (~ s-match (rx (+ (not (any "(")))))))))
-              (kw (when (stringp template)
-                    (-first (~ -contains? todo-keywords) (s-split-words template)))))
-         (if (and kw (-none? (~ s-matches? str) todo-keywords))
-             (format "%s %s" kw str)
-           str)))
-      (org-set-tags-to tags))))
+            ;; Insert item. Prepend a todo keyword appropriate for the template,
+            ;; unless the string already starts with one.
+            (insert
+             (let* ((todo-keywords
+                     (and (boundp 'org-todo-keywords)
+                          (->> org-todo-keywords
+                            -flatten
+                            (-filter 'stringp)
+                            (-mapcat (~ s-match (rx (+ (not (any "(")))))))))
+                    (kw (when (stringp template)
+                          (-first (~ -contains? todo-keywords) (s-split-words template)))))
+               (if (and kw (-none? (~ s-matches? str) todo-keywords))
+                   (format "%s %s" kw str)
+                 str)))
+            (org-set-tags-to tags)))))))
+#+end_src
+** Default parser creates a note
+#+begin_src emacs-lisp
+(setq cm-default-parser
+      (list :type 'note
+            :predicate '-true-fn
+            :parser (C cdr (~ cm-value 'body))
+            :handler
+            (lambda (str)
+              (cm--org-capture str "note")
+              (cm--growl "Note" str))))
 #+end_src
 ** Capture ledger transactions
 A ledger transaction email should have /Expense/ as its subject. It takes the
@@ -12502,13 +12516,8 @@ Use another Emacs process to fetch the title for webpages.
            (format "[[%s][%s]]" uri (s-truncate 70 title)))))
 
      (lambda+ ((uri . link))
-       (save-excursion
-         (save-window-excursion
-           ;; The user may have interactively changed the default notes
-           ;; file, so we rebind it to the note file set at init time.
-           (let ((org-default-notes-file org-init-notes-file))
-             (cm--org-capture link "link")
-             (cm--growl "Link" uri))))))))
+       (cm--org-capture link "link")
+       (cm--growl "Link" uri)))))
 #+end_src
 ** Capture to diary
 Dairy entries must have /diary/ as the subject, and take the form
@@ -12525,12 +12534,12 @@ NOTES*
             (cl-destructuring-bind (header date &rest notes)
                 (s-split "\n" (cm-value 'body alist))
               (format "%s\n<%s>%s"
-                      title
+                      header
                       (org-read-date nil nil (or date "."))
                       (s-join "\n" notes))))
   :handler (lambda (str)
              (cm--org-capture str "diary")
-             (cm--growl "Diary Item" str)))
+             (cm--growl "Appointment" str)))
 #+end_src
 ** Run on timer
 #+begin_src emacs-lisp
