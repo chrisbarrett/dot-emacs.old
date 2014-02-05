@@ -12607,7 +12607,7 @@ NOTES
 
 (cm-declare-message-parser 'task
   :predicate
-  (~ cm-matches? (rx bol (or "todo" "next" "maybe") (* space) eol)
+  (~ cm-matches? (rx bol (or "todo" "next" "maybe" "someday") (* space) eol)
      'subject)
   :parser 'cm--parse-task
   :handler
@@ -12615,7 +12615,7 @@ NOTES
     (cond
      ((s-matches? (rx (or "next" "todo")) kind)
       (cm--org-capture str "todo" tags))
-     ((s-matches? "someday" kind)
+     ((s-matches? (rx (or "maybe" "someday")) kind)
       (cm--org-capture str "someday" tags))
      (t
       (error "No template for kind: %s" kind)))
