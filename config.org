@@ -12330,25 +12330,11 @@ template."
               (-first (C (~ equal template-name) s-downcase cadr)
                       org-capture-templates)
             (org-capture-goto-target (or key "n"))
-
             ;; Prepare headline.
             (end-of-line)
             (org-insert-subheading '(16))   ; 16 = at end of list
-
-            ;; Insert item. Prepend a todo keyword appropriate for the template,
-            ;; unless the string already starts with one.
-            (insert
-             (let* ((todo-keywords
-                     (and (boundp 'org-todo-keywords)
-                          (->> org-todo-keywords
-                            -flatten
-                            (-filter 'stringp)
-                            (-mapcat (~ s-match (rx (+ (not (any "(")))))))))
-                    (kw (when (stringp template)
-                          (-first (~ -contains? todo-keywords) (s-split-words template)))))
-               (if (and kw (-none? (~ s-matches? str) todo-keywords))
-                   (format "%s %s" kw str)
-                 str)))
+            ;; Insert item.
+            (insert str)
             (org-set-tags-to tags)))))))
 #+end_src
 ** Default parser creates a note
@@ -12538,6 +12524,103 @@ NOTES*
   :handler (lambda (str)
              (cm--org-capture str "diary")
              (cm--growl "Appointment" str)))
+#+end_src
+** Capture tasks
+Tasks should have one TODO/MAYBE/NEXT as the subject
+
+#+begin_example
+HEADLINE
+[t TAGS]
+[s SCHEDULED-TIME]
+[d DEADLINE]
+NOTES
+#+end_example
+
+#+begin_src emacs-lisp
+(defun cm--parse-12-hour-time (str)
+  (cl-destructuring-bind (&optional _ hour min ampm &rest rest_)
+      (s-match (rx (group (** 1 2 digit))
+                   (? ":" (group (= 2 digit)))
+                   (group (or "am" "pm")))
+               str)
+    (when hour
+      (format "%s:%s"
+              ;; Convert to 24-hour. Get the modulo just to prevent crazy times.
+              (if (s-matches? "pm" ampm)
+                  (mod (+ 12 (string-to-number hour))
+                       24)
+                hour)
+              (or min "00")))))
+
+(defun cm--parse-24-hour-time (str)
+  (car (s-match (rx (** 1 2 digit) ":" (= 2 digit)) str)))
+
+(defun cm--parse-date (str)
+  (when str
+    ;; Try to extract a time of day from STR.
+    (-if-let (time (or (cm--parse-12-hour-time str)
+                       (cm--parse-24-hour-time str)))
+        (format "%s %s" (org-read-date t nil str) time)
+      (org-read-date t nil str))))
+
+(defun cm--match-directive (directive line)
+  (cadr (s-match (eval `(rx bol ,directive (+ space) (group (* nonl)))) line)))
+
+(defun cm--parse-task (alist)
+  (let* ((todo-kw (cm-value 'subject alist))
+         (lns (s-split "\n" (cm-value 'body alist)))
+         (content
+          (-remove (~ s-matches? (rx bol (or "s" "d" "t") (+ space))) lns))
+         (header (car content))
+         (notes (cdr content))
+
+         (scheduled
+          (->> lns
+            (-keep (~ cm--match-directive "s"))
+            car
+            cm--parse-date))
+
+         (deadline
+          (->> lns
+            (-keep (~ cm--match-directive "d"))
+            car
+            cm--parse-date))
+         (tags
+          (->> lns
+            (-keep (~ cm--match-directive "t"))
+            (-mapcat 's-split-words)
+            (-distinct)))
+         )
+    (list :str
+          (concat (s-upcase todo-kw) " " header
+                  (when scheduled (format "\nSCHEDULED: <%s>" scheduled))
+                  (when deadline  (format "\nDEADLINE: <%s>" deadline))
+                  (cond
+                   ((null notes) "")
+                   ((= (length notes) 1)
+                    (format "\n%s" (car notes)))
+                   (t
+                    (format "\n%s" (s-join "\n- " notes)))))
+
+          :kind todo-kw
+          :tags tags)))
+
+(cm-declare-message-parser 'task
+  :predicate
+  (~ cm-matches? (rx bol (or "todo" "next" "maybe") (* space) eol)
+     'subject)
+  :parser 'cm--parse-task
+  :handler
+  (lambda+ ((&key str kind tags))
+    (cond
+     ((s-matches? (rx (or "next" "todo")) kind)
+      (cm--org-capture str "todo" tags))
+     ((s-matches? "someday" kind)
+      (cm--org-capture str "someday" tags))
+     (t
+      (error "No template for kind: %s" kind)))
+
+    (cm--growl "Task" str)))
 #+end_src
 ** Run on timer
 #+begin_src emacs-lisp
