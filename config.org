@@ -12495,13 +12495,13 @@ Use another Emacs process to fetch the title for webpages.
                ;; Escape chars used by org titles.
                (title (s-replace-all '(("[" . "(") ("]" . ")"))
                                      (or downloaded-title uri))))
-          (cons
-           uri
-           (format "[[%s][%s]]" uri (s-truncate 70 title)))))
+          (list :uri uri
+                :str (format "[[%s][%s]]" uri (s-truncate 70 title))
+                :title title)))
 
-     (lambda+ ((uri . link))
-       (cm--org-capture link "link")
-       (cm--growl "Link" uri)))))
+     (lambda+ ((&key uri title str))
+       (cm--org-capture str "link")
+       (cm--growl "Link" (or title uri))))))
 #+end_src
 ** Capture to diary
 Dairy entries must have /diary/ as the subject, and take the form
