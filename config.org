@@ -6583,9 +6583,9 @@ They should be displayed modally.
 
              ("W" "Agenda and work actions"
               ((agenda "" ((org-agenda-ndays 14)))
-               (todo "AWAITING"
+               (todo "AWAITING|ORGANISE_IN"
                      ((org-agenda-overriding-header "Incoming")))
-               (todo "READY|ORGANISE"
+               (todo "READY|ORGANISE_OUT"
                      ((org-agenda-overriding-header "Outgoing")))
                (todo "CALLBACK|MESSAGE"
                           ((org-agenda-overriding-header "Phone calls")))
@@ -6849,11 +6849,13 @@ The starting day is taken to be the weekday on which the event will repeat."
 *** Define todo keywords
 #+begin_src emacs-lisp
 (setq org-todo-keywords
-      '((type "AWAITING"    "|" "RECIEVED(!)" "CANCELLED(c@)")
-        (type "LEASED(@)"   "|" "RETURNED(!)" "LOST(!)")
+      '((type "LEASED(@)"   "|" "RETURNED(!)" "LOST(!)")
         (type "OUTSTANDING" "|" "PAID(!)" "VOID(@)")
 
-        (type "READY" "ORGANISE"
+        (type "AWAITING" "ORGANISE_IN" "|"
+              "RECIEVED(!)" "CANCELLED(c@)")
+
+        (type "READY" "ORGANISE_OUT"
               "|" "COLLECTED(!)" "DISPATCHED(!)" "CANCELLED(c@)")
 
         (type "CALLBACK" "MESSAGE"
