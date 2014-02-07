@@ -12178,6 +12178,12 @@ Much of the configuration of Coq is copied from the OCaml config.
   (indent-to col)
   (yas-insert-first-snippet predicate))
 
+(defun cb-coq:rx-start-column (rx)
+  (save-excursion
+    (goto-char (line-end-position))
+    (search-backward-regexp rx (line-beginning-position))
+    (current-column)))
+
 (defun cb-coq:meta-ret ()
   "Open a new line in a context-sensitive way."
   (interactive)
@@ -12219,6 +12225,12 @@ Much of the configuration of Coq is copied from the OCaml config.
    ;; Insert any other kind of case below the current one.
    ((s-matches? (rx bol (* space) "|") (current-line))
     (cb-coq:newline-and-insert-at-col (cb-coq:case-start-col) "| "))
+
+   ;; Insert check.
+   ((s-matches? (rx bol "Check") (current-line))
+    (cb-coq:newline-and-expand-snippet-at-col
+     (C (~ equal "Check") yas--template-name)
+     (cb-coq:rx-start-column "Check")))
 
    (t
     (goto-char (line-end-position))
