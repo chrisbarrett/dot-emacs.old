@@ -5025,6 +5025,7 @@ Each alist has a string as the key and a "
 
    (->> header-list
      (--map (->> it (-map 'cb-eshell:format-cons) (s-join " ")))
+     (-remove (C s-blank? s-trim))
      (s-join (propertize " | " 'face 'eshell-prompt-sep)))
 
    (propertize " ]" 'face 'eshell-prompt-sep)
