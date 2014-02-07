@@ -81,7 +81,8 @@
           (insert region)))
       (message "<C-c d> to send message, <C-c q> to cancel."))))
 
-(defun cbom:promote-heading-to-the-max ()
+(defun cbom:promote-heading-top-level ()
+  "Promote the current org-mode subtree to the top level."
   (when (org-at-heading-p)
     (while (ignore-errors (org-promote-subtree) t))))
 
@@ -105,7 +106,7 @@
                 (org-mode)
                 (insert s)
                 (goto-char (point-min))
-                (cbom:promote-heading-to-the-max)
+                (cbom:promote-heading-top-level)
                 (buffer-string))))
       (org-compose-mail s to subject))))
 
@@ -148,7 +149,7 @@ Kill the buffer when finished."
 (defun cbom:message-tab ()
   "Complete email addresses in the header, otherwise cycle headlines."
   (interactive)
-  (if (s-starts-with? "#+"(current-line))
+  (if (s-starts-with? "#+" (current-line))
 
       (let ((beg (line-beginning-position)))
         (save-restriction
@@ -175,7 +176,7 @@ Kill the buffer when finished."
     ;; Create alist of keywords -> values
     (--map (cl-destructuring-bind (_ key val &rest rest)
                (s-match (rx bol "#+" (group (+ nonl))
-                            ":" (* space)
+                            (not (any "\\")) ":" (* space)
                             (group (+ nonl)))
                         it)
              (cons (s-upcase key) val)))))
