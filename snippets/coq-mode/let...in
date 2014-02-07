@@ -1,0 +1,4 @@
+# key: l
+# name: let...in
+# --
+let ${1:binding} := ${2:expr} in $0
