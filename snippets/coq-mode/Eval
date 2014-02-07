@@ -1,7 +1,5 @@
-# -*- mode: snippet -*-
-# name: Eval
 # key: e
+# name: Eval
 # condition: (cbyas:bol?)
 # --
-Eval ${1:simpl} in $0
-.
+Eval ${1:simpl} in $0.

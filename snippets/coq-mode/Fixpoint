@@ -3,5 +3,4 @@
 # condition: (cbyas:bol?)
 # --
 Fixpoint ${1:def} : ${2:type} :=
-  $0
-  .
+  $0.

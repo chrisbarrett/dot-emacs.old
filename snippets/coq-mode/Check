@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: Check
+# key: c
+# condition: (cbyas:bol?)
+# --
+Check $0.
