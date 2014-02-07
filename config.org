@@ -5031,7 +5031,7 @@ Each alist has a string as the key and a "
    (propertize " ]" 'face 'eshell-prompt-sep)
    "\n"))
 
-(defvar cb-eshell:last-header nil)
+(defvar-local cb-eshell:last-header nil)
 
 (defun cb-eshell:format-prompt ()
   "Format the prompt to display in eshell."
