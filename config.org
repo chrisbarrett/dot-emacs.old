@@ -6316,11 +6316,16 @@ emails.
 (define-command-picker mail-picker
   :title "*Mail Commands*"
   :options
-  '(("m" "Compose Mail" compose-mail)
-    ("o" "Compose Mail (org)" org-compose-mail)
+  '(("m" "Compose Mail" org-compose-mail)
     ("s" "Compose Mail (subtree)" org-compose-mail-subtree :modes org-mode)))
 
-(bind-key* "C-x m" 'mail-picker)
+(defun cb-compose-mail-dwim ()
+  (interactive)
+  (if (derived-mode-p 'org-mode)
+      (call-interactively 'mail-picker)
+    (call-interactively 'org-compose-mail)))
+
+(bind-key* "C-x m" 'cb-compose-mail-dwim)
 #+end_src
 ** Write subtrees to new files
 #+begin_src emacs-lisp

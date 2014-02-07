@@ -162,7 +162,8 @@ Kill the buffer when finished."
       (message-goto-body)
       (insert str)
       (org-mime-htmlize nil)
-      ;; Prepare attachments
+      ;; Prepare attachments.
+      (goto-char (point-max))
       (-each (cbom:attachments-in-headers headers)
         'mail-add-attachment)
 
