@@ -65,9 +65,9 @@
       (org-mode)
       (hook-fn 'kill-buffer-hook :local t (restore))
       (buffer-local-set-key (kbd "<tab>") 'cbom:message-tab)
-      (buffer-local-set-key (kbd "C-c q") 'kill-this-buffer)
+      (buffer-local-set-key (kbd "C-c k") 'kill-this-buffer)
       (buffer-local-set-key (kbd "C-c d") 'cbom:message-send)
-      (buffer-local-set-key (kbd "C-c C-a") 'mail-add-attachment-ido)
+      (buffer-local-set-key (kbd "C-c C-a") 'cbom:add-attachment)
       ;; Set org buffer properties.
       (insert (concat "#+TO: " to "\n"
                       "#+SUBJECT: " subject "\n"
@@ -79,7 +79,7 @@
         (save-excursion
           (newline)
           (insert region)))
-      (message "<C-c d> to send message, <C-c q> to cancel."))))
+      (message "<C-c d> to send message, <C-c k> to cancel."))))
 
 (defun cbom:promote-heading-top-level ()
   "Promote the current org-mode subtree to the top level."
@@ -110,6 +110,19 @@
                 (buffer-string))))
       (org-compose-mail s to subject))))
 
+(defun cbom:add-attachment (filepath)
+  "Attach the file at FILEPATH to this message.
+Adds an ATTACH property to the org header that to be interpreted on
+export."
+  (interactive (list (ido-read-file-name "Attach: " nil nil t)))
+  (save-excursion
+    (goto-char (point-min))
+    (while (and (s-matches? (rx bol "#+") (current-line))
+                (not (eobp)))
+      (forward-line))
+    (open-line 1)
+    (insert (concat "#+ATTACH: " filepath))))
+
 (defun cbom:read-email ()
   "Read an email address from BBDB using ido."
   (require 'bbdb)
@@ -121,6 +134,13 @@
              (--map (format "%s <%s>" (bbdb-record-name record) it)
                     (bbdb-record-mail record))))
      (-flatten))))
+
+(defun cbom:attachments-in-headers  (alist)
+  "Parse header ALIST and return a list of files to attach."
+  (--keep (cl-destructuring-bind (k . v) it
+            (and (equal k "ATTACH")
+                 v))
+   alist))
 
 (defun cbom:message-send ()
   "Export the org message compose buffer to HTML and send as an email.
@@ -142,6 +162,10 @@ Kill the buffer when finished."
       (message-goto-body)
       (insert str)
       (org-mime-htmlize nil)
+      ;; Prepare attachments
+      (-each (cbom:attachments-in-headers headers)
+        'mail-add-attachment)
+
       (message-send-and-exit)))
   ;; Restore previous window state.
   (kill-this-buffer))
@@ -175,11 +199,11 @@ Kill the buffer when finished."
     (-remove 's-blank?)
     ;; Create alist of keywords -> values
     (--map (cl-destructuring-bind (_ key val &rest rest)
-               (s-match (rx bol "#+" (group (+ nonl))
-                            (not (any "\\")) ":" (* space)
+               (s-match (rx bol "#+" (group (+? nonl))
+                            ":" (* space)
                             (group (+ nonl)))
                         it)
-             (cons (s-upcase key) val)))))
+             (cons (s-upcase key) (s-no-props val))))))
 
 (provide 'cb-org-mail)
 
