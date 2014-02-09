@@ -141,7 +141,7 @@
   "BOUNS is either the cell or the function returns, such that (BEGIN . END).
 Reurn the 4 values; bounds, highlighting, un-highlighting and error flashing procedure. This function is convenient to use with `define-eval-sexp-fu-flash-command'."
   (when (ignore-errors (preceding-sexp))
-    (flet ((bounds () (if (functionp bounds) (funcall bounds) bounds)))
+    (cl-flet ((bounds () (if (functionp bounds) (funcall bounds) bounds)))
       (let ((b (bounds)) (buf (current-buffer)))
         (when b
           (funcall eval-sexp-fu-flash-function b face eface buf))))))
@@ -224,7 +224,7 @@ See also `eval-sexp-fu-flash'."
 
 (require 'rx)
 (defun esf-forward-inner-sexp0 ()
-  (flet ((poss ()
+  (cl-flet ((poss ()
            (let
                ((prev (save-excursion (backward-sexp) (forward-sexp) (point)))
                 (next (save-excursion (forward-sexp) (backward-sexp) (point))))
