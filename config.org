@@ -4781,17 +4781,19 @@ Configure environment folding for =evil-mode=.
 )
 #+end_src
 * Info
-Configue info-mode.
+Configure info-mode.
 #+begin_src emacs-lisp
 (defun cbinfo:configure ()
-  (setq line-spacing 2))
+  (setq line-spacing 2) ; px
+  )
 
 (add-hook 'Info-mode-hook 'cbinfo:configure)
 #+end_src
 ** Override bindings
 #+begin_src emacs-lisp
-(bind-key "SPC" 'Info-scroll-down Info-mode-map)
-(bind-key "S-SPC" 'Info-scroll-up Info-mode-map)
+(after 'info
+  (define-key Info-mode-map (kbd "SPC") 'Info-scroll-up)
+  (define-key Info-mode-map (kbd "S-SPC") 'Info-scroll-down))
 #+end_src
 * Compilation
 ** Configure variables
