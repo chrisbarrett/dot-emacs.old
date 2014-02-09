@@ -4954,14 +4954,19 @@ Define utilities to format the prompt.
      (cons "cwd" dir))))
 
 (defun cb-eshell:directory-info ()
-  (cl-destructuring-bind (perms _links owner group &rest _)
-      (s-split (rx (+ space)) (%-string "ls -ld"
-                                        (%-quote (or (eshell/pwd) ".") )))
-    (unless (equal owner (%-string "whoami"))
-      (list
-       (cons "mode" (propertize perms 'face `(:foreground ,solarized-hl-cyan)))
-       (cons "owner" (propertize owner 'face `(:foreground ,solarized-hl-cyan)))
-       (cons "group" (propertize group 'face `(:foreground ,solarized-hl-cyan)))))))
+  (let* ((cwd (if (s-blank? (eshell/pwd)) "." (eshell/pwd)))
+         (ls-result (%-string "ls -ld" (%-quote cwd))))
+    (unless (s-matches? "No such file or directory" ls-result)
+      (cl-destructuring-bind (&optional perms _links owner group &rest _)
+          (s-split (rx (+ space)) ls-result)
+        (unless (equal owner (%-string "whoami"))
+          (list
+           (cons "mode"
+                 (propertize perms 'face `(:foreground ,solarized-hl-cyan)))
+           (cons "owner"
+                 (propertize owner 'face `(:foreground ,solarized-hl-cyan)))
+           (cons "group"
+                 (propertize group 'face `(:foreground ,solarized-hl-cyan)))))))))
 
 (defun cb-eshell:git-anything-untracked? ()
   "Non-nil if there are any untracked files in the current git repo."
