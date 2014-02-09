@@ -458,9 +458,10 @@ This directory tree will be added to the load path if ADD-PATH is non-nil."
 #+end_src
 ** Add downloaded sources to the info path.
 #+begin_src emacs-lisp
-(after 'info
-  (add-to-list 'Info-default-directory-list (f-join source-directory "info/"))
-  (add-to-list 'Info-additional-directory-list cb:info-dir))
+(setq Info-additional-directory-list
+      (-flatten (list cb:info-dir
+                      (f-join source-directory "info/")
+                      (f-directories cb:info-dir))))
 #+end_src
 ** Define org directory and default notes file.
 #+begin_src emacs-lisp
