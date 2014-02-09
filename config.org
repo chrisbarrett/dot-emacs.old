@@ -4399,7 +4399,6 @@ Marks unstaged and deleted hunks in the gutter.
   (diminish 'git-gutter+-mode))
 #+end_src
 ** Hacky fixes
-
 Internal functions attempt to call =magit-read-top-dir= as a variable. Bind a
 variable to prevent errors.
 #+begin_src emacs-lisp
