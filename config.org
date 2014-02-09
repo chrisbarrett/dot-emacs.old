@@ -2660,6 +2660,18 @@ Highlight the current line.
 (when (display-graphic-p)
   (global-hl-line-mode t))
 #+end_src
+** Do not use in certain modes
+#+begin_src emacs-lisp
+(make-variable-buffer-local 'global-hl-line-mode)
+
+(defun hl-line-disable ()
+  (setq global-hl-line-mode nil))
+
+(--each '(eshell-mode-hook
+          Man-mode-hook
+          Info-mode-hook)
+  (add-hook it 'hl-line-disable))
+#+end_src
 * fringe
 Set fringe width.
 #+begin_src emacs-lisp
