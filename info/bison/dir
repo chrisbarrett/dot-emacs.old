@@ -1,4 +1,4 @@
-This is the file .../info/dir, which contains the
+This is the file info/bison/dir, which contains the
 topmost node of the Info hierarchy, called (dir)Top.
 The first time you invoke Info you start off looking at this node.
 
@@ -14,6 +14,5 @@ File: dir,	Node: Top	This is the top of the INFO tree
 
 * Menu:
 
-Ledger
-* Ledger: (ledger).                      Commandline accounting application.
-* Ledger mode: (ledger-mode).            Major mode for editing ledger files.
+Bison
+* Bison: (bison).                        Bison is a general-purpose parser generator.
