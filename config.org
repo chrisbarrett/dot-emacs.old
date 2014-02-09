@@ -4258,6 +4258,8 @@ entry in `modeline-custom-description-functions'."
 Magit provides a convenient interface to git commands.
 #+begin_src emacs-lisp
 (cb:install-package 'magit)
+(unless noninteractive
+  (require 'magit))
 #+end_src
 *** Declare a key binding to show magit fullscreen
 #+begin_src emacs-lisp
@@ -4373,14 +4375,8 @@ Provides a major mode for editing git config files.
 Marks unstaged and deleted hunks in the gutter.
 #+begin_src emacs-lisp
 (cb:install-package 'git-gutter+)
-#+end_src
-*** Defer loading until we navigate to a file under version control
-#+begin_src emacs-lisp
-(hook-fns '(find-file-hook after-save-hook)
-  (when (vc-git-root (buffer-file-name))
-    (require 'magit)
-    (require 'git-gutter+)
-    (ignore-errors (git-gutter+-mode +1))))
+(unless noninteractive
+  (global-git-gutter+-mode +1))
 #+end_src
 *** Refresh git gutter after saving
 #+begin_src emacs-lisp
