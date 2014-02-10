@@ -6871,19 +6871,7 @@ The starting day is taken to be the weekday on which the event will repeat."
 *** Define todo keywords
 #+begin_src emacs-lisp
 (setq org-todo-keywords
-      '((type "LEASED(@)"   "|" "RETURNED(!)" "LOST(!)")
-        (type "OUTSTANDING" "|" "PAID(!)" "VOID(@)")
-
-        (type "AWAITING" "ORGANISE_IN" "|"
-              "RECIEVED(!)" "CANCELLED(c@)")
-
-        (type "READY" "ORGANISE_OUT"
-              "|" "COLLECTED(!)" "DISPATCHED(!)" "CANCELLED(c@)")
-
-        (type "CALLBACK" "MESSAGE"
-              "|" "HANDLED(h@)" "TRANSFERRED" "NOTIFIED")
-
-        (type "MAYBE(m)" "TODO(t)" "NEXT(n)" "WAITING(w@/!)"
+      '((type "MAYBE(m)" "TODO(t)" "NEXT(n)" "WAITING(w@/!)"
               "|" "DONE(d!)" "CANCELLED(c@)" "DELEGATED(D@)")))
 #+end_src
 *** Use special face for NEXT keyword
@@ -6898,8 +6886,10 @@ The starting day is taken to be the weekday on which the event will repeat."
   "Face for todos with the NEXT label."
   :group 'org-faces)
 
-(setq org-todo-keyword-faces '(("NEXT" . org-todo-next)
-                               ("ORGANISE" . org-todo-next)))
+(setq org-todo-keyword-faces
+      '(("NEXT" . org-todo-next)
+        ("ORGANISE_IN" . org-todo-next)
+        ("ORGANISE_OUT" . org-todo-next)))
 #+end_src
 *** Sub-task completion triggers parent completion
 #+begin_src emacs-lisp
