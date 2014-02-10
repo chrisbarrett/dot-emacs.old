@@ -168,6 +168,19 @@ STR is the contents of the buffer. HEADERS is an alist of headers."
              (not (y-or-n-p "Message has no body.  Continue? ")))
     (user-error "Aborted")))
 
+(defun cbom:delete-org-headers-in-message ()
+  "Delete leading header lines in plaintext part of the message."
+  (save-excursion
+    (goto-char (point-min))
+    (search-forward mail-header-separator)
+    (search-forward "<#part type=text/plain>")
+    (let ((start (point)))
+      (forward-line)
+      (while (and (not (eobp))
+                  (s-matches? (rx bol "#+") (current-line)))
+        (forward-line))
+      (delete-region start (1- (line-beginning-position))))))
+
 (defun cbom:message-send ()
   "Export the org message compose buffer to HTML and send as an email.
 Kill the buffer when finished."
@@ -190,6 +203,7 @@ Kill the buffer when finished."
       (message-goto-body)
       (insert str)
       (org-mime-htmlize nil)
+      (cbom:delete-org-headers-in-message)
       ;; Prepare attachments.
       (goto-char (point-max))
       (-each (cbom:attachments-in-headers headers) 'mail-add-attachment)
