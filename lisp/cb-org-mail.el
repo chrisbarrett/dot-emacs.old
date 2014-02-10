@@ -142,6 +142,32 @@ export."
                  v))
    alist))
 
+(defun cbom:validate-message-before-sending (str headers)
+  "Prompt the user for confirmation if the message is oddly formed.
+STR is the contents of the buffer. HEADERS is an alist of headers."
+  ;; Check destination is set.
+  (let ((to (cdr (assoc "TO" headers)))
+        (cc (cdr (assoc "CC" headers)))
+        (bcc (cdr (assoc "BCC" headers))))
+    (when (--all? (or (null it)
+                      (s-matches? (rx string-start (* space) string-end) it))
+                  (list to cc bcc))
+      (user-error "Email must have a destination address")))
+
+  ;; Prompt to continue if no subject.
+  (when (and (s-blank? (cdr (assoc "SUBJECT" headers)))
+             (not (y-or-n-p "Message has no subject.  Continue? ")))
+    (user-error "Aborted"))
+
+  ;; Prompt to continue if no body.
+  (when (and (s-blank?
+              (->> (s-split "\n" str)
+                (--drop-while (s-starts-with? "#+" it))
+                (s-join "\n")
+                s-trim))
+             (not (y-or-n-p "Message has no body.  Continue? ")))
+    (user-error "Aborted")))
+
 (defun cbom:message-send ()
   "Export the org message compose buffer to HTML and send as an email.
 Kill the buffer when finished."
@@ -150,6 +176,7 @@ Kill the buffer when finished."
   (interactive)
   (let* ((str (buffer-string))
          (headers (cbom:header->alist str)))
+    (cbom:validate-message-before-sending str headers)
     (save-window-excursion
       (compose-mail (cdr (assoc "TO" headers))
                     (cdr (assoc "SUBJECT" headers))
@@ -204,7 +231,7 @@ Kill the buffer when finished."
                             ":" (* space)
                             (group (+ nonl)))
                         it)
-             (cons (s-upcase key) (s-no-props val))))))
+             (cons (s-upcase key) (s-trim (substring-no-properties val)))))))
 
 (provide 'cb-org-mail)
 
