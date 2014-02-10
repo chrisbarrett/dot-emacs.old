@@ -207,6 +207,7 @@ Kill the buffer when finished."
       ;; Prepare attachments.
       (goto-char (point-max))
       (-each (cbom:attachments-in-headers headers) 'mail-add-attachment)
+      (message "---- Sending Message: ----\n%s\n----" (buffer-string))
       (message-send-and-exit))
 
     ;; Restore previous window state.
