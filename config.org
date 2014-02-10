@@ -8585,6 +8585,11 @@ Ignore errors thrown by internals.
 #+begin_src emacs-lisp
 )
 #+end_src
+* Bison
+#+begin_src emacs-lisp
+(autoload 'bison-mode "bison-mode.el")
+(add-to-list 'auto-mode-alist '("\\.y$" . bison-mode))
+#+end_src
 * Lisp
 #+begin_src emacs-lisp
 (hook-fn 'cb:lisp-modes-hook
