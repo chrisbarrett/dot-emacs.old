@@ -65,7 +65,7 @@
       (org-mode)
       (hook-fn 'kill-buffer-hook :local t (restore))
       (buffer-local-set-key (kbd "<tab>") 'cbom:message-tab)
-      (buffer-local-set-key (kbd "C-c k") 'kill-this-buffer)
+      (buffer-local-set-key (kbd "C-c q") 'kill-this-buffer)
       (buffer-local-set-key (kbd "C-c d") 'cbom:message-send)
       (buffer-local-set-key (kbd "C-c C-a") 'cbom:add-attachment)
       ;; Set org buffer properties.
@@ -79,7 +79,7 @@
         (save-excursion
           (newline)
           (insert region)))
-      (message "<C-c d> to send message, <C-c k> to cancel."))))
+      (message "<C-c d> to send message, <C-c q> to cancel."))))
 
 (defun cbom:promote-heading-top-level ()
   "Promote the current org-mode subtree to the top level."
@@ -189,7 +189,7 @@ Kill the buffer when finished."
       ;; Prepare message body.
       (message-goto-body)
       (insert str)
-      (org-mime-htmlize t)
+      (org-mime-htmlize nil)
       ;; Prepare attachments.
       (goto-char (point-max))
       (-each (cbom:attachments-in-headers headers) 'mail-add-attachment)
