@@ -175,6 +175,7 @@ Kill the buffer when finished."
   ;; headers.
   (interactive)
   (let* ((str (buffer-string))
+         (buf (current-buffer))
          (headers (cbom:header->alist str)))
     (cbom:validate-message-before-sending str headers)
     (save-window-excursion
@@ -188,15 +189,14 @@ Kill the buffer when finished."
       ;; Prepare message body.
       (message-goto-body)
       (insert str)
-      (org-mime-htmlize nil)
+      (org-mime-htmlize t)
       ;; Prepare attachments.
       (goto-char (point-max))
-      (-each (cbom:attachments-in-headers headers)
-        'mail-add-attachment)
+      (-each (cbom:attachments-in-headers headers) 'mail-add-attachment)
+      (message-send-and-exit))
 
-      (message-send-and-exit)))
-  ;; Restore previous window state.
-  (kill-this-buffer))
+    ;; Restore previous window state.
+    (kill-buffer buf)))
 
 (defun cbom:message-tab ()
   "Complete email addresses in the header, otherwise cycle headlines."
