@@ -28,6 +28,9 @@
 
 ;;; Code:
 
+(defvar cb:use-vim-keybindings? t
+  "Set to nil to disable Evil-mode and associated key bindings.")
+
 ;; Initialise packages and install org-mode.
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/"))
