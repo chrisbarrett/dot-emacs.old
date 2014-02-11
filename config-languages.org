@@ -2818,49 +2818,14 @@ last.
  (lambda ()
    (derived-mode-p 'haskell-mode 'inf-haskell-mode)))
 #+end_src
-** Apply font-lock to show unicode symbols
+** Use font-lock to display a λ-symbol for lambda functions
 #+begin_src emacs-lisp
-(defun cbhs:apply-font-lock (pat rep)
-  "Call SUBSTITUTE-PATTERN-WITH-UNICODE repeatedly."
-  (font-lock-add-keywords
-   nil `((,pat
-          (0 (progn (compose-region (match-beginning 1) (match-end 1)
-                                    ,(string-to-char rep) 'decompose-region)
-                    nil))))))
-
-(defun cbhs:font-lock (patterns)
-  (--each patterns
-    (cl-destructuring-bind (pat rep) it
-      (cbhs:apply-font-lock
-       (rx-to-string `(and (not (any "\""))
-                           (? "`")
-                           (group  symbol-start ,pat symbol-end)
-                           (? "`")
-                           (not (any "\""))))
-       rep))))
-
-(defun cbhs:apply-unicode ()
-  (cbhs:apply-font-lock
-   "\\s ?(?\\(\\\\\\)\\s *\\(\\w\\|_\\|(.*)\\).*?\\s *->" "λ")
-  (cbhs:font-lock '(("<-"     "←")
-                    ("->"     "→")
-                    ("=>"     "⇒")
-                    ("."      "•")
-                    ("forall" "∀")
-                    ("undefined" "⊥")
-                    (">="     "≥")
-                    ("<="     "≤")
-                    ("=="     "≣")
-                    ("alpha"  "ɑ")
-                    ("beta"   "β")
-                    ("gamma"  "ɣ")
-                    ("delta"  "δ")
-                    ("elem"   "∈")
-                    ("notElem" "∉")
-                    ("!!"     "‼")
-                    ("::"     "∷"))))
-
-(add-hook 'cb:haskell-modes-hook 'cbhs:apply-unicode)
+(font-lock-add-keywords
+ 'haskell-mode
+ `(("\\s ?(?\\(\\\\\\)\\s *\\(\\w\\|_\\|(.*)\\).*?\\s *->"
+    (0 (progn (compose-region (match-beginning 1) (match-end 1)
+                              ,(string-to-char "λ") 'decompose-region)
+              nil)))))
 #+end_src
 ** flycheck
 *** Install hdevtools checker
