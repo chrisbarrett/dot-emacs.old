@@ -45,5 +45,5 @@ tramp
 swank
 var
 el-get
-/config.el
+/config-*.el
 /custom.el

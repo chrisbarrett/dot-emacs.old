@@ -22,8 +22,9 @@
 
 ;;; Commentary:
 
-;; My configuration is managed in <file:init.org>. This file is responsible for
-;; initialising org-babel before loading that file.
+;; My configuration is managed in a number of org-mode files in this directory.
+;; This file is responsible for initialising org-babel before loading those
+;; files.
 
 ;;; Code:
 
@@ -36,15 +37,18 @@
 (when (not package-archive-contents) (package-refresh-contents))
 (unless (package-installed-p 'org-plus-contrib) (package-install 'org-plus-contrib))
 
-;; Load config.org
 (require 'ob-tangle)
 
-(defun tangle-and-load-config-file ()
-  "Tangle and reload 'config.el'."
+(defun tangle-and-load-config-files ()
+  "Tangle and reload configuration files."
   (interactive)
-  (org-babel-load-file (concat user-emacs-directory "config.org")))
+  (message "Loading config files...")
+  (dolist (f (list "config-base.org" "config-orgmode.org" "config-languages.org"))
+    (message "Loading %s" f)
+    (org-babel-load-file (concat user-emacs-directory f)))
+  (message "Loading config files...Done"))
 
-(tangle-and-load-config-file)
+(tangle-and-load-config-files)
 
 (provide 'init)
 

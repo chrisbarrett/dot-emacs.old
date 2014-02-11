@@ -1,0 +1,4215 @@
+#+TITLE: Config: Languages
+#+DESCRIPTION: Configuration options loaded at Emacs startup.
+#+AUTHOR: Chris Barrett
+#+OPTIONS: toc:3 num:nil ^:nil
+
+* assembler
+** DEFER
+#+begin_src emacs-lisp
+(after 'asm-mode
+#+end_src
+** Set tab width
+Use wide tab-width for assembler.
+#+begin_src emacs-lisp
+(put 'asm-mode 'tab-width 8)
+#+end_src
+** Smart-operator
+#+begin_src emacs-lisp
+(hook-fn 'asm-mode-hook
+  (smart-insert-operator-hook)
+  (local-unset-key (kbd "%"))
+  (local-unset-key (kbd "-"))
+  (local-unset-key (kbd ".")))
+#+end_src
+** Tab command
+Define a context-sensitive tab command.
+*** Impl
+#+begin_src emacs-lisp
+(defun cb:asm-toggling-tab ()
+  (interactive)
+  (if (equal (line-beginning-position)
+             (progn (back-to-indentation) (point)))
+      (indent-for-tab-command)
+    (indent-to-left-margin)))
+
+(defun cb:asm-tab ()
+  "Perform a context-sensitive indentation."
+  (interactive)
+  (if (s-contains? ":" (thing-at-point 'line))
+      (indent-to-left-margin)
+    (cb:asm-toggling-tab)))
+#+end_src
+*** Key binding
+#+begin_src emacs-lisp
+(define-key asm-mode-map (kbd "<tab>") 'cb:asm-tab)
+#+end_src
+** Colon command
+Define a custom colon command.
+*** Impl
+#+begin_src emacs-lisp
+(defun cb:asm-electric-colon ()
+  "Insert a colon, indent, then newline."
+  (interactive)
+  (atomic-change-group
+    (unless (thing-at-point-looking-at (rx ":" (* space) eol))
+      (insert ":"))
+    (cb:asm-tab)
+    (newline-and-indent)))
+#+end_src
+*** Key binding
+#+begin_src emacs-lisp
+(define-key asm-mode-map (kbd ":") 'cb:asm-electric-colon)
+#+end_src
+** END
+#+begin_src emacs-lisp
+)
+#+end_src
+* JSON
+#+begin_src emacs-lisp
+(cb:install-package 'json-mode)
+#+end_src
+** Define key command to format buffer
+#+begin_src emacs-lisp
+(after 'json-mode
+  (define-key json-mode-map (kbd "M-q") 'json-mode-beautify))
+#+end_src
+** auto-complete
+#+begin_src emacs-lisp
+(add-to-list 'ac-modes 'json-mode)
+#+end_src
+* csv-mode
+#+begin_src emacs-lisp
+(cb:install-package 'csv-mode)
+(add-to-list 'auto-mode-alist '("\\.[Cc][Ss][Vv]\\'" . csv-mode))
+#+end_src
+** Customise separator face
+#+begin_src emacs-lisp
+(after 'csv-mode
+  (set-face-foreground csv-separator-face solarized-hl-orange))
+#+end_src
+** Override broken variable
+#+begin_src emacs-lisp
+(defconst csv-mode-line-help-echo "")
+#+end_src
+* XML
+Enable nxml-mode if when visiting a file with a DTD.
+#+begin_src emacs-lisp
+(hook-fn 'find-file-hook
+  (when (s-starts-with? "<?xml " (buffer-string))
+    (nxml-mode)))
+#+end_src
+** Formatting
+Define a command to reformat the current XML buffer.
+
+#+begin_src emacs-lisp
+(defun tidy-xml-buffer ()
+  "Reformat the current XML buffer using Tidy."
+  (interactive)
+  (save-excursion
+    (call-process-region (point-min) (point-max) "tidy" t t nil
+                         "-xml" "-i" "-wrap" "0" "-omit" "-q")))
+#+end_src
+
+Set a key binding for the above command.
+
+#+begin_src emacs-lisp
+(after 'nxml-mode
+  (define-key nxml-mode-map (kbd "M-q") 'tidy-xml-buffer))
+#+end_src
+
+* SGML
+#+begin_src emacs-lisp
+(setq-default sgml-xml-mode t)
+#+end_src
+
+#+begin_src emacs-lisp
+(after 'sgml-mode
+  (define-key sgml-mode-map (kbd "M-q") 'tidy-xml-buffer))
+#+end_src
+* Markdown
+#+begin_src emacs-lisp
+(cb:install-package 'markdown-mode)
+(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+#+end_src
+** DEFER
+#+begin_src emacs-lisp
+(after 'markdown-mode
+#+end_src
+** Imenu
+#+begin_src emacs-lisp
+(put 'markdown-mode 'imenu-generic-expression
+     '(("title"  "^\\(.*\\)[\n]=+$" 1)
+       ("h2-"    "^\\(.*\\)[\n]-+$" 1)
+       ("h1"   "^# \\(.*\\)$" 1)
+       ("h2"   "^## \\(.*\\)$" 1)
+       ("h3"   "^### \\(.*\\)$" 1)
+       ("h4"   "^#### \\(.*\\)$" 1)
+       ("h5"   "^##### \\(.*\\)$" 1)
+       ("h6"   "^###### \\(.*\\)$" 1)
+       ("fn"   "^\\[\\^\\(.*\\)\\]" 1)))
+#+end_src
+** Smartparens
+#+begin_src emacs-lisp
+(after 'smartparens
+  (sp-with-modes '(markdown-mode)
+    (sp-local-pair "```" "```")))
+#+end_src
+** Faces
+#+begin_src emacs-lisp
+(set-face-attribute markdown-header-face-1 nil :height 1.3)
+(set-face-attribute markdown-header-face-2 nil :height 1.1)
+#+end_src
+** Evil
+Define keys to move by headlines in normal state.
+#+begin_src emacs-lisp
+(after 'evil
+  (evil-define-key 'normal markdown-mode-map
+    (kbd "M-P") 'outline-previous-visible-heading
+    (kbd "M-N") 'outline-next-visible-heading))
+#+end_src
+** END
+#+begin_src emacs-lisp
+)
+#+end_src
+* C
+** DEFER
+#+begin_src emacs-lisp
+(after 'cc-mode
+#+end_src
+** Use clang as c compiler
+#+begin_src emacs-lisp
+(when (executable-find "clang")
+  (setq cc-compilers-list (list "clang")
+        cc-default-compiler "clang"
+        cc-default-compiler-options "-fno-color-diagnostics -g"))
+#+end_src
+** Key bindings
+#+begin_src emacs-lisp
+(define-key c-mode-map (kbd "M-q") 'indent-dwim)
+#+end_src
+** Insert headers
+#+begin_src emacs-lisp
+(after 'emr
+
+  (defun helm-insert-c-header ()
+    (interactive)
+    (helm :sources
+          `((name . "C Headers")
+            (candidates . ,(-concat emr-c:standard-headers
+                                    (emr-c:headers-in-project)))
+            (action .
+                    (lambda (c)
+                      (emr-c-insert-include
+                       (format (if (-contains? emr-c:standard-headers c)
+                                   "<%s>"
+                                 "\"%s\"")
+                               c))))
+            (volatile))
+          :prompt "Header: "
+          :buffer "*Helm C Headers*"))
+
+  (add-to-list 'insertion-picker-options
+               '("i" "Header Include" helm-insert-c-header
+                 :modes (c-mode c++-mode))))
+#+end_src
+** Switch between header and impl
+Define a command to switch between header file and implementation.
+*** Impl
+#+begin_src emacs-lisp
+(defun cb-c:switch-between-header-and-impl ()
+  "Switch between a header file and its implementation."
+  (interactive)
+  (let ((sans (file-name-sans-extension (buffer-file-name)))
+        (ext  (file-name-extension (buffer-file-name))))
+    (if (equal "h" ext)
+        (find-file (concat sans ".c"))
+      (find-file (concat sans ".h")))))
+#+end_src
+*** Key binding
+#+begin_src emacs-lisp
+(define-key c-mode-map (kbd "C-c C-j") 'cb-c:switch-between-header-and-impl)
+#+end_src
+** Utility functions
+Define functions used to parse the context around point.
+#+begin_src emacs-lisp
+(defun cb-c:looking-at-flow-control-header? ()
+  (thing-at-point-looking-at
+   (rx (* nonl) (? ";") (* space)
+       (or "if" "when" "while" "for")
+       (* nonl)
+       "("
+       (* (not (any ")"))))))
+
+(defun cb-c:looking-at-flow-control-keyword? ()
+  (thing-at-point-looking-at
+   (rx (or (group (or "if" "when" "while" "for") (or (+ space) "("))
+           (group (or "do" "else") (* space))))))
+
+(defun cb-c:looking-at-assignment-right-side? ()
+  (save-excursion
+    (thing-at-point-looking-at
+     (rx "=" (* space)
+         ;; Optional casts
+         (? (group "(" (* nonl) ")"))
+         (* space)))))
+
+(defun cb-c:looking-at-cast? ()
+  (let ((cast (rx
+
+               (or
+                "return"
+                (any
+                 ;; Operator
+                 "+" "-" "*" "/" "|" "&" ">" "<"
+                 ;; Expression delimiter
+                 ";" "[" "{" "(" ")" "="))
+
+               (* space)
+
+               ;; Cast and type
+               "(" (* nonl) ")"
+
+               (* space)))
+        )
+    (and (thing-at-point-looking-at cast)
+         (save-excursion
+           (search-backward-regexp cast)
+           (not (cb-c:looking-at-flow-control-keyword?))))))
+
+(defun cb-c:looking-at-struct-keyword? ()
+  (save-excursion
+    (beginning-of-sexp)
+    (thing-at-point-looking-at (rx (or "{" " " "(" ",") "."))))
+#+end_src
+** Smart operators
+Add special smart ops for C/C++.
+*** Utilities
+#+begin_src emacs-lisp
+(defun c-insert-smart-op (str)
+  "Insert a smart operator with special formatting in certain expressions."
+  (if (cb-c:looking-at-flow-control-header?)
+      (insert str)
+    (smart-insert-operator str)))
+
+(defun cb-c:maybe-remove-spaces-after-insertion (pred-regex op-start-regex)
+  (when (thing-at-point-looking-at pred-regex)
+    (save-excursion
+      (let ((back-limit (save-excursion
+                          (search-backward-regexp op-start-regex)
+                          (point))))
+        (while (search-backward-regexp (rx space) back-limit t)
+          (delete-horizontal-space)))
+      (indent-according-to-mode))))
+
+(defun cb-c:just-one-space-after-semicolon ()
+  (save-excursion
+    (when (search-backward-regexp (rx ";" (* space)) (line-beginning-position) t)
+      (replace-match "; " nil))))
+
+#+end_src
+*** Definitions
+#+begin_src emacs-lisp
+(defun c-insert-smart-equals ()
+  "Insert an '=' with context-sensitive formatting."
+  (interactive)
+  (if (or (cb-c:looking-at-flow-control-header?)
+          (cb-c:looking-at-struct-keyword?))
+      (insert "=")
+    (smart-insert-operator "=")))
+
+(defun c-insert-smart-star ()
+  "Insert a * with padding in multiplication contexts."
+  (interactive)
+  (cond
+   ((s-matches? (rx bol (* space) eol)
+                (buffer-substring (line-beginning-position) (point)))
+    (indent-according-to-mode)
+    (insert "*"))
+   ((thing-at-point-looking-at (rx (any "(" "{" "[") (* space)))
+    (insert "*"))
+   ((thing-at-point-looking-at (rx (any digit "*") (* space)))
+    (smart-insert-operator "*"))
+   (t
+    (just-one-space)
+    (insert "*"))))
+
+(defun c-insert-smart-minus ()
+  "Insert a minus with padding unless a unary minus is more appropriate."
+  (interactive)
+  (atomic-change-group
+    ;; Handle formatting for unary minus.
+    (if (thing-at-point-looking-at
+         (rx (or "return" "," "(" "[" "(" ";" "=") (* space)))
+        (insert "-")
+      (c-insert-smart-op "-"))
+    ;; Collapse whitespace for decrement operator.
+    (cb-c:maybe-remove-spaces-after-insertion
+     (rx "-" (* space) "-" (* space))
+     (rx (not (any "-" space))))
+    (cb-c:just-one-space-after-semicolon)))
+
+(defun c-insert-smart-gt ()
+  "Insert a > symbol with formatting.
+If the insertion creates an right arrow (->), remove surrounding whitespace."
+  (interactive)
+  (c-insert-smart-op ">")
+  (cb-c:maybe-remove-spaces-after-insertion
+   (rx "-" (* space) ">" (* space))
+   (rx (not (any space "-" ">")))))
+
+(defun c-insert-smart-plus ()
+  "Insert a + symbol with formatting.
+Remove horizontal whitespace if the insertion results in a ++."
+  (interactive)
+  (c-insert-smart-op "+")
+  (cb-c:maybe-remove-spaces-after-insertion
+   (rx "+" (* space) "+" (* space))
+   (rx (not (any space "+"))))
+  (cb-c:just-one-space-after-semicolon))
+
+#+end_src
+*** Set bindings
+#+begin_src emacs-lisp
+(define-key c-mode-map (kbd ",") 'cb:comma-then-space)
+(define-key c-mode-map (kbd "=") 'c-insert-smart-equals)
+(define-key c-mode-map (kbd "|") (smart-op "|"))
+(define-key c-mode-map (kbd "?") (smart-op "?"))
+(define-key c-mode-map (kbd ":") (smart-op ":"))
+(define-key c-mode-map (kbd "+") 'c-insert-smart-plus)
+(define-key c-mode-map (kbd ">") 'c-insert-smart-gt)
+(define-key c-mode-map (kbd "-") 'c-insert-smart-minus)
+(define-key c-mode-map (kbd "*") 'c-insert-smart-star)
+#+end_src
+** Smartparens
+Automatically format curly braces on insertion.
+*** Define commands
+#+begin_src emacs-lisp
+(defun cb-c:format-after-brace (_id action contexxt)
+  "Apply formatting after a brace insertion."
+  (when (and (equal action 'insert)
+             (equal context 'code)
+             (save-excursion
+               ;; Search backward for flow control keywords.
+               (search-backward "{")
+               (or (thing-at-point-looking-at
+                    (rx symbol-start (or "else" "do")))
+                   (progn
+                     (sp-previous-sexp)
+                     (thing-at-point-looking-at
+                      (rx symbol-start (or "if" "for" "while")))))))
+    ;; Insert a space for padding.
+    (save-excursion
+      (search-backward "{")
+      (just-one-space))
+    ;; Put braces on new line.
+    (newline)
+    (save-excursion (newline-and-indent))
+    (c-indent-line)))
+
+(defun cb-c:format-after-paren (_id action context)
+  "Insert a space after flow control keywords."
+  (when (and (equal action 'insert)
+             (equal context 'code)
+             (save-excursion
+               (search-backward "(")
+               (thing-at-point-looking-at
+                (rx symbol-start (or "=" "return" "if" "while" "for")
+                    (* space)))))
+    (save-excursion
+      (search-backward "(")
+      (just-one-space))))
+#+end_src
+*** Register with smartparens
+#+begin_src emacs-lisp
+(after 'smartparens
+  (sp-with-modes '(c-mode cc-mode c++-mode)
+    (sp-local-pair "{" "}" :post-handlers '(:add cb-c:format-after-brace))
+    (sp-local-pair "(" ")" :post-handlers '(:add cb-c:format-after-paren))))
+#+end_src
+** Flyspell
+Do not parse include directives for spelling errors.
+#+begin_src emacs-lisp
+(defun cbclang:flyspell-verify ()
+  (not (s-matches? (rx bol (* space) "#include ") (current-line))))
+
+(hook-fns '(c-mode-hook c++-mode-hook)
+  (setq-local flyspell-generic-check-word-predicate 'cbclang:flyspell-verify))
+#+end_src
+** Fixes
+Ignore errors thrown by internals.
+#+begin_src emacs-lisp
+(defadvice c-inside-bracelist-p (around ignore-errors activate)
+  (ignore-errors ad-do-it))
+#+end_src
+** auto-complete
+#+begin_src emacs-lisp
+(cb:install-package 'ac-c-headers)
+(cb:install-package 'auto-complete-clang-async)
+#+end_src
+*** Set sources
+#+begin_src emacs-lisp
+(put 'cc-mode 'ac-sources
+     '(ac-source-clang-async
+       ac-source-yasnippet
+       ac-source-c-headers
+       ac-source-c-header-symbols
+       ac-source-words-in-buffer))
+#+end_src
+*** Configure faces
+#+begin_src emacs-lisp
+(after 'auto-complete
+  (copy-face 'ac-candidate-face 'ac-clang-candidate-face)
+  (copy-face 'ac-selection-face 'ac-clang-selection-face))
+#+end_src
+** eldoc
+#+begin_src emacs-lisp
+(cb:install-package 'c-eldoc)
+(add-hook 'c-mode-hook 'c-turn-on-eldoc-mode)
+#+end_src
+** END
+#+begin_src emacs-lisp
+)
+#+end_src
+* Bison
+#+begin_src emacs-lisp
+(autoload 'bison-mode "bison-mode.el")
+(add-to-list 'auto-mode-alist '("\\.y$" . bison-mode))
+#+end_src
+* Lisp
+#+begin_src emacs-lisp
+(hook-fn 'cb:lisp-modes-hook
+  (local-set-key (kbd "M-q") 'indent-dwim))
+#+end_src
+** smartparens
+Configure special paren formatting behaviours for lisp modes.
+*** Reformat on close paren
+Add lisp modes to =sp-navigate-reindent-after-up=. Provides Paredit-style paren
+reindentation when closing parens.
+#+begin_src emacs-lisp
+(let ((ls (assoc 'interactive sp-navigate-reindent-after-up)))
+  (setcdr ls (-uniq (-concat (cdr ls) cb:lisp-modes))))
+#+end_src
+*** Pad with spaces
+Pad parens and other delimiters with spaces to emulate paredit's behaviour.
+**** Define helper functions
+#+begin_src emacs-lisp
+(defun cblisp:just-inserted-double-quotes? (id action ctx)
+  (and (sp-in-string-p id action ctx)
+       (s-matches? (rx (not (any "\\")) "\"" eol)
+                   (buffer-substring (line-beginning-position) (point)))))
+
+(defun sp-lisp-just-one-space (id action ctx)
+  "Pad LISP delimiters with spaces."
+  (when (and (equal 'insert action)
+             (or (sp-in-code-p id action ctx)
+                 (cblisp:just-inserted-double-quotes? id action ctx)))
+    ;; Insert a leading space, unless
+    ;; 1. this is a quoted form
+    ;; 2. this is the first position of another list
+    ;; 3. this form begins a new line.
+    (save-excursion
+      (search-backward id)
+      (unless (s-matches?
+               (rx (or (group bol (* space))
+                       (any "," "`" "'" "@" "#" "~" "(" "[" "{")
+                       ;; HACK: nREPL prompt
+                       (and (any alnum "." "/" "-") ">" (* space)))
+                   eol)
+               (buffer-substring (line-beginning-position) (point)))
+        (just-one-space)))
+    ;; Insert space after separator, unless
+    ;; 1. this form is at the end of another list.
+    ;; 2. this form is at the end of the line.
+    (save-excursion
+      (search-forward (sp-get-pair id :close))
+      (unless (s-matches? (rx (or (any ")" "]" "}")
+                                  eol))
+                          (buffer-substring (point) (1+ (point))))
+        (just-one-space)))))
+#+end_src
+**** Register with smartparens
+#+begin_src emacs-lisp
+(sp-with-modes cb:lisp-modes
+  (sp-local-pair "\"" "\"" :post-handlers '(:add sp-lisp-just-one-space))
+  (sp-local-pair "{" "}" :post-handlers '(:add sp-lisp-just-one-space))
+  (sp-local-pair "[" "]" :post-handlers '(:add sp-lisp-just-one-space))
+  (sp-local-pair "(" ")" :post-handlers '(:add sp-lisp-just-one-space))
+  (sp-local-pair "'" nil :actions nil))
+#+end_src
+** parenface-plus
+Adds a face for parentheses. Use to dim parens.
+#+begin_src emacs-lisp
+(cb:install-package 'parenface-plus t)
+#+end_src
+** eval-sexp-fu
+Adds a flash when running eval-expression.
+#+begin_src emacs-lisp
+(cb:install-package 'highlight)
+(require 'eval-sexp-fu)
+(add-hook 'cb:lisp-modes-hook 'turn-on-eval-sexp-fu-flash-mode)
+(setq eval-sexp-fu-flash-duration 0.2)
+
+(add-to-list 'face-remapping-alist '(eval-sexp-fu-flash . intense-flash))
+#+end_src
+** slime
+Adds support for inferior Common Lisp processes.
+#+begin_src emacs-lisp
+(cb:install-package 'slime)
+(setq slime-lisp-implementations `((lisp ("sbcl" "--noinform"))))
+#+end_src
+*** Define a command to interactively run SLIME
+#+begin_src emacs-lisp
+(defun run-slime ()
+  "Run slime, prompting for a lisp implementation."
+  (interactive)
+  (let ((current-prefix-arg '-))
+    (slime)))
+#+end_src
+** ac-slime
+Adds an auto-complete source for slime.
+#+begin_src emacs-lisp
+(cb:install-package 'ac-slime)
+(add-hook 'slime-modes-hook 'set-up-slime-ac)
+(add-to-list 'ac-modes 'slime-repl-mode)
+#+end_src
+** eldoc
+Shows documentation hints in the minibuffer.
+*** Enable for all Lisps
+#+begin_src emacs-lisp
+(add-hook 'cb:lisp-modes-hook 'turn-on-eldoc-mode)
+#+end_src
+*** Diminish
+#+begin_src emacs-lisp
+(hook-fn 'eldoc-mode-hook
+  (diminish 'eldoc-mode))
+#+end_src
+** Redshank
+Provides refactoring commands for lisps.
+#+begin_src emacs-lisp
+(cb:install-package 'redshank)
+#+end_src
+*** Enable for all Lisps
+#+begin_src emacs-lisp
+(add-hook 'cb:lisp-modes-hook 'turn-on-redshank-mode)
+#+end_src
+*** Diminish
+#+begin_src emacs-lisp
+(hook-fn 'redshank-mode-hook
+  (diminish 'redshank-mode))
+#+end_src
+* Elisp
+** auto-mode-alist
+#+begin_src emacs-lisp
+(add-to-list 'auto-mode-alist '("Cask$" . emacs-lisp-mode))
+(add-to-list 'auto-mode-alist '("Carton" . emacs-lisp-mode))
+#+end_src
+** flycheck
+Add the lib-dir to the elisp checker path.
+
+#+begin_src emacs-lisp
+(setq-default flycheck-emacs-lisp-load-path (list cb:lib-dir "./"))
+#+end_src
+
+Given a function that tests whether the current buffer is a 'special'
+(non-source) elisp buffer,
+
+#+begin_src emacs-lisp
+(defun cb:special-elisp-buffer? ()
+  (and (derived-mode-p 'emacs-lisp-mode)
+       (or
+        (true? scratch-buffer)
+        (s-ends-with? "-steps.el" (buffer-name))
+        (s-matches? (rx bol (? (any "*" "."))
+                        (or "org-"
+                            "Org "
+                            "Cask"
+                            "Carton"
+                            "scratch"
+                            "emacs-lisp"
+                            "autoloads"
+                            (group "-pkg.el")
+                            (group "Pp" (* anything) "Output")
+                            "dir-locals"))
+                    (buffer-name)))))
+#+end_src
+
+prevent flycheck from running checkdoc for certain elisp file types or when the
+buffer is narrowed.
+
+#+begin_src emacs-lisp
+(defun cbel:configure-flycheck ()
+  (when (and (derived-mode-p 'emacs-lisp-mode)
+             (or (cb:special-elisp-buffer?) (buffer-narrowed-p)))
+    (ignore-errors
+      (flycheck-select-checker 'emacs-lisp))))
+
+(add-hook 'flycheck-mode-hook 'cbel:configure-flycheck)
+#+end_src
+** smartparens
+Reserve backtick pair handling hyperlinks.
+#+begin_src emacs-lisp
+(sp-local-pair (-difference cb:lisp-modes cb:elisp-modes)
+               "`" "`" :when '(sp-in-string-p))
+#+end_src
+** auto-complete
+#+begin_src emacs-lisp
+(after 'auto-complete
+  (-each cb:lisp-modes (~ add-to-list 'ac-modes))
+  (hook-fn 'ielm-mode-hook
+    (auto-complete-mode +1)
+    (setq ac-sources '(ac-source-features ac-source-functions
+                       ac-source-yasnippet ac-source-variables
+                       ac-source-symbols))))
+#+end_src
+** Search methods
+Add elisp functions to global search picker.
+#+begin_src emacs-lisp
+(cbs-define-search-method
+ :name "Apropos"
+ :key "a"
+ :command
+ (lambda (_)
+   (call-interactively 'helm-apropos))
+ :when
+ (lambda ()
+   (apply 'derived-mode-p cb:elisp-modes)))
+#+end_src
+** Yasnippet
+Define auxiliary functions for snippets.
+#+begin_src emacs-lisp
+(defun cbel:find-identifier-prefix ()
+    "Find the commonest identifier prefix in use in this buffer."
+    (let ((ns-separators (rx (or ":" "--" "/"))))
+      (->> (buffer-string)
+        ;; Extract the identifiers from declarations.
+        (s-match-strings-all
+         (rx bol (* space)
+             "(" (? "cl-") (or "defun" "defmacro" "defvar" "defconst")
+             (+ space)
+             (group (+ (not space)))))
+        ;; Find the commonest prefix.
+        (-map 'cadr)
+        (-filter (~ s-matches? ns-separators))
+        (-map (C car (~ s-match (rx (group (* nonl) (or ":" "--" "/"))))))
+        (-group-by 'identity)
+        (-max-by (-on '>= 'length))
+        (car))))
+
+  (defun cbel:find-group-for-snippet ()
+    "Find the first group defined in the current file,
+falling back to the file name sans extension."
+    (or
+     (cadr (s-match (rx "(defgroup" (+ space) (group (+ (not
+     space))))
+                    (buffer-string)))
+     (cadr (s-match (rx ":group" (+ space) "'" (group (+ (any "-" alnum))))
+                    (buffer-string)))
+     (f-no-ext (f-filename buffer-file-name))))
+
+  (define-obsolete-function-alias 'cbel:bol-for-snippet? 'cbyas:bol?)
+
+  (defun cbel:simplify-arglist (text)
+    "Return a simplified docstring of arglist TEXT."
+    (->> (ignore-errors
+           (read (format "(%s)" text)))
+      (--keep
+       (ignore-errors
+         (cond
+          ((listp it)
+           (-first (& symbolp (C (N (~ s-starts-with? "&")) symbol-name))
+                   it))
+          ((symbolp it) it))))
+      (-remove (C (~ s-starts-with? "&") symbol-name))))
+
+  (defun cbel:cl-arglist? (text)
+    "Non-nil if TEXT is a Common Lisp arglist."
+    (let ((al (ignore-errors (read (format "(%s)" text)))))
+      (or (-any? 'listp al)
+          (-intersection al '(&key &allow-other-keys &body)))))
+
+  (defun cbel:defun-form-for-arglist (text)
+    "Return either 'defun or 'cl-defun depending on whether TEXT
+is a Common Lisp arglist."
+    (if (cbel:cl-arglist? text) 'cl-defun 'defun))
+
+  (defun cbel:defmacro-form-for-arglist (text)
+    "Return either 'defmacro or 'cl-defmacro depending on whether TEXT
+is a Common Lisp arglist."
+    (if (cbel:cl-arglist? text) 'cl-defmacro 'defmacro))
+
+  (defun cbel:process-docstring (text)
+    "Format a function docstring for a snippet.
+TEXT is the content of the docstring."
+    (let ((docs (->> (cbel:simplify-arglist text)
+                  (-map (C s-upcase symbol-name))
+                  (s-join "\n\n"))))
+      (unless (s-blank? docs)
+        (concat "\n\n" docs))))
+#+end_src
+** Paredit in eval-expression
+Enable Paredit during eval-expression.
+#+begin_src emacs-lisp
+(hook-fn 'minibuffer-setup-hook
+  (when (equal this-command 'eval-expression)
+    (paredit-mode +1)))
+#+end_src
+** elisp-slime-nav
+Defines a command for going to the definition of the symbol at point.
+#+begin_src emacs-lisp
+(cb:install-package 'elisp-slime-nav)
+#+end_src
+*** Bind to M-. for all elisp modes
+#+begin_src emacs-lisp
+(hook-fn 'cb:elisp-modes-hook
+  (elisp-slime-nav-mode +1)
+  (local-set-key (kbd "M-.") 'elisp-slime-nav-find-elisp-thing-at-point)
+
+  ;; Make M-. work in normal state.
+  (after 'evil
+    (evil-local-set-key 'normal (kbd "M-.")
+                        'elisp-slime-nav-find-elisp-thing-at-point)))
+#+end_src
+*** Diminish
+#+begin_src emacs-lisp
+(hook-fn 'elisp-slime-nav-mode-hook
+  (diminish 'elisp-slime-nav-mode))
+#+end_src
+** litable
+#+begin_src emacs-lisp
+(cb:install-package 'litable)
+#+end_src
+** cl-lib-highlight
+#+begin_src emacs-lisp
+(cb:install-package 'cl-lib-highlight)
+(hook-fn 'emacs-lisp-mode
+  (cl-lib-highlight-initialize)
+  (cl-lib-highlight-warn-cl-initialize))
+#+end_src
+** Key bindings
+#+begin_src emacs-lisp
+(after 'lisp-mode
+  (define-key emacs-lisp-mode-map (kbd "C-c C-t") 'ert)
+  (define-key emacs-lisp-mode-map (kbd "C-c C-l")
+    'emacs-lisp-byte-compile-and-load))
+#+end_src
+** IELM
+Customise newline key bindings.
+#+begin_src emacs-lisp
+(after 'ielm
+  (define-keys ielm-map
+    "M-RET" 'newline-and-indent
+    "C-j" 'newline-and-indent))
+#+end_src
+*** switching to IELM
+Define commands to switch between IELM and elisp buffers.
+**** Impl
+#+begin_src emacs-lisp
+(defun switch-to-ielm ()
+  "Start up or switch to an Inferior Emacs Lisp buffer."
+  (interactive)
+  ;; HACK: rebind switch-to-buffer so ielm opens in another window.
+  (noflet ((switch-to-buffer (buf) (switch-to-buffer-other-window buf)))
+    (ielm)
+    (cb:append-buffer)))
+
+(defun switch-to-elisp ()
+  "Switch to the last active elisp buffer."
+  (interactive)
+  (-when-let (buf (--first-buffer (derived-mode-p 'emacs-lisp-mode)))
+    (switch-to-buffer-other-window buf)))
+#+end_src
+**** Key bindings
+#+begin_src emacs-lisp
+(after 'lisp-mode
+  (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'switch-to-ielm))
+(after 'ielm
+  (define-key ielm-map (kbd "C-c C-z") 'switch-to-elisp))
+#+end_src
+*** Eval in IELM
+Define commands to eval the expression at point in IELM.
+**** Impl
+#+begin_src emacs-lisp
+(defun send-to-ielm ()
+  "Send the sexp at point to IELM"
+  (interactive)
+  (sp-kill-sexp nil 'yank)
+  (unwind-protect
+      (progn (switch-to-ielm)
+             (delete-region (save-excursion
+                              (search-backward-regexp (rx bol "ELISP>"))
+                              (search-forward "> ")
+                              (point))
+                            (line-end-position))
+             (yank))
+    (setq kill-ring (cdr kill-ring))))
+
+(defun eval-in-ielm ()
+  "Eval the sexp at point in ielm."
+  (interactive)
+  (send-to-ielm)
+  (ielm-return)
+  (recenter -1)
+  (switch-to-elisp))
+#+end_src
+**** Key bindings
+#+begin_src emacs-lisp
+(after 'lisp-mode
+  (define-keys emacs-lisp-mode-map
+    "C-c C-e" 'send-to-ielm
+    "C-c RET" 'eval-in-ielm))
+#+end_src
+*** Evil
+Add evil documentation lookup for elisp.
+#+begin_src emacs-lisp
+(after 'evil
+  (define-evil-doc-handler cb:elisp-modes
+    (let ((sym (symbol-at-point)))
+      (cond
+       ((symbol-function sym)
+        (describe-function sym))
+       ((and (boundp sym) (not (facep sym)))
+        (describe-variable sym))
+       ((facep sym)
+        (describe-face sym))
+       (t
+        (user-error "No documentation available"))))))
+#+end_src
+*** smartparens
+#+begin_src emacs-lisp
+(add-hook 'ielm-mode-hook 'smartparens-strict-mode)
+#+end_src
+*** hideshow
+Configure hideshow for IELM.
+
+#+begin_src emacs-lisp
+(after 'hideshow
+  (add-to-list 'hs-special-modes-alist
+               '(inferior-emacs-lisp-mode "(" ")" ";.*$" nil nil)))
+
+(add-hook 'ielm-mode-hook 'hs-minor-mode)
+#+end_src
+
+Configure comment syntax for IELM, which is needed by hideshow.
+
+#+begin_src emacs-lisp
+(put 'ielm-mode 'comment-start ";")
+#+end_src
+** define M-RET command for context-sensitive newlines
+#+begin_src emacs-lisp
+(defconst cb-el:let-expression-re
+  (regexp-opt '("(let" "(-if-let*" "(-when-let*"))
+  "Regex matching the start of a let expression.")
+
+(defun cb-el:let-expr-start ()
+  "Move to the start of a let expression."
+  (cl-flet ((at-let? () (thing-at-point-looking-at cb-el:let-expression-re)))
+    (while (and (sp-backward-up-sexp) (not (at-let?))))
+    (when (at-let?) (point))))
+
+(defun cb-el:at-let-binding-form? ()
+  "Non-nil if point is at the top of a binding form in a let expression."
+  (and (save-excursion (cb-el:let-expr-start))
+       (save-excursion
+         (sp-backward-up-sexp 3)
+         (thing-at-point-looking-at cb-el:let-expression-re))))
+(defun cb-el:M-RET ()
+  "Perform context-sensitive newline behaviour."
+  (interactive)
+  (cond
+   ;; Insert let-binding
+   ((save-excursion (cb-el:let-expr-start))
+    (until (cb-el:at-let-binding-form?) (sp-backward-up-sexp))
+    (sp-up-sexp)
+    (newline-and-indent)
+    (insert "()")
+    (forward-char -1))
+   (t
+    (sp-up-sexp)
+    (newline-and-indent)
+    (when (true? evil-mode)
+      (evil-insert-state)))))
+
+(define-key emacs-lisp-mode-map (kbd "M-RET") 'cb-el:M-RET)
+#+end_src
+** Evaluation
+*** Set key bindings for common eval commands
+#+begin_src emacs-lisp
+(after 'lisp-mode
+  (define-key emacs-lisp-mode-map (kbd "C-c C-f") 'eval-buffer)
+  (define-key emacs-lisp-mode-map (kbd "C-c C-c") 'eval-defun)
+  (define-key emacs-lisp-mode-map (kbd "C-c C-r") 'eval-region))
+#+end_src
+*** Advise eval functions to report when evaluation was successful
+#+begin_src emacs-lisp
+(defadvice eval-region (after region-evaluated-message activate)
+  (when (called-interactively-p nil)
+    (message "Region evaluated.")))
+
+(defadvice eval-buffer (after buffer-evaluated-feedback activate)
+  (when (called-interactively-p nil)
+    (message "Buffer evaluated.")))
+#+end_src
+** Save behaviour
+Byte-compile and check parens on save, unless this is a special buffer.
+#+begin_src emacs-lisp
+(defun cbel:after-save ()
+  (check-parens)
+  (unless no-byte-compile
+    (byte-compile-file (buffer-file-name))))
+
+(hook-fn 'emacs-lisp-mode-hook
+  (when (cb:special-elisp-buffer?) (setq-local no-byte-compile t))
+  (add-hook 'after-save-hook 'cbel:after-save nil t))
+#+end_src
+** Font locking
+*** Add font locking for dash.el functions
+#+begin_src emacs-lisp
+(dash-enable-font-lock)
+#+end_src
+*** Highlight Common Lisp keywords
+#+begin_src emacs-lisp
+(--each cb:elisp-modes
+  (font-lock-add-keywords
+   it
+   `(
+     ;; General keywords
+     (,(rx "(" (group (or "cl-destructuring-bind"
+                          "cl-case")
+                      symbol-end))
+      (1 font-lock-keyword-face))
+     ;; Macros and functions
+     (,(rx bol (* space) "("
+           (group-n 1 (or "cl-defun" "cl-defmacro"
+                          "cl-defstruct"
+                          "cl-defsubst"
+                          "cl-deftype"))
+           (+ space)
+           (group-n 2 (+? anything) symbol-end))
+      (1 font-lock-keyword-face)
+      (2 font-lock-function-name-face)))))
+#+end_src
+*** Add miscellaneous font locking
+#+begin_src emacs-lisp
+(--each cb:elisp-modes
+  (font-lock-add-keywords
+   it
+   `(
+     ;; General keywords
+     (,(rx "(" (group (or "until"
+                          "hook-fn"
+                          "hook-fns"
+                          "lambda+"
+                          "after"
+                          "noflet"
+                          "ert-deftest"
+                          "ac-define-source"
+                          "evil-global-set-keys"
+                          "flycheck-declare-checker"
+                          "flycheck-define-checker")
+                      symbol-end))
+      (1 font-lock-keyword-face))
+
+     ;; definition forms
+     (,(rx bol (* space) "("
+           (group-n 1
+                    symbol-start
+                    (* (not space))
+                    (or "declare" "define" "extend" "gentest")
+                    (+ (not space))
+                    symbol-end)
+           (+ space)
+           (group-n 2 (+ (regex "\[^ )\n\]"))
+                    symbol-end))
+      (1 font-lock-keyword-face)
+      (2 font-lock-function-name-face)))))
+#+end_src
+
+#+RESULTS:
+
+* Clojure
+** clojure-mode
+Provides a major mode for editing Clojure files.
+#+begin_src emacs-lisp
+(cb:install-package 'clojure-mode)
+#+end_src
+
+#+begin_src emacs-lisp
+(add-hook 'clojure-mode-hook 'subword-mode)
+#+end_src
+** documentation
+Add evil documentation lookup for Clojure.
+#+begin_src emacs-lisp
+(after 'evil
+  (define-evil-doc-handler cb:clojure-modes (call-interactively 'cider-doc)))
+#+end_src
+** cider
+Provides a Clojure IDE and REPL for Emacs, built on top of nREPL.
+#+begin_src emacs-lisp
+(cb:install-package 'cider)
+#+end_src
+
+#+begin_src emacs-lisp
+(setq cider-popup-stacktraces    nil
+      nrepl-hide-special-buffers t)
+#+end_src
+
+*** Switch to cider repl
+#+begin_src emacs-lisp
+(defun cb:switch-to-cider ()
+  "Start cider or switch to an existing cider buffer."
+  (interactive)
+  (-if-let (buf (get-buffer "*cider*"))
+      (cider-switch-to-repl-buffer buf)
+    (cider-jack-in)))
+
+(after 'clojure-mode
+  (define-key clojure-mode-map (kbd "C-c C-z") 'cb:switch-to-cider))
+#+end_src
+*** DEFER
+#+begin_src emacs-lisp
+(after 'cider
+#+end_src
+*** Documentation
+#+begin_src emacs-lisp
+(define-key clojure-mode-map (kbd "C-c C-h") 'cider-doc)
+#+end_src
+
+Use help-mode as the major-mode for cider popup buffers.
+
+#+begin_src emacs-lisp
+(defadvice cider-popup-buffer-display (after set-mode activate)
+  (with-current-buffer (ad-get-arg 0)
+    (help-mode)))
+#+end_src
+*** Switch to clojure
+#+begin_src emacs-lisp
+(defun cb:switch-to-clojure ()
+  "Switch to the last active clojure buffer."
+  (interactive)
+  (-when-let (buf (--first-buffer (derived-mode-p 'clojure-mode)))
+    (pop-to-buffer buf)))
+
+(define-key cider-repl-mode-map (kbd "C-c C-z") 'cb:switch-to-clojure)
+#+end_src
+*** Do not scroll docs
+Redefine doc handler so that the documentation buffer does not scroll as new
+input is received.
+
+#+begin_src emacs-lisp
+(after 'cider-interaction
+
+  (defun cider-emit-doc-into-popup-buffer (buffer value)
+    "Emit into BUFFER the provided VALUE."
+    (with-current-buffer buffer
+      (let ((inhibit-read-only t)
+            (buffer-undo-list t))
+        (goto-char (point-max))
+        (insert (format "%s" value))
+        (indent-sexp)
+        (font-lock-fontify-buffer)
+        (goto-char (point-min)))))
+
+  (defun cider-doc--handler (buffer)
+    "Make a handler for evaluating and printing stdout/stderr in popup BUFFER."
+    (nrepl-make-response-handler buffer
+                                 '()
+                                 (lambda (buffer str)
+                                   (cider-emit-doc-into-popup-buffer buffer str))
+                                 (lambda (buffer str)
+                                   (cider-emit-doc-into-popup-buffer buffer str))
+                                 '()))
+
+  (defun cider-doc-handler (symbol)
+    "Create a handler to lookup documentation for SYMBOL."
+    (let ((form (format "(clojure.repl/doc %s)" symbol))
+          (doc-buffer (cider-popup-buffer cider-doc-buffer t)))
+      (cider-tooling-eval form
+                          (cider-doc--handler doc-buffer)
+                          nrepl-buffer-ns))))
+#+end_src
+
+*** eldoc
+Use eldoc in all new clojure and cider buffers.
+
+#+begin_src emacs-lisp
+(hook-fns '(clojure-mode-hook cider-repl-mode-hook)
+  (cider-turn-on-eldoc-mode))
+#+end_src
+
+Enable for existing clojure buffers.
+
+#+begin_src emacs-lisp
+(-each (--filter-buffers (derived-mode-p 'clojure-mode))
+       'cider-turn-on-eldoc-mode)
+#+end_src
+*** Evaluation
+Define a command to evaluate the last clojure buffer.
+
+#+begin_src emacs-lisp
+(defun cb:eval-last-clj-buffer ()
+  "Evaluate that last active clojure buffer without leaving the repl."
+  (interactive)
+  (-when-let (buf (--first-buffer (derived-mode-p 'clojure-mode)))
+    (with-current-buffer buf
+      (cider-eval-buffer))))
+#+end_src
+
+#+begin_src emacs-lisp
+(define-key clojure-mode-map (kbd "C-c C-f") 'cider-eval-buffer)
+(define-key cider-repl-mode-map (kbd "C-c C-f") 'cb:eval-last-clj-buffer)
+#+end_src
+*** Faces
+#+begin_src emacs-lisp
+(set-face-attribute 'cider-error-highlight-face t :inherit 'error)
+(set-face-underline 'cider-error-highlight-face nil)
+#+end_src
+*** Evil
+Enter insert state when starting cider repl.
+
+#+begin_src emacs-lisp
+(add-hook 'cider-repl-mode-hook 'cb:maybe-evil-insert-state)
+#+end_src
+
+Enter insertion state when switching to cider.
+
+#+begin_src emacs-lisp
+(defadvice cider-switch-to-repl-buffer (after insert-at-end-of-cider-line activate)
+  (cb:maybe-evil-insert-state))
+#+end_src
+
+Advise back-to-indentation so evil bol commands work.
+
+#+begin_src emacs-lisp
+(defadvice back-to-indentation (around move-to-cider-bol activate)
+  "Move to position after prompt in cider."
+  (if (equal major-mode 'cider-mode)
+      (nrepl-bol)
+    ad-do-it))
+#+end_src
+*** Key bindings
+#+begin_src emacs-lisp
+(define-key cider-repl-mode-map (kbd "C-l") 'cider-repl-clear-buffer)
+#+end_src
+*** END
+#+begin_src emacs-lisp
+)
+#+end_src
+** ac-nrepl
+Provides auto-complete sources for Clojure using Cider.
+#+begin_src emacs-lisp
+(cb:install-package 'ac-nrepl)
+(add-hook 'cider-mode-hook 'ac-nrepl-setup)
+(add-hook 'cider-repl-mode-hook 'ac-nrepl-setup)
+(add-to-list 'ac-modes 'cider-mode)
+#+end_src
+
+#+begin_src emacs-lisp
+(after 'cider
+  (define-key cider-mode-map (kbd "C-c C-d") 'ac-nrepl-popup-doc))
+#+end_src
+** yasnippet
+Define auxiliary functions for snippets.
+
+#+begin_src emacs-lisp
+(defun cbclj:pad-for-arglist (text)
+  "Pad TEXT for insertion into an arglist after existing parameters."
+  (unless (s-blank? text)
+    (s-prepend " " (s-trim-left text))))
+
+(defun cbclj:ns-for-current-buf ()
+  "Calculate the namespace to use for the current buffer."
+  (if (buffer-file-name)
+      (s-replace "/" "."
+                 (if (s-matches? "src" (buffer-file-name))
+                     (->> (buffer-file-name)
+                       f-no-ext
+                       (s-split "src/")
+                       -last-item)
+                   (f-no-ext (f-filename (buffer-file-name)))))
+    "name"))
+#+end_src
+** overtone
+*** Define a command to stop overtone synthesis
+#+begin_src emacs-lisp
+(defun cb:stop-overtone ()
+  "Stop synthesis."
+  (interactive)
+  (cider-eval "(stop)" nil)
+  (message "Synthesis stopped."))
+#+end_src
+*** Define overtone documentation search commands
+#+begin_src emacs-lisp
+(defun overtone-doc-handler (symbol)
+  "Create a handler to lookup documentation for SYMBOL."
+  (let ((form (format "(odoc %s)" symbol))
+        (doc-buffer (cider-popup-buffer cider-doc-buffer t)))
+    (cider-tooling-eval form
+                        (cider-popup-eval-out-handler doc-buffer)
+                        nrepl-buffer-ns)))
+
+(defun overtone-doc (query)
+  "Open a window with the docstring for the given QUERY.
+Defaults to the symbol at point.  With prefix arg or no symbol
+under point, prompts for a var."
+  (interactive "P")
+  (cider-read-symbol-name "Symbol: " 'overtone-doc-handler query))
+
+(defalias 'odoc 'overtone-doc)
+#+end_src
+*** Define a minor mode to use for overtone projects
+#+begin_src emacs-lisp
+(defun cbot:overtone-project-reference-p ()
+  "Non-nil if the project.clj imports overtone."
+  (-when-let (clj (and (projectile-project-p)
+                       (f-join (projectile-project-root) "project.clj")))
+    (when (f-exists? clj)
+      (s-contains? "overtone" (f-read-text clj)))))
+
+(defvar overtone-mode-map
+  (let ((km (make-sparse-keymap)))
+    (define-key km (kbd "C-c C-g") 'cb:stop-overtone)
+    (define-key km (kbd "s-.") 'cb:stop-overtone)
+    (define-key km (kbd "C-c C-h") 'odoc)
+    km))
+
+(define-minor-mode overtone-mode
+  "Provide additional overtone-related functionality for clojure."
+  nil " overtone" overtone-mode-map)
+
+(defun maybe-enable-overtone-mode ()
+  "Enable `overtone-mode' only if the current buffer or project references overtone."
+  (when (and (not overtone-mode)
+             (derived-mode-p 'clojure-mode 'cider-repl-mode)
+             (cbot:overtone-project-reference-p))
+    (overtone-mode t)))
+
+(define-globalized-minor-mode global-overtone-mode overtone-mode
+  maybe-enable-overtone-mode)
+
+(add-hook 'clojure-mode-hook 'global-overtone-mode)
+#+end_src
+* Scheme
+** auto-complete
+*** Enable for all scheme modes
+#+begin_src emacs-lisp
+(-each cb:scheme-modes (~ add-to-list 'ac-modes))
+#+end_src
+** documentation
+#+begin_src emacs-lisp
+(after 'evil
+  (define-evil-doc-handler cb:scheme-modes
+    (call-interactively 'geiser-doc-symbol-at-point)))
+#+end_src
+** yasnippet
+#+begin_src emacs-lisp
+(hook-fn 'cb:scheme-modes-hook
+  (add-to-list 'ac-sources 'ac-source-yasnippet))
+#+end_src
+** geiser
+Provides slime-like interaction for Scheme. I mainly use Racket, so the config
+below probably doesn't work for other Schemes.
+#+begin_src emacs-lisp
+(after 'scheme
+  (cb:install-package 'geiser))
+#+end_src
+*** DEFER
+#+begin_src emacs-lisp
+(after 'geiser
+#+end_src
+*** set geiser vars
+#+begin_src emacs-lisp
+(setq geiser-mode-start-repl-p t
+      geiser-repl-startup-time 20000
+      geiser-repl-history-filename (f-join cb:tmp-dir "geiser-history")
+      geiser-active-implementations '(racket))
+#+end_src
+*** ac-geiser
+Provides auto-complete sources for geiser.
+#+begin_src emacs-lisp
+(cb:install-package 'ac-geiser t)
+(add-hook 'geiser-mode-hook 'ac-geiser-setup)
+(add-hook 'geiser-repl-mode-hook 'ac-geiser-setup)
+#+end_src
+*** eval-buffer command
+#+begin_src emacs-lisp
+(defun geiser-eval-buffer (&optional and-go raw nomsg)
+  "Eval the current buffer in the Geiser REPL.
+
+With prefix, goes to the REPL buffer afterwards (as
+`geiser-eval-buffer-and-go')"
+  (interactive "P")
+  (let ((start (progn
+                 (goto-char (point-min))
+                 (while (s-matches? (rx bol "#") (current-line))
+                   (forward-line))
+                 (point)))
+        (end (point-max)))
+    (save-restriction
+      (narrow-to-region start end)
+      (check-parens))
+    (geiser-debug--send-region nil
+                               start
+                               end
+                               (and and-go 'geiser--go-to-repl)
+                               (not raw)
+                               nomsg)))
+
+(define-key geiser-mode-map (kbd "C-c C-f") 'geiser-eval-buffer)
+#+end_src
+*** help key bindings
+#+begin_src emacs-lisp
+(define-key geiser-mode-map (kbd "C-c C-h") 'geiser-doc-look-up-manual)
+(define-key geiser-repl-mode-map (kbd "C-c C-h") 'geiser-doc-look-up-manual)
+#+end_src
+*** move to end of buffer when switching to geiser repl
+#+begin_src emacs-lisp
+(defadvice switch-to-geiser (after append-with-evil activate)
+  (when (derived-mode-p 'comint-mode)
+    (goto-char (point-max))))
+#+end_src
+*** evil
+**** M-. goes to definition in normal state
+#+begin_src emacs-lisp
+(after 'evil
+  (evil-define-key 'normal geiser-mode-map
+    (kbd "M-.") 'geiser-edit-symbol-at-point))
+#+end_src
+**** Enter insert state when switching to repl
+#+begin_src emacs-lisp
+(after 'evil
+  (defadvice switch-to-geiser (after append-with-evil activate)
+    (when (derived-mode-p 'comint-mode)
+      (cb:maybe-evil-insert-state))))
+#+end_src
+*** END
+#+begin_src emacs-lisp
+)
+#+end_src
+** add compile-and-run command for Racket
+*** Define buffer name
+#+begin_src emacs-lisp
+(defconst cbscm:scm-buf "*execute scheme*")
+#+end_src
+*** Define utility to execute a file with Racket
+#+begin_src emacs-lisp
+(defun cbscm:lang (s)
+  (or (cadr (s-match (rx bol "#lang" (+ space) (group (+ nonl))) s))
+      "racket"))
+
+(defun cbscm:run-file (file language)
+  (interactive "f")
+  (start-process cbscm:scm-buf cbscm:scm-buf
+                 "racket" "-I" language file))
+#+end_src
+*** Define command to compile-and-run current buffer
+#+begin_src emacs-lisp
+(defun cbscm:execute-buffer ()
+  "Compile and run the current buffer in Racket."
+  (interactive)
+  ;; Kill running processes and prepare buffer.
+  (with-current-buffer (get-buffer-create cbscm:scm-buf)
+    (read-only-mode +1)
+    (ignore-errors (kill-process))
+    (let ((inhibit-read-only t))
+      (delete-region (point-min) (point-max))))
+
+  ;; Start a new Scheme process in the appropriate language for this file.
+  (let ((lang (cbscm:lang (buffer-string))))
+    (cond
+     ;; Create a temp file if there are unwritten changes or this buffer does
+     ;; not have a corresponding file.
+     ((or (buffer-modified-p)
+          (and (buffer-file-name) (not (f-exists? (buffer-file-name)))))
+      (let ((f (make-temp-file nil nil ".rkt")))
+        (f-write (buffer-string) 'utf-8 f)
+        (cbscm:run-file f lang)))
+     ;; Otherwise run this file directly.
+     (t
+      (cbscm:run-file (buffer-file-name) lang))))
+
+  (display-buffer-other-frame cbscm:scm-buf))
+#+end_src
+*** Key binding
+#+begin_src emacs-lisp
+(after 'scheme
+  (define-key scheme-mode-map (kbd "C-c C-c") 'cbscm:execute-buffer))
+#+end_src
+** Set custom indentation for Racket keywords
+#+begin_src emacs-lisp
+(after 'scheme
+  (put 'begin                 'scheme-indent-function 0)
+  (put 'begin-for-syntax      'scheme-indent-function 0)
+  (put 'case                  'scheme-indent-function 1)
+  (put 'cond                  'scheme-indent-function 0)
+  (put 'delay                 'scheme-indent-function 0)
+  (put 'do                    'scheme-indent-function 2)
+  (put 'lambda                'scheme-indent-function 1)
+  (put 'λ                     'scheme-indent-function 1)
+  (put 'lambda:               'scheme-indent-function 1)
+  (put 'case-lambda           'scheme-indent-function 0)
+  (put 'lambda/kw             'scheme-indent-function 1)
+  (put 'define/kw             'scheme-indent-function 'defun)
+  (put 'let                   'scheme-indent-function 'scheme-let-indent)
+  (put 'let*                  'scheme-indent-function 1)
+  (put 'letrec                'scheme-indent-function 1)
+  (put 'let-values            'scheme-indent-function 1)
+  (put 'let*-values           'scheme-indent-function 1)
+  (put 'fluid-let             'scheme-indent-function 1)
+  (put 'let/cc                'scheme-indent-function 1)
+  (put 'let/ec                'scheme-indent-function 1)
+  (put 'let-id-macro          'scheme-indent-function 2)
+  (put 'let-macro             'scheme-indent-function 2)
+  (put 'letmacro              'scheme-indent-function 1)
+  (put 'letsubst              'scheme-indent-function 1)
+  (put 'sequence              'scheme-indent-function 0) ; SICP, not r4rs
+  (put 'letsyntax             'scheme-indent-function 1)
+  (put 'let-syntax            'scheme-indent-function 1)
+  (put 'letrec-syntax         'scheme-indent-function 1)
+  (put 'syntax-rules          'scheme-indent-function 1)
+  (put 'syntax-id-rules       'scheme-indent-function 1)
+
+  (put 'call-with-input-file  'scheme-indent-function 1)
+  (put 'call-with-input-file* 'scheme-indent-function 1)
+  (put 'with-input-from-file  'scheme-indent-function 1)
+  (put 'with-input-from-port  'scheme-indent-function 1)
+  (put 'call-with-output-file 'scheme-indent-function 1)
+  (put 'call-with-output-file* 'scheme-indent-function 1)
+  (put 'with-output-to-file   'scheme-indent-function 'defun)
+  (put 'with-output-to-port   'scheme-indent-function 1)
+  (put 'with-slots            'scheme-indent-function 2)
+  (put 'with-accessors        'scheme-indent-function 2)
+  (put 'call-with-values      'scheme-indent-function 2)
+  (put 'dynamic-wind          'scheme-indent-function 'defun)
+
+  (put 'if                    'scheme-indent-function 1)
+  (put 'method                'scheme-indent-function 1)
+  (put 'beforemethod          'scheme-indent-function 1)
+  (put 'aftermethod           'scheme-indent-function 1)
+  (put 'aroundmethod          'scheme-indent-function 1)
+  (put 'when                  'scheme-indent-function 1)
+  (put 'unless                'scheme-indent-function 1)
+  (put 'thunk                 'scheme-indent-function 0)
+  (put 'while                 'scheme-indent-function 1)
+  (put 'until                 'scheme-indent-function 1)
+  (put 'parameterize          'scheme-indent-function 1)
+  (put 'parameterize*         'scheme-indent-function 1)
+  (put 'syntax-parameterize   'scheme-indent-function 1)
+  (put 'with-handlers         'scheme-indent-function 1)
+  (put 'with-handlers*        'scheme-indent-function 1)
+  (put 'begin0                'scheme-indent-function 1)
+  (put 'with-output-to-string 'scheme-indent-function 0)
+  (put 'ignore-errors         'scheme-indent-function 0)
+  (put 'no-errors             'scheme-indent-function 0)
+  (put 'matcher               'scheme-indent-function 1)
+  (put 'match                 'scheme-indent-function 1)
+  (put 'regexp-case           'scheme-indent-function 1)
+  (put 'dotimes               'scheme-indent-function 1)
+  (put 'dolist                'scheme-indent-function 1)
+
+  (put 'with-syntax           'scheme-indent-function 1)
+  (put 'syntax-case           'scheme-indent-function 2)
+  (put 'syntax-case*          'scheme-indent-function 3)
+  (put 'syntax-parse          'scheme-indent-function 1)
+  (put 'module                'scheme-indent-function 2)
+
+  (put 'syntax                'scheme-indent-function 0)
+  (put 'quasisyntax           'scheme-indent-function 0)
+  (put 'syntax/loc            'scheme-indent-function 1)
+  (put 'quasisyntax/loc       'scheme-indent-function 1)
+
+  (put 'cases                 'scheme-indent-function 1)
+
+  (put 'for                   'scheme-indent-function 1)
+  (put 'for*                  'scheme-indent-function 1)
+  (put 'for/list              'scheme-indent-function 1)
+  (put 'for*/list             'scheme-indent-function 1)
+  (put 'for/fold              'scheme-indent-function 2)
+  (put 'for*/fold             'scheme-indent-function 2)
+  (put 'for/and               'scheme-indent-function 1)
+  (put 'for*/and              'scheme-indent-function 1)
+  (put 'for/or                'scheme-indent-function 1)
+  (put 'for*/or               'scheme-indent-function 1)
+
+  (put 'nest                  'scheme-indent-function 1))
+#+end_src
+** Improve font locking for Racket
+#+begin_src emacs-lisp
+(after 'scheme
+  (--each cb:scheme-modes
+    (font-lock-add-keywords
+     it
+     `(;; Special forms in Typed Racket.
+       (,(rx "("
+             (group (or
+                     ;; let family
+                     (and (? "p") "let" (* (syntax word)) ":")
+                     (and "let/" (+ (syntax word)))
+                     ;; lambdas
+                     (and (* (syntax word)) "lambda:")
+                     ;; loops
+                     (and "for" (* (syntax word)) ":")
+                     "do:"
+                     ;; Types
+                     "struct:"
+                     ":"
+                     "provide:"
+                     "cast"))
+
+             eow)
+        (1 font-lock-keyword-face))
+
+       ;; Definition forms
+       (,(rx "(" (group "def" (* (syntax word)) eow))
+        (1 font-lock-keyword-face))
+
+       ;; Bindings created by `define-values'
+       (,(rx "(define-values" (+ space)
+             "(" (group (+ (or (syntax word) space))) ")")
+        (1 font-lock-variable-name-face))
+
+       ;; General binding identifiers
+       (,(rx "(def" (* (syntax word)) (+ space)
+             (group (+ (syntax word))))
+        (1 font-lock-variable-name-face))
+
+       ;; Function identifiers
+       (,(rx "(def" (* (syntax word)) (+ space)
+             "(" (group (+ (syntax word))))
+        (1 font-lock-function-name-face))
+
+       ;; Function identifier in type declaration
+       (,(rx "(:" (+ space) (group bow (+ (syntax word)) eow))
+        (1 font-lock-function-name-face))
+
+       ;; Arrows
+       (,(rx bow "->" eow)
+        (0 (prog1 nil (compose-region (match-beginning 0) (match-end 0) "→"))))
+
+       ;; Match keywords
+       (,(rx "(" (group "match" (* (syntax word)) eow))
+        (1 font-lock-keyword-face))
+
+       ;; Error signalling keywords
+       (,(rx "(" (group (or "error" "raise")
+                        (* (syntax word)) eow))
+        (1 font-lock-warning-face))
+
+       ;; Grab-bag of keywords
+       (,(rx "(" (group (or (and "begin" num)
+                            "parameterize"
+                            ))
+             eow)
+        (1 font-lock-keyword-face))))
+
+    ;; Do not add type font locking to the REPL, because it has too many false
+    ;; positives.
+    (font-lock-add-keywords
+     'scheme-mode
+     ;; Types for Typed Racket.
+     `((,(rx bow upper (* (syntax word)) eow)
+        (0 font-lock-type-face))))))
+#+end_src
+* Python
+** python-mode
+Use the more recent python mode available on Marmalade.
+#+begin_src emacs-lisp
+(cb:install-package 'python)
+#+end_src
+*** Emulate prog-mode
+=python-mode= is not derived from prog mode, but we still want all the
+programming goodies, so run the hook manually.
+
+#+begin_src emacs-lisp
+(hook-fn 'python-mode-hook
+  (run-hooks 'prog-mode-hook))
+#+end_src
+** DEFER
+#+begin_src emacs-lisp
+(after 'python
+#+end_src
+** ipython support
+Use ipython if it is installed.
+#+begin_src emacs-lisp
+(-when-let (ipython (executable-find "ipython"))
+  (setq python-shell-interpreter ipython
+        python-shell-interpreter-args ""
+        python-shell-prompt-regexp "In \\[[0-9]+\\]: "
+        python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
+        python-shell-completion-setup-code
+        "from IPython.core.completerlib import module_completion"
+        python-shell-completion-module-string-code
+        "';'.join(module_completion('''%s'''))\n"
+        python-shell-completion-string-code
+        "';'.join(get_ipython().Completer.all_completions('''%s'''))\n"))
+#+end_src
+** commas
+#+begin_src emacs-lisp
+(define-key python-mode-map (kbd ",") 'cb:comma-then-space)
+(define-key inferior-python-mode-map (kbd ",") 'cb:comma-then-space)
+#+end_src
+
+** switch to python
+Define a command to switch from the repl to the last python buffer and
+vice-versa.
+*** Impl
+
+#+begin_src emacs-lisp
+(defun cb-py:restart-python ()
+  (save-window-excursion
+    (let (kill-buffer-query-functions
+          (buf (get-buffer "*Python*")))
+      (when buf (kill-buffer buf)))
+    (call-interactively 'run-python)))
+
+(defun cb:switch-to-python ()
+  "Switch to the last active Python buffer."
+  (interactive)
+  ;; Start inferior python if necessary.
+  (unless (->> (--first-buffer (derived-mode-p 'inferior-python-mode))
+            (get-buffer-process)
+            (processp))
+    (cb-py:restart-python))
+
+  (if (derived-mode-p 'inferior-python-mode)
+      ;; Switch from inferior python to source file.
+      (switch-to-buffer-other-window
+       (--first-buffer (derived-mode-p 'python-mode)))
+    ;; Switch from source file to REPL.
+    ;; HACK: `switch-to-buffer-other-window' does not change window
+    ;; when switching to REPL buffer. Work around this.
+    (-when-let* ((buf (--first-buffer (derived-mode-p 'inferior-python-mode)))
+                 (win (or (--first-window (equal (get-buffer "*Python*")
+                                                 (window-buffer it)))
+                          (split-window-sensibly)
+                          (next-window))))
+      (set-window-buffer win buf)
+      (select-window win)
+      (goto-char (point-max))
+      (cb:maybe-evil-append-line 1))))
+#+end_src
+*** Bind keys
+#+begin_src emacs-lisp
+(define-key python-mode-map (kbd "C-c C-z") 'cb:switch-to-python)
+(define-key inferior-python-mode-map (kbd "C-c C-z") 'cb:switch-to-python)
+#+end_src
+** eval-dwim
+Define a command that performs a context-sensitive eval command.
+*** Impl
+#+begin_src emacs-lisp
+(defun cb-py:eval-dwim (&optional arg)
+  (interactive "P")
+  (cond
+   ((region-active-p)
+    (python-shell-send-region (region-beginning) (region-end))
+    (deactivate-mark))
+   (t
+    (python-shell-send-defun arg))))
+#+end_src
+*** Bind keys
+#+begin_src emacs-lisp
+(define-key python-mode-map (kbd "C-c C-c") 'cb-py:eval-dwim)
+#+end_src
+
+** auto-complete
+Enable auto-complete in python modes.
+#+begin_src emacs-lisp
+(-each cb:python-modes (~ add-to-list 'ac-modes))
+(hook-fn 'cb:python-modes-hook (auto-complete-mode +1))
+#+end_src
+** smart operators
+Add special smart-operator behaviours for python buffers.
+#+begin_src emacs-lisp
+(defun cb-py:smart-equals ()
+  "Insert an '=' char padded by spaces, except in function arglists."
+  (interactive)
+  (if (s-matches? (rx (* space) "def" space) (current-line))
+      (insert "=")
+    (smart-insert-operator "=")))
+
+(defun cb-py:smart-asterisk ()
+  "Insert an asterisk with padding unless we're in an arglist."
+  (interactive "*")
+  (cond
+   ((s-matches? (rx (* space) "def" space) (current-line))
+    (insert "*"))
+   ;; Collapse whitespace around exponentiation operator.
+   ((thing-at-point-looking-at (rx (* space) "*" (* space)))
+    (delete-horizontal-space)
+    (save-excursion
+      (search-backward "*")
+      (delete-horizontal-space))
+    (insert "*"))
+   (t
+    (smart-insert-operator "*"))))
+
+(defun cb-py:smart-comma ()
+  "Insert a comma with padding."
+  (interactive "*")
+  (insert ",")
+  (just-one-space))
+
+(defun cb-py:smart-colon ()
+  "Insert a colon with padding."
+  (interactive "*")
+  (insert ":")
+  (just-one-space))
+
+(--each (list python-mode-map inferior-python-mode-map)
+    (define-keys it
+      "," 'cb-py:smart-comma
+      "&" (command (smart-insert-operator "&"))
+      "%" (command (smart-insert-operator "%"))
+      "?" (command (smart-insert-operator "?"))
+      "*" 'cb-py:smart-asterisk
+      ":" 'cb-py:smart-colon
+      "+" (command (smart-insert-operator "+"))
+      "/" (command (smart-insert-operator "/"))
+      "-" (command (smart-insert-operator "-"))
+      "=" 'cb-py:smart-equals
+      "<" (command (smart-insert-operator "<"))
+      ">" (command (smart-insert-operator ">"))
+      "|" (command (smart-insert-operator "|"))
+      "$" (command (smart-insert-operator "$"))))
+#+end_src
+** smartparens
+#+begin_src emacs-lisp
+(sp-with-modes cb:python-modes
+  (sp-local-pair "{" "}" :post-handlers '(:add sp-generic-leading-space)))
+#+end_src
+** documentation
+#+begin_src emacs-lisp
+(after 'evil
+  (define-evil-doc-handler cb:python-modes (jedi:show-doc)))
+#+end_src
+** auto-insert headers
+Auto-insert header in python files.
+#+begin_src emacs-lisp
+(after 'autoinsert
+  (define-auto-insert
+    '("\\.py$" . "Python skeleton")
+    '("Short description: "
+      "\"\"\"\n"
+      str
+      "\n\"\"\"\n\n"
+      _
+      "\n")))
+#+end_src
+** yasnippet
+Define functions for manipulating docstrings.
+#+begin_src emacs-lisp
+(defun cb-py:split-arglist (arglist)
+  "Parse ARGLIST into a list of parameters.
+Each element is either a string or a cons of (var . default)."
+  (cl-loop
+   for arg in (s-split (rx ",") arglist t)
+   for (x . y)  = (s-split "=" arg)
+   for (_ name) = (s-match (rx (* (any "*")) (group (* (any "_" alnum)))) x)
+   for default  = (when y (car y))
+   when (not (s-blank? (s-trim name)))
+   collect (if default (cons name default) name)))
+
+(defun cb-py:python-docstring (arglist)
+  "Format a docstring according to ARGLIST."
+  (let ((al (s-replace " " "" arglist)))
+    (if (s-blank? al)
+        ""
+      (cl-destructuring-bind (keywords formal)
+          (-separate 'listp (cb-py:split-arglist al))
+        (concat
+         (when (or formal keywords) "\n")
+         ;; Formal args
+         (when (and formal keywords) "    Formal arguments:\n")
+         (s-join "\n" (--map (format "    %s --" it) formal))
+         (when keywords "\n\n")
+         ;; Keyword args
+         (when (and formal keywords) "    Keyword arguments:\n")
+         (s-join "\n" (--map (format "    %s (default %s) --" (car it) (cdr it))
+                             keywords)))))))
+#+end_src
+** insert a docstring for the function at point
+*** Define command
+#+begin_src emacs-lisp
+(defun cb-py:arglist-for-function-at-point ()
+  "Return the arglist for the function at point, or nil if none."
+  (save-excursion
+    (when (beginning-of-defun)
+      (let ((start (search-forward "("))
+            (end (1- (search-forward ")"))))
+        (buffer-substring start end)))))
+
+(defun cb-py:insert-docstring ()
+  "Insert a docstring for the python function at point."
+  (interactive "*")
+  (-when-let (arglist (cb-py:arglist-for-function-at-point))
+    (when (beginning-of-defun)
+      (search-forward-regexp (rx ":" (* space) eol))
+      (newline)
+      (open-line 1)
+      (insert (concat "    \"\"\"\n"
+                      (cb-py:python-docstring arglist) "\n\n"
+                      "    Returns:\n\n"
+                      "    \"\"\"" ))
+      (message "Arglist inserted."))))
+#+end_src
+*** Add to insertion picker
+#+begin_src emacs-lisp
+(add-to-list 'insertion-picker-options
+             '("d" "Docstring" cb-py:insert-docstring :modes (python-mode)))
+#+end_src
+** key bindings
+#+begin_src emacs-lisp
+(define-key python-mode-map (kbd "M-q") 'indent-dwim)
+#+end_src
+** python-info
+Installs an info manual for Python 2.7
+#+begin_src emacs-lisp
+(cb:install-package 'python-info)
+#+end_src
+** jedi
+Provides auto-completion, code search and documentation for python.
+
+#+begin_src emacs-lisp
+(cb:install-package 'jedi)
+(add-hook 'cb:python-modes-hook 'jedi:setup)
+#+end_src
+
+Configure auto-complete.
+
+#+begin_src emacs-lisp
+(setq jedi:tooltip-method nil
+      jedi:complete-on-dot t)
+#+end_src
+
+Improve python support in imenu.
+
+#+begin_src emacs-lisp
+(setq jedi:install-imenu t)
+#+end_src
+
+Make the goto-definition key the same as for lisp modes.
+
+#+begin_src emacs-lisp
+(setq jedi:key-goto-definition (kbd "M-."))
+#+end_src
+** virtualenv
+Configures Emacs according to the current python virtualenv settings.
+
+#+begin_src emacs-lisp
+(cb:install-package 'virtualenv)
+(add-hook 'cb:python-modes-hook 'virtualenv-minor-mode)
+#+end_src
+
+Mark virtualenv vars as safe.
+
+#+begin_src emacs-lisp
+(put 'virtualenv-default-directory 'safe-local-variable (K t))
+(put 'virtualenv-workon 'safe-local-variable (K t))
+#+end_src
+** END
+#+begin_src emacs-lisp
+)
+#+end_src
+* Ruby
+** ruby-mode
+#+begin_src emacs-lisp
+(cb:install-package 'ruby-mode)
+#+end_src
+** Ignore RBC files
+#+begin_src emacs-lisp
+(add-to-list 'completion-ignored-extensions ".rbc")
+#+end_src
+** auto-modes
+#+begin_src emacs-lisp
+(-each '(("\\.rake\\'". ruby-mode)
+         ("Rakefile\\'" . ruby-mode)
+         ("\\.gemspec\\'" . ruby-mode)
+         ("\\.ru\\'" . ruby-mode)
+         ("Gemfile\\'" . ruby-mode)
+         ("Guardfile\\'" . ruby-mode)
+         ("Capfile\\'" . ruby-mode)
+         ("\\.thor\\'" . ruby-mode)
+         ("Thorfile\\'" . ruby-mode)
+         ("Vagrantfile\\'" . ruby-mode)
+         ("\\.jbuilder\\'" . ruby-mode))
+       (~ add-to-list 'auto-mode-alist))
+#+end_src
+** erb
+Define custom minor mode for ERB files.
+#+begin_src emacs-lisp
+(define-derived-mode erb-mode html-mode
+  "ERB" nil
+  (when (fboundp 'flycheck-mode)
+    (flycheck-mode -1)))
+
+(add-to-list 'auto-mode-alist '("\\.html\\.erb" . erb-mode))
+#+end_src
+** DEFER
+#+begin_src emacs-lisp
+(after 'ruby-mode
+#+end_src
+** inf-ruby
+#+begin_src emacs-lisp
+(cb:install-package 'inf-ruby)
+#+end_src
+*** Work around damaged package
+#+begin_src emacs-lisp
+(let ((file (f-join (-first (~ s-matches? "inf-ruby") (f-directories cb:elpa-dir))
+                    "inf-ruby.el")))
+
+  (autoload 'inf-ruby-mode file nil t)
+  (load-file file))
+#+end_src
+*** DEFER
+#+begin_src emacs-lisp
+(after '(ruby-mode inf-ruby)
+#+end_src
+*** Start an inferior ruby if not already running
+#+begin_src emacs-lisp
+(defadvice ruby-switch-to-inf (around start-inf-ruby activate)
+  "Start an inferior ruby if one is not running."
+  (condition-case _
+      ad-do-it
+    (wrong-type-argument
+     (run-ruby))))
+#+end_src
+*** Interactively set ruby interpreter
+#+begin_src emacs-lisp
+(defun set-ruby-interpreter (cmd)
+  "Set the default ruby interpreter to CMD."
+  (interactive
+   (list
+    (ido-completing-read
+     "Inferior Ruby Program: "
+     (->> inf-ruby-implementations
+       (-map 'car)
+       (-filter 'executable-find)))))
+  (setq inf-ruby-default-implementation cmd))
+#+end_src
+*** Define restart-ruby command
+#+begin_src emacs-lisp
+(defun cb-rb:inf-ruby-window ()
+  (-when-let (buf (get-buffer inf-ruby-buffer))
+    (--first-window (equal (window-buffer it) buf))))
+
+(defun restart-ruby ()
+  (interactive)
+  ;; Suppress exit query.
+  (-when-let (proc (ignore-errors (inf-ruby-proc)))
+    (set-process-query-on-exit-flag proc nil))
+  ;; Kill and relaunch IRB, reusing existing window.
+  (let ((win (cb-rb:inf-ruby-window)))
+    (ignore-errors (kill-buffer inf-ruby-buffer))
+    (save-window-excursion (run-ruby))
+    (when win
+      (set-window-buffer win inf-ruby-buffer))))
+
+#+end_src
+*** switch to ruby
+**** Impl
+#+begin_src emacs-lisp
+(defun cb-rb:switch-to-ruby ()
+  "Toggle between irb and the last ruby buffer.
+Start an inferior ruby if necessary."
+  (interactive)
+  (cond
+   ((derived-mode-p 'inf-ruby-mode)
+    (switch-to-buffer-other-window
+     (--first-buffer (derived-mode-p 'ruby-mode))))
+   ((and inf-ruby-buffer (get-buffer inf-ruby-buffer))
+    (ruby-switch-to-inf t))
+   (t
+    (run-ruby))))
+#+end_src
+**** Key binding
+#+begin_src emacs-lisp
+(define-key ruby-mode-map (kbd "C-c C-z") 'cb-rb:switch-to-ruby)
+(define-key inf-ruby-mode-map (kbd "C-c C-z") 'cb-rb:switch-to-ruby)
+(define-key inf-ruby-minor-mode-map (kbd "C-c C-z") 'cb-rb:switch-to-ruby)
+#+end_src
+*** eval-dwim
+**** Impl
+#+begin_src emacs-lisp
+(defun cb-rb:eval-dwim ()
+  "Perform a context-sensitive evaluation."
+  (interactive)
+  ;; Start ruby if necessary.
+  (unless (get-buffer "*ruby*")
+    (run-ruby)
+    (cb-rb:switch-to-ruby)
+    ;; Revert window layout.
+    (when (= 2 (length (window-list)))
+      (delete-other-windows)))
+  (cond
+   ;; Evaluate active region.
+   ((region-active-p)
+    (ruby-send-region (region-beginning) (region-end)))
+   ;; Evaluate the block at or just before point.
+   ((or (thing-at-point-looking-at
+         (rx (or "end" "]" "}" ")") (* space) (* "\n")))
+        (ruby-block-contains-point (point)))
+    (ruby-send-block))
+   ;; Eval the block-like thing around point.
+   (t
+    (ruby-send-region (line-beginning-position)
+                      (line-end-position)))))
+#+end_src
+**** Key binding
+#+begin_src emacs-lisp
+(define-key ruby-mode-map (kbd "C-c C-c") 'cb-rb:eval-dwim)
+#+end_src
+*** propertise IRB errors
+#+begin_src emacs-lisp
+(defun cb-rb:format-irb-error (lines)
+  "Return a propertized error string for the given LINES of
+an irb error message."
+  (-when-let* ((err (--first (s-matches? "Error:" it) lines))
+               (colon (s-index-of ":" err)))
+    (concat (propertize (substring err 0 colon) 'face 'error)
+            (substring err colon))))
+
+(defun cb-rb:apply-font-lock (str)
+  "Apply ruby font-locking to string STR."
+  (with-temp-buffer
+    (insert str)
+    (require 'ruby-mode)
+    ;; Configure ruby font-lock.
+    (set (make-local-variable 'font-lock-defaults)
+         '((ruby-font-lock-keywords) nil nil))
+    (set (make-local-variable 'syntax-propertize-function)
+         'ruby-syntax-propertize-function)
+
+    (font-lock-fontify-buffer)
+    (buffer-string)))
+
+(defun cb-rb:filter-irb-output (str &rest _)
+  "Print IRB output to messages."
+  (ignore-errors
+    (when (and (fboundp 'inf-ruby-proc) (inf-ruby-proc))
+      (let ((lines
+             (->> (s-lines str)
+               (--remove (or (s-contains? "--inf-ruby" it)
+                             (s-blank? it)
+                             (s-matches? inf-ruby-prompt-pattern it)))
+               (-map 's-trim))))
+        (message (or (cb-rb:format-irb-error lines)
+                     (cb-rb:apply-font-lock (car (reverse lines))))))))
+  str)
+
+(hook-fn 'inf-ruby-mode-hook
+  (add-hook 'comint-preoutput-filter-functions 'cb-rb:filter-irb-output)
+  ;; Stop IRB from echoing input.
+  (setq comint-process-echoes t))
+#+end_src
+*** END
+#+begin_src emacs-lisp
+)
+#+end_src
+** convert rockets to colons
+#+begin_src emacs-lisp
+(defun cb-rb:rockets->colons ()
+  "Convert old-style rockets to new hash literal syntax in the current buffer."
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (while (search-forward-regexp (rx ":" (group-n 1 (+ (not space)))
+                                      (* space)
+                                      "=>"
+                                      (* space))
+                                  nil t)
+      (replace-match "\\1: " t nil))))
+#+end_src
+** rvm
+#+begin_src emacs-lisp
+(cb:install-package 'rvm)
+(add-hook 'ruby-mode-hook 'rvm-activate-corresponding-ruby)
+#+end_src
+** subword-mode
+#+begin_src emacs-lisp
+(add-hook 'cb:ruby-modes-hook 'subword-mode)
+#+end_src
+** smart operator
+#+begin_src emacs-lisp
+(defun cb-rb:smart-colon ()
+  "Insert a colon, with or without padding.
+If this is the leading colon for a symbol, do not insert padding.
+If this is the trailing colon for a hash key, insert padding."
+  (interactive)
+  (insert ":")
+  (when (s-matches? (rx (+ alnum) ":" eol)
+                    (buffer-substring (line-beginning-position) (point)))
+    (just-one-space)))
+
+(hook-fn 'cb:ruby-modes-hook
+  (local-set-key (kbd ",") (command (insert ",") (just-one-space)))
+  (local-set-key (kbd ":") 'cb-rb:smart-colon)
+  (local-set-key (kbd "|") (smart-op "|"))
+  (local-set-key (kbd "~") (smart-op "~"))
+  (local-set-key (kbd "<") (smart-op "<"))
+  (local-set-key (kbd ">") (smart-op ">"))
+  (local-set-key (kbd "=") (smart-op "="))
+  (local-set-key (kbd "-") (smart-op "-"))
+  (local-set-key (kbd "+") (smart-op "+"))
+  (local-set-key (kbd "/") (smart-op "/")))
+#+end_src
+** rinari
+Provides navigation commands between files in Rails projects.
+#+begin_src emacs-lisp
+(cb:install-package 'rinari)
+#+end_src
+*** Enable in rails projects
+#+begin_src emacs-lisp
+(defun cb:rails-project? ()
+  (and (not (or (true? org-src-mode)
+                (s-starts-with? "*Org Src " (buffer-name))))
+       (projectile-project-p)
+       (s-matches? "rails" (symbol-name (projectile-project-type)))))
+
+(hook-fn 'cb:rails-modes-hook
+  (when (cb:rails-project?)
+    (rinari-minor-mode +1)))
+#+end_src
+*** Configure vars
+#+begin_src emacs-lisp
+(hook-fn 'rinari-minor-mode-hook
+  (setq rinari-tags-file-name "TAGS"
+        rng-nxml-auto-validate-flag nil
+        nxml-degraded t))
+#+end_src
+*** Rebind keys
+#+begin_src emacs-lisp
+(after 'rinari
+  (define-prefix-command 'cb:rinari-map)
+  (define-key rinari-minor-mode-map (kbd "C-c f") 'cb:rinari-map)
+  (define-keys cb:rinari-map
+    ";" 'rinari-find-by-context
+    "C" 'rinari-find-cells
+    "F" 'rinari-find-features
+    "M" 'rinari-find-mailer
+    "S" 'rinari-find-steps
+    "Y" 'rinari-find-sass
+    "a" 'rinari-find-application
+    "c" 'rinari-find-controller
+    "e" 'rinari-find-environment
+    "f" 'rinari-find-file-in-project
+    "h" 'rinari-find-helper
+    "i" 'rinari-find-migration
+    "j" 'rinari-find-javascript
+    "l" 'rinari-find-lib
+    "m" 'rinari-find-model
+    "n" 'rinari-find-configuration
+    "o" 'rinari-find-log
+    "p" 'rinari-find-public
+    "r" 'rinari-find-rspec
+    "s" 'rinari-find-script
+    "t" 'rinari-find-test
+    "u" 'rinari-find-plugin
+    "v" 'rinari-find-view
+    "w" 'rinari-find-worker
+    "x" 'rinari-find-fixture
+    "y" 'rinari-find-stylesheet
+    "z" 'rinari-find-rspec-fixture))
+#+end_src
+** smartparens
+#+begin_src emacs-lisp
+(require 'smartparens-ruby)
+#+end_src
+*** Change word boundaries so slurping works
+#+begin_src emacs-lisp
+(modify-syntax-entry ?@ "w" ruby-mode-syntax-table)
+(modify-syntax-entry ?_ "w" ruby-mode-syntax-table)
+(modify-syntax-entry ?! "w" ruby-mode-syntax-table)
+(modify-syntax-entry ?? "w" ruby-mode-syntax-table)
+#+end_src
+*** Automate delimiter formatting
+#+begin_src emacs-lisp
+(defun sp-ruby-should-insert-pipe-close (_id _action _ctx)
+  "Test whether to insert the closing pipe for a lambda-binding pipe pair."
+  (thing-at-point-looking-at
+   (rx-to-string `(and (or "do" "{") (* space) "|"))))
+
+(defun sp-ruby-sp-hook-space-before (_id action _ctx)
+  "Move to point before ID and insert a space."
+  (when (equal 'insert action)
+    (save-excursion
+      (search-backward "|")
+      (just-one-space))))
+
+(defun sp-ruby-sp-hook-space-after (_id action _ctx)
+  "Move to point after ID and insert a space."
+  (when (equal 'insert action)
+    (save-excursion
+      (search-forward "|")
+      (just-one-space))))
+
+(sp-with-modes '(ruby-mode inf-ruby-mode)
+
+  (sp-local-pair "{" "}"
+                 :post-handlers '(:add sp-generic-leading-space))
+
+  (sp-local-pair "[" "]"
+                 :pre-handlers '(sp-ruby-pre-handler))
+
+  (sp-local-pair "%q{" "}" :when '(sp-in-code-p))
+  (sp-local-pair "%Q{" "}" :when '(sp-in-code-p))
+  (sp-local-pair "%w{" "}" :when '(sp-in-code-p))
+  (sp-local-pair "%W{" "}" :when '(sp-in-code-p))
+  (sp-local-pair  "%(" ")" :when '(sp-in-code-p))
+  (sp-local-pair "%x(" ")" :when '(sp-in-code-p))
+  (sp-local-pair  "#{" "}" :when '(sp-in-string-p))
+
+  (sp-local-pair "|" "|"
+                 :when '(sp-ruby-should-insert-pipe-close)
+                 :unless '(sp-in-string-p)
+                 :pre-handlers '(sp-ruby-sp-hook-space-before)
+                 :post-handlers '(sp-ruby-sp-hook-space-after))
+
+  (sp-local-pair "case" "end"
+                 :when '(("SPC" "RET" "<evil-ret>"))
+                 :unless '(sp-ruby-in-string-or-word-p)
+                 :actions '(insert)
+                 :pre-handlers '(sp-ruby-pre-handler)
+                 :post-handlers '(sp-ruby-block-post-handler)))
+#+end_src
+** yari
+Provides a frontend to Ruby ri docs.
+#+begin_src emacs-lisp
+(cb:install-package 'yari)
+#+end_src
+*** Bind to C-c C-h
+#+begin_src emacs-lisp
+(hook-fn 'cb:ruby-modes-hook
+  (local-set-key (kbd "C-c C-h") 'yari))
+#+end_src
+** rubocop
+Rubocop is a Ruby style-checker.
+#+begin_src emacs-lisp
+(cb:install-package 'rubocop)
+#+end_src
+** robe
+Robe provides auto-complete for Ruby.
+#+begin_src emacs-lisp
+(cb:install-package 'robe)
+#+end_src
+*** Enable for all Ruby modes
+#+begin_src emacs-lisp
+(-each cb:ruby-modes (~ add-to-list 'ac-modes))
+(hook-fn 'cb:ruby-modes-hook
+  (require 'robe-ac)
+  (robe-mode)
+  (setq ac-sources '(ac-source-robe ac-source-words-in-same-mode-buffers)))
+#+end_src
+*** Undefine binding conflicting with org src mode
+#+begin_src emacs-lisp
+(after 'robe
+  (define-key robe-mode-map (kbd "C-c C-k") nil))
+#+end_src
+*** Diminish robe-mode
+#+begin_src emacs-lisp
+(hook-fn 'robe-mode-hook
+  (diminish 'robe-mode))
+#+end_src
+** hideshow
+#+begin_src emacs-lisp
+(after 'hideshow
+  (add-to-list 'hs-special-modes-alist
+               `(ruby-mode
+                 ,(rx (or "def" "class" "module" "{" "[")) ; Block start
+                 ,(rx (or "}" "]" "end"))                  ; Block end
+                 ,(rx (or "#" "=begin"))                   ; Comment start
+                 ruby-forward-sexp nil)))
+#+end_src
+** documentation
+Add evil doc lookup handler for Ruby.
+#+begin_src emacs-lisp
+(after 'evil
+  (define-evil-doc-handler cb:ruby-modes (call-interactively 'robe-doc)))
+#+end_src
+** END
+#+begin_src emacs-lisp
+)
+#+end_src
+** yaml-mode
+#+begin_src emacs-lisp
+(cb:install-package 'yaml-mode)
+#+end_src
+* Scala
+#+begin_src emacs-lisp
+(cb:install-package 'scala-mode2)
+#+end_src
+** DEFER
+#+begin_src emacs-lisp
+(after 'scala-mode2
+#+end_src
+** Customise indentation
+#+begin_src emacs-lisp
+(setq scala-indent:align-forms t
+      scala-indent:align-parameters t
+      scala-indent:default-run-on-strategy scala-indent:eager-strategy)
+#+end_src
+** auto-complete
+*** Auto-complete Scala language keywords
+#+begin_src emacs-lisp
+(defconst cbscala:scala-keywords
+  '("abstract" "case" "catch" "class" "def" "do" "else" "extends" "false" "final"
+    "finally" "for" "forSome" "if" "implicit" "import" "lazy" "match" "new" "null"
+    "object" "override" "package" "private" "protected" "return" "sealed" "super"
+    "this" "throw" "trait" "try" "true" "type" "val" "var" "while" "with" "yield"
+    "-" ":" "=" "=>" "<-" "<:" "<%" ">:" "#" "@")
+  "List of keywords reserved by the scala language.")
+
+(ac-define-source scala-keywords
+  '((symbol . "k")
+    (candidates . cbscala:scala-keywords)
+    (action . just-one-space)))
+#+end_src
+*** Configure auto-complete
+#+begin_src emacs-lisp
+(add-to-list 'ac-modes 'scala-mode)
+
+(hook-fn 'scala-mode-hook
+  (setq-local ac-auto-start 2)
+  (-each '(ac-source-yasnippet
+           ac-source-scala-keywords
+           ac-source-ensime-completions)
+         (~ add-to-list 'ac-sources)))
+#+end_src
+** yasnippet utilities
+#+begin_src emacs-lisp
+(defun cbscala:find-case-class-parent ()
+  (save-excursion
+    (if (search-backward-regexp
+         (rx (or
+              (and bol (* space)
+                   (or (and (? "abstract" (+ space)) "class")
+                       "trait")
+                   (+ space) (group-n 1 (+ alnum)))
+              (and bol (* space)
+                   "case" (+ space) "class" (* anything) space
+                   "extends" (+ space) (group-n 1 (+ alnum)) (* space) eol)))
+         nil t)
+        (match-string 1)
+      "")))
+#+end_src
+** smart operators
+*** Define a macro for declaring operators that double as variance annotations
+#+begin_src emacs-lisp
+(defun cbscala:equals ()
+  (interactive)
+  (smart-insert-operator "=")
+  (just-one-space))
+
+(defun cbscala:colon ()
+  (interactive)
+  (smart-insert-operator ":")
+  (just-one-space))
+
+(defmacro define-scala-variance-op-command (sym op)
+  "Define command named SYM to insert a variance operator OP."
+  `(defun ,sym ()
+     "Insert a variance operator.
+Pad in normal expressions. Do not insert padding in variance annotations."
+     (interactive "*")
+     (cond
+      ;; No padding at the start of type parameter.
+      ((thing-at-point-looking-at (rx "[" (* space)))
+       (delete-horizontal-space)
+       (insert ,op))
+      ;; Leading padding after a comma, e.g. for a type parameter or function call.
+      ((thing-at-point-looking-at (rx "," (* space)))
+       (just-one-space)
+       (insert ,op))
+      ;; Otherwise leading and trailing padding.
+      (t
+       (smart-insert-operator ,op)))))
+#+end_src
+*** Declare variance operators
+#+begin_src emacs-lisp
+(define-scala-variance-op-command cbscala:plus "+")
+(define-scala-variance-op-command cbscala:minus "-")
+#+end_src
+*** Set key bindings
+#+begin_src emacs-lisp
+(hook-fn 'scala-mode-hook
+  (smart-insert-operator-hook)
+  (local-unset-key (kbd "."))
+  (bind-keys
+    :map scala-mode-map
+    "=" 'cbscala:equals
+    ":" 'cbscala:colon
+    "+" 'cbscala:plus
+    "-" 'cbscala:minus))
+#+end_src
+** Evil
+*** Adapt scala-mode's join-line command for evil-mode
+#+begin_src emacs-lisp
+(after 'evil
+
+  (defun cbscala:join-line ()
+    "Adapt `scala-indent:join-line' to behave more like evil's line join.
+
+`scala-indent:join-line' acts like the vanilla `join-line',
+joining the current line with the previous one. The vimmy way is
+to join the current line with the next.
+
+Try to move to the subsequent line and then join. Then manually move
+point to the position of the join."
+    (interactive)
+    (let (join-pos)
+      (save-excursion
+        (goto-char (line-end-position))
+        (unless (eobp)
+          (forward-line)
+          (call-interactively 'scala-indent:join-line)
+          (setq join-pos (point))))
+
+      (when join-pos
+        (goto-char join-pos))))
+
+  (evil-define-key 'normal scala-mode-map "J" 'cbscala:join-line))
+#+end_src
+** END
+#+begin_src emacs-lisp
+)
+#+end_src
+* Haskell
+** ignore .hi files
+#+begin_src emacs-lisp
+(add-to-list 'completion-ignored-extensions ".hi")
+#+end_src
+** haskell-mode
+#+begin_src emacs-lisp
+(cb:install-package 'haskell-mode)
+#+end_src
+** DEFER
+#+begin_src emacs-lisp
+(after 'haskell-mode
+#+end_src
+** haskell-doc
+Provides el-doc-style minibuffer typesignatures.
+#+begin_src emacs-lisp
+(cb:install-package 'haskell-doc-mode)
+#+end_src
+*** run in hooks
+#+begin_src emacs-lisp
+(add-hook 'cb:haskell-modes-hook 'haskell-doc-mode)
+(add-hook 'cb:haskell-modes-hook 'turn-on-eldoc-mode)
+#+end_src
+*** diminish
+#+begin_src emacs-lisp
+(hook-fn 'haskell-doc-mode-hook
+  (diminish 'haskell-doc-mode))
+#+end_src
+** Define command to switch to src from repl
+#+begin_src emacs-lisp
+(defun cb:switch-to-haskell ()
+  "Switch to the last active Haskell buffer."
+  (interactive)
+  (-when-let (buf (--first-buffer (derived-mode-p 'haskell-mode)))
+    (pop-to-buffer buf)))
+
+(hook-fn 'inferior-haskell-mode-hook
+  (local-set-key (kbd "C-c C-z") 'cb:switch-to-haskell))
+#+end_src
+** indentation
+=hi2= is an improved indentation mode for Haskell.
+#+begin_src emacs-lisp
+(cb:install-package 'hi2)
+(add-hook 'haskell-mode-hook 'turn-on-hi2)
+#+end_src
+** auto-complete
+#+begin_src emacs-lisp
+(cb:install-package 'haskell-ac t)
+
+(hook-fn 'cb:haskell-modes-hook
+  (add-to-list 'ac-modes major-mode)
+  (add-to-list 'ac-sources 'ac-source-words-in-same-mode-buffers)
+  (add-to-list 'ac-sources 'ac-source-haskell))
+#+end_src
+** evil
+#+begin_src emacs-lisp
+(after 'evil
+  (defadvice switch-to-haskell (after insert-at-end-of-line activate)
+    (cb:maybe-evil-insert-state)))
+#+end_src
+** Stop errors during save from changing window state
+#+begin_src emacs-lisp
+(defadvice haskell-mode-after-save-handler (around ignore-warnings activate)
+  "Prevent subprocess warnings from changing window state."
+  (let ((inhibit-redisplay t))
+    (save-window-excursion
+      ad-do-it)))
+#+end_src
+** set haskell-mode vars in hook
+#+begin_src emacs-lisp
+(hook-fn 'haskell-mode-hook
+  (setq evil-shift-width     4
+        tab-width            4
+        haskell-tags-on-save t
+        haskell-stylish-on-save t))
+#+end_src
+** smart operators
+*** Impl
+#+begin_src emacs-lisp
+(defun cbhs:smart-comma ()
+  (interactive)
+  (cond
+   ((s-matches? (rx bol (* space) eol)
+                (buffer-substring (line-beginning-position) (point)))
+    (insert ", ")
+    (hi2-indent-line))
+   (t
+    (insert ","))))
+
+(defun cbhs:smart-pipe ()
+  "Insert a pipe operator. Add padding, unless we're inside a list."
+  (interactive)
+  (if (s-matches? (rx "[" (* (any "|" alnum)) eol)
+                  (buffer-substring (line-beginning-position) (point)))
+      (insert "|")
+    (smart-insert-operator "|")))
+
+(defun cbhs:looking-at-module-or-constructor? ()
+  (-when-let (sym (thing-at-point 'symbol))
+    (s-uppercase? (substring sym 0 1))))
+
+(defun cbhs:smart-dot (&optional arg)
+  "Insert a period. Add padding, unless this line is an import statement.
+With a prefix arg, insert a period without padding."
+  (interactive "*P")
+  (cond
+   (arg
+    (insert "."))
+   ((cbhs:looking-at-module-or-constructor?)
+    (insert "."))
+   ((thing-at-point-looking-at (rx (or "(" "{" "[") (* space)))
+    (insert "."))
+   (t
+    (smart-insert-operator "."))))
+
+(defun cbhs:smart-colon ()
+  "Insert either a type binding colon pair or a cons colon."
+  (interactive)
+  (if (s-matches? (rx bol (* space) (? ",") (* space)
+                      (+ (not (any space "("))) (* space) eol)
+                  (buffer-substring (line-beginning-position) (point)))
+      (atomic-change-group
+        (just-one-space)
+        (insert "::")
+        (just-one-space))
+    (insert ":")))
+
+(defun cbhs:insert-arrow (arrow)
+  "If point is inside a tuple, insert an arrow inside.
+Otherwise insert an arrow at the end of the line."
+  (atomic-change-group
+    (cl-destructuring-bind (&key beg end op &allow-other-keys)
+        (sp-get-sexp t)
+      ;; Check whether point is inside a tuple.
+      (if (and (equal op "(")
+               (> (point) beg)
+               (< (point) end))
+          (sp-end-of-sexp)
+        (end-of-line)))
+    ;; Insert arrow.
+    (just-one-space)
+    (insert arrow)
+    (just-one-space)))
+
+(defun cbhs:at-typedecl? ()
+  (s-matches? "::" (buffer-substring (line-beginning-position) (point))))
+
+(defun cbhs:smart-minus (&optional arg)
+  "Insert an arrow if we're in a typesig, otherwise perform a normal insertion.
+With a prefix arg, insert an arrow with padding at point."
+  (interactive "*P")
+  (cond
+   (arg
+    (just-one-space)
+    (insert "->")
+    (just-one-space))
+   ((cbhs:at-typedecl?)
+    (cbhs:insert-arrow "->"))
+   (t
+    (smart-insert-operator "-"))))
+
+(defun cbhs:smart-lt (&optional arg)
+  "Insert a less than symbol. With a prefix arg, insert an arrow at point."
+  (interactive "*P")
+  (cond
+   (arg
+    (just-one-space)
+    (insert "<-")
+    (just-one-space))
+   (t
+    (smart-insert-operator "<"))))
+#+end_src
+*** Set key bindings
+Because these are set in hooks, the forms below are order-dependent.
+=smart-insert-operator-hook= must be called first, so it is added to the list
+last.
+#+begin_src emacs-lisp
+(bind-keys
+  :hook cb:haskell-modes-hook
+  "," 'cbhs:smart-comma
+  "-" 'cbhs:smart-minus
+  "=" (command (smart-insert-operator "="))
+  "<" 'cbhs:smart-lt
+  "." 'cbhs:smart-dot
+  ":" 'cbhs:smart-colon
+  "|" 'cbhs:smart-pipe
+  "?" (command (smart-insert-operator "?"))
+  "$" (command (smart-insert-operator "$")))
+
+(add-hook 'cb:haskell-modes-hook 'smart-insert-operator-hook)
+#+end_src
+** auto-complete
+#+begin_src emacs-lisp
+(-each cb:haskell-modes (~ add-to-list 'ac-modes))
+#+end_src
+** Do not use apostrophe smartparens pair
+#+begin_src emacs-lisp
+(sp-with-modes '(haskell-mode
+                 inf-haskell-mode
+                 haskell-cabal-mode)
+  (sp-local-pair "'" "'" :actions '(:rem insert)))
+#+end_src
+** hideshow
+*** Define helper functions
+#+begin_src emacs-lisp
+(defun cbhs:next-separator-pos ()
+  (save-excursion
+    (when (search-forward-regexp (rx bol "---") nil t)
+      (ignore-errors (forward-line -1))
+      (while (and (emr-blank-line?)
+                  (not (bobp)))
+        (forward-line -1))
+      (end-of-line)
+      (point))))
+
+(defun cbhs:next-decl-pos ()
+  (save-excursion
+    (haskell-ds-forward-decl)
+    ;; Skip infix and import groups.
+    (while (emr-line-matches? (rx bol (or "import" "infix") (+ space)))
+      (haskell-ds-forward-decl))
+    (unless (eobp)
+      (ignore-errors (forward-line -1))
+      (while (and (emr-line-matches? (rx bol (* space) "--" space))
+                  (not (bobp)))
+        (forward-line -1)))
+    (point)))
+
+(defun cbhs:forward-fold (&rest _)
+  (let ((sep (cbhs:next-separator-pos))
+        (decl (cbhs:next-decl-pos)))
+    (goto-char (min (or sep (point-max))
+                    (or decl (point-max))))))
+
+#+end_src
+*** Configure hideshow
+#+begin_src emacs-lisp
+(after 'hideshow
+  (add-to-list 'hs-special-modes-alist
+               `(haskell-mode
+                 ;; Beginning function
+                 ,(rx (or
+                       ;; Function
+                       (group  (* nonl) (+ space) "::" (+ space ) (* nonl))
+                       ;; FFI declarations.
+                       (group (? "foreign") (+ space) "import")
+                       ;; Groupings
+                       (group (or "class" "instance" "newtype" "data")
+                              (+ space) (* nonl))))
+                 ;; End function
+                 nil
+                 ;; Comment start
+                 ,(rx "{-")
+                 ;; Forward-sexp function
+                 cbhs:forward-fold)))
+#+end_src
+** Insertion commands
+*** Insert import statements with helm
+#+begin_src emacs-lisp
+(defun cbhs:parse-module (str)
+  (with-temp-buffer
+    (insert str)
+    (goto-char (point-min))
+    (when (search-forward-regexp (rx bol "exposed-modules: ") nil t)
+      (let (start end)
+        (setq start (point))
+        (setq end (if (search-forward ":" nil t)
+                      (progn (beginning-of-line) (point))
+                    (point-max)))
+        (s-split " " (buffer-substring-no-properties start end) t)))))
+
+(defun cbhs:haskell-modules ()
+  "Get a list of all Haskell modules known to GHC."
+  (->> (%-string "ghc-pkg" "dump")
+    (s-split "---")
+    (-mapcat 'cbhs:parse-module)
+    (-map 's-trim)))
+
+(defun cbhs:read-import ()
+  "Read a module from the user and format as an import statement."
+  (interactive)
+  (let ((modid
+         (helm-comp-read "Import module: "
+                         (sort (cbhs:haskell-modules) 'string<)
+                         :volatile t
+                         :must-match t))
+        (qualified? (y-or-n-p "Qualified import? ")))
+    (if qualified?
+        (format "import qualified %s as %s" modid (read-string "As: "))
+      (format "import %s" modid))))
+
+(defun cbhs:insert-import ()
+  "Interactively insert a Haskell import statement."
+  (interactive)
+  (let ((import (cbhs:read-import)))
+    ;; Insert the import statement.
+    (require 'emr)
+    (emr-reporting-buffer-changes "Inserted import"
+      (save-excursion
+        (goto-char (point-min))
+
+        (cond
+         ;; Move directly to import statements.
+         ((search-forward-regexp (rx bol "import") nil t))
+
+         ;; Move past module declaration.
+         ((search-forward "module" nil t)
+          (search-forward "where")
+          (forward-line)
+          (beginning-of-line)
+          (while (and (s-blank? (current-line))
+                      (not (eobp)))
+            (forward-line)))
+
+         ;; Otherwise insert on first blank line.
+         (t
+          (until (or (eobp) (s-blank? (current-line)))
+            (forward-line))))
+
+        ;; Insert import statement.
+        (beginning-of-line)
+        (open-line 1)
+        (insert import)))))
+#+end_src
+*** Add to global insertion commands list
+#+begin_src emacs-lisp
+(-each
+ '(("i" "Haskell Import" cbhs:insert-import :modes haskell-mode)
+   ("l" "Haskell Language Extension" haskell-insert-language :modes haskell-mode)
+   ("p" "GHC Pragma" haskell-insert-pragma :modes haskell-mode)
+   ("f" "GHC Flag" haskell-insert-flag :modes haskell-mode))
+ (~ add-to-list 'insertion-picker-options))
+#+end_src
+** Hoogle search method
+#+begin_src emacs-lisp
+(cbs-define-search-method
+ :name "hoogle"
+ :key "h"
+ :command
+ (lambda (q)
+   (browse-url (concat "http://www.haskell.org/hoogle/?hoogle="
+                       (url-hexify-string (cbs-read "Hoogle" q)))))
+ :when
+ (lambda ()
+   (derived-mode-p 'haskell-mode 'inf-haskell-mode)))
+#+end_src
+** Apply font-lock to show unicode symbols
+#+begin_src emacs-lisp
+(defun cbhs:apply-font-lock (pat rep)
+  "Call SUBSTITUTE-PATTERN-WITH-UNICODE repeatedly."
+  (font-lock-add-keywords
+   nil `((,pat
+          (0 (progn (compose-region (match-beginning 1) (match-end 1)
+                                    ,(string-to-char rep) 'decompose-region)
+                    nil))))))
+
+(defun cbhs:font-lock (patterns)
+  (--each patterns
+    (cl-destructuring-bind (pat rep) it
+      (cbhs:apply-font-lock
+       (rx-to-string `(and (not (any "\""))
+                           (? "`")
+                           (group  symbol-start ,pat symbol-end)
+                           (? "`")
+                           (not (any "\""))))
+       rep))))
+
+(defun cbhs:apply-unicode ()
+  (cbhs:apply-font-lock
+   "\\s ?(?\\(\\\\\\)\\s *\\(\\w\\|_\\|(.*)\\).*?\\s *->" "λ")
+  (cbhs:font-lock '(("<-"     "←")
+                    ("->"     "→")
+                    ("=>"     "⇒")
+                    ("."      "•")
+                    ("forall" "∀")
+                    ("undefined" "⊥")
+                    (">="     "≥")
+                    ("<="     "≤")
+                    ("=="     "≣")
+                    ("alpha"  "ɑ")
+                    ("beta"   "β")
+                    ("gamma"  "ɣ")
+                    ("delta"  "δ")
+                    ("elem"   "∈")
+                    ("notElem" "∉")
+                    ("!!"     "‼")
+                    ("::"     "∷"))))
+
+(add-hook 'cb:haskell-modes-hook 'cbhs:apply-unicode)
+#+end_src
+** flycheck
+*** Install hdevtools checker
+#+begin_src emacs-lisp
+(cb:install-package 'flycheck-hdevtools t)
+#+end_src
+*** Use hdevtools checker for projects and ghc checker for standalone files
+#+begin_src emacs-lisp
+(defun cbhs:configure-flycheck ()
+  (flycheck-select-checker
+   (if (and
+        (buffer-file-name)
+        (locate-dominating-file
+         (f-dirname (buffer-file-name))
+         (C (~ -any? (~ s-matches? "\\.cabal$")) f-files)))
+
+       'haskell-hdevtools
+     'haskell-ghc)))
+
+(add-hook 'haskell-mode-hook 'cbhs:configure-flycheck)
+#+end_src
+** Key bindings
+#+begin_src emacs-lisp
+(hook-fn 'cb:haskell-modes-hook
+  (local-set-key (kbd "C-c h") 'hoogle)
+  (local-set-key (kbd "C-c C-c") 'haskell-process-cabal-build))
+#+end_src
+** END
+#+begin_src emacs-lisp
+)
+#+end_src
+* Idris
+#+begin_src emacs-lisp
+(cb:install-package 'idris-mode)
+#+end_src
+** ignore .idr files
+#+begin_src emacs-lisp
+(add-to-list 'completion-ignored-extensions ".idr")
+#+end_src
+** DEFER
+#+begin_src emacs-lisp
+(after 'idris-mode
+#+end_src
+** Switch to REPL with C-c C-z
+#+begin_src emacs-lisp
+(define-key idris-mode-map (kbd "C-c C-z") 'idris-switch-to-output-buffer)
+#+end_src
+** smart operators
+*** Impl
+#+begin_src emacs-lisp
+(defun cbidris:typing-operator-in-braces? ()
+  (or (equal (char-before) ?\()
+      (and (not (s-matches? (rx alnum) (char-to-string (char-before))))
+           (equal (char-after) ?\)))))
+
+(defun cbidris:smart-insert-operator (op)
+  "Insert an operator with padding.
+Does not pad if inside a pair of brackets.
+
+OP is the operator as a string."
+  (let ((pt (point)))
+    (cond
+     ((cbidris:typing-operator-in-braces?)
+      (delete-horizontal-space)
+      (insert op))
+     (t
+      (smart-insert-operator op)))
+    (save-excursion
+      (goto-char pt)
+      (idris-reformat-dwim t))))
+
+(defun cbidris:inserting-cons-in-braces? ()
+  (equal (char-after) ?\)))
+
+(defun cbidris:smart-colon ()
+  (interactive)
+  (cond
+   ((equal (string-to-char " ") (char-before))
+    (smart-insert-operator ":"))
+   ((cbidris:inserting-cons-in-braces?)
+    (insert ":"))
+   (t
+    (smart-insert-operator ":")))
+
+  (idris-reformat-dwim t))
+
+(defun cbidris:smart-comma ()
+  (interactive)
+  (cond
+   ((s-matches? (rx bol (* space) eol)
+                (buffer-substring (line-beginning-position) (point)))
+    (insert ", ")
+    (idris-indentation-indent-line))
+   (t
+    (insert ","))))
+
+(defun cbidris:smart-pipe ()
+  "Insert a pipe operator. Add padding, unless we're inside a list."
+  (interactive)
+  (if (s-matches? (rx "[" (* (any "|" alnum)) eol)
+                  (buffer-substring (line-beginning-position) (point)))
+      (insert "|")
+    (cbidris:smart-insert-operator "|")))
+
+(defun cbidris:looking-at-module-or-constructor? ()
+  (-when-let (sym (thing-at-point 'symbol))
+    (s-uppercase? (substring sym 0 1))))
+
+(defun cbidris:smart-dot (&optional arg)
+  "Insert a period. Add padding, unless this line is an import statement.
+With a prefix arg, insert a period without padding."
+  (interactive "*P")
+  (cond
+   (arg
+    (insert "."))
+   ((cbidris:looking-at-module-or-constructor?)
+    (insert "."))
+   ((thing-at-point-looking-at (rx (or "(" "{" "[") (* space)))
+    (insert "."))
+   (t
+    (cbidris:smart-insert-operator "."))))
+
+(defun cbidris:insert-arrow (arrow)
+  "If point is inside a tuple or braces, insert an arrow inside.
+Otherwise insert an arrow at the end of the line."
+  (atomic-change-group
+    (cl-destructuring-bind (&key beg end op &allow-other-keys)
+        (sp-get-sexp t)
+      ;; Check whether point is inside a tuple.
+      (if (and (-contains? '("(" "{") op)
+               (> (point) beg)
+               (< (point) end))
+          (sp-end-of-sexp)
+        (end-of-line)))
+    ;; Insert arrow.
+    (just-one-space)
+    (insert arrow)
+    (just-one-space)))
+
+(defun cbidris:at-typedecl? ()
+  (s-matches? (rx space ":" (not (any ":")))
+              (buffer-substring (line-beginning-position) (point))))
+
+(defun cbidris:smart-minus (&optional arg)
+  "Insert an arrow if we're in a typesig, otherwise perform a normal insertion.
+With a prefix arg, insert an arrow with padding at point."
+  (interactive "*P")
+  (cond
+   (arg
+    (just-one-space)
+    (insert "->")
+    (just-one-space))
+   ((cbidris:at-typedecl?)
+    (cbidris:insert-arrow "->"))
+   (t
+    (cbidris:smart-insert-operator "-"))))
+
+(defun cbidris:smart-lt (&optional arg)
+  "Insert a less than symbol. With a prefix arg, insert an arrow at point."
+  (interactive "*P")
+  (cond
+   (arg
+    (just-one-space)
+    (insert "<-")
+    (just-one-space))
+   (t
+    (cbidris:smart-insert-operator "<"))))
+
+(defun cbidris:smart-question-mark ()
+  "Insert a ? char as an operator, unless point is after an = sign."
+  (interactive)
+  (cond
+   ((s-matches? (rx "=" (* space) eol) (current-line))
+    (just-one-space)
+    (insert "?"))
+   (t
+    (cbidris:smart-insert-operator "?"))))
+#+end_src
+*** Key bindings
+#+begin_src emacs-lisp
+(define-keys idris-mode-map
+  "," 'cbidris:smart-comma
+  "&" (command (cbidris:smart-insert-operator "&"))
+  "%" (command (cbidris:smart-insert-operator "%"))
+  "?" 'cbidris:smart-question-mark
+  "*" (command (cbidris:smart-insert-operator "*"))
+  "+" (command (cbidris:smart-insert-operator "+"))
+  "/" (command (cbidris:smart-insert-operator "/"))
+  "-" 'cbidris:smart-minus
+  "=" (command (cbidris:smart-insert-operator "="))
+  "<" 'cbidris:smart-lt
+  ">" (command (cbidris:smart-insert-operator ">"))
+  "." 'cbidris:smart-dot
+  ":" 'cbidris:smart-colon
+  "|" 'cbidris:smart-pipe
+  "$" (command (cbidris:smart-insert-operator "$")))
+#+end_src
+** auto-complete
+#+begin_src emacs-lisp
+(add-hook 'cb:idris-modes-hook 'auto-complete-mode)
+#+end_src
+** Use font lock to display Unicode symbols in Idris buffers
+#+begin_src emacs-lisp
+(defun cbidris:apply-font-lock (pat rep)
+  "Call SUBSTITUTE-PATTERN-WITH-UNICODE repeatedly."
+  (font-lock-add-keywords
+   nil `((,pat
+          (0 (progn (compose-region (match-beginning 1) (match-end 1)
+                                    ,(string-to-char rep) 'decompose-region)
+                    nil))))))
+
+(defun cbidris:font-lock (patterns)
+  (--each patterns
+    (cl-destructuring-bind (pat rep) it
+      (cbidris:apply-font-lock
+       (rx-to-string `(and (not (any "\""))
+                           (? "`")
+                           (group  symbol-start ,pat symbol-end)
+                           (? "`")
+                           (not (any "\""))))
+       rep))))
+
+(defun cbidris:apply-unicode ()
+  (cbidris:apply-font-lock
+   "\\s ?(?\\(\\\\\\)\\s *\\(\\w\\|_\\|(.*)\\).*?\\s *=>" "λ")
+  (cbidris:font-lock '(("<-"     "←")
+                       ("->"     "→")
+                       ("=>"     "⇒")
+                       ("."      "•")
+                       ("_|_"    "⊥")
+                       (">="     "≥")
+                       ("<="     "≤")
+                       ("=="     "≣"))))
+
+(add-to-list 'font-lock-keywords-alist
+             '(idris-mode
+               ((("^ *record\\>" . font-lock-keyword-face)))))
+
+(add-hook 'cb:idris-modes-hook 'cbidris:apply-unicode)
+#+end_src
+** smartparens
+#+begin_src emacs-lisp
+(defun sp-idris-just-one-space (id action ctx)
+  "Pad parens with spaces."
+  (when (and (equal 'insert action)
+             (sp-in-code-p id action ctx))
+    ;; Insert a leading space, unless
+    ;; 1. this is a quoted form
+    ;; 2. this is the first position of another list
+    ;; 3. this form begins a new line.
+    (save-excursion
+      (search-backward id)
+      (unless (s-matches?
+               (rx (or (group bol (* space))
+                       (any "," "`" "@" "(" "[" "{")) eol)
+               (buffer-substring (line-beginning-position) (point)))
+        (just-one-space)))
+    ;; Insert space after separator, unless
+    ;; 1. this form is at the end of another list.
+    ;; 2. this form is at the end of the line.
+    (save-excursion
+      (search-forward (sp-get-pair id :close))
+      (unless (s-matches? (rx (or (any ")" "]" "}")
+                                  eol))
+                          (buffer-substring (point) (1+ (point))))
+        (just-one-space)))))
+
+(sp-with-modes cb:idris-modes
+  ;; Pad delimiters with spaces.
+  (sp-local-pair "\"" "\"" :post-handlers '(:add sp-idris-just-one-space))
+  (sp-local-pair "{" "}" :post-handlers '(:add sp-idris-just-one-space))
+  (sp-local-pair "[" "]" :post-handlers '(:add sp-idris-just-one-space))
+  (sp-local-pair "(" ")" :post-handlers '(:add sp-idris-just-one-space))
+  (sp-local-pair "'" nil :actions nil))
+(sp-with-modes cb:idris-modes
+  (sp-local-pair "'" "'" :actions '(:rem insert)))
+#+end_src
+** eldoc
+#+begin_src emacs-lisp
+(defun cbidris:get-docstring ()
+  "Format a docstring for eldoc."
+  (ignore-errors
+    (-when-let* ((name (car (idris-thing-at-point)))
+                 (s (idris-eval `(:type-of ,name))))
+      (nth 1 (s-match (rx (* (any "-" "\n" space)) (group (* anything)))
+                      s)))))
+
+(defun cbidris:configure-eldoc ()
+  "Set up eldoc for Idris."
+  (setq-local eldoc-documentation-function 'cbidris:get-docstring)
+  (eldoc-mode +1))
+
+(add-hook 'cb:idris-modes-hook 'cbidris:configure-eldoc)
+#+end_src
+** switching from repl to src
+#+begin_src emacs-lisp
+(defun idris-switch-to-src ()
+  "Pop to the last idris source buffer."
+  (interactive)
+  (-if-let (buf (car (--filter-buffers (derived-mode-p 'idris-mode))))
+      (pop-to-buffer buf)
+    (error "No idris buffers")))
+
+(after 'idris-repl
+  (define-key idris-repl-mode-map (kbd "C-c C-z") 'idris-switch-to-src))
+#+end_src
+** automatically indent code on RET
+*** format datatypes
+#+begin_src emacs-lisp
+(defun cbidris:data-start-pos ()
+  "Find the start position of the datatype declaration at point."
+  (save-excursion
+    (end-of-line)
+    (when (search-backward-regexp (rx bol (* space) (or "record" "data") eow) nil t)
+      (skip-chars-forward " \t")
+      (point))))
+
+(defun cbidris:data-end-pos ()
+  "Find the end position of the datatype declaration at point."
+  (save-excursion
+    (let ((start (point)))
+
+      (goto-char (cbidris:data-start-pos))
+      (forward-line)
+      (goto-char (line-beginning-position))
+
+      (let ((end
+             (when (search-forward-regexp
+                    (rx bol (or (and (* space) eol) (not (any space "|"))))
+                    nil t)
+               (forward-line -1)
+               (line-end-position))))
+        (if (and end (<= start end))
+            end
+          (point-max))))))
+
+(cl-defun cbidris:data-decl-at-pt ()
+  "Return the data declaration at point."
+  (-when-let* ((start (cbidris:data-start-pos))
+               (end (cbidris:data-end-pos)))
+    (buffer-substring-no-properties start end)))
+
+(defun cbidris:at-data-decl? ()
+  (-when-let (dd (cbidris:data-decl-at-pt))
+    (let ((lines (s-split "\n" dd)))
+      (or (equal 1 (length lines))
+          (->> (-drop 1 lines)
+            (-all? (~ s-matches? (rx bol (or space "|")))))))))
+
+(cl-defun cbidris:goto-type-judgement-colon
+    (&optional (bound (cbidris:data-end-pos)))
+  (let (done)
+    (goto-char (line-beginning-position))
+    (while (and (not done)
+                (search-forward " : " bound t))
+      (unless (sp-get-enclosing-sexp)
+        (search-backward ":")
+        (setq done t)))
+    done))
+
+(defun cbidris:max-colon-column-in-data ()
+  "Find the greatest column of type judgements in a data decl."
+  (->> (save-excursion
+         (cl-loop
+          while (and (not (eobp))
+                     (cbidris:at-data-decl?))
+          if (cbidris:goto-type-judgement-colon)
+          collect (current-column)
+          do (progn
+               (forward-line)
+               (end-of-line))))
+    (-remove 'null)
+    (cons 0)
+    (-max)))
+
+(defun cbidris:line-is-unfinished-type-judgement? (line-no)
+  (save-excursion
+    (goto-char (point-min))
+    (forward-line (1- line-no))
+    (s-matches? (rx "->" (* space) eol) (current-line))))
+
+(defun cbidris:indent-data-decl ()
+  "Indent the data decl at point."
+  (when (< 1 (->> (cbidris:data-decl-at-pt)
+               (s-split "\n")
+               (length)))
+    (let ((end-ln (line-number-at-pos (cbidris:data-end-pos))))
+      (save-excursion
+
+        ;; Indent each line in the decl to the column of the first identifier.
+        (goto-char (cbidris:data-start-pos))
+        (let ((datatype-ident-col
+               (progn
+                 (search-forward-regexp (rx (or "record" "data") (+ space)))
+                 (just-one-space)
+                 (current-column))))
+          (forward-line)
+
+          (let (done current-type-judgement-col)
+            (while (and (not done) (<= (line-number-at-pos (point)) end-ln))
+              (goto-char (line-beginning-position))
+              (delete-horizontal-space)
+
+              ;; Align multi-line type judgements after the colon.
+              (if (cbidris:line-is-unfinished-type-judgement? (1- (line-number-at-pos)))
+                  (indent-to (+ 2 current-type-judgement-col))
+
+                ;; Indent new constructors to the same column as the first
+                ;; identifier after the data keyword.
+                (indent-to datatype-ident-col)
+                (setq current-type-judgement-col
+                      (save-excursion
+                        (goto-char (line-beginning-position))
+                        (cbidris:goto-type-judgement-colon)
+                        (current-column))))
+
+              ;; If it's not the end of the buffer, continue the loop.
+              (if (save-excursion (goto-char (line-end-position))
+                                  (eobp))
+                  (setq done t)
+                (forward-line)))))))))
+
+(defun cbidris:normalise-data-decl-colons ()
+  (save-excursion
+    (let ((start (cbidris:data-start-pos)))
+
+      (goto-char start)
+      (while (search-forward-regexp
+              (rx space ":" (or space eol))
+              (cbidris:data-end-pos) t)
+        (save-excursion
+          (just-one-space)
+          (search-backward ":")
+          (just-one-space)))
+
+      (goto-char start)
+      (let ((col (cbidris:max-colon-column-in-data))
+            done)
+        (while (and (not done)
+                    (cbidris:at-data-decl?))
+          (when (cbidris:goto-type-judgement-colon)
+            (indent-to col))
+          (goto-char (line-end-position))
+          (if (eobp)
+              (setq done t)
+            (forward-line)))))))
+
+(defun cbidris:at-sum-type? ()
+  "Non-nil if point is at a data decl for a sum type."
+  (s-matches? (rx bol (* space) "data" (* nonl) "=")
+              (cbidris:data-decl-at-pt)))
+
+(defun cbidris:align-sum-cases ()
+  "Align cases of a sum type with the '=' sign."
+  (save-excursion
+    ;; Ensure the '=' sign is surrounded by single spaces.
+    (goto-char (cbidris:data-start-pos))
+    (search-forward-regexp (rx space "=" (not (any "="))))
+    (just-one-space)
+    (search-backward "=")
+    (just-one-space)
+    (let ((col (current-column))
+          done)
+      (forward-line)
+      (goto-char (line-end-position))
+      (while (and (not done)
+                  (cbidris:at-data-decl?))
+        (when (s-matches? (rx bol (* space) "|") (current-line))
+          (goto-char (line-beginning-position))
+          (search-forward "|")
+          (backward-char)
+          (indent-to col))
+        (goto-char (line-end-position))
+        (if (eobp)
+            (setq done t)
+          (forward-line))))))
+
+(defun cbidris:format-data-decl ()
+  "Align colons in a datatype declaration."
+  (when (cbidris:at-data-decl?)
+    (cond
+     ((cbidris:at-sum-type?)
+      (cbidris:align-sum-cases))
+
+     (t
+      (cbidris:indent-data-decl)
+      (cbidris:normalise-data-decl-colons)))
+
+    t))
+#+end_src
+*** format functions
+#+begin_src emacs-lisp
+(defun cbidris:after-function-args? ()
+  "Non-nil if point is at a function application."
+  (let ((fst-equals (s-index-of "=" (current-line))))
+    (and (< fst-equals (current-column)))))
+
+(defun cbidris:at-let-binding? ()
+  "Non-nil if point is at a let-binding form."
+  (s-matches? (rx bow "let" eow) (current-line)))
+
+(defun cbidris:at-equation? ()
+  "Non-nil if point is at a function definition or equation."
+  (and (s-matches? (rx space "=" (or space eol)) (current-line))
+       (not (cbidris:at-let-binding?))
+       (not (cbidris:after-function-args?))))
+
+(defun cbidris:function-case-lines (fname)
+  "Return a list of lines for the function FNAME."
+  (save-excursion
+    (cl-loop
+     initially (goto-char (point-min))
+     while (search-forward-regexp (rx-to-string `(and bol (* space)
+                                                      (? "(") ,fname (? ")")))
+                                  nil t)
+     unless (s-matches? " : " (current-line))
+     collect (line-number-at-pos))))
+
+(-each '("record" "data") (~ add-to-list 'idris-keywords))
+
+(defun cbidris:function-name-at-pt ()
+  "Return the name of the function at point."
+  (save-excursion
+    (search-backward-regexp (rx bol (* space) (group (+ (not (any space ":"))))))
+    (let ((s (s-trim (match-string-no-properties 1))))
+      (unless (or (-contains? idris-keywords s)
+                  (s-blank? s))
+        s))))
+
+(defun cbidris:pad-tokens (lines)
+  "For each line in LINES, align tokens in columns by right-padding with whitespace."
+  (cl-loop
+   ;; Calculate leading indentation for lines.
+   for indent-column =
+   (-max (cons 0 (-map (C length cadr (~ s-match (rx bol (group (* space)))))
+                       lines)))
+   for indentation = (s-repeat indent-column " ")
+   ;; Split lines into a matrix of argument expressions.
+   for split-lines = (-map 's-split-sexps lines)
+   ;; Pad with whitespace. This requires a matrix transposition before we can calculate
+   ;; the width for each row.
+   for padded =
+   (cl-loop for col from 0 upto (-max (cons 0 (-map 'length split-lines)))
+            for rows = (-map (~ nth col) split-lines)
+            for widest = (-max (-map 'length rows))
+            collect (-map (~ s-pad-right widest " ") rows))
+   ;; Transpose matrix again to restore original ordering.
+   for col from 0 upto (-max (cons 1 (-map 'length padded)))
+   for (ident . argv) = (-map (~ nth col) padded)
+   collect (cons (s-prepend indentation ident) argv)))
+
+(defun cbidris:columnate-arguments (lines)
+  "Align function arguments by column for each line in LINE-NOS."
+  (let* ((padded
+          (->> (cbidris:pad-tokens lines)
+            ;; Manually pad and align '=' sign, in case some equations are partial.
+            (-map (C (~ s-chop-suffix "=") s-trim-right (~ s-join " ")))))
+         (widest-arglist (-max (cons 0 (-map 'length padded)))))
+    (->> padded
+      (-remove (~ s-matches? (rx bol (* space) eol)))
+      (-map (C (~ s-append "=") (~ s-pad-right widest-arglist " "))))))
+
+(defun cbidris:bol-to-s (rx line-no)
+  "Return the part of the line at LINUM from the line start up to RX."
+  (save-excursion
+    (goto-char (point-min))
+    (forward-line (1- line-no))
+    (buffer-substring-no-properties (line-beginning-position)
+                                    (search-forward-regexp rx nil t))))
+
+(defun cbidris:normalise-function-decl-arguments ()
+  (let* ((linums (cbidris:function-case-lines (cbidris:function-name-at-pt)))
+         (replacements (cbidris:columnate-arguments
+                        (-map (~ cbidris:bol-to-s "=") linums))))
+    (-each (-zip linums replacements)
+           (lambda+ ((linum . s))
+             (save-excursion
+               (goto-char (point-min))
+               (forward-line (1- linum))
+               (search-forward-regexp (rx bol (group (+ (not (any "="))) "="))
+                                      (line-end-position))
+               (replace-match s t))))))
+
+(defun cbidris:format-function-args ()
+  "Align function declaration arguments."
+  (when (cbidris:at-equation?)
+    (cbidris:normalise-function-decl-arguments)
+    t))
+#+end_src
+*** define reformatting command
+#+begin_src emacs-lisp
+(defun idris-reformat-dwim (&optional silent?)
+  "Perform a context-sensitive reformatting command.
+SILENT? controls whether provide feedback to the user on the action performed."
+  (interactive "*")
+  ;; HACK: Set point manually--something is moving point to the line start pos.
+  (let ((pt (point)))
+    (save-excursion
+      (cond
+       ((cbidris:format-data-decl)
+        (unless silent?
+          (message "Formatted data declaration.")))
+       ((cbidris:format-function-args)
+        (unless silent?
+          (message "Formatted function arguments.")))
+       (t
+        (unless silent?
+          (message "No context to reformat")))))
+    (goto-char (max (point) pt))))
+#+end_src
+*** Define custom newline commands
+#+begin_src emacs-lisp
+(defun idris-ret ()
+  "Indent and align on newline."
+  (interactive "*")
+  (if (s-matches? comment-start (current-line))
+      (comment-indent-new-line)
+    (idris-reformat-dwim t)
+
+    (cond
+
+     ((s-matches? (rx space "->" (* space))
+                  (buffer-substring (line-beginning-position) (point)))
+      (newline)
+      (delete-horizontal-space)
+      (indent-for-tab-command))
+
+     ((s-matches? (rx bol (* space) eol) (current-line))
+      (delete-horizontal-space)
+      (newline))
+
+     (t
+      (idris-newline-and-indent)))))
+
+(defun idris-meta-ret ()
+  "Create a newline and perform a context-sensitive continuation.
+- At functions, create a new case for the function.
+- At types, add a 'where' statement if one does not exist.
+- At comments, fill paragraph and insert a newline."
+  (interactive)
+  (cond
+   ((cbidris:at-data-decl?)
+    (let ((dt (cbidris:data-decl-at-pt)))
+
+      (unless (s-contains? "where" dt)
+        (save-excursion
+          (goto-char (cbidris:data-start-pos))
+          (unless (s-matches? (rx space "=" (not (any "="))) (current-line))
+            (goto-char (line-end-position))
+            (just-one-space)
+            (insert "where"))))
+
+      (goto-char (line-end-position))
+      (idris-ret)))
+
+   ((cbidris:function-name-at-pt)
+    (goto-char (line-end-position))
+    (let ((fn (cbidris:function-name-at-pt)))
+
+      (unless (s-matches? (rx bol (* space) eol) (current-line))
+        (newline-and-indent))
+
+      (insert fn)
+      (just-one-space)))
+
+   ((s-matches? comment-start (current-line))
+    (fill-paragraph)
+    (comment-indent-new-line))
+
+   (t
+    (goto-char (line-end-position))
+    (idris-ret))))
+#+end_src
+*** Set key bindings
+#+begin_src emacs-lisp
+(define-keys idris-mode-map
+  "M-q" 'idris-reformat-dwim
+  "<return>" 'idris-ret
+  "M-<return>" 'idris-meta-ret)
+#+end_src
+** END
+#+begin_src emacs-lisp
+)
+#+end_src
+* SML
+#+begin_src emacs-lisp
+(cb:install-package 'sml-mode)
+#+end_src
+** Customise variables
+#+begin_src emacs-lisp
+(setq sml-indent-level 2)
+#+end_src
+** Ignore compiled ML files
+#+begin_src emacs-lisp
+(add-to-list 'completion-ignored-extensions "\\.cm")
+(add-to-list 'completion-ignored-extensions "\\.CM")
+#+end_src
+* OCaml
+#+begin_src emacs-lisp
+(cb:install-package 'tuareg)
+#+end_src
+** Configure OPAM
+OPAM is a source-based package manager for OCaml.
+#+begin_src emacs-lisp
+(when (executable-find "opam")
+  (cl-loop with env = (read-from-string (%-string "opam config env --sexp"))
+           for (var val) in (car env)
+           do (setenv var val)))
+
+(when (fboundp 'cb:set-path-from-shell)
+  (cb:set-path-from-shell))
+#+end_src
+** Configure utop
+utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
+#+begin_src emacs-lisp
+(push (concat (getenv "OCAML_TOPLEVEL_PATH") "/../../share/emacs/site-lisp")
+      load-path)
+(autoload 'utop "utop" "Toplevel for OCaml" t)
+(autoload 'utop-setup-ocaml-buffer "utop" "Toplevel for OCaml" t)
+(add-hook 'tuareg-mode-hook 'utop-setup-ocaml-buffer)
+#+end_src
+** Enable auto-complete
+#+begin_src emacs-lisp
+(add-to-list 'ac-modes 'tuareg-mode)
+(add-hook 'tuareg-mode-hook 'auto-complete-mode)
+
+(defun cb-ocaml:configure-merlin ()
+  (when (ignore-errors
+          (equal (f-ext (buffer-file-name)) "ml"))
+    (setq ac-sources '(ac-source-merlin))))
+
+(add-hook 'merlin-mode-hook 'cb-ocaml:configure-merlin)
+#+end_src
+** Configure Merlin
+#+begin_src emacs-lisp
+(after 'tuareg
+  (cb:install-package 'merlin t)
+  (add-hook 'tuareg-mode-hook 'merlin-mode)
+
+  (setq merlin-use-auto-complete-mode t)
+  (setq merlin-default-flags "-w @A-4-33-41-42-43-34-44")
+
+  (add-to-list 'face-remapping-alist '(merlin-type-face . intense-flash))
+
+  (define-key merlin-mode-map (kbd "M-N") 'merlin-error-next))
+#+end_src
+** configure utilities for yasnippet
+#+begin_src emacs-lisp
+(defun cb-ocaml:at-prompt-bol? ()
+  (s-matches? (rx bol "utop[" (+ digit) "]>" (* space) (* word) eol)
+              (buffer-substring (line-beginning-position) (point))))
+#+end_src
+** configure ocp-indent
+#+begin_src emacs-lisp
+(after 'tuareg
+  (require 'ocp-indent (f-join cb:lib-dir "ocp-indent.el"))
+
+  (defun ocp-indent-dwim ()
+    "Perform a context-sensitive indentation command."
+    (interactive)
+    (cond
+     ((region-active-p)
+      (call-interactively 'ocp-indent-region)
+      (message "ocp: Indented region"))
+     ((thing-at-point 'defun)
+      (ocp-indent-region (save-excursion (beginning-of-defun) (point))
+                         (save-excursion (end-of-defun) (point)))
+      (message "ocp: Indented defun"))
+     (t
+      (ocp-indent-region (point-min) (point-max))
+      (message "ocp: Indented buffer"))))
+
+  (define-key tuareg-mode-map (kbd "M-q") 'ocp-indent-dwim))
+#+end_src
+** configure smart parens
+*** Define pairs
+#+begin_src emacs-lisp
+(sp-with-modes '(tuareg-mode utop-mode)
+  (sp-local-pair "[|" "|]")
+  (sp-local-pair "{<" ">}")
+  (sp-local-pair "`" nil :actions nil))
+#+end_src
+*** Pad pairs with spaces
+Pad parens and other delimiters with spaces to emulate paredit's behaviour.
+#+begin_src emacs-lisp
+(defun cb-ocaml:just-inserted-double-quotes? (id action ctx)
+  (and (sp-in-string-p id action ctx)
+       (s-matches? (rx (not (any "\\")) "\"" eol)
+                   (buffer-substring (line-beginning-position) (point)))))
+
+(defun sp-ocaml-just-one-space (id action ctx)
+  "Pad delimiters with spaces."
+  (when (and (equal 'insert action)
+             (or (sp-in-code-p id action ctx)
+                 (cb-ocaml:just-inserted-double-quotes? id action ctx)))
+    ;; Insert a leading space, unless
+    ;; 1. this is the first position of another list
+    ;; 2. this form begins a new line.
+    ;; 3. this form is preceded by a `?`, as in a let binding.
+    ;; 4. this form is preceded by a `:`, as in a keyword argument
+    ;; 4. this form is preceded by a `.`, as in an array index expression
+    (save-excursion
+      (search-backward id)
+      (unless (s-matches?
+               (rx (or (group bol (* space))
+                       (any "." "," ":" "(" "[" "[|" "{" "?")
+                       ;; HACK: utop prompt
+                       (and "utop[" (+ digit) "]" ">" (* space)))
+                   eol)
+               (buffer-substring (line-beginning-position) (point)))
+        (just-one-space)))
+    ;; Insert space after separator, unless
+    ;; 1. this form is at the end of another list.
+    ;; 2. this form is at the end of the line.
+    (save-excursion
+      (search-forward (sp-get-pair id :close))
+      (unless (s-matches? (rx (or (any ")" "]" "|]" "}") eol))
+                          (char-to-string (char-after)))
+        (just-one-space)))))
+
+(sp-with-modes '(tuareg-mode utop-mode)
+  (sp-local-pair "\"" "\"" :post-handlers '(:add sp-ocaml-just-one-space))
+  (sp-local-pair "{" "}" :post-handlers '(:add sp-ocaml-just-one-space))
+  (sp-local-pair "[" "]" :post-handlers '(:add sp-ocaml-just-one-space))
+  (sp-local-pair "(" ")" :post-handlers '(:add sp-ocaml-just-one-space))
+  (sp-local-pair "'" nil :actions nil))
+#+end_src
+** advise insertion commands to ensure a space is inserted around parens
+#+begin_src emacs-lisp
+(defun cb-ocaml:maybe-pad-parens ()
+  (save-excursion
+    (unless (equal (string-to-char " ") (char-before))
+      (forward-char -1)
+      (when (-contains? '(?\) ?\]) (char-before))
+        (just-one-space)))))
+
+(hook-fns '(tuareg-mode-hook utop-mode-hook)
+  (add-hook 'post-self-insert-hook 'cb-ocaml:maybe-pad-parens nil t))
+#+end_src
+** configure smart operators
+#+begin_src emacs-lisp
+(defconst cb-ocaml:smart-operator-list
+  (list "!" "$" "%" "&" "*" "+" "-" "." "/"
+        ":" "<" "=" ">" "?" "@" "^" "|" "~"))
+
+(--each '(tuareg-mode utop-mode)
+  (put it 'smart-operator-alist cb-ocaml:smart-operator-list))
+
+(defun cb-ocaml:smart-dot ()
+  "Smart period for OCaml."
+  (interactive)
+  (yas-with-field-restriction
+    (delete-horizontal-space 'back)
+    (insert ".")
+    (when (thing-at-point-looking-at (rx (any "+" "/" "-" "*") "."))
+      (just-one-space))))
+
+(defun cb-ocaml:smart-colon ()
+  "Insert a context-sensitive smart colon."
+  (interactive)
+  (cond
+   ;; Application of named parameter.
+   ((thing-at-point-looking-at (rx (or "?" "~") (+ word)))
+    (insert ":"))
+   ;; Named parameter in val binding.
+   ((and (s-matches? (rx bol (* space) "val" symbol-end)
+                     (current-line))
+         (save-excursion
+           (search-backward "->" (line-beginning-position) t)))
+    (delete-horizontal-space 'back)
+    (insert ":"))
+   (t
+    (smart-insert-operator ":"))))
+
+(defun cb-ocaml:smart-asterisk ()
+  "Smart asterisk for OCaml."
+  (interactive)
+  (yas-with-field-restriction
+
+    (cond
+     ;; Additional star for docstring comments of the type:
+     ;;
+     ;;    (*| *) -> (** | *)
+     ;;
+     ((s-matches? (rx "(" (+ "*") (* space) eol) (buffer-substring
+                                           (line-beginning-position)
+                                           (point)))
+      (delete-horizontal-space 'back)
+      (insert "*")
+      (just-one-space 2)
+      (forward-char -1))
+     (t
+      (cb-ocaml:smart-insert-operator "*")))))
+
+(defun cb-ocaml:smart-semicolon ()
+  "Smart semicolon for OCaml."
+  (interactive)
+  (yas-with-field-restriction
+    (delete-horizontal-space 'back)
+    (insert ";")
+    (unless (thing-at-point-looking-at ";;")
+      (just-one-space))))
+
+(defun cb-ocaml:smart-insert-operator (op)
+  "Perform a smart insertion of operator OP, unless inside parens."
+  (if (thing-at-point-looking-at (rx "("))
+      (insert op)
+    (smart-insert-operator op)))
+
+(defun cb-ocaml:smart-pipe ()
+  "Insert either the pipe chars in an array literal or a smart pipe."
+  (interactive)
+  (cond ((thing-at-point-looking-at (rx "[]"))
+         (insert "|")
+         (save-excursion
+           (insert "|")))
+        (t
+         (cb-ocaml:smart-insert-operator "|"))))
+
+(defmacro cb-ocaml:define-smart-op-as-annotation (symbol op)
+  "Define a command for inserting a smart operator.
+This is for operators that also have special meanings in binding forms
+where they should not be padded."
+  `(defun ,symbol ()
+     "Auto-generated smart operator command for OCaml."
+     (interactive)
+     (cb-ocaml:smart-insert-operator ,op)
+     (when (thing-at-point-looking-at (rx space))
+       (delete-horizontal-space 'back))))
+
+(cb-ocaml:define-smart-op-as-annotation cb-ocaml:smart-tilde "~")
+(cb-ocaml:define-smart-op-as-annotation cb-ocaml:smart-question "?")
+
+(defun cb-ocaml:set-keys (keymap)
+  "Set smart operators for OCaml."
+  (--each cb-ocaml:smart-operator-list
+    (define-key keymap (kbd it)
+      (eval `(command (cb-ocaml:smart-insert-operator ,it)))))
+
+  (define-key keymap (kbd "!") nil)
+  (define-key keymap (kbd "*") 'cb-ocaml:smart-asterisk)
+  (define-key keymap (kbd ".") 'cb-ocaml:smart-dot)
+  (define-key keymap (kbd "|") 'cb-ocaml:smart-pipe)
+  (define-key keymap (kbd ":") 'cb-ocaml:smart-colon)
+  (define-key keymap (kbd ";") 'cb-ocaml:smart-semicolon)
+  (define-key keymap (kbd "?") 'cb-ocaml:smart-question)
+  (define-key keymap (kbd "~") 'cb-ocaml:smart-tilde))
+
+(after 'tuareg (cb-ocaml:set-keys tuareg-mode-map))
+(after 'utop   (cb-ocaml:set-keys utop-mode-map))
+#+end_src
+** configure context-sensitive M-RET
+#+begin_src emacs-lisp
+(defun cb-ocaml:newline-and-insert-at-col (col str)
+  "Insert STR on a new line at COL."
+  (goto-char (line-end-position))
+  (newline)
+  (indent-to col)
+  (insert str))
+
+(defun cb-ocaml:newline-and-expand-snippet-at-col (predicate col)
+  "Insert a new line, find the template matching PREDICATE and insert at COL."
+  (goto-char (line-end-position))
+  (newline)
+  (indent-to col)
+  (yas-insert-first-snippet predicate))
+
+(defun cb-ocaml:case-start-col ()
+  (save-excursion
+    (goto-char (line-beginning-position))
+    (search-forward "|")
+    (1- (current-column))))
+
+(defun cb-ocaml:meta-ret ()
+  "Open a new line in a context-sensitive way."
+  (interactive)
+  (yas-exit-all-snippets)
+  (cond
+   ;; Insert case after function keyword.
+   ((s-matches? (rx symbol-start "function" (* space) eol) (current-line))
+    (goto-char (line-end-position))
+    (newline-and-indent)
+    (yas-insert-first-snippet (C (~ equal "match-case") yas--template-name)))
+
+   ;; Insert case after match statement.
+   ((s-matches? (rx symbol-start "match" symbol-end) (current-line))
+    (goto-char (line-end-position))
+    (newline-and-indent)
+    (yas-insert-first-snippet (C (~ equal "match-case") yas--template-name)))
+
+   ;; Insert new case below the current type decl.
+   ((s-matches? (rx bol (* space) "type") (current-line))
+    (cb-ocaml:newline-and-insert-at-col
+     (save-excursion
+       (goto-char (line-beginning-position))
+       (forward-to-indentation 0)
+       (+ 2 (current-column)))
+     "| "))
+
+   ;; Insert line starting with pipeline below the current one.
+   ((s-matches? (rx bol (* space) "|>") (current-line))
+    (cb-ocaml:newline-and-insert-at-col (cb-ocaml:case-start-col) "|> "))
+
+   ;; Insert match case below the current one.
+   ((s-matches? (rx bol (* space) "|" (* nonl) "->") (current-line))
+    (cb-ocaml:newline-and-expand-snippet-at-col
+     (C (~ equal "match-case") yas--template-name)
+     (cb-ocaml:case-start-col)))
+
+   ;; Insert any other kind of case below the current one.
+   ((s-matches? (rx bol (* space) "|") (current-line))
+    (cb-ocaml:newline-and-insert-at-col (cb-ocaml:case-start-col) "| "))
+
+   ;; Insert new val binding below the current one.
+   ((s-matches? (rx bol (* space) "val" symbol-end) (current-line))
+    (let ((col (save-excursion
+                 (goto-char (line-beginning-position))
+                 (forward-to-indentation 0)
+                 (current-column))))
+
+      (goto-char (line-end-position))
+      (newline)
+      (indent-to col)
+      (yas-insert-first-snippet (C (~ equal "val") yas--template-name))))
+
+   ;; Insert new let...in binding below the current one.
+   ((s-matches? (rx (group "try") symbol-end (* nonl) "with" (* space) eol)
+                (current-line))
+    (goto-char (line-end-position))
+    (newline-and-indent)
+    (yas-insert-first-snippet (C (~ equal "match-case") yas--template-name)))
+
+   ;; Insert new let...in binding below the current one.
+   ((s-matches? (rx bol (* space) "with" (* space) "\n"
+                    (* nonl) "->")
+                (buffer-substring (save-excursion (forward-line -1)
+                                                  (line-beginning-position))
+                                  (line-end-position)))
+    ;; Insert pipe for case if needed.
+    (back-to-indentation)
+    (unless (thing-at-point-looking-at "|")
+      (insert "| "))
+    ;; Insert case.
+    (goto-char (line-end-position))
+    (newline-and-indent)
+    (forward-char -2)
+    (yas-insert-first-snippet (C (~ equal "match-case") yas--template-name)))
+
+   ;; Insert new let...in binding below the current one.
+   ((s-matches? (rx bol (* space) (group "let") symbol-end (* nonl) "in" (* space) eol)
+                (current-line))
+    (cb-ocaml:newline-and-expand-snippet-at-col
+     (C (~ equal "let...in") yas--template-name)
+     (save-excursion
+       (or (search-backward-regexp
+            (rx symbol-start "let" symbol-end)
+            (line-beginning-position) t)
+           (goto-char (line-beginning-position)))
+       (current-column))))
+
+   ;; Insert new top-level let binding below the current one.
+   ((s-matches? (rx bol (* space) (group "let") symbol-end) (current-line))
+    (cb-ocaml:newline-and-expand-snippet-at-col
+     (C (~ equal "let (top-level)") yas--template-name)
+     (save-excursion
+       (or (search-backward-regexp
+            (rx symbol-start "let" symbol-end)
+            (line-beginning-position) t)
+           (goto-char (line-beginning-position)))
+       (current-column))))
+
+   (t
+    (goto-char (line-end-position))
+    (newline-and-indent)))
+
+  (when (true? evil-mode)
+    (evil-insert-state)))
+
+(after 'tuareg (define-key tuareg-mode-map (kbd "M-RET") 'cb-ocaml:meta-ret))
+(after 'utop   (define-key utop-mode-map   (kbd "M-RET") 'cb-ocaml:meta-ret))
+#+end_src
+** configure eval commands
+#+begin_src emacs-lisp
+(after 'tuareg
+  (define-key tuareg-mode-map (kbd "C-c C-f") 'tuareg-eval-buffer)
+  (define-key tuareg-mode-map (kbd "C-c C-r") 'tuareg-eval-region)
+  (define-key tuareg-mode-map (kbd "C-c C-c") 'tuareg-eval-phrase))
+#+end_src
+** Configure switching between REPL and source buffer
+#+begin_src emacs-lisp
+(after 'tuareg
+
+  (defun cb-ocaml:switch-to-utop ()
+    (interactive)
+    (unless (get-buffer "*utop*")
+      (save-window-excursion (utop)))
+    (pop-to-buffer "*utop*")
+    (goto-char (point-max))
+    (when (true? evil-mode)
+      (evil-insert-state)))
+
+  (define-key tuareg-mode-map (kbd "C-c C-z") 'cb-ocaml:switch-to-utop))
+
+(after 'utop
+
+  (defun cb-ocaml:switch-to-src ()
+    (interactive)
+    (-if-let (buf (--first-buffer (derived-mode-p 'tuareg-mode)))
+        (pop-to-buffer buf)
+      (message "No active OCaml buffers")))
+
+  (define-key utop-mode-map (kbd "C-c C-z") 'cb-ocaml:switch-to-src))
+#+end_src
+* Coq
+Much of the configuration of Coq is copied from the OCaml config.
+#+begin_src emacs-lisp
+(require 'proof-site (f-join cb:lib-dir "proofgeneral" "generic" "proof-site"))
+#+end_src
+** FIX: set proof-mode's parent to prog-mode
+#+begin_src emacs-lisp
+(after 'proof-script
+  (define-derived-mode proof-mode prog-mode
+    proof-general-name
+    "Proof General major mode class for proof scripts.
+\\{proof-mode-map}"
+
+    (setq proof-buffer-type 'script)
+
+    ;; Set default indent function (can be overriden in derived modes)
+    (make-local-variable 'indent-line-function)
+    (setq indent-line-function 'proof-indent-line)
+
+    ;; During write-file it can happen that we re-set the mode for the
+    ;; currently active scripting buffer.  The user might also do this
+    ;; for some reason.  We could maybe let this pass through, but it
+    ;; seems safest to treat it as a kill buffer operation (retract and
+    ;; clear spans).  NB: other situations cause double calls to proof-mode.
+    (if (eq (current-buffer) proof-script-buffer)
+        (proof-script-kill-buffer-fn))
+
+    ;; We set hook functions here rather than in proof-config-done so
+    ;; that they can be adjusted by prover specific code if need be.
+    (proof-script-set-buffer-hooks)
+
+    ;; Set after change functions
+    (proof-script-set-after-change-functions)
+
+    (add-hook 'after-set-visited-file-name-hooks
+              'proof-script-set-visited-file-name nil t)
+
+    (add-hook 'proof-activate-scripting-hook 'proof-cd-sync nil t)))
+#+end_src
+** do not show splash screen
+#+begin_src emacs-lisp
+(setq proof-splash-enable nil)
+#+end_src
+** configure smart operators
+#+begin_src emacs-lisp
+(defvar cb-coq:smart-operator-list
+  '("!" "$" "%" "&" "*" "+" "-" "." "/" ":" "<" "=" ">" "?" "@" "^" "|" "~")
+  "The list of operators in the Coq language.")
+
+(put 'coq-mode 'smart-operator-alist cb-coq:smart-operator-list)
+
+(defun cb-coq:smart-insert-operator (op)
+  "Perform a smart insertion of operator OP, unless inside parens."
+  (if (thing-at-point-looking-at (rx "("))
+      (insert op)
+    (smart-insert-operator op)))
+
+(defun cb-coq:smart-pipe ()
+  "Insert either the pipe chars in an array literal or a smart pipe."
+  (interactive)
+  (cond ((thing-at-point-looking-at (rx "[]"))
+         (insert "|")
+         (save-excursion
+           (insert "|")))
+        (t
+         (cb-coq:smart-insert-operator "|"))))
+
+(defun cb-coq:set-keys ()
+  "Set smart operators for Coq."
+  (--each cb-coq:smart-operator-list
+    (define-key coq-mode-map (kbd it)
+      (eval `(command (cb-ocaml:smart-insert-operator ,it)))))
+
+  (define-key coq-mode-map (kbd "!") nil)
+  (define-key coq-mode-map (kbd ".") nil)
+  (define-key coq-mode-map (kbd "|") 'cb-ocaml:smart-pipe))
+
+(after 'coq (cb-coq:set-keys))
+#+end_src
+** configure context-sensitive M-RET
+#+begin_src emacs-lisp
+(defun cb-coq:case-start-col ()
+  (save-excursion
+    (goto-char (line-beginning-position))
+    (search-forward "|")
+    (1- (current-column))))
+
+(defun cb-coq:newline-and-insert-at-col (col str)
+  "Insert STR on a new line at COL."
+  (goto-char (line-end-position))
+  (newline)
+  (indent-to col)
+  (insert str))
+
+(defun cb-coq:newline-and-expand-snippet-at-col (predicate col)
+  "Insert a new line, find the template matching PREDICATE and insert at COL."
+  (goto-char (line-end-position))
+  (newline)
+  (indent-to col)
+  (yas-insert-first-snippet predicate))
+
+(defun cb-coq:rx-start-column (rx)
+  (save-excursion
+    (goto-char (line-end-position))
+    (search-backward-regexp rx (line-beginning-position))
+    (current-column)))
+
+(defun cb-coq:meta-ret ()
+  "Open a new line in a context-sensitive way."
+  (interactive)
+  (yas-exit-all-snippets)
+  (cond
+
+   ;; Insert case after match statement.
+   ((s-matches? (rx symbol-start "match" symbol-end) (current-line))
+    (goto-char (line-end-position))
+    (newline-and-indent)
+    (goto-char (max (line-beginning-position) (- (point) 2)))
+    (yas-insert-first-snippet (C (~ equal "match-case") yas--template-name)))
+
+   ;; Insert new case below the current type decl.
+   ((s-matches? (rx bol (* space) "Inductive") (current-line))
+    (cb-coq:newline-and-insert-at-col
+     (save-excursion
+       (goto-char (line-beginning-position))
+       (forward-to-indentation 0)
+       (current-column))
+     "| "))
+
+   ;; Insert dependent type below the current one.
+   ((s-matches? (rx bol (* space) "|" (* space) (+ word) (+ space) ":" (+ space))
+                (current-line))
+    (cb-coq:newline-and-insert-at-col
+     (save-excursion
+       (goto-char (line-beginning-position))
+       (forward-to-indentation 0)
+       (current-column))
+     "| "))
+
+   ;; Insert match case below the current one.
+   ((s-matches? (rx bol (* space) "|" (* nonl) "=>") (current-line))
+    (cb-coq:newline-and-expand-snippet-at-col
+     (C (~ equal "match-case") yas--template-name)
+     (cb-coq:case-start-col)))
+
+   ;; Insert any other kind of case below the current one.
+   ((s-matches? (rx bol (* space) "|") (current-line))
+    (cb-coq:newline-and-insert-at-col (cb-coq:case-start-col) "| "))
+
+   ;; Insert check.
+   ((s-matches? (rx bol "Check") (current-line))
+    (cb-coq:newline-and-expand-snippet-at-col
+     (C (~ equal "Check") yas--template-name)
+     (cb-coq:rx-start-column "Check")))
+
+   (t
+    (goto-char (line-end-position))
+    (newline-and-indent)))
+
+  (when (true? evil-mode)
+    (evil-insert-state)))
+
+(after 'coq (define-key coq-mode-map   (kbd "M-RET") 'cb-coq:meta-ret))
+#+end_src
+
+** configure smart parens
+Pad parens and other delimiters with spaces to emulate paredit's behaviour.
+#+begin_src emacs-lisp
+(sp-with-modes '(coq-mode)
+  (sp-local-pair "\"" "\"" :post-handlers '(:add sp-ocaml-just-one-space))
+  (sp-local-pair "{" "}" :post-handlers '(:add sp-ocaml-just-one-space))
+  (sp-local-pair "[" "]" :post-handlers '(:add sp-ocaml-just-one-space))
+  (sp-local-pair "(" ")" :post-handlers '(:add sp-ocaml-just-one-space))
+  (sp-local-pair "'" nil :actions nil))
+#+end_src
+** undefine proof completion so iedit is retained
+#+begin_src emacs-lisp
+(after 'proof-script
+  (define-key proof-mode-map (kbd "C-<return>") nil))
+#+end_src
+** customise faces
+#+begin_src emacs-lisp
+(after 'proof-faces
+  (add-to-list 'face-remapping-alist '(proof-locked-face . hl-line))
+  (add-to-list 'face-remapping-alist '(proof-error-face . error)))
+#+end_src
+* F#
+F# is syntactically close enough to OCaml that we can reuse the utilities
+defined for that language.
+#+begin_src emacs-lisp
+(cb:install-package 'fsharp-mode)
+#+end_src
+** auto-complete
+#+begin_src emacs-lisp
+(after 'auto-complete
+  (add-to-list 'ac-modes 'fsharp-mode))
+#+end_src
+** Do not show ac popup in terminal
+#+begin_src emacs-lisp
+(unless (display-graphic-p)
+  (setq fsharp-ac-use-popup nil))
+#+end_src
+** configure smart parens
+*** Define pairs
+#+begin_src emacs-lisp
+(sp-with-modes '(fsharp-mode)
+  (sp-local-pair "[|" "|]")
+  (sp-local-pair "[<" ">]")
+  (sp-local-pair "`" nil :actions nil))
+#+end_src
+*** Pad pairs with spaces
+Pad parens and other delimiters with spaces to emulate paredit's behaviour.
+#+begin_src emacs-lisp
+(sp-with-modes '(fsharp-mode)
+  (sp-local-pair "\"" "\"" :post-handlers '(:add sp-ocaml-just-one-space))
+  (sp-local-pair "{" "}" :post-handlers '(:add sp-ocaml-just-one-space))
+  (sp-local-pair "[" "]" :post-handlers '(:add sp-ocaml-just-one-space))
+  (sp-local-pair "(" ")" :post-handlers '(:add sp-ocaml-just-one-space))
+  (sp-local-pair "'" nil :actions nil))
+#+end_src
+** advise insertion commands to ensure a space is inserted around parens
+#+begin_src emacs-lisp
+(hook-fns '(fsharp-mode)
+  (add-hook 'post-self-insert-hook 'cb-ocaml:maybe-pad-parens nil t))
+#+end_src
+** configure smart operators
+#+begin_src emacs-lisp
+(put 'fsharp-mode 'smart-operator-alist cb-ocaml:smart-operator-list)
+(after 'fsharp-mode (cb-ocaml:set-keys fsharp-mode-map))
+#+end_src
+** configure context-sensitive M-RET
+#+begin_src emacs-lisp
+(after 'fsharp-mode
+  (define-key fsharp-mode-map (kbd "M-RET") 'cb-ocaml:meta-ret))
+#+end_src
+* Provide this file
+#+begin_src emacs-lisp
+(provide 'config-languages)
+#+end_src
