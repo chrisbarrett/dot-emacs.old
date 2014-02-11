@@ -510,6 +510,11 @@ Ignore errors thrown by internals.
 (after 'bison-mode
   (define-key bison-mode-map (kbd "M-RET") 'cb-bison:m-ret))
 #+end_src
+** Override C smart commands
+#+begin_src emacs-lisp
+(after 'bison-mode
+  (define-key bison-mode-map (kbd "=") (smart-op "=")))
+#+end_src
 * Lisp
 #+begin_src emacs-lisp
 (hook-fn 'cb:lisp-modes-hook
