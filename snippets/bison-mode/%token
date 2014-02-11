@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: %token
+# key: t
+# condition: (cbyas:bol?)
+# --
+%token $0
