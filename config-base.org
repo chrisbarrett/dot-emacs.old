@@ -4776,15 +4776,15 @@ Configure environment folding for =evil-mode=.
 )
 #+end_src
 * Info
-Configure info-mode.
+** Increase line spacing for legibility
 #+begin_src emacs-lisp
-(defun cbinfo:configure ()
-  (setq line-spacing 2) ; px
-  )
+  (defun cbinfo:set-line-spacing ()
+    ;; NB: line spacing is measured in pixels.
+    (setq line-spacing 2))
 
-(add-hook 'Info-mode-hook 'cbinfo:configure)
+  (add-hook 'Info-mode-hook 'cbinfo:set-line-spacing)
 #+end_src
-** Override bindings
+** Set key bindings
 #+begin_src emacs-lisp
 (after 'info
   (define-key Info-mode-map (kbd "SPC") 'Info-scroll-up)
