@@ -21,7 +21,7 @@ org to restart interrupted clocks.
 #+begin_src emacs-lisp
 (setq org-clock-persist-file  (f-join org-directory ".org-clock-save"))
 #+end_src
-** Miscellaneous file paths.
+** Miscellaneous file paths
 #+begin_src emacs-lisp
 (setq org-id-locations-file   (f-join cb:tmp-dir "org-id-locations")
       org-agenda-diary-file   (f-join org-directory "diary.org")
@@ -492,7 +492,7 @@ FILE is the file to use as the notes file while at work."
       org-refile-targets '((nil :maxlevel . 9)
                            (org-agenda-files :maxlevel . 9)))
 #+end_src
-** Exclude todo keywords with a DONE state from refile targets.
+** Exclude todo keywords with a DONE state from refile targets
 #+begin_src emacs-lisp
 (setq org-refile-target-verify-function
       (lambda ()
@@ -604,14 +604,14 @@ emails.
 #+begin_src emacs-lisp
 (require 'org-mime)
 #+end_src
-** Define key bindings for HTML conversion commands.
+** Define key bindings for HTML conversion commands
 #+begin_src emacs-lisp
 (define-key org-mode-map (kbd "C-c M-o") 'org-mime-org-buffer-htmlize)
 
 (after 'message
   (define-key message-mode-map  (kbd "C-c M-o") 'org-mime-htmlize))
 #+end_src
-** Offset block quotes and source code.
+** Offset block quotes and source code
 #+begin_src emacs-lisp
 (hook-fn 'org-mime-html-hook
   (org-mime-change-element-style
@@ -673,7 +673,7 @@ emails.
 (setq org-export-exclude-tags '("noexport" "crypt"))
 #+end_src
 ** HTML
-*** Use HTML5 tags.
+*** Use HTML5 tags
 #+begin_src emacs-lisp
 (setq org-html-html5-fancy t)
 #+end_src
@@ -796,7 +796,7 @@ because the default keybinding conflicts with my window manager on OS X.
 #+begin_src emacs-lisp
 (define-key org-mode-map (kbd "C-c RET") 'cb-org:ctrl-c-ret)
 #+end_src
-* Define a command to tidy org buffers.
+* Define a command to tidy org buffers
 #+begin_src emacs-lisp
 (defun tidy-org-buffer ()
   "Perform cosmetic fixes to the current org-mode buffer."
@@ -865,11 +865,11 @@ See `cb-org:show-agenda-idle-delay'.")
 
 (setq org-agenda-auto-exclude-function 'cb-org:exclude-tasks-on-hold)
 #+end_src
-** Searches include archives.
+** Searches include archives
 #+begin_src emacs-lisp
 (setq org-agenda-text-search-extra-files '(agenda-archives))
 #+end_src
-** Searches are boolean, like a Google search.
+** Searches are boolean, like a Google search
 #+begin_src emacs-lisp
 (setq org-agenda-search-view-always-boolean t)
 #+end_src
@@ -1086,7 +1086,7 @@ RECURRENCES occasions."
          (< (floor (- today startdate) interval) recurrences))))
 
 #+end_src
-** Define a command to read a class sexpr and insert at point.
+** Define a command to read a class sexpr and insert at point
 #+begin_src emacs-lisp
 (cl-defun cb-org:format-class-sexpr ((s1 m1 h1 d1 m1 y1 . _)
                                      (s2 m2 h2 d2 m2 y2 . _)
@@ -1201,7 +1201,7 @@ The starting day is taken to be the weekday on which the event will repeat."
   (let (org-log-done org-log-states) ; turn off logging
     (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
 #+end_src
-** When setting a todo as DONE, set the next TODO to NEXT.
+** When setting a todo as DONE, set the next TODO to NEXT
 #+begin_src emacs-lisp
 (defun cb-org:set-next-todo-state ()
   "When marking a todo to DONE, set the next TODO as NEXT.
@@ -1300,7 +1300,7 @@ Provides a Reveal.js exporter for making presentations.
 #+begin_src emacs-lisp
 (setq org-reveal-root (concat "file://" (f-join cb:lib-dir "reveal.js")))
 #+end_src
-** Define auxiliary functions for snippets.
+** Define auxiliary functions for snippets
 #+begin_src emacs-lisp
 (defun cb-org:reveal-read-transition ()
   (popup-menu*
@@ -1525,7 +1525,7 @@ Show growl notifications.
 #+begin_src emacs-lisp
 (when (equal system-type 'darwin)
 #+end_src
-** Advise appt to show Growl notifications for appointments.
+** Advise appt to show Growl notifications for appointments
 #+begin_src emacs-lisp
 (defun cb-appt:growl (title mins)
   (growl (cond ((zerop mins) "Appointment (now)")

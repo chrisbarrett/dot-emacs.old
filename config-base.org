@@ -449,26 +449,26 @@ This directory tree will be added to the load path if ADD-PATH is non-nil."
          (--mapcat (f-directories it nil t)))
        (~ add-to-list 'load-path))
 #+end_src
-** Use the version of emacs in ./src for C sources.
+** Use the version of emacs in ./src for C sources
 #+begin_src emacs-lisp
 (setq source-directory
       (f-join cb:src-dir (format "emacs-%s.%s"
                                  emacs-major-version
                                  emacs-minor-version)))
 #+end_src
-** Add downloaded sources to the info path.
+** Add downloaded sources to the info path
 #+begin_src emacs-lisp
 (setq Info-additional-directory-list
       (-flatten (list cb:info-dir
                       (f-join source-directory "info/")
                       (f-directories cb:info-dir))))
 #+end_src
-** Define org directory and default notes file.
+** Define org directory and default notes file
 #+begin_src emacs-lisp
 (setq org-directory (f-join user-home-directory "org")
       org-default-notes-file (f-join org-directory "notes.org"))
 #+end_src
-** Define path to ledger file.
+** Define path to ledger file
 #+begin_src emacs-lisp
 (defvar ledger-file (f-join org-directory "accounts.ledger"))
 #+end_src
@@ -1011,7 +1011,7 @@ to bash to prevent shell commands from borking.
   (setq shell-file-name "/bin/bash" explicit-shell-file-name shell-file-name)
   (setenv "SHELL"  shell-file-name))
 #+end_src
-** Use =osx-bbdb= to keep BBDB up-to-date with the OS X Address Book.
+** Use =osx-bbdb= to keep BBDB up-to-date with the OS X Address Book
 #+begin_src emacs-lisp
 (unless noninteractive
   (after 'bbdb
@@ -1026,7 +1026,7 @@ to bash to prevent shell commands from borking.
      "-o" terminfo
      "/Applications/Emacs.app/Contents/Resources/etc/e/eterm-color.ti")))
 #+end_src
-** Use GNU coreutils version of ls if available.
+** Use GNU coreutils version of ls if available
 #+begin_src emacs-lisp
 (setq insert-directory-program (or (executable-find "gls") "ls"))
 #+end_src
@@ -1073,7 +1073,7 @@ to bash to prevent shell commands from borking.
        'ps-print-region-with-faces
      'ps-print-buffer-with-faces)))
 #+end_src
-*** Set a key binding for the above command.
+*** Set a key binding for the above command
 #+begin_src emacs-lisp
 (bind-key* "s-p" 'ps-print-with-faces-dwim)
 #+end_src
@@ -1228,7 +1228,7 @@ This is a wacky American convention that can't die fast enough.
   (aset buffer-display-table ?\^L []))
 #+end_src
 * Tabs
-** Always use spaces instead of tabs.
+** Always use spaces instead of tabs
 #+begin_src emacs-lisp
 (setq-default indent-tabs-mode nil)
 #+end_src
@@ -1237,7 +1237,7 @@ This is a wacky American convention that can't die fast enough.
 (setq-default tab-width 4)
 #+end_src
 * Fill
-** Use auto-fill-mode for org-mode, which is the default text editing mode.
+** Use auto-fill-mode for org-mode, which is the default text editing mode
 #+begin_src emacs-lisp
 (add-hook 'org-mode-hook 'auto-fill-mode)
 #+end_src
@@ -1334,7 +1334,7 @@ show recent files.
 (recentf-mode +1)
 #+end_src
 * Save command history between sessions
-** Configure variables.
+** Configure variables
 #+begin_src emacs-lisp
 (setq savehist-additional-variables '(search ring regexp-search-ring)
       savehist-autosave-interval    60
@@ -2535,7 +2535,7 @@ reloaded on startup.
 #+begin_src emacs-lisp
 (setq comint-prompt-read-only t)
 #+end_src
-** Configure common key bindings for comint and prompt modes.
+** Configure common key bindings for comint and prompt modes
 #+begin_src emacs-lisp
 (defun cb:clear-scrollback ()
   "Erase all but the last line of the current buffer."
@@ -2571,7 +2571,7 @@ reloaded on startup.
         try-complete-lisp-symbol-partially
         try-complete-lisp-symbol))
 #+end_src
-** Bind globally.
+** Bind globally
 #+begin_src emacs-lisp
 (bind-key* "M-/" 'hippie-expand)
 #+end_src
@@ -2741,7 +2741,7 @@ Enable ANSI colour codes in terminals and compilation buffers.
   "C-x k"   'ido-kill-buffer
   "C-x b"   'ido-switch-buffer)
 #+end_src
-** Typing '~' goes immediately to home folder.
+** Typing '~' goes immediately to home folder
 #+begin_src emacs-lisp
 (hook-fn 'ido-setup-hook
   (define-key ido-common-completion-map (kbd "~") (command (insert "~/"))))
@@ -2874,7 +2874,7 @@ Activate evil-mode unless it has been disabled at the start of the config.
 #+begin_src emacs-lisp
 (cb:install-package 'evil t)
 #+end_src
-*** Use ESC as quit command in most situations.
+*** Use ESC as quit command in most situations
 #+begin_src emacs-lisp
 (--each '(evil-normal-state-map
           evil-visual-state-map
@@ -3143,7 +3143,7 @@ Adds commands to manipulate braces and XML tags.
 #+begin_src emacs-lisp
 (cb:install-package 'surround t)
 #+end_src
-*** Remove padding around pairs.
+*** Remove padding around pairs
 #+begin_src emacs-lisp
 (setq-default surround-pairs-alist
               '((?\( . ("(" . ")"))
@@ -3404,7 +3404,7 @@ Otherwise delete backwards."
 
 (bind-key "<backspace>" 'cbyas:backspace yas-keymap)
 #+end_src
-** Typing space clears and skips unmodified fields.
+** Typing space clears and skips unmodified fields
 #+begin_src emacs-lisp
 (defun cbyas:space ()
   "Clear and skip this field if it is unmodified. Otherwise insert a space."
@@ -3447,7 +3447,7 @@ Customise yasnippet behaviour to work better with evil-mode.
 (cb:install-package 'flycheck)
 (global-flycheck-mode)
 #+end_src
-** Ignore thrown errors when checking a buffer.
+** Ignore thrown errors when checking a buffer
 #+begin_src emacs-lisp
 (defadvice flycheck-buffer (around ignore-errors activate)
   (ignore-errors ad-do-it))
@@ -3574,7 +3574,7 @@ ctags-related commands. Adapted from [[http://mattbriggs.net/blog/2012/03/18/awe
         (message "Tags written to \"%s\"" tags)
       (error "Failed to create tags"))))
 #+end_src
-** Define a command for visiting tags files.
+** Define a command for visiting tags files
 #+begin_src emacs-lisp
 (defun visit-ctags ()
   "Visit the tags file at the root of the current project."
@@ -3649,7 +3649,7 @@ structured way.
 (diminish 'smartparens-mode)
 #+end_src
 ** Wrapping
-*** Make Paredit-style wrapping commands.
+*** Make Paredit-style wrapping commands
 #+begin_src emacs-lisp
 (sp-pair "(" ")" :bind "M-(")
 (sp-pair "{" "}" :bind "M-{")
@@ -3658,7 +3658,7 @@ structured way.
 (sp-pair "`" "`" :bind "M-`")
 (sp-pair "'" "'" :actions '(:rem insert))
 #+end_src
-*** Use apostrophe pairs only for certain modes.
+*** Use apostrophe pairs only for certain modes
 #+begin_src emacs-lisp
 (sp-with-modes (-flatten (list cb:ruby-modes
                                cb:python-modes
@@ -3702,7 +3702,7 @@ structured way.
 
 (define-key sp-keymap (kbd "C-k") 'cb-sp:kill-blank-lines)
 #+end_src
-** Only enable smartparens in the minibuffer for certain commands.
+** Only enable smartparens in the minibuffer for certain commands
 #+begin_src emacs-lisp
 (defvar sp-minibuffer-enabled-commands
   '(eval-expression calc-algebraic-entry quick-calc)
@@ -3733,7 +3733,7 @@ structured way.
 Mimic the paredit behaviour of never inserting more closing parens than needed,
 and reformatting parens as closing parens are added.
 
-*** Close paren keys move up sexp.
+*** Close paren keys move up sexp
 #+begin_src emacs-lisp
 (setq sp-navigate-close-if-unbalanced t)
 #+end_src
@@ -3877,7 +3877,7 @@ Adds refactoring commands for Lisps.
 (cb:install-package 'emr)
 (add-hook 'prog-mode-hook 'emr-initialize)
 #+end_src
-** Set a key to show EMR menus.
+** Set a key to show EMR menus
 #+begin_src emacs-lisp
 (bind-key "C-M-<return>" 'emr-show-refactor-menu)
 #+end_src
@@ -4485,7 +4485,7 @@ Configure ediff variables.
 (setq diff-switches "-u"
       ediff-window-setup-function 'ediff-setup-windows-plain)
 #+end_src
-** Use /q/ to close diffs.
+** Use /q/ to close diffs
 #+begin_src emacs-lisp
 (defun cb-diff:close ()
   (interactive)
@@ -4501,7 +4501,7 @@ Configure ediff variables.
 (after 'evil
   (add-hook 'ediff-startup-hook 'turn-off-evil-mode))
 #+end_src
-*** Use /q/ to close diffs.
+*** Use /q/ to close diffs
 #+begin_src emacs-lisp
 (after 'evil
   (evil-define-key 'normal diff-mode-map (kbd "q") 'cb-diff:close))
@@ -4511,7 +4511,7 @@ Allows you to declare buffers as popups and customise their properties.
 #+begin_src emacs-lisp
 (cb:install-package 'popwin t)
 #+end_src
-** Customise buffer handling.
+** Customise buffer handling
 #+begin_src emacs-lisp
 (setq display-buffer-function 'popwin:display-buffer
       popwin:special-display-config
@@ -4558,7 +4558,7 @@ Allows you to declare buffers as popups and customise their properties.
 #+begin_src emacs-lisp
 (setq dired-listing-switches "-al --group-directories-first")
 #+end_src
-** Define compressed file types.
+** Define compressed file types
 #+begin_src emacs-lisp
 (setq dired-compress-file-suffixes
       '(("\\.zip\\'" ".zip" "unzip")
@@ -4593,7 +4593,7 @@ Use =dired-omit-mode= to hide boring files from dired views.
 (require 'dired-x)
 (add-hook 'dired-mode-hook 'dired-omit-mode)
 #+end_src
-*** Configure files to hide.
+*** Configure files to hide
 #+begin_src emacs-lisp
 (setq dired-omit-files
       (regexp-opt (list "^\\.?#" "^\\.$" "^\\.\\.$"
@@ -4713,7 +4713,7 @@ Provides live output display with incremental compilation.
 #+begin_src emacs-lisp
 (require 'whizzytex)
 #+end_src
-*** Configure whizzytex environment.
+*** Configure whizzytex environment
 #+begin_src emacs-lisp
 (defvar whizzytex-sty-installation "/usr/local/share/whizzytex/latex/whizzytex.sty"
   "Path to the whizzytex macro package.")
@@ -4723,7 +4723,7 @@ Provides live output display with incremental compilation.
 
 (defvar whizzy-command-name (f-join whizzytex-src "whizzytex"))
 #+end_src
-*** Enable =whizzytex= in tex buffers.
+*** Enable =whizzytex= in tex buffers
 #+begin_src emacs-lisp
 (defun cbwh:install-tex-macros ()
   "Prompt the user to install the tex macros if they do not exist."
@@ -5103,7 +5103,7 @@ Basic configuration. Man, I wish this package was less crappy.
 (autoload 'sclang-start "sclang")
 (add-to-list 'auto-mode-alist '("\\.sc$" . sclang-mode))
 #+end_src
-*** Define a convenience command for launching supercollider.
+*** Define a convenience command for launching supercollider
 #+begin_src emacs-lisp
 (defun supercollider ()
   "Start SuperCollider and open the SC Workspace."
@@ -5112,7 +5112,7 @@ Basic configuration. Man, I wish this package was less crappy.
    (get-buffer-create "*sclang workspace*"))
   (sclang-mode))
 #+end_src
-*** Customise variables.
+*** Customise variables
 #+begin_src emacs-lisp
 (setq sclang-auto-scroll-post-buffer   t
       sclang-eval-line-forward         nil
@@ -5153,7 +5153,7 @@ Extensions that makes sclang-mode a bit more conventional.
   (add-to-list 'ac-modes 'makefile-mode)
   (add-hook 'makefile-mode-hook 'auto-complete-mode))
 #+end_src
-** Ensure tabs are used in makefiles.
+** Ensure tabs are used in makefiles
 #+begin_src emacs-lisp
 (defun convert-leading-spaces-to-tabs ()
   "Convert sequences of spaces at the beginning of a line to tabs."
@@ -5319,7 +5319,7 @@ Provides code folding. Used by evil-mode.
 * abbrev
 Declare abbreviations that will be automatically expanded when typed. I don't
 actually use this, but python mode seems to load it.
-** Create abbrev file in tmp.
+** Create abbrev file in tmp
 #+begin_src emacs-lisp
 (setq abbrev-file-name (f-join cb:tmp-dir "abbrev_defs"))
 #+end_src
@@ -5544,7 +5544,7 @@ Declare a modal command to show w3m.
     "n"   'evil-search-next
     "N"   'evil-search-previous))
 #+end_src
-*** Define a command to open the URL at point with w3m.
+*** Define a command to open the URL at point with w3m
 #+begin_src emacs-lisp
 (autoload 'thing-at-point-url-at-point "thingatpt")
 
@@ -5577,7 +5577,7 @@ Send messages in the background instead of blocking Emacs.
 #+begin_src emacs-lisp
 (defvar async-smtpmail-sent-hook nil)
 #+end_src
-*** Use the =async= library to send messages in a background process.
+*** Use the =async= library to send messages in a background process
 #+begin_src emacs-lisp
 (defun async-smtpmail-send-it (&rest _)
   "Send mail asynchronously using another Emacs process."
@@ -5719,7 +5719,7 @@ Circe is an Emacs IRC client.
       (--each bufs (buffer-local-set-key (kbd "C-c C-k") (command (restore)))))))
 #+end_src
 ** Text formatting
-*** Disable text filling.
+*** Disable text filling
 #+begin_src emacs-lisp
 (setq lui-fill-type nil)
 #+end_src
@@ -5967,7 +5967,7 @@ Define a command to move to transactions of a certain date.
       (message "Formatted buffer"))
     (goto-char pt)))
 #+end_src
-*** Automatically reformat the buffer on save.
+*** Automatically reformat the buffer on save
 #+begin_src emacs-lisp
 (hook-fn 'ledger-mode-hook
   (add-hook 'before-save-hook 'ledger-format-buffer nil t))
