@@ -7053,7 +7053,7 @@ Provides a Reveal.js exporter for making presentations.
    (s-matches? ":drill:" (buffer-string))))
 
 (add-to-list 'org-action-picker-options
-             '("r" "Org Drill" org-drill-again :when cb-org:drill-buffer?))
+             '("r" "Org Drill" (lambda () (org-drill 'agenda))))
 #+end_src
 ** Display inline images in org buffers
 #+begin_src emacs-lisp
