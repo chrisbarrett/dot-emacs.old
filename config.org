@@ -4804,7 +4804,7 @@ Configure info-mode.
 ** Add global compilation bindings
 #+begin_src emacs-lisp
 (bind-key "C-c b" 'compile)
-(bind-key "C-c C-b" 'recomplie)
+(bind-key "C-c C-b" 'recompile)
 #+end_src
 ** Find makefiles in projects
 #+begin_src emacs-lisp
