@@ -6,11 +6,6 @@
 This is the main customisation file for this Emacs config. =org-babel= is used
 to generate the elisp file that will actually be loaded by Emacs.
 
-* Define var to enable/disable vim keybindings
-#+begin_src emacs-lisp
-(defvar cb:use-vim-keybindings? t
-  "Set to nil to disable Evil-mode and associated key bindings.")
-#+end_src
 * Remove all GUI elements except the mode line
 #+begin_src emacs-lisp
 (when (fboundp 'scroll-bar-mode)   (scroll-bar-mode -1))
