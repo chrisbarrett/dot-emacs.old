@@ -208,17 +208,10 @@ functions shallow.
       org-checkbox-hierarchical-statistics t)
 #+end_src
 * Tags
+Make GTD context tags available in all buffers.
 #+begin_src emacs-lisp
 (setq org-tag-persistent-alist
-      '(("finance" . ?f)
-        ("hold" . ?H)
-        ;; Financial tags
-        (:startgroup . nil)
-        ("debt" . ?d)
-        ("reimbursement" . ?r)
-        (:endgroup . nil)
-        ;; Context tags
-        (:startgroup . nil)
+      '((:startgroup . nil)
         ("@computer" . ?c)
         ("@errand" . ?e)
         ("@home" . ?h)
