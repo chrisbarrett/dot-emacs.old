@@ -4,8 +4,8 @@
 This is my personal Emacs configuration. It is obviously very personalised and
 you'd be crazy to use it as-is.
 
-The configuration is mostly contained in =config.org=. At startup, Emacs will
-generate a file called =config.el= based on the contents of this file.
+The configuration is mostly contained in the org files at the repository root. At startup, Emacs will
+use =org-babel= to generate and load emacs lisp files from their contents.
 ** Installation
 Requires GNU Make, curl and Git.
 
@@ -73,8 +73,7 @@ editing.
 Common org commands are accessible with a picker widget bound to =<f8>=.
 
 I use a Rube Goldberg machine, implemented in Elisp, to capture links, todos,
-notes and other information by sending myself emails. See the documentation in
-=cb-org-email-capture.el= for details.
+notes and other information by sending myself emails.
 
 I use my own customised fork of [[https://github.com/chrisbarrett/org-pomodoro][org-pomodoro]] for clocking.
 *** Language Support
@@ -83,6 +82,7 @@ I have sane configurations for several languages and environments:
 - Elisp
 - Haskell
 - Idris
+- OCaml
 - Python
 - Ruby/Rails
 - Scala
