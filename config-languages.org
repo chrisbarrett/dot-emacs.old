@@ -476,6 +476,40 @@ Ignore errors thrown by internals.
 (autoload 'bison-mode "bison-mode.el")
 (add-to-list 'auto-mode-alist '("\\.y$" . bison-mode))
 #+end_src
+** Context-sensitive M-RET
+#+begin_src emacs-lisp
+(defun cb-bison:m-ret ()
+  "Perform a context-sensitive newline action."
+  (interactive)
+  (cond
+   ;; First case after production identifier
+   ((s-matches? (rx ":" (* space) eol) (current-line))
+    (goto-char (line-end-position))
+    (newline)
+    (insert "  "))
+   ;; Second case
+   ((save-excursion
+      (forward-line -1)
+      (s-matches? (rx ":" (* space) eol) (current-line)))
+    (goto-char (line-end-position))
+    (newline)
+    (insert "| "))
+   ;; New case
+   ((s-matches? (rx bol (* space) "|") (current-line))
+    (goto-char (line-end-position))
+    (newline)
+    (insert "| "))
+   ;; Otherwise open a new line.
+   (t
+    (goto-char (line-end-position))
+    (newline-and-indent)))
+
+  (when (true? evil-mode)
+    (evil-insert-state)))
+
+(after 'bison-mode
+  (define-key bison-mode-map (kbd "M-RET") 'cb-bison:m-ret))
+#+end_src
 * Lisp
 #+begin_src emacs-lisp
 (hook-fn 'cb:lisp-modes-hook
