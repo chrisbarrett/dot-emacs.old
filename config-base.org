@@ -4790,6 +4790,13 @@ Configure info-mode.
   (define-key Info-mode-map (kbd "SPC") 'Info-scroll-up)
   (define-key Info-mode-map (kbd "S-SPC") 'Info-scroll-down))
 #+end_src
+** Keep info history navigation bindings in evil-mode
+#+begin_src emacs-lisp
+(after '(evil info)
+  (evil-define-key 'motion Info-mode-map
+    (kbd "l") 'Info-history-back
+    (kbd "r") 'Info-history-forward))
+#+end_src
 * Compilation
 ** Configure variables
 #+begin_src emacs-lisp
