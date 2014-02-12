@@ -351,12 +351,15 @@ Add special smart ops for C/C++.
 
 (defun c-insert-smart-gt ()
   "Insert a > symbol with formatting.
-If the insertion creates an right arrow (->), remove surrounding whitespace."
+If the insertion creates an right arrow (->), remove surrounding whitespace.
+If the insertion creates a <>, move the cursor inside."
   (interactive)
   (c-insert-smart-op ">")
   (cb-c:maybe-remove-spaces-after-insertion
-   (rx "-" (* space) ">" (* space))
-   (rx (not (any space "-" ">")))))
+   (rx (or "-" "<") (* space) ">" (* space))
+   (rx (not (any space "<" "-" ">"))))
+  (when (thing-at-point-looking-at "<>")
+    (forward-char -1)))
 
 (defun c-insert-smart-plus ()
   "Insert a + symbol with formatting.
