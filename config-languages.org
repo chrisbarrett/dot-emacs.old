@@ -177,6 +177,12 @@ Define keys to move by headlines in normal state.
 #+begin_src emacs-lisp
 (after 'cc-mode
 #+end_src
+** Set indentation style to Google Style (similar to K&R)
+#+begin_src emacs-lisp
+(cb:install-package 'google-c-style t)
+(add-hook 'c-mode-common-hook 'google-set-c-style)
+(add-hook 'c-mode-common-hook 'google-make-newline-indent)
+#+end_src
 ** Use clang as c compiler
 #+begin_src emacs-lisp
 (when (executable-find "clang")
