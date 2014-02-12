@@ -215,19 +215,17 @@ Define keys to move by headlines in normal state.
 #+end_src
 ** Switch between header and impl
 Define a command to switch between header file and implementation.
-*** Impl
 #+begin_src emacs-lisp
 (defun cb-c:switch-between-header-and-impl ()
   "Switch between a header file and its implementation."
   (interactive)
-  (let ((sans (file-name-sans-extension (buffer-file-name)))
-        (ext  (file-name-extension (buffer-file-name))))
-    (if (equal "h" ext)
-        (find-file (concat sans ".c"))
-      (find-file (concat sans ".h")))))
-#+end_src
-*** Key binding
-#+begin_src emacs-lisp
+  (let* ((ext   (if (f-ext? (buffer-file-name) "h") "c" "h"))
+         (fname (format "%s.%s" (f-no-ext (buffer-file-name)) ext)))
+    (if (or (f-file? counterpart)
+            (y-or-n-p (format "%s does not exist.  Create it?" counterpart)))
+        (find-file counterpart)
+      (message "Aborted"))))
+
 (define-key c-mode-map (kbd "C-c C-a") 'cb-c:switch-between-header-and-impl)
 #+end_src
 ** Utility functions
