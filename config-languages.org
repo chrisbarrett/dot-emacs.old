@@ -228,7 +228,7 @@ Define a command to switch between header file and implementation.
 #+end_src
 *** Key binding
 #+begin_src emacs-lisp
-(define-key c-mode-map (kbd "C-c C-j") 'cb-c:switch-between-header-and-impl)
+(define-key c-mode-map (kbd "C-c C-a") 'cb-c:switch-between-header-and-impl)
 #+end_src
 ** Utility functions
 Define functions used to parse the context around point.
