@@ -513,7 +513,8 @@ Ignore errors thrown by internals.
 ** Override C smart commands
 #+begin_src emacs-lisp
 (after 'bison-mode
-  (define-key bison-mode-map (kbd "=") (smart-op "=")))
+  (define-key bison-mode-map (kbd "=") (smart-op "="))
+  (define-key bison-mode-map (kbd ">") 'c-insert-smart-gt))
 #+end_src
 * Lisp
 #+begin_src emacs-lisp
