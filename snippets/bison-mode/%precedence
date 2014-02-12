@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: %precedence
+# key: pr
+# condition: (cbyas:bol?)
+# --
+%precedence $0
