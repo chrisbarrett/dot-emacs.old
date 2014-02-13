@@ -1189,10 +1189,17 @@ The starting day is taken to be the weekday on which the event will repeat."
   "Face for todos with the NEXT label."
   :group 'org-faces)
 
+(defface org-todo-out
+  `((t (:foreground ,solarized-hl-orange :bold t :inherit org-todo)))
+  "Face for TODO_OUT keyword."
+  :group 'org-faces)
+
 (setq org-todo-keyword-faces
       '(("NEXT" . org-todo-next)
         ("ORGANISE_IN" . org-todo-next)
-        ("ORGANISE_OUT" . org-todo-next)))
+        ("ORGANISE_OUT" . org-todo-next)
+        ("TODO_OUT" . org-todo-out)
+        ("READY" . org-done)))
 #+end_src
 ** Sub-task completion triggers parent completion
 #+begin_src emacs-lisp
