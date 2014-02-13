@@ -486,7 +486,7 @@ Ignore errors thrown by internals.
 #+end_src
 * Bison
 #+begin_src emacs-lisp
-(autoload 'bison-mode "bison-mode.el")
+(autoload 'bison-mode "bison-mode")
 (add-to-list 'auto-mode-alist '("\\.y$" . bison-mode))
 #+end_src
 ** Context-sensitive M-RET
