@@ -43,3 +43,6 @@
 [submodule "lib/capture-mail"]
 	path = lib/capture-mail
 	url = git@github.com:chrisbarrett/capture-mail.git
+[submodule "lib/bison-mode"]
+	path = lib/bison-mode
+	url = git@github.com:chrisbarrett/bison-mode.git
