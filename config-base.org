@@ -1782,7 +1782,10 @@ PARAGRAPH-LENGTH is one of short, medium, long or verylong."
   (interactive)
   (ignore-errors
     (save-excursion
-      (indent-region (point-min) (point-max)))))
+      (goto-char (point-min))
+      (while (not (eobp))
+        (indent-for-tab-command)
+        (forward-line)))))
 #+end_src
 ** Define a dwim command that indents, fills paragraphs, etc
 #+begin_src emacs-lisp
@@ -1803,12 +1806,6 @@ With prefix argument ARG, justify text."
         (lisp-fill-paragraph arg)
       (fill-paragraph arg))
     (message "Filled paragraph."))
-
-   ((thing-at-point 'defun)
-    (indent-region
-     (save-excursion (beginning-of-defun) (point))
-     (save-excursion (end-of-defun) (point)))
-    (message "Indented defun."))
 
    (t
     (indent-buffer)
