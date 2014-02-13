@@ -910,7 +910,7 @@ They should be displayed modally.
               ((agenda "" ((org-agenda-ndays 14)))
                (todo "AWAITING|ORGANISE_IN"
                      ((org-agenda-overriding-header "Incoming")))
-               (todo "READY|ORGANISE_OUT"
+               (todo "TODO_OUT|READY|ORGANISE_OUT"
                      ((org-agenda-overriding-header "Outgoing")))
                (todo "CALLBACK|MESSAGE"
                           ((org-agenda-overriding-header "Phone calls")))
@@ -918,6 +918,8 @@ They should be displayed modally.
                      ((org-agenda-overriding-header "Next Actions")))
                (todo "WAITING"
                      ((org-agenda-overriding-header "Waiting")))
+               (tags-todo "purchase"
+                          ((org-agenda-overriding-header "Shopping")))
                (todo "LEASED"
                      ((org-agenda-overriding-header "Leased Equipment")))
                (tags-todo "PeterBarrett"
