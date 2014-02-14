@@ -352,11 +352,6 @@ Switch projects and subprojects from NEXT back to TODO."
 
 (defvar org-home-capture-templates
   `(
-    ("s" "Someday" entry
-     (file+olp org-default-notes-file "Someday")
-     "* MAYBE %?"
-     :clock-keep t)
-
     ("m" "Listening" entry
      (file+olp org-default-notes-file "Media" "Listening")
      "* MAYBE Listen to %i%?"
@@ -401,12 +396,17 @@ Switch projects and subprojects from NEXT back to TODO."
           :immediate-finish t
           :clock-keep t)
 
-         ("n" "Note" entry
+         ("s" "Someday" entry
+          (file+olp org-default-notes-file "Someday")
+          "* MAYBE %?"
+          :clock-keep t)
+
+         ("z" "Note" entry
           (file+olp org-default-notes-file "Notes")
           "* %i%?"
           :clock-keep t)
          )
-       (~ add-to-list 'org-capture-templates))
+  (~ add-to-list 'org-capture-templates))
 
 (-each org-home-capture-templates (~ add-to-list 'org-capture-templates))
 #+end_src
