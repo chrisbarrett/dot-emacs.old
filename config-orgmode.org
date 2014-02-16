@@ -913,9 +913,9 @@ They should be displayed modally.
                (todo "TODO_OUT|READY|ORGANISE_OUT"
                      ((org-agenda-overriding-header "Outgoing")))
                (todo "CALLBACK|MESSAGE"
-                          ((org-agenda-overriding-header "Phone calls")))
+                     ((org-agenda-overriding-header "Phone calls")))
                (tags-todo "-PeterBarrett-PeterRoberts/NEXT"
-                     ((org-agenda-overriding-header "Next Actions")))
+                          ((org-agenda-overriding-header "Next Actions")))
                (todo "WAITING"
                      ((org-agenda-overriding-header "Waiting")))
                (tags-todo "purchase"
@@ -925,7 +925,10 @@ They should be displayed modally.
                (tags-todo "PeterBarrett"
                           ((org-agenda-overriding-header "Peter Barrett")))
                (tags-todo "PeterRoberts"
-                          ((org-agenda-overriding-header "Peter Roberts"))))
+                          ((org-agenda-overriding-header "Peter Roberts")))
+               (tags-todo "billing"
+                          ((org-agenda-overriding-header "Billing")))
+               )
 
               ((org-agenda-tag-filter-preset '("+@work"))
                (org-agenda-files (list org-work-file))
