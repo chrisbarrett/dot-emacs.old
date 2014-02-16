@@ -5875,7 +5875,7 @@ Use `ledger-buffer' if the current buffer is not in ledger-mode."
           (payee (cbledger:read-payee))
           (to-account (cbledger:read-account "To: " "Expenses:"))
           (amount (cbledger:read-amount))
-          (from-account (cbledger:read-account "From: " "Assets:"))
+          (from-account (cbledger:read-account "From: " "Assets:Checking"))
           (cleared? (cbledger:read-clear-state)))
       (concat date cleared? payee "\n"
               "  " to-account "  " amount "\n"
@@ -6164,8 +6164,8 @@ Define key bindings for stock ledger commands.
 (--each
     '(("net worth" "ledger -f %(ledger-file) bal ^assets ^liabilities")
       ("cash flow" "ledger -f %(ledger-file) bal ^income ^expenses")
-      ("week budget"
-       "ledger -f %(ledger-file) -p 'this month' --add-budget --weekly reg checking"))
+      ("checking" "ledger -f accounts.ledger --start-of-week friday -p 'this week' -r reg 'checking' --invert")
+      )
   (add-to-list 'ledger-reports it t))
 #+end_src
 ** Use ido for built-in reports
