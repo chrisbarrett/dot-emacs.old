@@ -480,6 +480,99 @@ Ignore errors thrown by internals.
 (cb:install-package 'c-eldoc)
 (add-hook 'c-mode-hook 'c-turn-on-eldoc-mode)
 #+end_src
+** disable flyspell
+flyspell-prog-mode isn't set up correctly in C mode for some reason. Disable it
+for now.
+#+begin_src emacs-lisp
+(add-hook 'c-mode-hook 'flyspell-mode-off)
+#+end_src
+** intelligent formatting commands for C languages.
+#+begin_src emacs-lisp
+
+(defun cb-cc:between-empty-braces-same-line? ()
+  (and (s-matches? (rx "{" (* space) eol)
+                   (buffer-substring (line-beginning-position) (point)))
+       (s-matches? (rx bol (* space) "}")
+                   (buffer-substring (point) (line-end-position)))))
+
+(defun cb-cc:newline-and-indent ()
+  "Insert newlines, performing context-specific formatting.
+
+When point is between braces, insert an empty line between them so that
+
+{|}
+
+becomes
+
+{
+  |
+}"
+  (interactive)
+  (when (cb-cc:between-empty-braces-same-line?)
+    (delete-horizontal-space)
+
+    (save-excursion
+      (search-backward "{")
+      (unless (thing-at-point-looking-at (rx bol (* space) "{"))
+        (newline-and-indent)))
+
+    (save-excursion
+      (newline-and-indent)))
+  (call-interactively 'newline-and-indent))
+
+
+(defun cb-cc:delete-brace-contents ()
+  (cl-destructuring-bind (&optional &key beg end op &allow-other-keys)
+      (sp-get-enclosing-sexp)
+    (when (equal op "{")
+      (delete-region (1+ beg) (1- end))
+      (goto-char (1+ beg)))))
+
+(defun cb-cc:between-empty-braces-any-lines? ()
+  (cl-destructuring-bind (&optional &key beg end op &allow-other-keys)
+      (sp-get-enclosing-sexp)
+    (when (equal op "{")
+      (s-matches? (rx bos (* (any space "\n")) eos)
+                  (buffer-substring (1+ beg) (1- end))))))
+
+(defun cb-cc:backward-delete-char ()
+  "Delete backwards, performing context-specific formatting.
+
+When point is between empty braces over any number of lines, collapse them:
+
+{
+  |
+}
+
+becomes
+
+{ | }
+
+then
+
+{|}"
+  (interactive)
+  (cond
+   ((and (equal (char-before) ?{)
+         (equal (char-after) ?}))
+    (sp-backward-delete-char))
+
+   ((and (thing-at-point-looking-at (rx "{" (+ space) "}"))
+         (cb-cc:between-empty-braces-same-line?))
+    (delete-horizontal-space))
+
+   ((cb-cc:between-empty-braces-any-lines?)
+    (cb-cc:delete-brace-contents)
+    (insert "  ")
+    (forward-char -1))
+
+   (t
+    (sp-backward-delete-char))))
+
+(--each (list c-mode-map c++-mode-map java-mode-map objc-mode-map)
+  (define-key it (kbd "RET") 'cb-cc:newline-and-indent)
+  (define-key it (kbd "<backspace>") 'cb-cc:backward-delete-char))
+#+end_src
 ** END
 #+begin_src emacs-lisp
 )
