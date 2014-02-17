@@ -518,7 +518,9 @@ Ignore errors thrown by internals.
     (newline-and-indent)))
 
   (when (true? evil-mode)
-    (evil-insert-state)))
+    (evil-insert-state))
+
+  (bison-format-buffer))
 
 (after 'bison-mode
   (define-key bison-mode-map (kbd "M-RET") 'cb-bison:m-ret))
