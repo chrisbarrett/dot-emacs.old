@@ -401,6 +401,11 @@ Switch projects and subprojects from NEXT back to TODO."
           "* MAYBE %?"
           :clock-keep t)
 
+         ("S" "Shopping" checkitem
+          (file+olp org-default-notes-file "Tasks" "Shopping")
+          "- [ ] %?"
+          :clock-keep t)
+
          ("z" "Note" entry
           (file+olp org-default-notes-file "Notes")
           "* %i%?"
@@ -918,16 +923,10 @@ They should be displayed modally.
                           ((org-agenda-overriding-header "Next Actions")))
                (todo "WAITING"
                      ((org-agenda-overriding-header "Waiting")))
-               (tags-todo "purchase"
-                          ((org-agenda-overriding-header "Shopping")))
-               (todo "LEASED"
-                     ((org-agenda-overriding-header "Leased Equipment")))
                (tags-todo "PeterBarrett"
                           ((org-agenda-overriding-header "Peter Barrett")))
                (tags-todo "PeterRoberts"
                           ((org-agenda-overriding-header "Peter Roberts")))
-               (tags-todo "billing"
-                          ((org-agenda-overriding-header "Billing")))
                )
 
               ((org-agenda-tag-filter-preset '("+@work"))
