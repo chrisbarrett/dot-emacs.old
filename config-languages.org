@@ -210,7 +210,9 @@ Define keys to move by headlines in normal state.
                        (format (if (-contains? emr-c:standard-headers c)
                                    "<%s>"
                                  "\"%s\"")
-                               c))))
+                               c))
+                      (when (derived-mode-p 'bison-mode)
+                        (bison-format-buffer))))
             (volatile))
           :prompt "Header: "
           :buffer "*Helm C Headers*"))
