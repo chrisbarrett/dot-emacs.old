@@ -226,7 +226,7 @@ Define a command to switch between header file and implementation.
   "Switch between a header file and its implementation."
   (interactive)
   (let* ((ext   (if (f-ext? (buffer-file-name) "h") "c" "h"))
-         (fname (format "%s.%s" (f-no-ext (buffer-file-name)) ext)))
+         (counterpart (format "%s.%s" (f-no-ext (buffer-file-name)) ext)))
     (if (or (f-file? counterpart)
             (y-or-n-p (format "%s does not exist.  Create it?" counterpart)))
         (find-file counterpart)
