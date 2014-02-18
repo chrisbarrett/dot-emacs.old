@@ -390,6 +390,7 @@ Remove horizontal whitespace if the insertion results in a ++."
 (define-key c-mode-map (kbd "=") 'c-insert-smart-equals)
 (define-key c-mode-map (kbd "|") (smart-op "|"))
 (define-key c-mode-map (kbd "?") (smart-op "?"))
+(define-key c-mode-map (kbd "/") (smart-op "/"))
 (define-key c-mode-map (kbd ":") (smart-op ":"))
 (define-key c-mode-map (kbd "+") 'c-insert-smart-plus)
 (define-key c-mode-map (kbd ">") 'c-insert-smart-gt)
