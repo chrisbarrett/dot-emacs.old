@@ -288,7 +288,7 @@ Define functions used to parse the context around point.
 #+end_src
 ** File template utilities
 #+begin_src emacs-lisp
-(cl-defun cb-c:header-guard-var ((&optional header-file (buffer-file-name)))
+(cl-defun cb-c:header-guard-var (&optional (header-file (buffer-file-name)))
   "Return the variable to use in a header guard for HEADER-FILE."
   (format "_%s_H_" (s-upcase (f-filename (f-no-ext header-file)))))
 #+end_src
