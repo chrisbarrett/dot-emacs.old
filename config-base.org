@@ -3659,7 +3659,6 @@ structured way.
 (sp-pair "[" "]" :bind "M-[")
 (sp-pair "\"" "\"" :bind "M-\"")
 (sp-pair "`" "`" :bind "M-`")
-(sp-pair "'" "'" :actions '(:rem insert))
 #+end_src
 *** Use apostrophe pairs only for certain modes
 #+begin_src emacs-lisp
@@ -3678,6 +3677,18 @@ structured way.
 *** Don't wrap subsequent words when opening a pair
 #+begin_src emacs-lisp
 (setq sp-autoinsert-if-followed-by-word t)
+#+end_src
+** Disable apostrophe pair for some modes
+#+begin_src emacs-lisp
+(sp-with-modes (-flatten
+                (list cb:haskell-modes
+                      cb:lisp-modes
+                      cb:idris-modes
+                      cb:prompt-modes
+                      'org-mode
+                      'tuareg-mode
+                      'text-mode))
+  (sp-local-pair "'" "'" :actions '(:rem insert)))
 #+end_src
 ** Keys
 #+begin_src emacs-lisp
@@ -3716,7 +3727,7 @@ structured way.
   (smartparens-mode (if (-contains? sp-minibuffer-enabled-commands this-command)
                         +1 -1)))
 #+end_src
-** Uilities
+** Utilities
 #+begin_src emacs-lisp
 (defun sp-generic-leading-space (&optional id action ctx)
   "Pad ID with a leading space unless point is either:
