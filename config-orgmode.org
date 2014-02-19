@@ -919,13 +919,13 @@ They should be displayed modally.
                      ((org-agenda-overriding-header "Outgoing")))
                (todo "CALLBACK|MESSAGE"
                      ((org-agenda-overriding-header "Phone calls")))
-               (tags-todo "-PeterBarrett-PeterRoberts/NEXT"
+               (tags-todo "-someday-PeterBarrett-PeterRoberts/NEXT"
                           ((org-agenda-overriding-header "Next Actions")))
-               (todo "WAITING"
+               (tags-todo "-someday/WAITING"
                      ((org-agenda-overriding-header "Waiting")))
-               (tags-todo "PeterBarrett"
+               (tags-todo "-someday+PeterBarrett"
                           ((org-agenda-overriding-header "Peter Barrett")))
-               (tags-todo "PeterRoberts"
+               (tags-todo "-someday+PeterRoberts"
                           ((org-agenda-overriding-header "Peter Roberts")))
                )
 
