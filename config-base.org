@@ -395,6 +395,8 @@ TO-N-LINES is the number of blank lines to insert afterwards."
 * Convenience aliases for interactive functions
 #+begin_src emacs-lisp
 (defalias 'qrr 'query-replace-regexp)
+
+(defalias 'kb 'kill-buffer)
 (defalias 'bb 'bury-buffer)
 
 (defalias 'dfb 'delete-file-and-buffer)
