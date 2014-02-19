@@ -2467,6 +2467,10 @@ themes.
     (set-face-background 'ledger-font-xact-highlight-face "#eee8d5")
     (set-face-background 'ledger-occur-xact-face "#eee8d5"))
 
+  (after 'shm
+    (set-face-background 'shm-current-face  "#e9f2c5")
+    (set-face-background 'shm-quarantine-face  "#fee8e5"))
+
   (after 'helm
     (set-face-background  'helm-selection "white")
     (set-face-foreground  'helm-selection "black"))
@@ -2492,6 +2496,10 @@ themes.
 
   (after 'parenface-plus
     (set-face-foreground  'paren-face "#505070"))
+
+  (after 'shm
+    (set-face-background 'shm-current-face "#01304b")
+    (set-face-background 'shm-quarantine-face "#51202b"))
 
   (after 'org
     (set-face-background 'org-block-end-line "#11303b")
@@ -2663,6 +2671,7 @@ Highlight the current line.
 
 (--each '(eshell-mode-hook
           Man-mode-hook
+          haskell-mode
           Info-mode-hook)
   (add-hook it 'hl-line-disable))
 #+end_src
