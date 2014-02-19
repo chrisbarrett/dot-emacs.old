@@ -2636,20 +2636,29 @@ point to the position of the join."
 #+begin_src emacs-lisp
 (after 'haskell-mode
 #+end_src
-** haskell-doc
-Provides el-doc-style minibuffer typesignatures.
+** install ghc-mod
+#+begin_src emacs-lisp
+(cb:install-package 'ghc t)
+(add-hook 'haskell-mode-hook (lambda () (ghc-init)))
+#+end_src
+** install haskell-doc
+Provides eldoc-style minibuffer type signatures.
 #+begin_src emacs-lisp
 (cb:install-package 'haskell-doc-mode)
 #+end_src
 *** run in hooks
 #+begin_src emacs-lisp
 (add-hook 'cb:haskell-modes-hook 'haskell-doc-mode)
-(add-hook 'cb:haskell-modes-hook 'turn-on-eldoc-mode)
 #+end_src
 *** diminish
 #+begin_src emacs-lisp
 (hook-fn 'haskell-doc-mode-hook
   (diminish 'haskell-doc-mode))
+#+end_src
+** install structured-haskell-mode
+#+begin_src emacs-lisp
+(cb:install-package 'shm t)
+(add-hook 'haskell-mode-hook 'structured-haskell-mode)
 #+end_src
 ** Define command to switch to src from repl
 #+begin_src emacs-lisp
@@ -2661,12 +2670,6 @@ Provides el-doc-style minibuffer typesignatures.
 
 (hook-fn 'inferior-haskell-mode-hook
   (local-set-key (kbd "C-c C-z") 'cb:switch-to-haskell))
-#+end_src
-** indentation
-=hi2= is an improved indentation mode for Haskell.
-#+begin_src emacs-lisp
-(cb:install-package 'hi2)
-(add-hook 'haskell-mode-hook 'turn-on-hi2)
 #+end_src
 ** auto-complete
 #+begin_src emacs-lisp
@@ -2977,26 +2980,6 @@ last.
     (0 (progn (compose-region (match-beginning 1) (match-end 1)
                               ,(string-to-char "λ") 'decompose-region)
               nil)))))
-#+end_src
-** flycheck
-*** Install hdevtools checker
-#+begin_src emacs-lisp
-(cb:install-package 'flycheck-hdevtools t)
-#+end_src
-*** Use hdevtools checker for projects and ghc checker for standalone files
-#+begin_src emacs-lisp
-(defun cbhs:configure-flycheck ()
-  (flycheck-select-checker
-   (if (and
-        (buffer-file-name)
-        (locate-dominating-file
-         (f-dirname (buffer-file-name))
-         (C (~ -any? (~ s-matches? "\\.cabal$")) f-files)))
-
-       'haskell-hdevtools
-     'haskell-ghc)))
-
-(add-hook 'haskell-mode-hook 'cbhs:configure-flycheck)
 #+end_src
 ** Key bindings
 #+begin_src emacs-lisp
