@@ -155,13 +155,6 @@ clang :
 
 # ----------------------------------------------------------------------------
 
-scion_url    = https://github.com/nominolo/scion.git
-scion_dest   = $(tmp)/scion
-scion_server = ~/.cabal/bin/scion-server
-
 .PHONY: haskell
-haskell : $(scion_server)
-
-$(scion_server) :
-	git clone $(scion_url) $(scion_dest)
-	cd $(scion_dest) && cabal install
+haskell :
+	cabal install ghci-ng ghc-mod stylish-haskell structured-haskell-mode
