@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: %left
+# key: l
+# condition: (cbyas:bol?)
+# --
+%left $0
