@@ -2636,29 +2636,20 @@ point to the position of the join."
 #+begin_src emacs-lisp
 (after 'haskell-mode
 #+end_src
-** install ghc-mod
+** install ghc support package
 #+begin_src emacs-lisp
 (cb:install-package 'ghc t)
-(add-hook 'haskell-mode-hook (lambda () (ghc-init)))
-#+end_src
-** install haskell-doc
-Provides eldoc-style minibuffer type signatures.
-#+begin_src emacs-lisp
-(cb:install-package 'haskell-doc-mode)
-#+end_src
-*** run in hooks
-#+begin_src emacs-lisp
-(add-hook 'cb:haskell-modes-hook 'haskell-doc-mode)
-#+end_src
-*** diminish
-#+begin_src emacs-lisp
-(hook-fn 'haskell-doc-mode-hook
-  (diminish 'haskell-doc-mode))
+(add-hook 'haskell-mode-hook 'ghc-init)
 #+end_src
 ** install structured-haskell-mode
 #+begin_src emacs-lisp
 (cb:install-package 'shm t)
 (add-hook 'haskell-mode-hook 'structured-haskell-mode)
+(define-key haskell-mode-map (kbd "RET") 'shm/newline-indent)
+(define-key haskell-mode-map (kbd "C-a") 'shm/goto-parent)
+(define-key haskell-mode-map (kbd "C-e") 'shm/goto-parent-end)
+(define-key haskell-mode-map (kbd "M-t") 'shm/transpose)
+(define-key haskell-mode-map (kbd "C-k") 'shm/kill)
 #+end_src
 ** Define command to switch to src from repl
 #+begin_src emacs-lisp
@@ -2670,15 +2661,6 @@ Provides eldoc-style minibuffer type signatures.
 
 (hook-fn 'inferior-haskell-mode-hook
   (local-set-key (kbd "C-c C-z") 'cb:switch-to-haskell))
-#+end_src
-** auto-complete
-#+begin_src emacs-lisp
-(cb:install-package 'haskell-ac t)
-
-(hook-fn 'cb:haskell-modes-hook
-  (add-to-list 'ac-modes major-mode)
-  (add-to-list 'ac-sources 'ac-source-words-in-same-mode-buffers)
-  (add-to-list 'ac-sources 'ac-source-haskell))
 #+end_src
 ** evil
 #+begin_src emacs-lisp
@@ -2816,10 +2798,6 @@ last.
   "$" (command (smart-insert-operator "$")))
 
 (add-hook 'cb:haskell-modes-hook 'smart-insert-operator-hook)
-#+end_src
-** auto-complete
-#+begin_src emacs-lisp
-(-each cb:haskell-modes (~ add-to-list 'ac-modes))
 #+end_src
 ** Do not use apostrophe smartparens pair
 #+begin_src emacs-lisp
