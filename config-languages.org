@@ -2965,6 +2965,14 @@ last.
   (local-set-key (kbd "C-c h") 'hoogle)
   (local-set-key (kbd "C-c C-c") 'haskell-process-cabal-build))
 #+end_src
+** Utilities for file template
+#+begin_src emacs-lisp
+(defun cb-hs:file-name->module ()
+  (let* ((s (f-no-ext (f-filename (buffer-file-name))))
+         (s1 (s-capitalize (substring s 0 1)))
+         (s2 (ignore-errors (substring s 1))))
+    (concat s1 s2)))
+#+end_src
 ** END
 #+begin_src emacs-lisp
 )
