@@ -2632,6 +2632,14 @@ point to the position of the join."
 #+begin_src emacs-lisp
 (cb:install-package 'haskell-mode)
 #+end_src
+** Utilities for file template
+#+begin_src emacs-lisp
+(defun cb-hs:file-name->module ()
+  (let* ((s (f-no-ext (f-filename (buffer-file-name))))
+         (s1 (s-capitalize (substring s 0 1)))
+         (s2 (ignore-errors (substring s 1))))
+    (concat s1 s2)))
+#+end_src
 ** DEFER
 #+begin_src emacs-lisp
 (after 'haskell-mode
@@ -2687,16 +2695,6 @@ point to the position of the join."
 ** smart operators
 *** Impl
 #+begin_src emacs-lisp
-(defun cbhs:smart-comma ()
-  (interactive)
-  (cond
-   ((s-matches? (rx bol (* space) eol)
-                (buffer-substring (line-beginning-position) (point)))
-    (insert ", ")
-    (hi2-indent-line))
-   (t
-    (insert ","))))
-
 (defun cbhs:smart-pipe ()
   "Insert a pipe operator. Add padding, unless we're inside a list."
   (interactive)
@@ -2787,7 +2785,6 @@ last.
 #+begin_src emacs-lisp
 (bind-keys
   :hook cb:haskell-modes-hook
-  "," 'cbhs:smart-comma
   "-" 'cbhs:smart-minus
   "=" (command (smart-insert-operator "="))
   "<" 'cbhs:smart-lt
@@ -2798,13 +2795,6 @@ last.
   "$" (command (smart-insert-operator "$")))
 
 (add-hook 'cb:haskell-modes-hook 'smart-insert-operator-hook)
-#+end_src
-** Do not use apostrophe smartparens pair
-#+begin_src emacs-lisp
-(sp-with-modes '(haskell-mode
-                 inf-haskell-mode
-                 haskell-cabal-mode)
-  (sp-local-pair "'" "'" :actions '(:rem insert)))
 #+end_src
 ** hideshow
 *** Define helper functions
@@ -2859,6 +2849,59 @@ last.
                  ,(rx "{-")
                  ;; Forward-sexp function
                  cbhs:forward-fold)))
+#+end_src
+** Hoogle search method
+#+begin_src emacs-lisp
+(cbs-define-search-method
+ :name "hoogle"
+ :key "h"
+ :command
+ (lambda (q)
+   (browse-url (concat "http://www.haskell.org/hoogle/?hoogle="
+                       (url-hexify-string (cbs-read "Hoogle" q)))))
+ :when
+ (lambda ()
+   (derived-mode-p 'haskell-mode 'inf-haskell-mode)))
+#+end_src
+** Use font-lock to display a λ-symbol for lambda functions
+#+begin_src emacs-lisp
+(font-lock-add-keywords
+ 'haskell-mode
+ `(("\\s ?(?\\(\\\\\\)\\s *\\(\\w\\|_\\|(.*)\\).*?\\s *->"
+    (0 (progn (compose-region (match-beginning 1) (match-end 1)
+                              ,(string-to-char "λ") 'decompose-region)
+              nil)))))
+#+end_src
+** Key bindings
+#+begin_src emacs-lisp
+(hook-fn 'cb:haskell-modes-hook
+  (local-set-key (kbd "C-c h") 'hoogle)
+  (local-set-key (kbd "C-c C-c") 'haskell-process-cabal-build))
+#+end_src
+** Insert language pragmas
+#+begin_src emacs-lisp
+(defvar cb-hs:language-pragmas
+  (s-split "\n" (%-string "ghc --supported-languages"))
+  "List the language pragmas available in GHC.")
+
+(defun cb-hs:language-pragmas-in-file ()
+  "List the language pragmas set in the current file."
+  (--filter (s-matches? it (buffer-string))
+            cb-hs:language-pragmas))
+
+(defun cb-hs:available-language-pragmas ()
+  "List the language pragmas that have not been set in the current file."
+  (-difference cb-hs:language-pragmas (cb-hs:language-pragmas-in-file)))
+
+(defun cb-hs:insert-language-pragma (pragma)
+  "Read a language pragma to be inserted at the start of this file."
+  (interactive (list (ido-completing-read "Pragma: "
+                                          (cb-hs:available-language-pragmas)
+                                          nil t)))
+  (let ((s (format "{-# LANGUAGE %s #-}\n" pragma)))
+    (save-excursion
+      (goto-char (point-min))
+      (insert s))))
 #+end_src
 ** Insertion commands
 *** Insert import statements with helm
@@ -2932,38 +2975,8 @@ last.
 #+begin_src emacs-lisp
 (-each
  '(("i" "Haskell Import" cbhs:insert-import :modes haskell-mode)
-   ("l" "Haskell Language Extension" haskell-insert-language :modes haskell-mode)
-   ("p" "GHC Pragma" haskell-insert-pragma :modes haskell-mode)
-   ("f" "GHC Flag" haskell-insert-flag :modes haskell-mode))
+   ("l" "Haskell Language Extension" cb-hs:insert-language-pragma :modes haskell-mode))
  (~ add-to-list 'insertion-picker-options))
-#+end_src
-** Hoogle search method
-#+begin_src emacs-lisp
-(cbs-define-search-method
- :name "hoogle"
- :key "h"
- :command
- (lambda (q)
-   (browse-url (concat "http://www.haskell.org/hoogle/?hoogle="
-                       (url-hexify-string (cbs-read "Hoogle" q)))))
- :when
- (lambda ()
-   (derived-mode-p 'haskell-mode 'inf-haskell-mode)))
-#+end_src
-** Use font-lock to display a λ-symbol for lambda functions
-#+begin_src emacs-lisp
-(font-lock-add-keywords
- 'haskell-mode
- `(("\\s ?(?\\(\\\\\\)\\s *\\(\\w\\|_\\|(.*)\\).*?\\s *->"
-    (0 (progn (compose-region (match-beginning 1) (match-end 1)
-                              ,(string-to-char "λ") 'decompose-region)
-              nil)))))
-#+end_src
-** Key bindings
-#+begin_src emacs-lisp
-(hook-fn 'cb:haskell-modes-hook
-  (local-set-key (kbd "C-c h") 'hoogle)
-  (local-set-key (kbd "C-c C-c") 'haskell-process-cabal-build))
 #+end_src
 ** END
 #+begin_src emacs-lisp
