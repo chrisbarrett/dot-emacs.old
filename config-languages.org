@@ -2699,6 +2699,11 @@ default commands.
 (define-key haskell-mode-map (kbd "M-t") 'shm/transpose)
 (define-key haskell-mode-map (kbd "C-k") 'shm/kill)
 #+end_src
+*** Use shm for outdenting and indenting
+#+begin_src emacs-lisp
+(bind-key "S-<tab>" 'shm/simple-indent-backtab haskell-mode-map)
+(bind-key "<tab>" 'shm/simple-indent haskell-mode-map)
+#+end_src
 ** use hi2 for its indent-line-function
 #+begin_src emacs-lisp
 (cb:install-package 'hi2 t)
