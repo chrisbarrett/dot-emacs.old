@@ -2911,10 +2911,7 @@ With a prefix arg, insert an arrow with padding at point."
 ** Key bindings
 #+begin_src emacs-lisp
 (define-key haskell-mode-map (kbd "M-q") 'haskell-mode-stylish-buffer)
-
-(--each (list haskell-mode-map inferior-haskell-mode-map)
-  (define-key it (kbd "C-c h") 'hoogle)
-  (define-key it (kbd "C-c C-c") 'haskell-process-cabal-build))
+(define-key haskell-mode-map (kbd "C-c C-c") 'haskell-process-cabal-build)
 #+end_src
 ** Insert language pragmas
 #+begin_src emacs-lisp
