@@ -4395,6 +4395,12 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
 (after 'fsharp-mode
   (define-key fsharp-mode-map (kbd "M-RET") 'cb-ocaml:meta-ret))
 #+end_src
+* Shell Scripts
+#+begin_src emacs-lisp
+(hook-fn 'sh-mode-hook
+  (when (executable-find "shellcheck")
+    (flycheck-select-checker 'sh-shellcheck)))
+#+end_src
 * Provide this file
 #+begin_src emacs-lisp
 (provide 'config-languages)
