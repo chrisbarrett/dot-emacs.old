@@ -2653,7 +2653,38 @@ point to the position of the join."
 ** install ghc support package
 #+begin_src emacs-lisp
 (cb:install-package 'ghc t)
-(add-hook 'haskell-mode-hook 'ghc-init)
+(setq ghc-import-key nil)
+
+(defun cb:ghc-init ()
+  (ghc-abbrev-init)
+  (ghc-type-init)
+  (unless ghc-initialized
+    (ghc-comp-init)
+    (setq ghc-initialized t)))
+
+(add-hook 'haskell-mode-hook 'cb:ghc-init)
+#+end_src
+*** Set GHC key bindings
+These would normally be set in =ghc-init=, but I do not want to bind all of the
+default commands.
+#+begin_src emacs-lisp
+(define-key haskell-mode-map ghc-completion-key  'ghc-complete)
+(define-key haskell-mode-map ghc-document-key    'ghc-browse-document)
+(define-key haskell-mode-map ghc-type-key        'ghc-show-type)
+(define-key haskell-mode-map ghc-info-key        'ghc-show-info)
+(define-key haskell-mode-map ghc-expand-key      'ghc-expand-th)
+(define-key haskell-mode-map ghc-jump-key        'ghc-flymake-jump)
+(define-key haskell-mode-map (kbd "M-P") 'flymake-goto-prev-error)
+(define-key haskell-mode-map (kbd "M-N") 'flymake-goto-next-error)
+(define-key haskell-mode-map ghc-help-key        'ghc-flymake-display-errors)
+(define-key haskell-mode-map ghc-insert-key      'ghc-insert-template)
+(define-key haskell-mode-map ghc-sort-key        'ghc-sort-lines)
+(define-key haskell-mode-map ghc-check-key       'ghc-save-buffer)
+(define-key haskell-mode-map ghc-toggle-key      'ghc-flymake-toggle-command)
+(define-key haskell-mode-map ghc-module-key      'ghc-insert-module)
+(define-key haskell-mode-map ghc-hoogle-key      'haskell-hoogle)
+(define-key haskell-mode-map ghc-shallower-key   'ghc-make-indent-shallower)
+(define-key haskell-mode-map ghc-deeper-key      'ghc-make-indent-deeper)
 #+end_src
 ** install structured-haskell-mode
 #+begin_src emacs-lisp
