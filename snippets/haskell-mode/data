@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: data
+# key: d
+# condition: (cbyas:bol?)
+# --
+data ${1:Name} = $0

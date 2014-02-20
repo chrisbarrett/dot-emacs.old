@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: match-case
+# key: mc
+# --
+$1 -> $0
