@@ -2765,13 +2765,31 @@ default commands.
 ** smart operators
 *** Impl
 #+begin_src emacs-lisp
+(defun cb-hs:in-string? ()
+  "Non-nil if point is inside a string according to font locking."
+  (or (ignore-errors
+        (equal 'font-lock-string-face (get-char-property (1- (point)) 'face)))
+      (save-excursion
+        (ignore-errors
+          (sp-up-sexp)
+          (equal ?\" (char-before))))))
+
+(defun cb-hs:in-comment? ()
+  "Non-nil if point is inside a comment according to font locking."
+  (ignore-errors
+    (equal 'font-lock-comment-face (get-char-property (1- (point)) 'face))))
+
 (defun cbhs:smart-pipe ()
   "Insert a pipe operator. Add padding, unless we're inside a list."
   (interactive)
-  (if (s-matches? (rx "[" (* (any "|" alnum)) eol)
-                  (buffer-substring (line-beginning-position) (point)))
-      (insert "|")
-    (smart-insert-operator "|")))
+  (cond
+   ((or (cb-hs:in-string?) (cb-hs:in-comment?))
+    (insert "|"))
+   ((s-matches? (rx "[" (* (any "|" alnum)) eol)
+                (buffer-substring (line-beginning-position) (point)))
+    (insert "|"))
+   (t
+    (smart-insert-operator "|"))))
 
 (defun cbhs:looking-at-module-or-constructor? ()
   (-when-let (sym (thing-at-point 'symbol))
@@ -2782,19 +2800,24 @@ default commands.
 With a prefix arg, insert a period without padding."
   (interactive "*P")
   (cond
-   (arg
+   ((or arg (cb-hs:in-string?) (cb-hs:in-comment?))
     (insert "."))
+
    ((thing-at-point-looking-at (rx digit (* space) "."))
     (save-excursion
       (search-backward ".")
       (just-one-space))
     (insert ". "))
+
    ((thing-at-point-looking-at (rx digit))
     (insert "."))
+
    ((cbhs:looking-at-module-or-constructor?)
     (insert "."))
+
    ((thing-at-point-looking-at (rx (or "(" "{" "[") (* space)))
     (insert "."))
+
    (t
     (smart-insert-operator "."))))
 
@@ -2823,6 +2846,8 @@ Otherwise insert an arrow at the end of the line."
 With a prefix arg, insert an arrow with padding at point."
   (interactive "*P")
   (cond
+   ((or (cb-hs:in-string?) (cb-hs:in-comment?))
+    (insert "-"))
    (arg
     (just-one-space)
     (insert "->")
@@ -2836,6 +2861,8 @@ With a prefix arg, insert an arrow with padding at point."
   "Insert a less than symbol. With a prefix arg, insert an arrow at point."
   (interactive "*P")
   (cond
+   ((or (cb-hs:in-string?) (cb-hs:in-comment?))
+    (insert "<"))
    (arg
     (just-one-space)
     (insert "<-")
