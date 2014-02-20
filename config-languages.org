@@ -2633,6 +2633,10 @@ point to the position of the join."
 (cb:install-package 'haskell-mode)
 (setq haskell-tags-on-save t
       haskell-stylish-on-save t)
+
+(hook-fn 'cb:haskell-modes-hook
+  (setq-local tab-width 2)
+  (setq-local evil-shift-width 2))
 #+end_src
 ** Utilities for file template
 #+begin_src emacs-lisp
