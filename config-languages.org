@@ -2664,6 +2664,12 @@ point to the position of the join."
 (define-key haskell-mode-map (kbd "M-t") 'shm/transpose)
 (define-key haskell-mode-map (kbd "C-k") 'shm/kill)
 #+end_src
+** use hi2 for its indent-line-function
+#+begin_src emacs-lisp
+(cb:install-package 'hi2 t)
+(hook-fn 'haskell-mode-hook
+  (setq indent-line-function 'hi2-indent-line))
+#+end_src
 ** Define command to switch to src from repl
 #+begin_src emacs-lisp
 (defun cb:switch-to-haskell ()
