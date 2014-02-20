@@ -1762,7 +1762,7 @@ PARAGRAPH-LENGTH is one of short, medium, long or verylong."
 #+end_src
 *** Key binding
 #+begin_src emacs-lisp
-(bind-key* "<backtab>" 'outdent)
+(global-set-key (kbd "<backtab>") 'outdent)
 #+end_src
 ** Define command to indent whole buffer
 #+begin_src emacs-lisp
