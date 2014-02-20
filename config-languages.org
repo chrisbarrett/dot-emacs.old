@@ -2653,6 +2653,9 @@ point to the position of the join."
 #+begin_src emacs-lisp
 (cb:install-package 'shm t)
 (add-hook 'haskell-mode-hook 'structured-haskell-mode)
+
+(setq shm-colon-enabled t)
+
 (define-key haskell-mode-map (kbd "RET") 'shm/newline-indent)
 (define-key haskell-mode-map (kbd "C-a") 'shm/goto-parent)
 (define-key haskell-mode-map (kbd "C-e") 'shm/goto-parent-end)
@@ -2721,18 +2724,6 @@ With a prefix arg, insert a period without padding."
    (t
     (smart-insert-operator "."))))
 
-(defun cbhs:smart-colon ()
-  "Insert either a type binding colon pair or a cons colon."
-  (interactive)
-  (if (s-matches? (rx bol (* space) (? ",") (* space)
-                      (+ (not (any space "("))) (* space) eol)
-                  (buffer-substring (line-beginning-position) (point)))
-      (atomic-change-group
-        (just-one-space)
-        (insert "::")
-        (just-one-space))
-    (insert ":")))
-
 (defun cbhs:insert-arrow (arrow)
   "If point is inside a tuple, insert an arrow inside.
 Otherwise insert an arrow at the end of the line."
@@ -2783,18 +2774,22 @@ Because these are set in hooks, the forms below are order-dependent.
 =smart-insert-operator-hook= must be called first, so it is added to the list
 last.
 #+begin_src emacs-lisp
-(bind-keys
-  :hook cb:haskell-modes-hook
-  "-" 'cbhs:smart-minus
-  "=" (command (smart-insert-operator "="))
-  "<" 'cbhs:smart-lt
-  "." 'cbhs:smart-dot
-  ":" 'cbhs:smart-colon
-  "|" 'cbhs:smart-pipe
-  "?" (command (smart-insert-operator "?"))
-  "$" (command (smart-insert-operator "$")))
+(defun cb-hs:set-up-smart-ops ()
+  ;; Override SHM bindings
+  (when (featurep 'shm)
+    (define-key shm-map (kbd "-") nil)
+    (define-key shm-map (kbd "=") nil))
 
-(add-hook 'cb:haskell-modes-hook 'smart-insert-operator-hook)
+  (smart-insert-operator-hook)
+  (local-set-key (kbd "-") 'cbhs:smart-minus)
+  (local-set-key (kbd "=") (command (smart-insert-operator "=")))
+  (local-set-key (kbd "<") 'cbhs:smart-lt)
+  (local-set-key (kbd ".") 'cbhs:smart-dot)
+  (local-set-key (kbd "|") 'cbhs:smart-pipe)
+  (local-set-key (kbd "?") (command (smart-insert-operator "?")))
+  (local-set-key (kbd "$") (command (smart-insert-operator "$"))))
+
+(add-hook 'cb:haskell-modes-hook 'cb-hs:set-up-smart-ops)
 #+end_src
 ** hideshow
 *** Define helper functions
