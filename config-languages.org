@@ -2892,9 +2892,8 @@ With a prefix arg, insert an arrow with padding at point."
  :name "hoogle"
  :key "h"
  :command
- (lambda (q)
-   (browse-url (concat "http://www.haskell.org/hoogle/?hoogle="
-                       (url-hexify-string (cbs-read "Hoogle" q)))))
+ (lambda (_)
+   (call-interactively 'hoogle))
  :when
  (lambda ()
    (derived-mode-p 'haskell-mode 'inf-haskell-mode)))
