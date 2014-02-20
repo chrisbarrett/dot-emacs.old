@@ -3029,31 +3029,36 @@ With a prefix arg, insert an arrow with padding at point."
   "Interactively insert a Haskell import statement for MODULE."
   (interactive (list (ido-completing-read "Module: " (cbhs:haskell-modules)
                                           nil t)))
-  (save-excursion
-    (goto-char (point-min))
+  (if (s-matches? (rx-to-string `(and "import" (+ space) ,module (or space eol)))
+                  (buffer-string))
+      (when (called-interactively-p nil)
+        (message "Module '%s' is already imported" module))
 
-    (cond
-     ;; Move directly to import statements.
-     ((search-forward-regexp (rx bol "import") nil t))
+      (save-excursion
+        (goto-char (point-min))
 
-     ;; Move past module declaration.
-     ((search-forward "module" nil t)
-      (search-forward "where")
-      (forward-line)
-      (beginning-of-line)
-      (while (and (s-blank? (current-line))
-                  (not (eobp)))
-        (forward-line)))
+        (cond
+         ;; Move directly to import statements.
+         ((search-forward-regexp (rx bol "import") nil t))
 
-     ;; Otherwise insert on first blank line.
-     (t
-      (until (or (eobp) (s-blank? (current-line)))
-        (forward-line))))
+         ;; Move past module declaration.
+         ((search-forward "module" nil t)
+          (search-forward "where")
+          (forward-line)
+          (beginning-of-line)
+          (while (and (s-blank? (current-line))
+                      (not (eobp)))
+            (forward-line)))
 
-    ;; Insert import statement.
-    (beginning-of-line)
-    (open-line 1)
-    (insert (format "import %s" module))))
+         ;; Otherwise insert on first blank line.
+         (t
+          (until (or (eobp) (s-blank? (current-line)))
+            (forward-line))))
+
+        ;; Insert import statement.
+        (beginning-of-line)
+        (open-line 1)
+        (insert (format "import %s" module)))))
 #+end_src
 ** Add to global insertion commands list
 #+begin_src emacs-lisp
@@ -3124,7 +3129,7 @@ With a prefix arg, insert an arrow with padding at point."
 
    (t
     (goto-char (line-end-position))
-    (newline-and-indent)))
+    (shm/newline-indent)))
 
   (when (true? evil-mode)
     (evil-insert-state)))
