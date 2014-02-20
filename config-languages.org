@@ -2752,6 +2752,13 @@ With a prefix arg, insert a period without padding."
   (cond
    (arg
     (insert "."))
+   ((thing-at-point-looking-at (rx digit (* space) "."))
+    (save-excursion
+      (search-backward ".")
+      (just-one-space))
+    (insert ". "))
+   ((thing-at-point-looking-at (rx digit))
+    (insert "."))
    ((cbhs:looking-at-module-or-constructor?)
     (insert "."))
    ((thing-at-point-looking-at (rx (or "(" "{" "[") (* space)))
