@@ -2698,11 +2698,6 @@ default commands.
 (define-key shm-map (kbd "M-t") 'shm/transpose)
 (define-key shm-map (kbd "C-k") 'shm/kill)
 #+end_src
-*** Use shm for outdenting and indenting
-#+begin_src emacs-lisp
-(bind-key "S-<tab>" 'shm/simple-indent-backtab shm-map)
-(bind-key "<tab>" 'shm/simple-indent shm-map)
-#+end_src
 *** Extend shm formatting commands
 #+begin_src emacs-lisp
 (defun cb-hs:in-empty-braces? ()
@@ -2741,6 +2736,13 @@ default commands.
 (cb:install-package 'hi2 t)
 (hook-fn 'haskell-mode-hook
   (setq indent-line-function 'hi2-indent-line))
+#+end_src
+** Use hi2 for indenting with TAB
+#+begin_src emacs-lisp
+(define-key shm-map (kbd "TAB") nil)
+(define-key shm-map (kbd "<backtab>") nil)
+(define-key haskell-mode-map (kbd "TAB") 'hi2-indent-line)
+(define-key haskell-mode-map (kbd "<backtab>") 'hi2-indent-backwards)
 #+end_src
 ** Define command to switch to src from repl
 #+begin_src emacs-lisp
