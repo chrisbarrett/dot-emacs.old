@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: foreign import
+# key: fi
+# condition: (cbyas:bol?)
+# --
+foreign import ccall ${1:unsafe }"${2:header} ${3:fname}"
+    ${4:c_$3} :: $0
