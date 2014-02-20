@@ -2769,26 +2769,25 @@ With a prefix arg, insert an arrow with padding at point."
     (smart-insert-operator "<"))))
 #+end_src
 *** Set key bindings
-Because these are set in hooks, the forms below are order-dependent.
-=smart-insert-operator-hook= must be called first, so it is added to the list
-last.
 #+begin_src emacs-lisp
-(defun cb-hs:set-up-smart-ops ()
-  ;; Override SHM bindings
-  (when (featurep 'shm)
-    (define-key shm-map (kbd "-") nil)
-    (define-key shm-map (kbd "=") nil))
+;; Override SHM bindings
+(after 'shm
+  (define-key shm-map (kbd "-") nil)
+  (define-key shm-map (kbd "=") nil))
 
-  (smart-insert-operator-hook)
-  (local-set-key (kbd "-") 'cbhs:smart-minus)
-  (local-set-key (kbd "=") (command (smart-insert-operator "=")))
-  (local-set-key (kbd "<") 'cbhs:smart-lt)
-  (local-set-key (kbd ".") 'cbhs:smart-dot)
-  (local-set-key (kbd "|") 'cbhs:smart-pipe)
-  (local-set-key (kbd "?") (command (smart-insert-operator "?")))
-  (local-set-key (kbd "$") (command (smart-insert-operator "$"))))
-
-(add-hook 'cb:haskell-modes-hook 'cb-hs:set-up-smart-ops)
+(define-key haskell-mode-map (kbd "-") 'cbhs:smart-minus)
+(define-key haskell-mode-map (kbd "=") (command (smart-insert-operator "=")))
+(define-key haskell-mode-map (kbd "<") 'cbhs:smart-lt)
+(define-key haskell-mode-map (kbd ".") 'cbhs:smart-dot)
+(define-key haskell-mode-map (kbd "|") 'cbhs:smart-pipe)
+(define-key haskell-mode-map (kbd "?") (smart-op "?"))
+(define-key haskell-mode-map (kbd "$") (smart-op "$"))
+(define-key haskell-mode-map (kbd ",") (smart-op ","))
+(define-key haskell-mode-map (kbd "/") (smart-op "/"))
+(define-key haskell-mode-map (kbd "+") (smart-op "+"))
+(define-key haskell-mode-map (kbd "%") (smart-op "%"))
+(define-key haskell-mode-map (kbd "*") (smart-op "*"))
+(define-key haskell-mode-map (kbd "%") (smart-op "%"))
 #+end_src
 ** hideshow
 *** Define helper functions
