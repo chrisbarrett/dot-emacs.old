@@ -2693,16 +2693,15 @@ default commands.
 
 (setq shm-colon-enabled t)
 
-(define-key haskell-mode-map (kbd "RET") 'shm/newline-indent)
-(define-key haskell-mode-map (kbd "C-a") 'shm/goto-parent)
-(define-key haskell-mode-map (kbd "C-e") 'shm/goto-parent-end)
-(define-key haskell-mode-map (kbd "M-t") 'shm/transpose)
-(define-key haskell-mode-map (kbd "C-k") 'shm/kill)
+(define-key shm-map (kbd "C-a") 'shm/goto-parent)
+(define-key shm-map (kbd "C-e") 'shm/goto-parent-end)
+(define-key shm-map (kbd "M-t") 'shm/transpose)
+(define-key shm-map (kbd "C-k") 'shm/kill)
 #+end_src
 *** Use shm for outdenting and indenting
 #+begin_src emacs-lisp
-(bind-key "S-<tab>" 'shm/simple-indent-backtab haskell-mode-map)
-(bind-key "<tab>" 'shm/simple-indent haskell-mode-map)
+(bind-key "S-<tab>" 'shm/simple-indent-backtab shm-map)
+(bind-key "<tab>" 'shm/simple-indent shm-map)
 #+end_src
 *** Extend shm formatting commands
 #+begin_src emacs-lisp
@@ -2949,7 +2948,6 @@ With a prefix arg, insert an arrow with padding at point."
 #+end_src
 ** Key bindings
 #+begin_src emacs-lisp
-(define-key haskell-mode-map (kbd "M-q") 'haskell-mode-stylish-buffer)
 (define-key haskell-mode-map (kbd "C-c C-c") 'haskell-process-cabal-build)
 #+end_src
 ** Insert language pragmas
@@ -3104,6 +3102,14 @@ With a prefix arg, insert an arrow with padding at point."
      (C (~ equal "match-case") yas--template-name)
      (cb-hs:case-start-col)))
 
+   ;; Insert new line starting with comma.
+   ((s-matches? (rx bol (* space) ",") (current-line))
+    (let ((col
+           (save-excursion
+             (goto-char (line-beginning-position))
+             (search-forward ",")
+             (1- (current-column)))))
+      (cb-hs:newline-and-insert-at-col col ", ")))
 
    (t
     (goto-char (line-end-position))
