@@ -2704,6 +2704,39 @@ default commands.
 (bind-key "S-<tab>" 'shm/simple-indent-backtab haskell-mode-map)
 (bind-key "<tab>" 'shm/simple-indent haskell-mode-map)
 #+end_src
+*** Extend shm formatting commands
+#+begin_src emacs-lisp
+(defun cb-hs:in-empty-braces? ()
+  "Non-nil if point is between empty square or curly braces."
+  (and (s-matches? (rx (or "{" "[") (* space) eol)
+                   (buffer-substring (line-beginning-position) (point)))
+       (s-matches? (rx bol (* space) (or "}" "]"))
+                   (buffer-substring (point) (line-end-position)))))
+
+(defun cb-hs:space ()
+  "Extend shm/space to provide additional formatting behaviours."
+  (interactive)
+  (cond
+   ((cb-hs:in-empty-braces?)
+    (just-one-space)
+    (save-excursion
+      (insert " ")))
+   (t
+    (call-interactively 'shm/space))))
+
+(defun cb-hs:del ()
+  "Extend shm/del with additional formatting behaviour."
+  (interactive)
+  (cond
+   ((and (cb-hs:in-empty-braces?)
+         (thing-at-point-looking-at (rx (+ space))))
+    (delete-horizontal-space))
+   (t
+    (call-interactively 'shm/del))))
+
+(define-key shm-map (kbd "SPC") 'cb-hs:space)
+(define-key shm-map (kbd "DEL") 'cb-hs:del)
+#+end_src
 ** use hi2 for its indent-line-function
 #+begin_src emacs-lisp
 (cb:install-package 'hi2 t)
