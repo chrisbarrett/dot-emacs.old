@@ -3136,6 +3136,15 @@ With a prefix arg, insert an arrow with padding at point."
 
 (define-key haskell-mode-map (kbd "M-RET") 'cb-hs:meta-ret)
 #+end_src
+** Do not check pragmas for spelling errors
+#+begin_src emacs-lisp
+(defun cb-hs:flyspell-verify ()
+  "Prevent common flyspell false positives in org-mode."
+  (not (s-matches? (rx bol (* space) "{-#") (current-line))))
+
+(hook-fn 'haskell-mode-hook
+  (setq-local flyspell-generic-check-word-predicate 'cb-hs:flyspell-verify))
+#+end_src
 ** END
 #+begin_src emacs-lisp
 )
