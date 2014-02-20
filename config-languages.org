@@ -2631,6 +2631,8 @@ point to the position of the join."
 ** haskell-mode
 #+begin_src emacs-lisp
 (cb:install-package 'haskell-mode)
+(setq haskell-tags-on-save t
+      haskell-stylish-on-save t)
 #+end_src
 ** Utilities for file template
 #+begin_src emacs-lisp
@@ -2668,16 +2670,11 @@ point to the position of the join."
   "Switch to the last active Haskell buffer."
   (interactive)
   (-when-let (buf (--first-buffer (derived-mode-p 'haskell-mode)))
-    (pop-to-buffer buf)))
+    (pop-to-buffer buf)
+    (cb:maybe-evil-insert-state)))
 
 (hook-fn 'inferior-haskell-mode-hook
   (local-set-key (kbd "C-c C-z") 'cb:switch-to-haskell))
-#+end_src
-** evil
-#+begin_src emacs-lisp
-(after 'evil
-  (defadvice switch-to-haskell (after insert-at-end-of-line activate)
-    (cb:maybe-evil-insert-state)))
 #+end_src
 ** Stop errors during save from changing window state
 #+begin_src emacs-lisp
@@ -2686,14 +2683,6 @@ point to the position of the join."
   (let ((inhibit-redisplay t))
     (save-window-excursion
       ad-do-it)))
-#+end_src
-** set haskell-mode vars in hook
-#+begin_src emacs-lisp
-(hook-fn 'haskell-mode-hook
-  (setq evil-shift-width     4
-        tab-width            4
-        haskell-tags-on-save t
-        haskell-stylish-on-save t))
 #+end_src
 ** smart operators
 *** Impl
@@ -2898,8 +2887,7 @@ last.
       (goto-char (point-min))
       (insert s))))
 #+end_src
-** Insertion commands
-*** Insert import statements with helm
+** Insert import statements
 #+begin_src emacs-lisp
 (defun cbhs:parse-module (str)
   (with-temp-buffer
@@ -2920,53 +2908,37 @@ last.
     (-mapcat 'cbhs:parse-module)
     (-map 's-trim)))
 
-(defun cbhs:read-import ()
-  "Read a module from the user and format as an import statement."
-  (interactive)
-  (let ((modid
-         (helm-comp-read "Import module: "
-                         (sort (cbhs:haskell-modules) 'string<)
-                         :volatile t
-                         :must-match t))
-        (qualified? (y-or-n-p "Qualified import? ")))
-    (if qualified?
-        (format "import qualified %s as %s" modid (read-string "As: "))
-      (format "import %s" modid))))
+(defun cbhs:insert-import (module)
+  "Interactively insert a Haskell import statement for MODULE."
+  (interactive (list (ido-completing-read "Module: " (cbhs:haskell-modules)
+                                          nil t)))
+  (save-excursion
+    (goto-char (point-min))
 
-(defun cbhs:insert-import ()
-  "Interactively insert a Haskell import statement."
-  (interactive)
-  (let ((import (cbhs:read-import)))
-    ;; Insert the import statement.
-    (require 'emr)
-    (emr-reporting-buffer-changes "Inserted import"
-      (save-excursion
-        (goto-char (point-min))
+    (cond
+     ;; Move directly to import statements.
+     ((search-forward-regexp (rx bol "import") nil t))
 
-        (cond
-         ;; Move directly to import statements.
-         ((search-forward-regexp (rx bol "import") nil t))
+     ;; Move past module declaration.
+     ((search-forward "module" nil t)
+      (search-forward "where")
+      (forward-line)
+      (beginning-of-line)
+      (while (and (s-blank? (current-line))
+                  (not (eobp)))
+        (forward-line)))
 
-         ;; Move past module declaration.
-         ((search-forward "module" nil t)
-          (search-forward "where")
-          (forward-line)
-          (beginning-of-line)
-          (while (and (s-blank? (current-line))
-                      (not (eobp)))
-            (forward-line)))
+     ;; Otherwise insert on first blank line.
+     (t
+      (until (or (eobp) (s-blank? (current-line)))
+        (forward-line))))
 
-         ;; Otherwise insert on first blank line.
-         (t
-          (until (or (eobp) (s-blank? (current-line)))
-            (forward-line))))
-
-        ;; Insert import statement.
-        (beginning-of-line)
-        (open-line 1)
-        (insert import)))))
+    ;; Insert import statement.
+    (beginning-of-line)
+    (open-line 1)
+    (insert (format "import %s" module))))
 #+end_src
-*** Add to global insertion commands list
+** Add to global insertion commands list
 #+begin_src emacs-lisp
 (-each
  '(("i" "Haskell Import" cbhs:insert-import :modes haskell-mode)
