@@ -5201,7 +5201,7 @@ buffer.
 #+end_src
 ** Define a global key binding
 #+begin_src emacs-lisp
-(bind-key "C-<return>" 'iedit-mode)
+(bind-key "C-c r" 'iedit-mode)
 #+end_src
 ** Quick rename commands
 Define utilities for renaming the symbol at point.
@@ -5293,7 +5293,7 @@ Define utilities for renaming the symbol at point.
 *** Key binding
 #+begin_src emacs-lisp
 (after 'iedit
-  (bind-key "C-<return>" 'iedit-picker iedit-mode-keymap))
+  (bind-key "C-c r" 'iedit-picker iedit-mode-keymap))
 #+end_src
 * smooth-scrolling
 Changes the default scrolling behaviour to keep point away from the top or
