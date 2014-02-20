@@ -52,6 +52,7 @@
   (message "Loading config files...done"))
 
 (tangle-and-load-config-files)
+(require 'personal-config nil t)
 
 (provide 'init)
 

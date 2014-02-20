@@ -6503,13 +6503,6 @@ Define a command picker for printer and scanner functions.
 #+begin_src emacs-lisp
 (cb:install-package 'muttrc-mode)
 #+end_src
-* Load personal config
-The personal config file may be used to store sensitive information such as
-passwords. It may be anywhere on the load path.
-
-#+begin_src emacs-lisp
-(require 'personal-config nil t)
-#+end_src
 * Define functions for [[file:Makefile][Makefile]]
 #+begin_src emacs-lisp
 (defun byte-compile-conf ()
