@@ -2851,19 +2851,26 @@ With a prefix arg, insert an arrow with padding at point."
   (define-key shm-map (kbd "-") nil)
   (define-key shm-map (kbd "=") nil))
 
-(define-key haskell-mode-map (kbd "-") 'cbhs:smart-minus)
-(define-key haskell-mode-map (kbd "=") (command (smart-insert-operator "=")))
-(define-key haskell-mode-map (kbd "<") 'cbhs:smart-lt)
-(define-key haskell-mode-map (kbd ".") 'cbhs:smart-dot)
-(define-key haskell-mode-map (kbd "|") 'cbhs:smart-pipe)
-(define-key haskell-mode-map (kbd "?") (smart-op "?"))
-(define-key haskell-mode-map (kbd "$") (smart-op "$"))
-(define-key haskell-mode-map (kbd ",") (smart-op ","))
-(define-key haskell-mode-map (kbd "/") (smart-op "/"))
-(define-key haskell-mode-map (kbd "+") (smart-op "+"))
-(define-key haskell-mode-map (kbd "%") (smart-op "%"))
-(define-key haskell-mode-map (kbd "*") (smart-op "*"))
-(define-key haskell-mode-map (kbd "%") (smart-op "%"))
+
+(-each `(("-" . cbhs:smart-minus)
+         ("=" . ,(command (smart-insert-operator "=")))
+         ("<" . cbhs:smart-lt)
+         ("." . cbhs:smart-dot)
+         ("|" . cbhs:smart-pipe)
+         ("?" . ,(smart-op "?"))
+         ("$" . ,(smart-op "$"))
+         ("," . ,(smart-op ","))
+         ("/" . ,(smart-op "/"))
+         ("+" . ,(smart-op "+"))
+         ("%" . ,(smart-op "%"))
+         ("*" . ,(smart-op "*"))
+         ("%" . ,(smart-op "%"))
+         )
+  (lambda+ ((key . cmd))
+    (define-key haskell-mode-map (kbd key) cmd)
+    (eval `(after 'inf-haskell
+             (define-key inferior-haskell-mode-map (kbd ,key) ',cmd)))))
+
 #+end_src
 ** hideshow
 *** Define helper functions
