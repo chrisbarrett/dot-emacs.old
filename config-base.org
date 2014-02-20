@@ -980,25 +980,12 @@ prevents the app bundle from being used as the default dir.
 #+begin_src emacs-lisp
 (setq shell-command-switch "-lc")
 #+end_src
-** Set paths
+** Set exec path
 Emacs.app does not inherit the PATH set by shell config files. Set the path
 manually as a workaround.
 #+begin_src emacs-lisp
-(defun cb:set-path-from-shell ()
-  "Set the `exec-path' according to the PATH shell variable."
-  (let ((path (->> (list "~/Library/Haskell/bin"
-                         "~/.cask/bin"
-                         "~/bin"
-                         "~/scripts"
-                         "/opt/local/bin/"
-                         (%-string "echo $PATH"))
-                (s-join ":")
-                (s-split ":")
-                (-map 'f-expand))))
-    (setq exec-path (-union path exec-path))
-    (setenv "PATH" (s-join ":" exec-path))))
-
-(cb:set-path-from-shell)
+(cb:install-package 'exec-path-from-shell t)
+(exec-path-from-shell-initialize)
 #+end_src
 ** Override shell
 Most packages assume the shell is POSIX-compliant. If the shell is fish, change
