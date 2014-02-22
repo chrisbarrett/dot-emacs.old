@@ -2638,6 +2638,12 @@ point to the position of the join."
   (setq-local tab-width 2)
   (setq-local evil-shift-width 2))
 #+end_src
+** enable haskell-doc-mode
+#+begin_src emacs-lisp
+(hook-fn 'haskell-mode-hook
+  (haskell-doc-mode +1)
+  (eldoc-mode +1))
+#+end_src
 ** Utilities for file template
 #+begin_src emacs-lisp
 (defun cb-hs:file-name->module ()
