@@ -3144,9 +3144,10 @@ With a prefix arg, insert an arrow with padding at point."
 ** Do not check pragmas for spelling errors
 #+begin_src emacs-lisp
 (defun cb-hs:flyspell-verify ()
-  "Prevent common flyspell false positives in org-mode."
-  (or (flyspell-generic-progmode-verify)
-      (not (s-matches? (rx bol (* space) "{-#") (current-line)))))
+  "Prevent common flyspell false positives in haskell-mode."
+  (and (flyspell-generic-progmode-verify)
+       (not (or (s-matches? (rx bol (* space) "{-#") (current-line))
+                (s-matches? (rx bol (* space) "foreign import") (current-line))))))
 
 (hook-fn 'flyspell-prog-mode-hook
   (when (derived-mode-p 'haskell-mode)
