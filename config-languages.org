@@ -2900,6 +2900,11 @@ With a prefix arg, insert an arrow with padding at point."
              (define-key inferior-haskell-mode-map (kbd ,key) ',cmd)))))
 
 #+end_src
+*** Add haskell-specific operators to =smart-operators-alist=
+#+begin_src emacs-lisp
+(hook-fn 'cb:haskell-modes-hook
+  (add-to-list 'smart-operator-alist "."))
+#+end_src
 ** hideshow
 *** Define helper functions
 #+begin_src emacs-lisp
