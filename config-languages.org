@@ -3,6 +3,95 @@
 #+AUTHOR: Chris Barrett
 #+OPTIONS: toc:3 num:nil ^:nil
 
+* smart operators
+My own custom implementation of smart operators--the one on MELPA is kinda
+flaky.
+#+begin_src emacs-lisp
+(defvar-local smart-op-list
+  '("." "=" "<" ">" "%" "+" "-" "*" "/" "&" "|" "!" ":")
+  "A list of strings to treat as operators.")
+
+(defun in-string? ()
+  "Non-nil if point is inside a string according to font locking."
+  (-contains? '(font-lock-string-face
+                font-lock-doc-face
+                font-lock-doc-string-face)
+              (face-at-point)))
+
+(defun in-comment? ()
+  "Non-nil if point is inside a comment according to font locking."
+  (ignore-errors
+    (equal 'font-lock-comment-face (face-at-point))))
+
+(defun cb-op:last-non-space-char ()
+  (save-excursion
+    (when (search-backward-regexp (rx (not space))
+                                  (line-beginning-position) t)
+      (thing-at-point 'char))))
+
+(defun smart-insert-op (op)
+  "Insert a smart operator, unless we're in a string or comment."
+
+  ;; Narrow to the current active snippet field if yasnippet is active. This
+  ;; prevents errors when attempting to delete whitespace outside the current
+  ;; field.
+  (yas-with-field-restriction
+
+    (cond
+     ((or (in-string?) (in-comment?)
+          ;; Looking at quotation mark?
+          (-contains? '(?\" ?\') (char-after)))
+      (insert op))
+
+     ((-any? (~ equal (cb-op:last-non-space-char)) smart-op-list)
+      (delete-horizontal-space)
+      (insert op)
+      (just-one-space))
+
+     (t
+      (just-one-space)
+      (insert op)
+      (just-one-space)))))
+
+(defmacro make-smart-op (str)
+  "Return a function that will insert smart operator STR.
+Useful for setting up keymaps manually."
+  (let ((fname (intern (concat "smart-insert-op/" str))))
+    `(progn
+       (defun ,fname ()
+         "Auto-generated command.  Inserts a smart operator."
+         (interactive "*")
+         (smart-insert-op ,str))
+       ',fname)))
+
+(defun cb-ops:add-smart-ops (map ops)
+  "Populate MAP with smart operator insertion commands for OPS."
+  (--each ops (eval `(define-key ,map (kbd ,it) (make-smart-op ,it)))))
+
+(cl-defun declare-smart-ops (mode &key add rem)
+  "Define the smart operators for the given mode.
+
+- MODE is the mode to add the smart ops for.
+
+- ADD is a list of smart operators to add to the defaults.
+
+- REM is a list of smart operators to remove from the defaults."
+  (declare (indent 1))
+  (let ((map (intern (concat (symbol-name mode) "-map")))
+        (hook (intern (concat (symbol-name mode) "-hook")))
+        (ops (-difference (-concat smart-op-list add) rem)))
+    (put mode 'smart-op-list ops)
+
+    ;; Set key bindings now if the keymap is available, otherwise set in mode
+    ;; hook.
+    (if (boundp map)
+        (cb-ops:add-smart-ops map ops)
+      (eval `(add-hook ',hook
+                       (lambda ()
+                         (cb-ops:add-smart-ops ',map ',ops)))))
+
+    (list :mode mode :ops ops)))
+#+end_src
 * assembler
 ** DEFER
 #+begin_src emacs-lisp
@@ -13,13 +102,10 @@ Use wide tab-width for assembler.
 #+begin_src emacs-lisp
 (put 'asm-mode 'tab-width 8)
 #+end_src
-** Smart-operator
+** Configure smart operators
 #+begin_src emacs-lisp
-(hook-fn 'asm-mode-hook
-  (smart-insert-operator-hook)
-  (local-unset-key (kbd "%"))
-  (local-unset-key (kbd "-"))
-  (local-unset-key (kbd ".")))
+(declare-smart-ops 'asm-mode
+  :rem '("%" "-" "."))
 #+end_src
 ** Tab command
 Define a context-sensitive tab command.
@@ -294,16 +380,9 @@ Define functions used to parse the context around point.
   "Return the variable to use in a header guard for HEADER-FILE."
   (format "_%s_H_" (s-upcase (f-filename (f-no-ext header-file)))))
 #+end_src
-** Smart operators
-Add special smart ops for C/C++.
-*** Utilities
+** Define smart operators
+*** Definitions
 #+begin_src emacs-lisp
-(defun c-insert-smart-op (str)
-  "Insert a smart operator with special formatting in certain expressions."
-  (if (cb-c:looking-at-flow-control-header?)
-      (insert str)
-    (smart-insert-operator str)))
-
 (defun cb-c:maybe-remove-spaces-after-insertion (pred-regex op-start-regex)
   (when (thing-at-point-looking-at pred-regex)
     (save-excursion
@@ -319,16 +398,13 @@ Add special smart ops for C/C++.
     (when (search-backward-regexp (rx ";" (* space)) (line-beginning-position) t)
       (replace-match "; " nil))))
 
-#+end_src
-*** Definitions
-#+begin_src emacs-lisp
 (defun c-insert-smart-equals ()
   "Insert an '=' with context-sensitive formatting."
   (interactive)
   (if (or (cb-c:looking-at-flow-control-header?)
           (cb-c:looking-at-struct-keyword?))
       (insert "=")
-    (smart-insert-operator "=")))
+    (smart-insert-op "=")))
 
 (defun c-insert-smart-star ()
   "Insert a * with padding in multiplication contexts."
@@ -341,7 +417,7 @@ Add special smart ops for C/C++.
    ((thing-at-point-looking-at (rx (any "(" "{" "[") (* space)))
     (insert "*"))
    ((thing-at-point-looking-at (rx (any digit "*") (* space)))
-    (smart-insert-operator "*"))
+    (smart-insert-op "*"))
    (t
     (just-one-space)
     (insert "*"))))
@@ -354,7 +430,7 @@ Add special smart ops for C/C++.
     (if (thing-at-point-looking-at
          (rx (or "return" "," "(" "[" "(" ";" "=") (* space)))
         (insert "-")
-      (c-insert-smart-op "-"))
+      (smart-insert-op "-"))
     ;; Collapse whitespace for decrement operator.
     (cb-c:maybe-remove-spaces-after-insertion
      (rx "-" (* space) "-" (* space))
@@ -366,7 +442,7 @@ Add special smart ops for C/C++.
 If the insertion creates an right arrow (->), remove surrounding whitespace.
 If the insertion creates a <>, move the cursor inside."
   (interactive)
-  (c-insert-smart-op ">")
+  (smart-insert-op ">")
   (cb-c:maybe-remove-spaces-after-insertion
    (rx (or "-" "<") (* space) ">" (* space))
    (rx (not (any space "<" "-" ">"))))
@@ -377,21 +453,17 @@ If the insertion creates a <>, move the cursor inside."
   "Insert a + symbol with formatting.
 Remove horizontal whitespace if the insertion results in a ++."
   (interactive)
-  (c-insert-smart-op "+")
+  (smart-insert-op "+")
   (cb-c:maybe-remove-spaces-after-insertion
    (rx "+" (* space) "+" (* space))
    (rx (not (any space "+"))))
   (cb-c:just-one-space-after-semicolon))
-
 #+end_src
 *** Set bindings
 #+begin_src emacs-lisp
+(declare-smart-ops 'c-mode :add '("?"))
 (define-key c-mode-map (kbd ",") 'cb:comma-then-space)
 (define-key c-mode-map (kbd "=") 'c-insert-smart-equals)
-(define-key c-mode-map (kbd "|") (smart-op "|"))
-(define-key c-mode-map (kbd "?") (smart-op "?"))
-(define-key c-mode-map (kbd "/") (smart-op "/"))
-(define-key c-mode-map (kbd ":") (smart-op ":"))
 (define-key c-mode-map (kbd "+") 'c-insert-smart-plus)
 (define-key c-mode-map (kbd ">") 'c-insert-smart-gt)
 (define-key c-mode-map (kbd "-") 'c-insert-smart-minus)
@@ -624,8 +696,7 @@ then
 ** Override C smart commands
 #+begin_src emacs-lisp
 (after 'bison-mode
-  (define-key bison-mode-map (kbd "=") (smart-op "="))
-  (define-key bison-mode-map (kbd ">") 'c-insert-smart-gt))
+  (define-key bison-mode-map (kbd "=") (make-smart-op "=")))
 #+end_src
 * Lisp
 #+begin_src emacs-lisp
@@ -1876,7 +1947,7 @@ Add special smart-operator behaviours for python buffers.
   (interactive)
   (if (s-matches? (rx (* space) "def" space) (current-line))
       (insert "=")
-    (smart-insert-operator "=")))
+    (smart-insert-op "=")))
 
 (defun cb-py:smart-asterisk ()
   "Insert an asterisk with padding unless we're in an arglist."
@@ -1892,7 +1963,7 @@ Add special smart-operator behaviours for python buffers.
       (delete-horizontal-space))
     (insert "*"))
    (t
-    (smart-insert-operator "*"))))
+    (smart-insert-op "*"))))
 
 (defun cb-py:smart-comma ()
   "Insert a comma with padding."
@@ -1906,22 +1977,16 @@ Add special smart-operator behaviours for python buffers.
   (insert ":")
   (just-one-space))
 
-(--each (list python-mode-map inferior-python-mode-map)
-    (define-keys it
+(-each (list (cons 'python-mode python-mode-map)
+             (cons 'inferior-python-mode inferior-python-mode-map))
+  (lambda+ ((mode . map))
+    (declare-smart-ops mode :add '("?" "$"))
+
+    (define-keys map
       "," 'cb-py:smart-comma
-      "&" (command (smart-insert-operator "&"))
-      "%" (command (smart-insert-operator "%"))
-      "?" (command (smart-insert-operator "?"))
       "*" 'cb-py:smart-asterisk
       ":" 'cb-py:smart-colon
-      "+" (command (smart-insert-operator "+"))
-      "/" (command (smart-insert-operator "/"))
-      "-" (command (smart-insert-operator "-"))
-      "=" 'cb-py:smart-equals
-      "<" (command (smart-insert-operator "<"))
-      ">" (command (smart-insert-operator ">"))
-      "|" (command (smart-insert-operator "|"))
-      "$" (command (smart-insert-operator "$"))))
+      "=" 'cb-py:smart-equals)))
 #+end_src
 ** smartparens
 #+begin_src emacs-lisp
@@ -2292,16 +2357,10 @@ If this is the trailing colon for a hash key, insert padding."
     (just-one-space)))
 
 (hook-fn 'cb:ruby-modes-hook
+  (declare-smart-ops major-mode
+    :add '("~"))
   (local-set-key (kbd ",") (command (insert ",") (just-one-space)))
-  (local-set-key (kbd ":") 'cb-rb:smart-colon)
-  (local-set-key (kbd "|") (smart-op "|"))
-  (local-set-key (kbd "~") (smart-op "~"))
-  (local-set-key (kbd "<") (smart-op "<"))
-  (local-set-key (kbd ">") (smart-op ">"))
-  (local-set-key (kbd "=") (smart-op "="))
-  (local-set-key (kbd "-") (smart-op "-"))
-  (local-set-key (kbd "+") (smart-op "+"))
-  (local-set-key (kbd "/") (smart-op "/")))
+  (local-set-key (kbd ":") 'cb-rb:smart-colon))
 #+end_src
 ** rinari
 Provides navigation commands between files in Rails projects.
@@ -2547,12 +2606,12 @@ Add evil doc lookup handler for Ruby.
 #+begin_src emacs-lisp
 (defun cbscala:equals ()
   (interactive)
-  (smart-insert-operator "=")
+  (smart-insert-op "=")
   (just-one-space))
 
 (defun cbscala:colon ()
   (interactive)
-  (smart-insert-operator ":")
+  (smart-insert-op ":")
   (just-one-space))
 
 (defmacro define-scala-variance-op-command (sym op)
@@ -2572,7 +2631,7 @@ Pad in normal expressions. Do not insert padding in variance annotations."
        (insert ,op))
       ;; Otherwise leading and trailing padding.
       (t
-       (smart-insert-operator ,op)))))
+       (smart-insert-op ,op)))))
 #+end_src
 *** Declare variance operators
 #+begin_src emacs-lisp
@@ -2581,15 +2640,12 @@ Pad in normal expressions. Do not insert padding in variance annotations."
 #+end_src
 *** Set key bindings
 #+begin_src emacs-lisp
-(hook-fn 'scala-mode-hook
-  (smart-insert-operator-hook)
-  (local-unset-key (kbd "."))
-  (bind-keys
-    :map scala-mode-map
-    "=" 'cbscala:equals
-    ":" 'cbscala:colon
-    "+" 'cbscala:plus
-    "-" 'cbscala:minus))
+(declare-smart-ops 'scala-mode)
+(define-key scala-mode-map (kbd ".") nil)
+(define-key scala-mode-map "=" 'cbscala:equals)
+(define-key scala-mode-map ":" 'cbscala:colon)
+(define-key scala-mode-map "+" 'cbscala:plus)
+(define-key scala-mode-map "-" 'cbscala:minus)
 #+end_src
 ** Evil
 *** Adapt scala-mode's join-line command for evil-mode
@@ -2664,6 +2720,16 @@ point to the position of the join."
                                   nil t))
     (match-string-no-properties 1)))
 
+(defun cb-hs:last-imported-header ()
+  "Find the last header imported by a foreign import decl."
+  (save-excursion
+    (when (search-backward-regexp (rx bol (* space)
+                                      "foreign" (+ space) "import" (+ space)
+                                      (* nonl)
+                                      "\""
+                                      (group (+ graphic)))
+                                  nil t)
+      (match-string-no-properties 1))))
 #+end_src
 ** DEFER
 #+begin_src emacs-lisp
@@ -2786,44 +2852,24 @@ default commands.
 ** smart operators
 *** Impl
 #+begin_src emacs-lisp
-(defun cb-hs:in-string? ()
-  "Non-nil if point is inside a string according to font locking."
-  (or (ignore-errors
-        (equal 'font-lock-string-face (get-char-property (1- (point)) 'face)))
-      (save-excursion
-        (ignore-errors
-          (sp-up-sexp)
-          (equal ?\" (char-before))))))
-
-(defun cb-hs:in-comment? ()
-  "Non-nil if point is inside a comment according to font locking."
-  (ignore-errors
-    (equal 'font-lock-comment-face (get-char-property (1- (point)) 'face))))
-
 (defun cbhs:smart-pipe ()
   "Insert a pipe operator. Add padding, unless we're inside a list."
   (interactive)
   (cond
-   ((or (cb-hs:in-string?) (cb-hs:in-comment?))
-    (insert "|"))
    ((s-matches? (rx "[" (* (any "|" alnum)) eol)
                 (buffer-substring (line-beginning-position) (point)))
     (insert "|"))
    (t
-    (smart-insert-operator "|"))))
+    (smart-insert-op "|"))))
 
 (defun cbhs:looking-at-module-or-constructor? ()
   (-when-let (sym (thing-at-point 'symbol))
     (s-uppercase? (substring sym 0 1))))
 
-(defun cbhs:smart-dot (&optional arg)
-  "Insert a period. Add padding, unless this line is an import statement.
-With a prefix arg, insert a period without padding."
-  (interactive "*P")
+(defun cbhs:smart-dot ()
+  "Insert a period. Add padding, unless this line is an import statement."
+  (interactive)
   (cond
-   ((or arg (cb-hs:in-string?) (cb-hs:in-comment?))
-    (insert "."))
-
    ((thing-at-point-looking-at (rx digit (* space) "."))
     (save-excursion
       (search-backward ".")
@@ -2840,7 +2886,7 @@ With a prefix arg, insert a period without padding."
     (insert "."))
 
    (t
-    (smart-insert-operator "."))))
+    (smart-insert-op "."))))
 
 (defun cbhs:insert-arrow (arrow)
   "If point is inside a tuple, insert an arrow inside.
@@ -2884,20 +2930,18 @@ With a prefix arg, insert an arrow with padding at point."
       (insert " ")))
 
    (t
-    (smart-insert-operator "-"))))
+    (smart-insert-op "-"))))
 
 (defun cbhs:smart-lt (&optional arg)
   "Insert a less than symbol. With a prefix arg, insert an arrow at point."
   (interactive "*P")
   (cond
-   ((or (cb-hs:in-string?) (cb-hs:in-comment?))
-    (insert "<"))
    (arg
     (just-one-space)
     (insert "<-")
     (just-one-space))
    (t
-    (smart-insert-operator "<"))))
+    (smart-insert-op "<"))))
 #+end_src
 *** Set key bindings
 #+begin_src emacs-lisp
@@ -2906,30 +2950,17 @@ With a prefix arg, insert an arrow with padding at point."
   (define-key shm-map (kbd "-") nil)
   (define-key shm-map (kbd "=") 'shm/=))
 
+(declare-smart-ops 'haskell-mode          :add '("." "$" ","))
+(declare-smart-ops 'inferior-haskell-mode :add '("." "$" ","))
 
 (-each `(("-" . cbhs:smart-minus)
          ("<" . cbhs:smart-lt)
          ("." . cbhs:smart-dot)
-         ("|" . cbhs:smart-pipe)
-         (">" . ,(smart-op ">"))
-         ("?" . ,(smart-op "?"))
-         ("$" . ,(smart-op "$"))
-         ("," . ,(smart-op ","))
-         ("/" . ,(smart-op "/"))
-         ("+" . ,(smart-op "+"))
-         ("%" . ,(smart-op "%"))
-         ("*" . ,(smart-op "*"))
-         ("%" . ,(smart-op "%"))
-         )
+         ("|" . cbhs:smart-pipe))
   (lambda+ ((key . cmd))
     (define-key haskell-mode-map (kbd key) cmd)
     (eval `(after 'inf-haskell
              (define-key inferior-haskell-mode-map (kbd ,key) ',cmd)))))
-#+end_src
-*** Add haskell-specific operators to =smart-operators-alist=
-#+begin_src emacs-lisp
-(hook-fn 'cb:haskell-modes-hook
-  (add-to-list 'smart-operator-alist "."))
 #+end_src
 ** hideshow
 *** Define helper functions
@@ -3218,7 +3249,7 @@ OP is the operator as a string."
       (delete-horizontal-space)
       (insert op))
      (t
-      (smart-insert-operator op)))
+      (smart-insert-op op)))
     (save-excursion
       (goto-char pt)
       (idris-reformat-dwim t))))
@@ -3230,11 +3261,11 @@ OP is the operator as a string."
   (interactive)
   (cond
    ((equal (string-to-char " ") (char-before))
-    (smart-insert-operator ":"))
+    (smart-insert-op ":"))
    ((cbidris:inserting-cons-in-braces?)
     (insert ":"))
    (t
-    (smart-insert-operator ":")))
+    (smart-insert-op ":")))
 
   (idris-reformat-dwim t))
 
@@ -3332,6 +3363,8 @@ With a prefix arg, insert an arrow with padding at point."
 #+end_src
 *** Key bindings
 #+begin_src emacs-lisp
+(declare-smart-ops 'idris-mode :add '("." "$"))
+
 (define-keys idris-mode-map
   "," 'cbidris:smart-comma
   "&" (command (cbidris:smart-insert-operator "&"))
@@ -3998,7 +4031,7 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
         ":" "<" "=" ">" "?" "@" "^" "|" "~"))
 
 (--each '(tuareg-mode utop-mode)
-  (put it 'smart-operator-alist cb-ocaml:smart-operator-list))
+  (put it 'smart-op-list cb-ocaml:smart-operator-list))
 
 (defun cb-ocaml:smart-dot ()
   "Smart period for OCaml."
@@ -4024,7 +4057,7 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
     (delete-horizontal-space 'back)
     (insert ":"))
    (t
-    (smart-insert-operator ":"))))
+    (smart-insert-op ":"))))
 
 (defun cb-ocaml:smart-asterisk ()
   "Smart asterisk for OCaml."
@@ -4059,7 +4092,7 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
   "Perform a smart insertion of operator OP, unless inside parens."
   (if (thing-at-point-looking-at (rx "("))
       (insert op)
-    (smart-insert-operator op)))
+    (smart-insert-op op)))
 
 (defun cb-ocaml:smart-pipe ()
   "Insert either the pipe chars in an array literal or a smart pipe."
@@ -4320,7 +4353,7 @@ Much of the configuration of Coq is copied from the OCaml config.
   "Perform a smart insertion of operator OP, unless inside parens."
   (if (thing-at-point-looking-at (rx "("))
       (insert op)
-    (smart-insert-operator op)))
+    (smart-insert-op op)))
 
 (defun cb-coq:smart-pipe ()
   "Insert either the pipe chars in an array literal or a smart pipe."
@@ -4505,6 +4538,42 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
 (hook-fn 'sh-mode-hook
   (when (executable-find "shellcheck")
     (flycheck-select-checker 'sh-shellcheck)))
+#+end_src
+* Supercollider
+** sclang
+Basic configuration. Man, I wish this package was less crappy.
+#+begin_src emacs-lisp
+(autoload 'sclang-mode "sclang")
+(autoload 'sclang-start "sclang")
+(add-to-list 'auto-mode-alist '("\\.sc$" . sclang-mode))
+#+end_src
+*** Define a convenience command for launching supercollider
+#+begin_src emacs-lisp
+(defun supercollider ()
+  "Start SuperCollider and open the SC Workspace."
+  (interactive)
+  (switch-to-buffer
+   (get-buffer-create "*sclang workspace*"))
+  (sclang-mode))
+#+end_src
+*** Customise variables
+#+begin_src emacs-lisp
+(setq sclang-auto-scroll-post-buffer   t
+      sclang-eval-line-forward         nil
+      sclang-show-workspace-on-startup nil)
+#+end_src
+** sclang-extensions
+Extensions that makes sclang-mode a bit more conventional.
+#+begin_src emacs-lisp
+(cb:install-package 'sclang-extensions)
+(add-hook 'sclang-mode-hook 'sclang-extensions-mode)
+#+end_src
+** Smart operators
+#+begin_src emacs-lisp
+(after 'sclang
+  (define-key sclang-mode-map (kbd ".") nil))
+
+(declare-smart-ops 'sclang-mode :rem '("|"))
 #+end_src
 * Provide this file
 #+begin_src emacs-lisp

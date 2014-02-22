@@ -3829,49 +3829,6 @@ smartparens maps, so manually set custom bindings in a hook.
 (after '(smartparens tex)
   (require 'smartparens-latex))
 #+end_src
-* Smart operators
-Automatically format inserted operators.
-#+begin_src emacs-lisp
-(cb:install-package 'smart-operator t)
-#+end_src
-** Reindent the current line after inserting an equals
-#+begin_src emacs-lisp
-(defadvice smart-insert-operator (after indent-after-insert-equals activate)
-  (when (equal (ad-get-arg 0) "=")
-    (unless (apply 'derived-mode-p cb:whitespace-sensitive-languages)
-      (save-excursion
-        (indent-according-to-mode)))))
-#+end_src
-** Use self-insert rather than smart operator at strings or comments
-#+begin_src emacs-lisp
-(defadvice smart-insert-operator (around normal-insertion-for-string activate)
-  (if (or
-       ;; Looking at a string?
-       (-contains? '(font-lock-string-face
-                     font-lock-doc-face
-                     font-lock-doc-string-face
-                     font-lock-comment-face)
-                   (face-at-point))
-       ;; Looking at quotation mark?
-       (-contains? '(?\" ?\') (char-after)))
-      (insert (ad-get-arg 0))
-    ad-do-it))
-#+end_src
-** Define a helper macro for defining smart operator commands
-#+begin_src emacs-lisp
-(defmacro smart-op (op)
-  "Make a smart operator command that will insert OP."
-  `(command (smart-insert-operator ,op)))
-#+end_src
-** Prevent errors with yasnippet
-#+begin_src emacs-lisp
-(defadvice smart-insert-operator (around narrow-to-yas-field activate)
-  "Narrow to the current active snippet field.
-This prevents errors when attempting to delete whitespace outside
-the current field."
-  (yas-with-field-restriction
-    ad-do-it))
-#+end_src
 * EMR
 Adds refactoring commands for Lisps.
 #+begin_src emacs-lisp
@@ -5102,49 +5059,6 @@ Overlay greek lambda symbol in languages with lambda functions..
 #+begin_src emacs-lisp
 (hook-fn 'lambda-mode-hook
   (diminish 'lambda-mode))
-#+end_src
-* Supercollider
-** sclang
-Basic configuration. Man, I wish this package was less crappy.
-#+begin_src emacs-lisp
-(autoload 'sclang-mode "sclang")
-(autoload 'sclang-start "sclang")
-(add-to-list 'auto-mode-alist '("\\.sc$" . sclang-mode))
-#+end_src
-*** Define a convenience command for launching supercollider
-#+begin_src emacs-lisp
-(defun supercollider ()
-  "Start SuperCollider and open the SC Workspace."
-  (interactive)
-  (switch-to-buffer
-   (get-buffer-create "*sclang workspace*"))
-  (sclang-mode))
-#+end_src
-*** Customise variables
-#+begin_src emacs-lisp
-(setq sclang-auto-scroll-post-buffer   t
-      sclang-eval-line-forward         nil
-      sclang-show-workspace-on-startup nil)
-#+end_src
-** sclang-extensions
-Extensions that makes sclang-mode a bit more conventional.
-#+begin_src emacs-lisp
-(cb:install-package 'sclang-extensions)
-(add-hook 'sclang-mode-hook 'sclang-extensions-mode)
-#+end_src
-** Smartparens
-#+begin_src emacs-lisp
-(after 'smartparens
-  (hook-fn 'sclang-mode-hook
-    (smartparens-mode +1)))
-#+end_src
-** Smart operators
-#+begin_src emacs-lisp
-(after 'smart-operator
-  (hook-fn 'sclang-mode-hook
-    (smart-insert-operator-hook)
-    (local-unset-key (kbd "|"))
-    (local-unset-key (kbd "."))))
 #+end_src
 * Makefiles
 ** DEFER
