@@ -2867,8 +2867,6 @@ Otherwise insert an arrow at the end of the line."
 With a prefix arg, insert an arrow with padding at point."
   (interactive "*P")
   (cond
-   ((or (cb-hs:in-string?) (cb-hs:in-comment?))
-    (insert "-"))
    (arg
     (just-one-space)
     (insert "->")
@@ -2904,6 +2902,7 @@ With a prefix arg, insert an arrow with padding at point."
          ("<" . cbhs:smart-lt)
          ("." . cbhs:smart-dot)
          ("|" . cbhs:smart-pipe)
+         (">" . ,(smart-op ">"))
          ("?" . ,(smart-op "?"))
          ("$" . ,(smart-op "$"))
          ("," . ,(smart-op ","))
