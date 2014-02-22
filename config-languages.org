@@ -2644,13 +2644,26 @@ point to the position of the join."
   (haskell-doc-mode +1)
   (eldoc-mode +1))
 #+end_src
-** Utilities for file template
+** File template utilities
 #+begin_src emacs-lisp
 (defun cb-hs:file-name->module ()
   (let* ((s (f-no-ext (f-filename (buffer-file-name))))
          (s1 (s-capitalize (substring s 0 1)))
          (s2 (ignore-errors (substring s 1))))
     (concat s1 s2)))
+#+end_src
+** Yasnippet utilities
+#+begin_src emacs-lisp
+(defun cb-hs:last-declared-type-name ()
+  "Find the last type declared with `data' or `newtype'"
+  (save-excursion
+    (when (search-backward-regexp (rx bol (* space)
+                                      (or "newtype" "data")
+                                      (+ space)
+                                      (group (+ word)))
+                                  nil t))
+    (match-string-no-properties 1)))
+
 #+end_src
 ** DEFER
 #+begin_src emacs-lisp

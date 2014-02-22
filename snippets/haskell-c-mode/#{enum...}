@@ -1,0 +1,8 @@
+# key: e
+# name: #{enum...}
+# expand-env: ((yas-indent-line (quote fixed)) (yas-wrap-around-region (quote nil)))
+# condition: (cbyas:bol?)
+# --
+#{enum ${1:`(or (cb-hs:last-declared-type-name) "type")`}, $1
+ , $0
+ }
