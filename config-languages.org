@@ -2904,11 +2904,10 @@ With a prefix arg, insert an arrow with padding at point."
 ;; Override SHM bindings
 (after 'shm
   (define-key shm-map (kbd "-") nil)
-  (define-key shm-map (kbd "=") nil))
+  (define-key shm-map (kbd "=") 'shm/=))
 
 
 (-each `(("-" . cbhs:smart-minus)
-         ("=" . ,(command (smart-insert-operator "=")))
          ("<" . cbhs:smart-lt)
          ("." . cbhs:smart-dot)
          ("|" . cbhs:smart-pipe)
@@ -2926,7 +2925,6 @@ With a prefix arg, insert an arrow with padding at point."
     (define-key haskell-mode-map (kbd key) cmd)
     (eval `(after 'inf-haskell
              (define-key inferior-haskell-mode-map (kbd ,key) ',cmd)))))
-
 #+end_src
 *** Add haskell-specific operators to =smart-operators-alist=
 #+begin_src emacs-lisp
