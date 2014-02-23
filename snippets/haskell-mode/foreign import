@@ -1,7 +1,8 @@
-# -*- mode: snippet -*-
-# name: foreign import
 # key: fi
+# name: foreign import
 # condition: (cbyas:bol?)
 # --
-foreign import ccall ${1:unsafe }"${2:header} ${3:fname}"
-    ${4:c_$3} :: $0
+foreign import ccall ${1:unsafe }"${2:header} ${3:function}"
+  ${4:c_$3} :: $0
+`(cbhs:insert-import "Foreign")`
+`(cbhs:insert-import "Foreign.C.Types")`

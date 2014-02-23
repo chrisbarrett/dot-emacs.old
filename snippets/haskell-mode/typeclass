@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: typeclass
+# key: tc
+# condition: (cbyas:bol?)
+# --
+class ${1:name} a ${2:=> ${3:constraint} a }where
+  $0
