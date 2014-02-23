@@ -2658,7 +2658,7 @@ Highlight the current line.
 
 (--each '(eshell-mode-hook
           Man-mode-hook
-          haskell-mode
+          haskell-mode-hook
           Info-mode-hook)
   (add-hook it 'hl-line-disable))
 #+end_src
