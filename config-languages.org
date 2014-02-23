@@ -2988,7 +2988,6 @@ default commands.
       ad-do-it)))
 #+end_src
 ** smart operators
-*** Impl
 #+begin_src emacs-lisp
 (defun cbhs:smart-pipe ()
   "Insert a pipe operator. Add padding, unless we're inside a list."
