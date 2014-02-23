@@ -2764,6 +2764,7 @@ project, performing searches and replacements, etc.
 #+begin_src emacs-lisp
 (cb:install-package 'projectile t)
 (projectile-global-mode +1)
+(require 'ack-and-a-half)
 #+end_src
 ** Configure vars
 #+begin_src emacs-lisp
