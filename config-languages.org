@@ -3082,10 +3082,10 @@ With a prefix arg, insert an arrow with padding at point."
 ;; Override SHM bindings
 (after 'shm
   (define-key shm-map (kbd "-") nil)
-  (define-key shm-map (kbd "=") 'shm/=))
+  (define-key shm-map (kbd "=") nil))
 
-(declare-smart-ops 'haskell-mode          :add '("." "$" ","))
-(declare-smart-ops 'inferior-haskell-mode :add '("." "$" ","))
+(declare-smart-ops 'haskell-mode          :add '("." "$" "," "="))
+(declare-smart-ops 'inferior-haskell-mode :add '("." "$" "," "="))
 
 (-each `(("-" . cbhs:smart-minus)
          ("<" . cbhs:smart-lt)
