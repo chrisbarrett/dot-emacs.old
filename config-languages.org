@@ -2881,6 +2881,15 @@ default commands.
 #+end_src
 *** Re-implement =shm/:= to use my smart operator logic.
 #+begin_src emacs-lisp
+
+(defun cb-hs:inside-parens? ()
+  "Non-nil if point is inside a parenthesised expression."
+  (save-excursion
+    (ignore-errors
+      (backward-up-list)
+      (equal (char-after)
+             (string-to-char "(")))))
+
 (defun cb-hs:smart-colon ()
   "Re-implements `shm/:' to behave correctly in more cases."
   (interactive)
@@ -2902,6 +2911,19 @@ default commands.
           (shm-insert-string ":: a")
           (forward-word -1)
           (shm-evaporate (point) (1+ (point)))))
+
+       ((and (cb-hs:inside-parens?)
+             (s-matches? (rx ":" (* space))
+                         (buffer-substring (line-beginning-position) (point))))
+        (save-restriction
+          (narrow-to-region (line-beginning-position) (point))
+          (save-excursion
+            (search-backward-regexp (rx (* space) ":" (* space)))
+            (delete-region (point) (point-max)))
+          (insert " :: ")))
+
+       ((cb-hs:inside-parens?)
+        (insert ":"))
 
        (t
         (smart-insert-op ":")
