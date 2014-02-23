@@ -2834,6 +2834,13 @@ default commands.
 (define-key haskell-mode-map ghc-shallower-key   'ghc-make-indent-shallower)
 (define-key haskell-mode-map ghc-deeper-key      'ghc-make-indent-deeper)
 #+end_src
+** install hi2 for haskell indentation
+#+begin_src emacs-lisp
+(cb:install-package 'hi2)
+(hook-fn 'haskell-mode-hook
+  (turn-on-hi2)
+  (diminish 'hi2-mode))
+#+end_src
 ** install structured-haskell-mode
 #+begin_src emacs-lisp
 (cb:install-package 'shm t)
@@ -2942,19 +2949,20 @@ default commands.
 
 (define-key shm-map (kbd ")") 'cb-hs:close-brace)
 #+end_src
-** install hi2 for haskell indentation
+*** Use TAB commands for indentation and moving between slots
 #+begin_src emacs-lisp
-(cb:install-package 'hi2)
-(hook-fn 'haskell-mode-hook
-  (turn-on-hi2)
-  (diminish 'hi2-mode))
-#+end_src
-** Use hi2 for indenting with TAB
-#+begin_src emacs-lisp
-(define-key shm-map (kbd "TAB") nil)
-(define-key shm-map (kbd "<backtab>") nil)
-(define-key haskell-mode-map (kbd "TAB") 'hi2-indent-line)
-(define-key haskell-mode-map (kbd "<backtab>") 'hi2-indent-backwards)
+(defun cb-hs:tab ()
+  "Jump to the next shm slot or indent the current line."
+  (interactive)
+  (or (shm/jump-to-slot) (hi2-indent-line)))
+
+(defun cb-hs:backtab ()
+  "Jump to the previous shm slot or backward indent the current line."
+  (interactive)
+  (or (shm/jump-to-previous-slot) (hi2-indent-backwards)))
+
+(define-key shm-map (kbd "TAB") 'cb-hs:tab)
+(define-key shm-map (kbd "<backtab>") 'cb-hs:backtab)
 #+end_src
 ** Define command to switch to src from repl
 #+begin_src emacs-lisp
