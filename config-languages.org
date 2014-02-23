@@ -93,6 +93,30 @@ Useful for setting up keymaps manually."
 
     (list :mode mode :ops ops)))
 #+end_src
+** Advise deletion commands to delete last inserted smart op
+#+begin_src emacs-lisp
+(defun cb-op:delete-last-smart-op ()
+  "Delete the last smart-operator that was inserted."
+  (unless (or (in-string?) (in-comment?))
+    (save-restriction
+      (narrow-to-region (line-beginning-position) (point))
+
+      (when (s-matches? (concat (regexp-opt smart-op-list) " *$")
+                        (buffer-substring (line-beginning-position) (point)))
+        ;; Delete op
+        (search-backward-regexp (regexp-opt smart-op-list))
+        (delete-region (point) (point-max))
+
+        ;; Delete preceding spaces.
+        (when (s-matches? (rx (not (any space)) (+ space) eol)
+                          (buffer-substring (line-beginning-position) (point)))
+          (delete-horizontal-space))
+        t))))
+
+(defadvice sp-backward-delete-char (around delete-smart-op activate)
+  "Delete the smart operator that was just inserted, including padding."
+  (or (cb-op:delete-last-smart-op) ad-do-it))
+#+end_src
 * assembler
 ** DEFER
 #+begin_src emacs-lisp
@@ -2810,7 +2834,8 @@ default commands.
          (thing-at-point-looking-at (rx (+ space))))
     (delete-horizontal-space))
    (t
-    (call-interactively 'shm/del))))
+    (or (cb-op:delete-last-smart-op)
+        (call-interactively 'shm/del)))))
 
 (define-key shm-map (kbd "SPC") 'cb-hs:space)
 (define-key shm-map (kbd "DEL") 'cb-hs:del)
