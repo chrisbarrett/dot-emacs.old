@@ -3262,6 +3262,25 @@ With a prefix arg, insert an arrow with padding at point."
   (indent-to col)
   (insert str))
 
+(defun cb-hs:first-word-on-line ()
+  (car (s-match (rx bol (* space) (group (+ (not space))))
+                (current-line))))
+
+(defun cb-hs:insert-function-template (fname)
+  (back-to-indentation)
+
+  (when (shm-current-node)
+    (shm/goto-parent-end))
+
+  (goto-char (line-end-position))
+  (newline)
+  (shm-insert-string (concat fname " "))
+  (save-excursion
+    (insert " = ")
+    (let ((start (point)))
+      (insert "undefined")
+      (shm-evaporate start (line-end-position)))))
+
 (defun cb-hs:meta-ret ()
   "Open a new line in a context-sensitive way."
   (interactive)
@@ -3286,12 +3305,7 @@ With a prefix arg, insert an arrow with padding at point."
 
    ;; Insert pattern match at function definition.
    ((s-matches? (rx bol (* space) (+ word) (+ space) "::") (current-line))
-    (let ((fname (car (s-match (rx bol (group (* space) (+ word)))
-                               (current-line)))))
-      (goto-char (line-end-position))
-      (newline)
-      (insert fname)
-      (just-one-space)))
+    (cb-hs:insert-function-template (cb-hs:first-word-on-line)))
 
    ;; Insert new pattern match case below the current one.
    ((s-matches? (rx bol (* space) (+ word) "->") (current-line))
@@ -3314,8 +3328,19 @@ With a prefix arg, insert an arrow with padding at point."
       (cb-hs:newline-and-insert-at-col col "-> ")))
 
    (t
-    (goto-char (line-end-position))
-    (shm/newline-indent)))
+    (let ((fname (cb-hs:first-word-on-line)))
+      (cond
+       ;; New function case.
+       ((and fname
+             (or (s-matches? (eval `(rx bol (* space) ,fname (+ space) "::"))
+                             (buffer-string))
+                 (s-matches? (eval `(rx bol (* space) ,fname (+ nonl) "="))
+                             (current-line))))
+        (cb-hs:insert-function-template fname))
+
+       (t
+        (goto-char (line-end-position))
+        (shm/newline-indent))))))
 
   (when (true? evil-mode)
     (evil-insert-state)))
