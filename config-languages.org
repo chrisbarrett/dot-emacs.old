@@ -2723,9 +2723,8 @@ point to the position of the join."
 #+begin_src emacs-lisp
 (hook-fn 'haskell-mode-hook
   (haskell-doc-mode +1)
-  (eldoc-mode +1))
-
-(diminish 'haskell-doc-mode)
+  (eldoc-mode +1)
+  (diminish 'haskell-doc-mode))
 #+end_src
 ** File template utilities
 #+begin_src emacs-lisp
