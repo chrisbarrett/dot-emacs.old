@@ -3065,17 +3065,6 @@ With a prefix arg, insert an arrow with padding at point."
 
    (t
     (smart-insert-op "-"))))
-
-(defun cbhs:smart-lt (&optional arg)
-  "Insert a less than symbol. With a prefix arg, insert an arrow at point."
-  (interactive "*P")
-  (cond
-   (arg
-    (just-one-space)
-    (insert "<-")
-    (just-one-space))
-   (t
-    (smart-insert-op "<"))))
 #+end_src
 *** Set key bindings
 #+begin_src emacs-lisp
@@ -3088,7 +3077,6 @@ With a prefix arg, insert an arrow with padding at point."
 (declare-smart-ops 'inferior-haskell-mode :add '("." "$" "," "="))
 
 (-each `(("-" . cbhs:smart-minus)
-         ("<" . cbhs:smart-lt)
          ("." . cbhs:smart-dot)
          ("|" . cbhs:smart-pipe))
   (lambda+ ((key . cmd))
