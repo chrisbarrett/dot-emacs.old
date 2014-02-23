@@ -2931,11 +2931,12 @@ default commands.
 
 (define-key shm-map (kbd ":") 'cb-hs:smart-colon)
 #+end_src
-** use hi2 for its indent-line-function
+** install hi2 for haskell indentation
 #+begin_src emacs-lisp
-(cb:install-package 'hi2 t)
+(cb:install-package 'hi2)
 (hook-fn 'haskell-mode-hook
-  (setq indent-line-function 'hi2-indent-line))
+  (turn-on-hi2)
+  (diminish 'hi2-mode))
 #+end_src
 ** Use hi2 for indenting with TAB
 #+begin_src emacs-lisp
