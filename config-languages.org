@@ -2845,6 +2845,23 @@ default commands.
   (turn-on-hi2)
   (diminish 'hi2-mode))
 #+end_src
+*** Only show indentation guides in evil insert state
+#+begin_src emacs-lisp
+(after 'evil
+
+  (hook-fn 'evil-normal-state-entry-hook
+    (when (true? hi2-mode)
+      (hi2-disable-show-indentations)))
+
+  (hook-fn 'evil-insert-state-entry-hook
+    (when (true? hi2-mode)
+      (hi2-enable-show-indentations)))
+
+  (hook-fn 'evil-insert-state-exit-hook
+    (when (true? hi2-mode)
+      (hi2-disable-show-indentations)))
+  )
+#+end_src
 ** install structured-haskell-mode
 #+begin_src emacs-lisp
 (cb:install-package 'shm t)
