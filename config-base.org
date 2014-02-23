@@ -437,6 +437,7 @@ This directory tree will be added to the load path if ADD-PATH is non-nil."
 (define-path cb:tmp-dir       "tmp/")
 (define-path cb:yasnippet-dir "snippets/")
 (define-path cb:info-dir      "info")
+(define-path cb:scripts-dir   "scripts/")
 (define-path cb:lib-dir       "lib/")
 (define-path cb:lisp-dir      "lisp/")
 #+end_src
@@ -468,6 +469,10 @@ This directory tree will be added to the load path if ADD-PATH is non-nil."
 ** Define path to ledger file
 #+begin_src emacs-lisp
 (defvar ledger-file (f-join org-directory "accounts.ledger"))
+#+end_src
+** Add scripts dir to the exec-path
+#+begin_src emacs-lisp
+(add-to-list 'exec-path cb:scripts-dir)
 #+end_src
 * Modal view macros
 Define macros for creating /modal views/. These are commands that, when invoked,
