@@ -2776,8 +2776,6 @@ default commands.
 (cb:install-package 'shm t)
 (add-hook 'haskell-mode-hook 'structured-haskell-mode)
 
-(setq shm-colon-enabled t)
-
 (define-key shm-map (kbd "C-a") 'shm/goto-parent)
 (define-key shm-map (kbd "C-e") 'shm/goto-parent-end)
 (define-key shm-map (kbd "M-t") 'shm/transpose)
@@ -2815,6 +2813,36 @@ default commands.
 
 (define-key shm-map (kbd "SPC") 'cb-hs:space)
 (define-key shm-map (kbd "DEL") 'cb-hs:del)
+#+end_src
+*** Re-implement =shm/:= to use my smart operator logic.
+#+begin_src emacs-lisp
+(defun cb-hs:smart-colon ()
+  "Re-implements `shm/:' to behave correctly in more cases."
+  (interactive)
+  (if (shm-literal-insertion)
+      (call-interactively 'self-insert-command)
+
+    (let ((current (shm-current-node)))
+      (cond
+       ((and current
+             (or (eq (shm-node-cons current)
+                     'SpliceDecl)
+                 (string= (shm-node-type-name current)
+                          "BangType")
+                 (string= (shm-node-type-name current)
+                          "FieldDecl")))
+        (unless (looking-back "[ ]+")
+          (insert " "))
+        (unless (looking-back "::[ ]+")
+          (shm-insert-string ":: a")
+          (forward-word -1)
+          (shm-evaporate (point) (1+ (point)))))
+
+       (t
+        (smart-insert-op ":")
+        (shm/init t))))))
+
+(define-key shm-map (kbd ":") 'cb-hs:smart-colon)
 #+end_src
 ** use hi2 for its indent-line-function
 #+begin_src emacs-lisp
