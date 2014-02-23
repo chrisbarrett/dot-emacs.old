@@ -3073,20 +3073,19 @@ With a prefix arg, insert an arrow with padding at point."
 *** Set key bindings
 #+begin_src emacs-lisp
 ;; Override SHM bindings
-(after 'shm
-  (define-key shm-map (kbd "-") nil)
-  (define-key shm-map (kbd "=") nil))
+(define-key shm-map (kbd "-") nil)
+(define-key shm-map (kbd "=") nil)
 
 (declare-smart-ops 'haskell-mode          :add '("." "$" "," "="))
 (declare-smart-ops 'inferior-haskell-mode :add '("." "$" "," "="))
 
-(-each `(("-" . cbhs:smart-minus)
-         ("." . cbhs:smart-dot)
-         ("|" . cbhs:smart-pipe))
-  (lambda+ ((key . cmd))
-    (define-key haskell-mode-map (kbd key) cmd)
-    (eval `(after 'inf-haskell
-             (define-key inferior-haskell-mode-map (kbd ,key) ',cmd)))))
+(define-key haskell-mode-map (kbd "-") 'cbhs:smart-minus)
+(define-key haskell-mode-map (kbd ".") 'cbhs:smart-dot)
+(define-key haskell-mode-map (kbd "|") 'cbhs:smart-pipe)
+
+(define-key inferior-haskell-mode-map (kbd "-") 'cbhs:smart-minus)
+(define-key inferior-haskell-mode-map (kbd ".") 'cbhs:smart-dot)
+(define-key inferior-haskell-mode-map (kbd "|") 'cbhs:smart-pipe)
 #+end_src
 ** hideshow
 *** Define helper functions
