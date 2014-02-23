@@ -2760,6 +2760,43 @@ point to the position of the join."
 #+begin_src emacs-lisp
 (after 'haskell-mode
 #+end_src
+** Define flycheck checker for Haskell-C files
+#+begin_src emacs-lisp
+(flycheck-define-checker haskell-c-ghc
+  "A Haskell C syntax and type checker using ghc.
+
+See URL `http://www.haskell.org/ghc/'."
+  :command ("flycheck_haskell_c.sh"
+            source
+            ;; Include the parent directory of the current module tree, to
+            ;; properly resolve local imports
+            (eval (concat
+                   "-i"
+                   (flycheck-module-root-directory
+                    (flycheck-find-in-buffer flycheck-haskell-module-re))))
+            (option-flag "-no-user-package-db"
+                         flycheck-ghc-no-user-package-database)
+            (option-list "-package-db" flycheck-ghc-package-databases)
+            (option-list "-i" flycheck-ghc-search-path s-prepend))
+  :error-patterns
+  ((warning line-start (file-name) ":" line ":" column ":"
+            (or " " "\n    ") "Warning:" (optional "\n")
+            (one-or-more " ")
+            (message (one-or-more not-newline)
+                     (zero-or-more "\n"
+                                   (one-or-more " ")
+                                   (one-or-more not-newline)))
+            line-end)
+   (error line-start (file-name) ":" line ":" column ":"
+          (or (message (one-or-more not-newline))
+              (and "\n" (one-or-more " ")
+                   (message (one-or-more not-newline)
+                            (zero-or-more "\n"
+                                          (one-or-more " ")
+                                          (one-or-more not-newline)))))
+          line-end))
+  :modes haskell-c-mode)
+#+end_src
 ** install ghc support package
 #+begin_src emacs-lisp
 (cb:install-package 'ghc t)
