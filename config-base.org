@@ -3674,6 +3674,7 @@ structured way.
                       cb:prompt-modes
                       'org-mode
                       'tuareg-mode
+                      'minibuffer-inactive-mode
                       'text-mode))
   (sp-local-pair "'" "'" :actions '(:rem insert)))
 #+end_src
