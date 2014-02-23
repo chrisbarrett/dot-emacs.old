@@ -2930,6 +2930,18 @@ default commands.
 
 (define-key shm-map (kbd ":") 'cb-hs:smart-colon)
 #+end_src
+*** Re-implement =shm/close-paren= to use smartparens
+#+begin_src emacs-lisp
+(defun cb-hs:close-brace ()
+  "Insert a closing brace."
+  (interactive)
+  (when (cb-hs:inside-parens?)
+    (sp-insert-or-up ")"))
+  (shm/reparse)
+  (shm/goto-parent-end))
+
+(define-key shm-map (kbd ")") 'cb-hs:close-brace)
+#+end_src
 ** install hi2 for haskell indentation
 #+begin_src emacs-lisp
 (cb:install-package 'hi2)
