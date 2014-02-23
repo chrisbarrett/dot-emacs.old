@@ -23,7 +23,7 @@ flaky.
   (ignore-errors
     (equal 'font-lock-comment-face (face-at-point))))
 
-(defun cb-op:last-non-space-char ()
+(defun last-non-space-char ()
   (save-excursion
     (when (search-backward-regexp (rx (not space))
                                   (line-beginning-position) t)
@@ -43,7 +43,7 @@ flaky.
           (-contains? '(?\" ?\') (char-after)))
       (insert op))
 
-     ((-any? (~ equal (cb-op:last-non-space-char)) smart-op-list)
+     ((-any? (~ equal (last-non-space-char)) smart-op-list)
       (delete-horizontal-space)
       (insert op)
       (just-one-space))
