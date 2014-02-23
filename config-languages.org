@@ -2885,9 +2885,8 @@ default commands.
 (define-key shm-map (kbd "SPC") 'cb-hs:space)
 (define-key shm-map (kbd "DEL") 'cb-hs:del)
 #+end_src
-*** Re-implement =shm/:= to use my smart operator logic.
+*** Re-implement =shm/:= to use smart operators
 #+begin_src emacs-lisp
-
 (defun cb-hs:inside-parens? ()
   "Non-nil if point is inside a parenthesised expression."
   (save-excursion
