@@ -3123,22 +3123,22 @@ With a prefix arg, insert an arrow with padding at point."
 
 (declare-smart-ops 'haskell-mode :add '("." "$" "," "="))
 
-(define-key haskell-mode-map (kbd "-") 'cbhs:smart-minus)
-(define-key haskell-mode-map (kbd ".") 'cbhs:smart-dot)
-(define-key haskell-mode-map (kbd "|") 'cbhs:smart-pipe)
-(define-key haskell-mode-map (kbd "#") 'cbhs:smart-hash)
+(define-key haskell-mode-map (kbd "-") 'cb-hs:smart-minus)
+(define-key haskell-mode-map (kbd ".") 'cb-hs:smart-dot)
+(define-key haskell-mode-map (kbd "|") 'cb-hs:smart-pipe)
+(define-key haskell-mode-map (kbd "#") 'cb-hs:smart-hash)
 
 (declare-smart-ops 'inferior-haskell-mode :add '("." "$" "," "="))
 
-(define-key inferior-haskell-mode-map (kbd "-") 'cbhs:smart-minus)
-(define-key inferior-haskell-mode-map (kbd ".") 'cbhs:smart-dot)
-(define-key inferior-haskell-mode-map (kbd "|") 'cbhs:smart-pipe)
+(define-key inferior-haskell-mode-map (kbd "-") 'cb-hs:smart-minus)
+(define-key inferior-haskell-mode-map (kbd ".") 'cb-hs:smart-dot)
+(define-key inferior-haskell-mode-map (kbd "|") 'cb-hs:smart-pipe)
 (define-key inferior-haskell-mode-map (kbd ":") 'cb-hs:ghci-smart-colon)
 #+end_src
 ** hideshow
 *** Define helper functions
 #+begin_src emacs-lisp
-(defun cbhs:next-separator-pos ()
+(defun cb-hs:next-separator-pos ()
   (save-excursion
     (when (search-forward-regexp (rx bol "---") nil t)
       (ignore-errors (forward-line -1))
@@ -3148,7 +3148,7 @@ With a prefix arg, insert an arrow with padding at point."
       (end-of-line)
       (point))))
 
-(defun cbhs:next-decl-pos ()
+(defun cb-hs:next-decl-pos ()
   (save-excursion
     (haskell-ds-forward-decl)
     ;; Skip infix and import groups.
@@ -3161,9 +3161,9 @@ With a prefix arg, insert an arrow with padding at point."
         (forward-line -1)))
     (point)))
 
-(defun cbhs:forward-fold (&rest _)
-  (let ((sep (cbhs:next-separator-pos))
-        (decl (cbhs:next-decl-pos)))
+(defun cb-hs:forward-fold (&rest _)
+  (let ((sep (cb-hs:next-separator-pos))
+        (decl (cb-hs:next-decl-pos)))
     (goto-char (min (or sep (point-max))
                     (or decl (point-max))))))
 
@@ -3187,7 +3187,7 @@ With a prefix arg, insert an arrow with padding at point."
                  ;; Comment start
                  ,(rx "{-")
                  ;; Forward-sexp function
-                 cbhs:forward-fold)))
+                 cb-hs:forward-fold)))
 #+end_src
 ** Hoogle search method
 #+begin_src emacs-lisp
@@ -3241,7 +3241,7 @@ With a prefix arg, insert an arrow with padding at point."
 #+end_src
 ** Insert import statements
 #+begin_src emacs-lisp
-(defun cbhs:parse-module (str)
+(defun cb-hs:parse-module (str)
   (with-temp-buffer
     (insert str)
     (goto-char (point-min))
@@ -3253,16 +3253,16 @@ With a prefix arg, insert an arrow with padding at point."
                     (point-max)))
         (s-split " " (buffer-substring-no-properties start end) t)))))
 
-(defun cbhs:haskell-modules ()
+(defun cb-hs:haskell-modules ()
   "Get a list of all Haskell modules known to GHC."
   (->> (%-string "ghc-pkg" "dump")
     (s-split "---")
-    (-mapcat 'cbhs:parse-module)
+    (-mapcat 'cb-hs:parse-module)
     (-map 's-trim)))
 
-(defun cbhs:insert-import (module)
+(defun cb-hs:insert-import (module)
   "Interactively insert a Haskell import statement for MODULE."
-  (interactive (list (ido-completing-read "Module: " (cbhs:haskell-modules)
+  (interactive (list (ido-completing-read "Module: " (cb-hs:haskell-modules)
                                           nil t)))
   (if (s-matches? (rx-to-string `(and "import" (+ space) ,module (or space eol)))
                   (buffer-string))
@@ -3298,7 +3298,7 @@ With a prefix arg, insert an arrow with padding at point."
 ** Add to global insertion commands list
 #+begin_src emacs-lisp
 (-each
- '(("i" "Haskell Import" cbhs:insert-import :modes haskell-mode)
+ '(("i" "Haskell Import" cb-hs:insert-import :modes haskell-mode)
    ("l" "Haskell Language Extension" cb-hs:insert-language-pragma :modes haskell-mode))
  (~ add-to-list 'insertion-picker-options))
 #+end_src
