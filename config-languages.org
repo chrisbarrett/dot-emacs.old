@@ -97,22 +97,21 @@ Useful for setting up keymaps manually."
 #+begin_src emacs-lisp
 (defun cb-op:delete-last-smart-op ()
   "Delete the last smart-operator that was inserted."
-  (when (derived-mode-p 'prog-mode)
-    (unless (or (in-string?) (in-comment?))
-      (save-restriction
-        (narrow-to-region (line-beginning-position) (point))
+  (unless (or (derived-mode-p 'text-mode) (in-string?) (in-comment?))
+    (save-restriction
+      (narrow-to-region (line-beginning-position) (point))
 
-        (when (s-matches? (concat (regexp-opt smart-op-list) " *$")
+      (when (s-matches? (concat (regexp-opt smart-op-list) " *$")
+                        (buffer-substring (line-beginning-position) (point)))
+        ;; Delete op
+        (search-backward-regexp (regexp-opt smart-op-list))
+        (delete-region (point) (point-max))
+
+        ;; Delete preceding spaces.
+        (when (s-matches? (rx (not (any space)) (+ space) eol)
                           (buffer-substring (line-beginning-position) (point)))
-          ;; Delete op
-          (search-backward-regexp (regexp-opt smart-op-list))
-          (delete-region (point) (point-max))
-
-          ;; Delete preceding spaces.
-          (when (s-matches? (rx (not (any space)) (+ space) eol)
-                            (buffer-substring (line-beginning-position) (point)))
-            (delete-horizontal-space))
-          t)))))
+          (delete-horizontal-space))
+        t))))
 
 (defadvice sp-backward-delete-char (around delete-smart-op activate)
   "Delete the smart operator that was just inserted, including padding."
