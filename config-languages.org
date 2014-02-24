@@ -3078,11 +3078,14 @@ With a prefix arg, insert an arrow with padding at point."
     (cbhs:insert-arrow "->"))
 
    ;; Position point inside comment
-   ((thing-at-point-looking-at (rx "{" (* "-") (* space) "}"))
+   ((let ((before (buffer-substring (line-beginning-position) (point)))
+          (after (buffer-substring (point) (line-end-position))))
+      (and (s-matches? (rx "{" (* space) eol) before)
+           (s-matches? (rx bol (* space) "}") after)))
     (delete-horizontal-space)
     (insert "- ")
     (save-excursion
-      (insert " ")))
+      (insert " -")))
 
    (t
     (smart-insert-op "-"))))
