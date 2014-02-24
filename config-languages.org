@@ -3086,12 +3086,28 @@ With a prefix arg, insert an arrow with padding at point."
 
    (t
     (smart-insert-op "-"))))
+
+(defun cbhs:smart-hash ()
+  "Insert a hash character, with special formatting behaviour for pragmas."
+  (interactive "*")
+  (let* ((before (buffer-substring (line-beginning-position) (point)))
+         (after (buffer-substring (point) (line-end-position)))
+         (in-comment? (and (s-matches? (rx "{-" (* space) eol) before)
+                           (s-matches? (rx bol (* space) "-}") after))))
+    (cond
+     (in-comment?
+      (delete-horizontal-space)
+      (insert "# ")
+      (save-excursion (insert " #")))
+     (t
+      (smart-insert-op "#")))))
 #+end_src
 *** Set key bindings
 #+begin_src emacs-lisp
 ;; Override SHM bindings
 (define-key shm-map (kbd "-") nil)
 (define-key shm-map (kbd "=") nil)
+(define-key shm-map (kbd "#") nil)
 
 (declare-smart-ops 'haskell-mode          :add '("." "$" "," "="))
 (declare-smart-ops 'inferior-haskell-mode :add '("." "$" "," "="))
@@ -3099,6 +3115,7 @@ With a prefix arg, insert an arrow with padding at point."
 (define-key haskell-mode-map (kbd "-") 'cbhs:smart-minus)
 (define-key haskell-mode-map (kbd ".") 'cbhs:smart-dot)
 (define-key haskell-mode-map (kbd "|") 'cbhs:smart-pipe)
+(define-key haskell-mode-map (kbd "#") 'cbhs:smart-hash)
 
 (define-key inferior-haskell-mode-map (kbd "-") 'cbhs:smart-minus)
 (define-key inferior-haskell-mode-map (kbd ".") 'cbhs:smart-dot)
