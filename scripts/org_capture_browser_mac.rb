@@ -6,31 +6,27 @@
 framework 'ScriptingBridge'
 require 'uri'
 
-# Bundle IDs
-SAFARI = 'com.apple.Safari'
-CHROME = 'com.google.Chrome'
-
-# Find the current open browser by searching the process list.
-def running_browser
-  procs = `ps -ef`.split '\n'
-  [SAFARI, CHROME].first { |id| procs =~ id  }
+# Return the app bundle path for the frontmost application.
+def current_app
+  `osascript -e 'POSIX path of (path to frontmost application as text)'`.chomp
 end
 
 # Get the title and URL of the current browser.
-def current_browser_tab(bundleId)
-  case bundleId
-  when SAFARI
+def current_browser_tab(app_bundle_path)
+  if app_bundle_path =~ /Safari/
     app = SBApplication.applicationWithBundleIdentifier 'com.apple.Safari'
     tab = app.windows[0].currentTab
     [tab.URL, tab.name]
-  when CHROME
+  elsif app_bundle_path =~ /Chrome/
     app = SBApplication.applicationWithBundleIdentifier 'com.google.Chrome'
     tab = app.windows[0].activeTab
     [tab.URL, tab.title]
+  else
+    abort("unknown app: #{app_bundle_path}")
   end
 end
 
-# Escape the given string passing to Emacs.
+# Shell-escape the given string
 def escape(str)
   URI.escape str, /[:?\/']/
 end
@@ -43,6 +39,6 @@ def capture(url, title)
 end
 
 # Perform capture.
-app = running_browser
+app = current_app
 url, title = current_browser_tab app
 capture url, title
