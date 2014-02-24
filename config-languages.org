@@ -3379,6 +3379,12 @@ With a prefix arg, insert an arrow with padding at point."
                  (current-column))))
       (cb-hs:newline-and-insert-at-col col "-> ")))
 
+   ;; Insert new line with a binding in do-notation.
+   ((s-matches? (rx bol (* space) (+ nonl) "<-") (current-line))
+    (goto-char (line-end-position))
+    (shm/simple-indent-newline-same-col)
+    (yas-insert-first-snippet (C (~ equal "do-binding") yas--template-name)))
+
    (t
     (let ((fname (cb-hs:first-word-on-line)))
       (cond

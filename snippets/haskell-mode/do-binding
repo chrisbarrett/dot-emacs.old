@@ -1,0 +1,4 @@
+# -*- mode: snippet -*-
+# name: do-binding
+# --
+${1:var} <- $0
