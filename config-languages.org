@@ -2984,14 +2984,18 @@ default commands.
 (define-key shm-map (kbd "TAB") 'cb-hs:tab)
 (define-key shm-map (kbd "<backtab>") 'cb-hs:backtab)
 #+end_src
-** Define command to switch to src from repl
+** Configure commands for switching between src and REPL
 #+begin_src emacs-lisp
+(defadvice switch-to-haskell (after maybe-insert-state activate)
+  "Enter insert state if point is at the end of the line."
+  (when (s-blank? (buffer-substring (point) (line-end-position)))
+    (cb:maybe-evil-insert-state)))
+
 (defun cb:switch-to-haskell ()
   "Switch to the last active Haskell buffer."
   (interactive)
   (-when-let (buf (--first-buffer (derived-mode-p 'haskell-mode)))
-    (pop-to-buffer buf)
-    (cb:maybe-evil-insert-state)))
+    (pop-to-buffer buf)))
 
 (hook-fn 'inferior-haskell-mode-hook
   (local-set-key (kbd "C-c C-z") 'cb:switch-to-haskell))
