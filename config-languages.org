@@ -3105,6 +3105,15 @@ With a prefix arg, insert an arrow with padding at point."
      (t
       (smart-insert-op "#")))))
 #+end_src
+*** Define a custom smart colon command for GHCI
+#+begin_src emacs-lisp
+(defun cb-hs:ghci-smart-colon ()
+  "Insert a smart operator, unless point is immediately after the GHCI prompt."
+  (interactive)
+  (if (s-blank? (buffer-substring (line-beginning-position) (point)))
+      (insert ":")
+    (smart-insert-op ":")))
+#+end_src
 *** Set key bindings
 #+begin_src emacs-lisp
 ;; Override SHM bindings
@@ -3124,7 +3133,7 @@ With a prefix arg, insert an arrow with padding at point."
 (define-key inferior-haskell-mode-map (kbd "-") 'cbhs:smart-minus)
 (define-key inferior-haskell-mode-map (kbd ".") 'cbhs:smart-dot)
 (define-key inferior-haskell-mode-map (kbd "|") 'cbhs:smart-pipe)
-(define-key inferior-haskell-mode-map (kbd ":") 'self-insert-command)
+(define-key inferior-haskell-mode-map (kbd ":") 'cb-hs:ghci-smart-colon)
 #+end_src
 ** hideshow
 *** Define helper functions
