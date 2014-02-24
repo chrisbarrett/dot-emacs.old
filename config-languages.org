@@ -8,7 +8,7 @@ My own custom implementation of smart operators--the one on MELPA is kinda
 flaky.
 #+begin_src emacs-lisp
 (defvar-local smart-op-list
-  '("." "=" "<" ">" "%" "+" "-" "*" "/" "&" "|" "!" ":")
+  '("=" "<" ">" "%" "+" "-" "*" "/" "&" "|" "!" ":")
   "A list of strings to treat as operators.")
 
 (defun in-string? ()
