@@ -3112,17 +3112,19 @@ With a prefix arg, insert an arrow with padding at point."
 (define-key shm-map (kbd "=") nil)
 (define-key shm-map (kbd "#") nil)
 
-(declare-smart-ops 'haskell-mode          :add '("." "$" "," "="))
-(declare-smart-ops 'inferior-haskell-mode :add '("." "$" "," "="))
+(declare-smart-ops 'haskell-mode :add '("." "$" "," "="))
 
 (define-key haskell-mode-map (kbd "-") 'cbhs:smart-minus)
 (define-key haskell-mode-map (kbd ".") 'cbhs:smart-dot)
 (define-key haskell-mode-map (kbd "|") 'cbhs:smart-pipe)
 (define-key haskell-mode-map (kbd "#") 'cbhs:smart-hash)
 
+(declare-smart-ops 'inferior-haskell-mode :add '("." "$" "," "="))
+
 (define-key inferior-haskell-mode-map (kbd "-") 'cbhs:smart-minus)
 (define-key inferior-haskell-mode-map (kbd ".") 'cbhs:smart-dot)
 (define-key inferior-haskell-mode-map (kbd "|") 'cbhs:smart-pipe)
+(define-key inferior-haskell-mode-map (kbd ":") 'self-insert-command)
 #+end_src
 ** hideshow
 *** Define helper functions
