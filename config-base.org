@@ -3461,7 +3461,16 @@ Customise yasnippet behaviour to work better with evil-mode.
 ** Enable flycheck in Cask buffers
 #+begin_src emacs-lisp
 (cb:install-package 'flycheck-cask)
-(add-hook 'flycheck-mode-hook 'flycheck-cask-setup)
+(defun cb-flycheck:init-flycheck-cask ()
+  "Use the correct Emacs version, in case this Emacs is a dev build."
+  (cl-destructuring-bind (maj min &optional build point &rest _)
+      (s-split "\\." emacs-version)
+    (let ((emacs-version (if point
+                             (format "%s.%s.%s" maj min point)
+                           emacs-version)))
+      (flycheck-cask-setup))))
+
+(add-hook 'flycheck-mode-hook 'cb-flycheck:init-flycheck-cask)
 #+end_src
 * Spelling
 ** Ispell
