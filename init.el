@@ -1,6 +1,6 @@
 ;;; init.el --- Load org-babel to bootstrap configuration
 
-;; Copyright (C) 2013 Chris Barrett
+;; Copyright (C) 2013, 2014 Chris Barrett
 
 ;; Author: Chris Barrett <chris.d.barrett@me.com>
 ;; Version: 0.1
