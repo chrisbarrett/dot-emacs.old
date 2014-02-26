@@ -2782,28 +2782,29 @@ Adds improved matching algorithm for ido.
 * Projectile
 Projectile provides project-level commands such as finding files in the current
 project, performing searches and replacements, etc.
+
+Forward-declare vars to prevent creation of tmp files at top of =.emacs.d=.
+#+begin_src emacs-lisp
+(defvar projectile-known-projects-file
+  (f-join cb:tmp-dir "projectile-bookmarks.eld"))
+
+(defvar projectile-cache-file (f-join cb:tmp-dir "projectile.cache"))
+#+end_src
+
+Install packages.
+
 #+begin_src emacs-lisp
 (cb:install-package 'projectile t)
+(cb:install-package 'ack-and-a-half t)
 (projectile-global-mode +1)
-(cb:install-package 'ack-and-a-half)
-#+end_src
-** Configure vars
-#+begin_src emacs-lisp
-(setq projectile-known-projects-file
-      (f-join cb:tmp-dir "projectile-bookmarks.eld")
 
-      projectile-cache-file
-      (f-join cb:tmp-dir "projectile.cache"))
-#+end_src
-** Hide projectile modeline indicator
-#+begin_src emacs-lisp
 (after 'projectile (diminish 'projectile-mode))
 #+end_src
 ** Advise tag searches to make sure we're searching the right tags file
 #+begin_src emacs-lisp
 (defadvice find-tag (before set-tags-directory activate)
-      "Ensure the TAGS path is set before searching for tags."
-      (setq tags-file-name (concat (projectile-project-root) "TAGS")))
+  "Ensure the TAGS path is set before searching for tags."
+  (setq-local tags-file-name (concat (projectile-project-root) "TAGS")))
 #+end_src
 * Helm
 Helm provides a general UI for searching through lists of items interactively.
