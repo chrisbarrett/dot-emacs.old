@@ -2769,7 +2769,7 @@ project, performing searches and replacements, etc.
 #+begin_src emacs-lisp
 (cb:install-package 'projectile t)
 (projectile-global-mode +1)
-(require 'ack-and-a-half)
+(cb:install-package 'ack-and-a-half)
 #+end_src
 ** Configure vars
 #+begin_src emacs-lisp
@@ -5235,11 +5235,6 @@ bottom of the window in order to show scrolling context.
 Runs a hook at midnight. By default it will clean unused buffers.
 #+begin_src emacs-lisp
 (cb:install-package 'midnight t)
-#+end_src
-* ack
-Provide an Emacs interface to ack.
-#+begin_src emacs-lisp
-(cb:install-package 'ack-and-a-half)
 #+end_src
 * hideshow
 Provides code folding. Used by evil-mode.

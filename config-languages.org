@@ -4807,8 +4807,9 @@ Basic configuration. Man, I wish this package was less crappy.
 ** sclang-extensions
 Extensions that makes sclang-mode a bit more conventional.
 #+begin_src emacs-lisp
-(cb:install-package 'sclang-extensions)
-(add-hook 'sclang-mode-hook 'sclang-extensions-mode)
+(hook-fn 'sclang-mode-hook
+  (cb:install-package 'sclang-extensions)
+  (sclang-extensions-mode +1))
 #+end_src
 ** Smart operators
 #+begin_src emacs-lisp
