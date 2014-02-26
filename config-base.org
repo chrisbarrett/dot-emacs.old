@@ -5375,25 +5375,6 @@ Provides commands for quickly moving around the visible part of the buffer.
 (hook-fn 'ace-jump-mode-end-hook
   (ignore-errors (exit-recursive-edit)))
 #+end_src
-* multiple-cursors
-Lets you perform editing commands on different lines simultaneously.
-#+begin_src emacs-lisp
-(cb:install-package 'multiple-cursors)
-#+end_src
-** Define the location of the list file
-This defines the commands that interact with multiple-cursors.
-#+begin_src emacs-lisp
-(setq mc/list-file (f-join cb:tmp-dir "multiple-cursors-list.el"))
-#+end_src
-** Define global key bindings
-#+begin_src emacs-lisp
-(bind-keys
-  :overriding? t
-  "C-c m m" 'mc/edit-lines
-  "C-c m a" 'mc/mark-all-dwim
-  "C-c m n" 'mc/mark-next-like-this
-  "C-c m p" 'mc/mark-previous-like-this)
-#+end_src
 * BBDB
 Provides an address book for emacs and integrates with many modes.
 #+begin_src emacs-lisp
@@ -5620,13 +5601,6 @@ Provides commands to rotate buffers within frames.
 (bind-key "s-t"   'transpose-frame)
 (bind-key "C-x f" 'rotate-frame)
 (bind-key "s-r"   'rotate-frame)
-#+end_src
-* vline
-Highlights the current column.
-#+begin_src emacs-lisp
-(cb:install-package 'vline)
-(add-to-list 'face-remapping-alist '(vline . hl-line-face))
-(add-to-list 'face-remapping-alist '(vline-visual . hl-line-face))
 #+end_src
 * Circe
 Circe is an Emacs IRC client.
