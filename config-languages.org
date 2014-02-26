@@ -3314,9 +3314,17 @@ With a prefix arg, insert an arrow with padding at point."
   (indent-to col)
   (insert str))
 
-(defun cb-hs:first-word-on-line ()
-  (car (s-match (rx bol (* space) (group (+ (not space))))
-                (current-line))))
+(defvar cb-hs:haskell-keywords
+  '("let" "where" "module" "case" "class" "data" "deriving" "default"
+    "import" "infixl" "infixr" "newtype" "data" "type" "if" "then" "else"))
+
+(defun cb-hs:first-ident-on-line ()
+  (car (-difference (s-split (rx space) (current-line) t)
+                    cb-hs:haskell-keywords)))
+
+(defun cb-hs:first-ident-on-line ()
+  (car (-difference (s-split (rx space) (current-line) t)
+                    cb-hs:haskell-keywords)))
 
 (defun cb-hs:insert-function-template (fname)
   (back-to-indentation)
@@ -3346,59 +3354,81 @@ With a prefix arg, insert an arrow with padding at point."
     (insert "| ")
     (goto-char (line-beginning-position))
     (hi2-indent-line)
-    (goto-char (line-end-position)))
+    (goto-char (line-end-position))
+    (message "New data case"))
 
    ;; Insert new type decl case below the current one.
    ((s-matches? (rx bol (* space) "|") (current-line))
     (let ((col (save-excursion
                  (back-to-indentation)
                  (current-column))))
-      (cb-hs:newline-and-insert-at-col col "| ")))
+      (cb-hs:newline-and-insert-at-col col "| "))
+    (message "New data case"))
 
    ;; Insert pattern match at function definition.
    ((s-matches? (rx bol (* space) (+ word) (+ space) "::") (current-line))
-    (cb-hs:insert-function-template (cb-hs:first-word-on-line)))
+    (cb-hs:insert-function-template (cb-hs:first-ident-on-line))
+    (message "New function case"))
 
    ;; Insert new pattern match case below the current one.
-   ((s-matches? (rx bol (* space) (+ (not (any "="))) "->") (current-line))
+   ((or (s-matches? (rx bol (* space) (+ (not (any "="))) "->") (current-line))
+        (s-matches? (rx bol (* space) "case" (+ space)) (current-line)))
     (goto-char (line-end-position))
-    (shm/simple-indent-newline-same-col)
-    (yas-insert-first-snippet (C (~ equal "match-case") yas--template-name)))
+    (hi2-newline-and-indent)
+    (yas-insert-first-snippet (C (~ equal "match-case") yas--template-name))
+    (message "New pattern match case"))
 
    ;; Insert new line starting with comma.
    ((s-matches? (rx bol (* space) ",") (current-line))
     (let ((col (save-excursion
                  (back-to-indentation)
                  (current-column))))
-      (cb-hs:newline-and-insert-at-col col ", ")))
+      (cb-hs:newline-and-insert-at-col col ", "))
+    (message "New entry"))
 
    ;; Insert new line starting with an arrow.
    ((s-matches? (rx bol (* space) "->") (current-line))
     (let ((col (save-excursion
                  (back-to-indentation)
                  (current-column))))
-      (cb-hs:newline-and-insert-at-col col "-> ")))
+      (cb-hs:newline-and-insert-at-col col "-> "))
+    (message "New arrow"))
 
    ;; Insert new line with a binding in do-notation.
    ((s-matches? (rx bol (* space) (+ nonl) "<-") (current-line))
     (goto-char (line-end-position))
     (shm/simple-indent-newline-same-col)
-    (yas-insert-first-snippet (C (~ equal "do-binding") yas--template-name)))
+    (yas-insert-first-snippet (C (~ equal "do-binding") yas--template-name))
+    (message "New do-binding"))
 
    (t
-    (let ((fname (cb-hs:first-word-on-line)))
+    (let ((fname (cb-hs:first-ident-on-line)))
       (cond
        ;; New function case.
        ((and fname
-             (or (s-matches? (eval `(rx bol (* space) ,fname (+ space) "::"))
+             (or
+              ;; A type decl exists in this buffer?
+              (s-matches? (eval `(rx bol (* space)
+                                     (? (or "let" "where") (+ space))
+                                     ,fname (+ space) "::"))
                              (buffer-string))
-                 (s-matches? (eval `(rx bol (* space) ,fname (+ nonl) "="))
-                             (current-line))))
-        (cb-hs:insert-function-template fname))
+
+                 (s-matches? (eval `(rx bol (* space)
+                                        (? (or "let" "where") (+ space))
+                                        ,fname (+ nonl) "="))
+                             (current-line)))
+             )
+        (cb-hs:insert-function-template fname)
+        (save-excursion (hi2-indent-line))
+        (message "New binding case")
+        )
 
        (t
         (goto-char (line-end-position))
-        (shm/newline-indent))))))
+
+        (or (atomic-change-group (shm/newline-indent))
+            (hi2-newline-and-indent))
+        (message "New line"))))))
 
   (when (true? evil-mode)
     (evil-insert-state)))
