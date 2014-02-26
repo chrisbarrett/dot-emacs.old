@@ -1,7 +1,6 @@
-# -*- mode: snippet -*-
-# name: instance
 # key: in
+# name: instance
 # condition: (cbyas:bol?)
 # --
-instance ${1:class} ${2:type} where
+instance ${2:class} where
   $0

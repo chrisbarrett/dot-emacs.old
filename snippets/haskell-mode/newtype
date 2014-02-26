@@ -1,6 +1,5 @@
-# -*- mode: snippet -*-
+# key: nt
 # name: newtype
-# key: n
 # condition: (cbyas:bol?)
 # --
 newtype ${1:name} = ${2:$1} $0
