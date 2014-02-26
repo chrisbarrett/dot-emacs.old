@@ -46,3 +46,6 @@
 [submodule "lib/bison-mode"]
 	path = lib/bison-mode
 	url = git@github.com:chrisbarrett/bison-mode.git
+[submodule "lib/org-reveal"]
+	path = lib/org-reveal
+	url = https://github.com/yjwen/org-reveal.git
