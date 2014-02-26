@@ -3556,6 +3556,10 @@ Improves the performance of flyspell.
 #+end_src
 * Tags
 ctags-related commands. Adapted from [[http://mattbriggs.net/blog/2012/03/18/awesome-emacs-plugins-ctags/][Awesome Emacs Plugins: CTags]]
+** Set ctags program
+#+begin_src emacs-lisp
+(setq ctags-update-command (executable-find "ctags"))
+#+end_src
 ** Make tags searches case-sensitive
 #+begin_src emacs-lisp
 (setq tags-case-fold-search nil)
