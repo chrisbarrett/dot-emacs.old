@@ -4737,6 +4737,108 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
   (when (executable-find "shellcheck")
     (flycheck-select-checker 'sh-shellcheck)))
 #+end_src
+* TeX
+Auctex provides a development environment for tex
+#+begin_src emacs-lisp
+(cb:install-packages-on-buffer-name
+    (rx "." (or "tex" "dtx" "ins" "ltx" "sty" "cls" "clo" "bbl" "dry" "lco") eol)
+  '(auctex
+    latex-preview-pane))
+
+(add-to-list 'auto-mode-alist '("\\.lco$" . latex-mode))
+#+end_src
+** DEFER
+#+begin_src emacs-lisp
+(after 'tex
+#+end_src
+** Configure autex style variables
+#+begin_src emacs-lisp
+(setq TeX-auto-save t
+      TeX-parse-self t)
+#+end_src
+** Enable preview pane
+#+begin_src emacs-lisp
+(latex-preview-pane-enable)
+#+end_src
+** Position point inside braces when completing environments
+#+begin_src emacs-lisp
+(defadvice TeX-complete-symbol (after position-point activate)
+  "Position point inside braces."
+  (when (equal (char-before) ?\})
+    (forward-char -1)))
+#+end_src
+** whizzytex
+Provides live output display with incremental compilation.
+#+begin_src emacs-lisp
+(require 'whizzytex)
+#+end_src
+*** Configure whizzytex environment
+#+begin_src emacs-lisp
+(defvar whizzytex-sty-installation "/usr/local/share/whizzytex/latex/whizzytex.sty"
+  "Path to the whizzytex macro package.")
+
+(defvar whizzytex-src (f-join cb:lib-dir "whizzytex" "src")
+  "Path to the whizzytex sources.")
+
+(defvar whizzy-command-name (f-join whizzytex-src "whizzytex"))
+#+end_src
+*** Enable =whizzytex= in tex buffers
+#+begin_src emacs-lisp
+(defun cbwh:install-tex-macros ()
+  "Prompt the user to install the tex macros if they do not exist."
+  (unless (f-exists? whizzytex-sty-installation)
+    (when (y-or-n-p (format "Install whizzytex macros into %s? "
+                            (f-dirname whizzytex-sty-installation)))
+      ;; Make installation directory and copy package there.
+      (%-sudo (%-sh "mkdir -p" (f-dirname whizzytex-sty-installation)))
+      (%-sudo (%-sh "cp -f"
+                    (%-quote (f-join whizzytex-src "whizzytex.sty"))
+                    (%-quote whizzytex-sty-installation))))))
+
+(hook-fn 'tex-mode-hook
+  (cbwh:install-tex-macros)
+  (whizzytex-mode +1))
+#+end_src
+** PDF support
+#+begin_src emacs-lisp
+(TeX-global-PDF-mode +1)
+#+end_src
+** Show inline images
+#+begin_src emacs-lisp
+(require 'preview)
+(require 'latex)
+#+end_src
+** Flycheck
+Bind error navigation keys.
+#+begin_src emacs-lisp
+(after 'flycheck
+  (bind-keys
+    :map TeX-mode-map
+    "M-P" 'flycheck-previous-error
+    "M-N" 'flycheck-next-error
+    "TAB" 'TeX-complete-symbol))
+#+end_src
+** Folding
+=tex-fold= is part of auctex and provides improved folding commands over the
+defaults provided by tex-mode.
+#+begin_src emacs-lisp
+(autoload 'TeX-fold-mode "tex-fold")
+(hook-fns '(tex-mode-hook latex-mode-hook)
+  (TeX-fold-mode +1))
+#+end_src
+** Evil
+Configure environment folding for =evil-mode=.
+#+begin_src emacs-lisp
+(after '(evil tex)
+  (evil-define-key 'normal TeX-mode-map
+    (kbd "z m") 'TeX-fold-buffer
+    (kbd "z r") 'TeX-fold-clearout-buffer
+    (kbd "SPC") 'TeX-fold-dwim))
+#+end_src
+** END
+#+begin_src emacs-lisp
+)
+#+end_src
 * Supercollider
 ** sclang
 Basic configuration. Man, I wish this package was less crappy.
