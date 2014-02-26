@@ -3220,12 +3220,6 @@ Provides commands for incrementing and decrementing numbers at point.
   "C--" 'evil-numbers/dec-at-pt
   "C-+" 'evil-numbers/inc-at-pt)
 #+end_src
-** Vimrc mode
-Provides a major mode for editing vimscript.
-#+begin_src emacs-lisp
-(cb:install-package 'vimrc-mode)
-(add-to-list 'auto-mode-alist '("vimrc$" . vimrc-mode))
-#+end_src
 ** END
 #+begin_src emacs-lisp
 )
