@@ -33,7 +33,7 @@ These packages are utilities required by the configuration infrastructure.
   "Install PKG unless it has already been installed.
 Also require the package when REQUIRE? is set."
   (unless (package-installed-p pkg) (package-install pkg))
-  (when require? (require pkg)))
+  (when require? (require pkg nil t)))
 
 (cb:install-package 'dash t)
 (cb:install-package 'dash-functional t)
