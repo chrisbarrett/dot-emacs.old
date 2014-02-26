@@ -357,19 +357,43 @@ FEATURES may be a symbol or list of symbols."
 #+end_src
 ** define a command to install packages when visiting certain file types
 #+begin_src emacs-lisp
-(defun cb:install-packages-on-buffer-name (rx packages)
-  "Install and require packages when visiting certain files.
+(cl-defmacro cb:declare-package-installer (group &key match packages)
+  "Declare a command to install packages when visiting certain files.
 
-RX is a regular extension matched against the buffer name.
+GROUP is a symbol naming the group of packages. It will be used
+to create an interactive installation command.
 
-PACKAGES is a list of package names. Each package will be
-installed and loaded."
+MATCH is a regular expression matched against file names. The
+listed packages will be installed automatically when navigating
+to a matching file.
+
+PACKAGES is a list of packages that will be installed."
   (declare (indent 1))
-  (--each packages
-    (eval `(hook-fns '(find-file-hook after-change-major-mode-hook)
-             (when (s-matches? ,rx (buffer-name))
-               (save-window-excursion
-                 (cb:install-package ',it t)))))))
+  (let ((sym (intern (format "cb:install-%s-packages" group)))
+        (n-pkgs (length packages)))
+    `(progn
+       (defun ,sym ()
+         (interactive)
+
+         ;; Prompt the user for confirmation.
+         (when (and (called-interactively-p)
+                    (not
+                     (y-or-n-p
+                      ,(format "%s package%s will be installed (%s). Continue? "
+                               n-pkgs
+                               (if (= 1 n-pkgs) "" "s")
+                               (s-join ", " (-map 'symbol-name packages))))))
+           (user-error "Aborted"))
+
+         (save-window-excursion
+           (--each ',packages
+             (with-demoted-errors
+                 (cb:install-package it t)))))
+
+       ;; Install automatically on hooks when buffer or file name is a match.
+       (hook-fns '(find-file-hook after-change-major-mode-hook)
+         (when (s-matches? ,match (buffer-name))
+           (funcall ',sym))))))
 #+end_src
 * Convenience functions
 ** current region
@@ -6264,7 +6288,9 @@ Define a command picker for printer and scanner functions.
 
 * Mutt
 #+begin_src emacs-lisp
-(cb:install-packages-on-buffer-name "muttrc" '(muttrc-mode))
+(cb:declare-package-installer muttrc
+  :match "muttrc"
+  :packages (muttrc-mode))
 #+end_src
 * Define functions for [[file:Makefile][Makefile]]
 #+begin_src emacs-lisp

@@ -197,7 +197,9 @@ Define a custom colon command.
 #+end_src
 * JSON
 #+begin_src emacs-lisp
-(cb:install-packages-on-buffer-name "\\.json" '(json-mode))
+(cb:declare-package-installer json
+  :match "\\.json"
+  :packages (json-mode))
 #+end_src
 ** Define key command to format buffer
 #+begin_src emacs-lisp
@@ -210,7 +212,9 @@ Define a custom colon command.
 #+end_src
 * csv-mode
 #+begin_src emacs-lisp
-(cb:install-packages-on-buffer-name "\\.csv$" '(csv-mode))
+(cb:declare-package-installer csv
+  :match "\\.csv$"
+  :packages (csv-mode))
 #+end_src
 ** Customise separator face
 #+begin_src emacs-lisp
@@ -258,9 +262,12 @@ Set a key binding for the above command.
 #+end_src
 * Markdown
 #+begin_src emacs-lisp
-(let ((re (rx "." (or "md" "markdown") eol)))
-  (cb:install-packages-on-buffer-name re '(markdown-mode))
-  (add-to-list 'auto-mode-alist `(,re . markdown-mode)))
+(cb:declare-package-installer markdown
+  :match (rx "." (or "md" "markdown") eol)
+  :packages (markdown-mode))
+
+(add-to-list 'auto-mode-alist
+             `(,(rx "." (or "md" "markdown") eol) . markdown-mode))
 #+end_src
 ** DEFER
 #+begin_src emacs-lisp
@@ -1291,10 +1298,11 @@ Byte-compile and check parens on save, unless this is a special buffer.
 
 * Clojure
 #+begin_src emacs-lisp
-(cb:install-packages-on-buffer-name (rx "." (or "clj" "edn" "dtm" "cljs" "cljx"))
-  '(clojure-mode
-    cider
-    ac-nrepl))
+(cb:declare-package-installer clojure
+  :match (rx "." (or "clj" "edn" "dtm" "cljs" "cljx"))
+  :packages (clojure-mode
+             cider
+             ac-nrepl))
 #+end_src
 ** documentation
 Add evil documentation lookup for Clojure.
@@ -1865,11 +1873,12 @@ With prefix, goes to the REPL buffer afterwards (as
 #+end_src
 * Python
 #+begin_src emacs-lisp
-(cb:install-packages-on-buffer-name "\\.py"
-  '(python
-    python-info
-    jedi
-    virualenv))
+(cb:declare-package-installer python
+  :match "\\.py"
+  :packages (python
+             python-info
+             jedi
+             virualenv))
 #+end_src
 ** Run prog-mode-hook in python-mode
 =python-mode= is not derived from prog mode, but we still want all the
@@ -1881,7 +1890,7 @@ programming goodies, so run the hook manually.
 #+end_src
 ** DEFER
 #+begin_src emacs-lisp
-(after 'python
+(after '(python jedi virtualenv)
 #+end_src
 ** ipython support
 Use ipython if it is installed.
@@ -2139,19 +2148,19 @@ Configures Emacs according to the current python virtualenv settings.
 #+end_src
 * Ruby
 #+begin_src emacs-lisp
-(cb:install-packages-on-buffer-name
-    (rx (or "Rakefile" "Vagrantfile" "Thorfile" "Capfile" "GuardFile" "Gemfile"
-            ".rb" ".ru" ".rake" ".jbuilder" ".thor" ".gemspec" ".podspec"))
-  '(ruby-mode
-    inf-ruby
-    rvm
-    rinari
-    yari
-    rubocop
-    robe))
+(cb:declare-package-installer ruby
+  :match (rx (or "Rakefile" "Vagrantfile" "Thorfile" "Capfile" "GuardFile" "Gemfile"
+                 ".rb" ".ru" ".rake" ".jbuilder" ".thor" ".gemspec" ".podspec"))
+  :packages (ruby-mode
+             inf-ruby
+             rvm
+             yari
+             rubocop
+             robe))
 
-(cb:install-packages-on-buffer-name (rx ".ya" (? "ml") eol)
-  '(yaml-mode))
+(cb:declare-package-installer yaml
+  :match (rx ".ya" (? "ml") eol)
+  :packages (yaml-mode))
 #+end_src
 ** Ignore RBC files
 #+begin_src emacs-lisp
@@ -2380,61 +2389,6 @@ If this is the trailing colon for a hash key, insert padding."
   (local-set-key (kbd ",") (command (insert ",") (just-one-space)))
   (local-set-key (kbd ":") 'cb-rb:smart-colon))
 #+end_src
-** rinari
-Provides navigation commands between files in Rails projects.
-*** Enable in rails projects
-#+begin_src emacs-lisp
-(defun cb:rails-project? ()
-  (and (not (or (true? org-src-mode)
-                (s-starts-with? "*Org Src " (buffer-name))))
-       (projectile-project-p)
-       (s-matches? "rails" (symbol-name (projectile-project-type)))))
-
-(hook-fn 'cb:rails-modes-hook
-  (when (cb:rails-project?)
-    (rinari-minor-mode +1)))
-#+end_src
-*** Configure vars
-#+begin_src emacs-lisp
-(hook-fn 'rinari-minor-mode-hook
-  (setq rinari-tags-file-name "TAGS"
-        rng-nxml-auto-validate-flag nil
-        nxml-degraded t))
-#+end_src
-*** Rebind keys
-#+begin_src emacs-lisp
-(after 'rinari
-  (define-prefix-command 'cb:rinari-map)
-  (define-key rinari-minor-mode-map (kbd "C-c f") 'cb:rinari-map)
-  (define-keys cb:rinari-map
-    ";" 'rinari-find-by-context
-    "C" 'rinari-find-cells
-    "F" 'rinari-find-features
-    "M" 'rinari-find-mailer
-    "S" 'rinari-find-steps
-    "Y" 'rinari-find-sass
-    "a" 'rinari-find-application
-    "c" 'rinari-find-controller
-    "e" 'rinari-find-environment
-    "f" 'rinari-find-file-in-project
-    "h" 'rinari-find-helper
-    "i" 'rinari-find-migration
-    "j" 'rinari-find-javascript
-    "l" 'rinari-find-lib
-    "m" 'rinari-find-model
-    "n" 'rinari-find-configuration
-    "o" 'rinari-find-log
-    "p" 'rinari-find-public
-    "r" 'rinari-find-rspec
-    "s" 'rinari-find-script
-    "t" 'rinari-find-test
-    "u" 'rinari-find-plugin
-    "v" 'rinari-find-view
-    "w" 'rinari-find-worker
-    "x" 'rinari-find-fixture
-    "y" 'rinari-find-stylesheet
-    "z" 'rinari-find-rspec-fixture))
-#+end_src
 ** smartparens
 #+begin_src emacs-lisp
 (require 'smartparens-ruby)
@@ -2547,8 +2501,9 @@ Add evil doc lookup handler for Ruby.
 #+end_src
 * Scala
 #+begin_src emacs-lisp
-(cb:install-packages-on-buffer-name (rx (or ".scala" ".sbt"))
-  '(scala-mode2))
+(cb:declare-package-installer scala
+  :match (rx (or ".scala" ".sbt"))
+  :packages (scala-mode2))
 #+end_src
 ** DEFER
 #+begin_src emacs-lisp
@@ -2684,18 +2639,18 @@ point to the position of the join."
 #+end_src
 * Haskell
 #+begin_src emacs-lisp
-(cb:install-packages-on-buffer-name
-    (rx "." (or "hs" "gs" "hi" "pghci" "cabal" "hsc" "hcr"))
-  '(haskell-mode
-    ghc
-    hi2
-    shm))
+(cb:declare-package-installer haskell
+  :match (rx "." (or "hs" "gs" "hi" "pghci" "cabal" "hsc" "hcr"))
+  :packages (haskell-mode
+             ghc
+             hi2
+             shm))
 #+end_src
-** ignore .hi files
+** Ignore .hi files
 #+begin_src emacs-lisp
 (add-to-list 'completion-ignored-extensions ".hi")
 #+end_src
-** haskell-mode
+** Configure haskell-mode vars
 #+begin_src emacs-lisp
 (setq haskell-tags-on-save t
       haskell-stylish-on-save t)
@@ -2704,7 +2659,7 @@ point to the position of the join."
   (setq-local tab-width 2)
   (setq-local evil-shift-width 2))
 #+end_src
-** enable haskell-doc-mode
+** Enable haskell-doc-mode
 #+begin_src emacs-lisp
 (hook-fn 'haskell-mode-hook
   (haskell-doc-mode +1)
@@ -2744,7 +2699,7 @@ point to the position of the join."
 #+end_src
 ** DEFER
 #+begin_src emacs-lisp
-(after 'haskell-mode
+(after '(haskell-mode ghc shm hi2)
 #+end_src
 ** Load inf-haskell for its keymap
 #+begin_src emacs-lisp
@@ -2787,7 +2742,7 @@ See URL `http://www.haskell.org/ghc/'."
           line-end))
   :modes haskell-c-mode)
 #+end_src
-** install ghc support package
+** Tweak GHC vars
 #+begin_src emacs-lisp
 (setq ghc-import-key nil)
 
@@ -2800,7 +2755,7 @@ See URL `http://www.haskell.org/ghc/'."
 
 (add-hook 'haskell-mode-hook 'cb:ghc-init)
 #+end_src
-*** Set GHC key bindings
+** Set GHC key bindings
 These would normally be set in =ghc-init=, but I do not want to bind all of the
 default commands.
 #+begin_src emacs-lisp
@@ -2821,14 +2776,15 @@ default commands.
 (define-key haskell-mode-map ghc-hoogle-key      'haskell-hoogle)
 (define-key haskell-mode-map ghc-shallower-key   'ghc-make-indent-shallower)
 (define-key haskell-mode-map ghc-deeper-key      'ghc-make-indent-deeper)
+
 #+end_src
-** install hi2 for haskell indentation
+** Enable hi2 for haskell indentation
 #+begin_src emacs-lisp
 (hook-fn 'haskell-mode-hook
   (turn-on-hi2)
   (diminish 'hi2-mode))
 #+end_src
-*** Only show indentation guides in evil insert state
+** Only show indentation guides in evil insert state
 #+begin_src emacs-lisp
 (after 'evil
 
@@ -2845,7 +2801,7 @@ default commands.
       (hi2-disable-show-indentations)))
   )
 #+end_src
-** install structured-haskell-mode
+** Configure structured-haskell-mode
 #+begin_src emacs-lisp
 (add-hook 'haskell-mode-hook 'structured-haskell-mode)
 
@@ -3435,8 +3391,9 @@ With a prefix arg, insert an arrow with padding at point."
 #+end_src
 * Idris
 #+begin_src emacs-lisp
-(cb:install-packages-on-buffer-name (rx ".idr" eol)
-  '(idris-mode))
+(cb:declare-package-installer idris
+  :match (rx ".idr" eol)
+  :packages (idris-mode))
 #+end_src
 ** ignore .idr files
 #+begin_src emacs-lisp
@@ -4091,8 +4048,9 @@ SILENT? controls whether provide feedback to the user on the action performed."
 #+end_src
 * SML
 #+begin_src emacs-lisp
-(cb:install-packages-on-buffer-name (rx "." (or "sml" "sig" "cm" "grm"))
-  '(sml-mode))
+(cb:declare-package-installer standard-ml
+  :match (rx "." (or "sml" "sig" "cm" "grm"))
+  :packages (sml-mode))
 
 (setq sml-indent-level 2)
 (add-to-list 'completion-ignored-extensions "\\.cm")
@@ -4100,9 +4058,10 @@ SILENT? controls whether provide feedback to the user on the action performed."
 #+end_src
 * OCaml
 #+begin_src emacs-lisp
-(cb:install-packages-on-buffer-name (rx ".ml" (? (any "y" "i" "l" "p")))
-  '(tuareg
-    merlin))
+(cb:declare-package-installer ocaml
+  :match (rx ".ml" (? (any "y" "i" "l" "p")))
+  :packages (tuareg
+             merlin))
 #+end_src
 ** Configure OPAM
 OPAM is a source-based package manager for OCaml.
@@ -4138,14 +4097,13 @@ utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
 #+end_src
 ** Configure Merlin
 #+begin_src emacs-lisp
-(after 'tuareg
-  (add-hook 'tuareg-mode-hook 'merlin-mode)
 
-  (setq merlin-use-auto-complete-mode t)
-  (setq merlin-default-flags "-w @A-4-33-41-42-43-34-44")
+(add-hook 'tuareg-mode-hook 'merlin-mode)
+(setq merlin-use-auto-complete-mode t)
+(setq merlin-default-flags "-w @A-4-33-41-42-43-34-44")
+(add-to-list 'face-remapping-alist '(merlin-type-face . intense-flash))
 
-  (add-to-list 'face-remapping-alist '(merlin-type-face . intense-flash))
-
+(after '(tuareg merlin)
   (define-key merlin-mode-map (kbd "M-N") 'merlin-error-next))
 #+end_src
 ** configure utilities for yasnippet
@@ -4705,8 +4663,9 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
 F# is syntactically close enough to OCaml that we can reuse the utilities
 defined for that language.
 #+begin_src emacs-lisp
-(cb:install-packages-on-buffer-name (rx ".fs" (? (any "i" "y" "l" "x")) eol)
-  '(fsharp-mode))
+(cb:declare-package-installer fsharp
+  :match (rx ".fs" (? (any "i" "y" "l" "x")) eol)
+  :packages (fsharp-mode))
 #+end_src
 ** auto-complete
 #+begin_src emacs-lisp
@@ -4793,10 +4752,10 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
 * TeX
 Auctex provides a development environment for tex
 #+begin_src emacs-lisp
-(cb:install-packages-on-buffer-name
-    (rx "." (or "tex" "dtx" "ins" "ltx" "sty" "cls" "clo" "bbl" "dry" "lco") eol)
-  '(auctex
-    latex-preview-pane))
+(cb:declare-package-installer tex
+  :match (rx "." (or "tex" "dtx" "ins" "ltx" "sty"
+                     "cls" "clo" "bbl" "dry" "lco") eol)
+  :packages (auctex latex-preview-pane))
 
 (add-to-list 'auto-mode-alist '("\\.lco$" . latex-mode))
 #+end_src
