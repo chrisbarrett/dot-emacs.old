@@ -6271,7 +6271,8 @@ Define a command picker for printer and scanner functions.
 (defun byte-compile-conf ()
   "Recompile all configuration files."
   (interactive)
-  (byte-recompile-file (concat user-emacs-directory "init.el") t 0)
+  (dolist (file (file-expand-wildcards (concat user-emacs-directory "*.el")))
+    (byte-recompile-file file t))
   (when (boundp 'cb:lisp-dir)
     (byte-recompile-directory cb:lisp-dir 0 t)))
 #+end_src
