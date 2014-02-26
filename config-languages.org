@@ -177,7 +177,7 @@ Define a custom colon command.
 #+end_src
 * JSON
 #+begin_src emacs-lisp
-(cb:install-package 'json-mode)
+(cb:install-packages-on-buffer-name "\\.json" '(json-mode))
 #+end_src
 ** Define key command to format buffer
 #+begin_src emacs-lisp
@@ -190,8 +190,7 @@ Define a custom colon command.
 #+end_src
 * csv-mode
 #+begin_src emacs-lisp
-(cb:install-package 'csv-mode)
-(add-to-list 'auto-mode-alist '("\\.[Cc][Ss][Vv]\\'" . csv-mode))
+(cb:install-packages-on-buffer-name "\\.csv$" '(csv-mode))
 #+end_src
 ** Customise separator face
 #+begin_src emacs-lisp
@@ -239,9 +238,9 @@ Set a key binding for the above command.
 #+end_src
 * Markdown
 #+begin_src emacs-lisp
-(cb:install-package 'markdown-mode)
-(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
-(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+(let ((re (rx "." (or "md" "markdown") eol)))
+  (cb:install-packages-on-buffer-name re '(markdown-mode))
+  (add-to-list 'auto-mode-alist `(,re . markdown-mode)))
 #+end_src
 ** DEFER
 #+begin_src emacs-lisp
@@ -284,13 +283,15 @@ Define keys to move by headlines in normal state.
 )
 #+end_src
 * C
-** DEFER
 #+begin_src emacs-lisp
-(after 'cc-mode
+(--each '(ac-c-headers
+          auto-complete-clang-async
+          google-c-style
+          c-eldoc)
+  (eval `(hook-fn 'c-common-mode-hook (cb:install-package ',it t))))
 #+end_src
 ** Set indentation style to Google Style (similar to K&R)
 #+begin_src emacs-lisp
-(cb:install-package 'google-c-style t)
 (add-hook 'c-mode-common-hook 'google-set-c-style)
 (add-hook 'c-mode-common-hook 'google-make-newline-indent)
 #+end_src
@@ -300,6 +301,10 @@ Define keys to move by headlines in normal state.
   (setq cc-compilers-list (list "clang")
         cc-default-compiler "clang"
         cc-default-compiler-options "-fno-color-diagnostics -g"))
+#+end_src
+** DEFER
+#+begin_src emacs-lisp
+(after 'cc-mode
 #+end_src
 ** Key bindings
 #+begin_src emacs-lisp
@@ -557,27 +562,19 @@ Ignore errors thrown by internals.
 #+end_src
 ** auto-complete
 #+begin_src emacs-lisp
-(cb:install-package 'ac-c-headers)
-(cb:install-package 'auto-complete-clang-async)
-#+end_src
-*** Set sources
-#+begin_src emacs-lisp
 (put 'cc-mode 'ac-sources
      '(ac-source-clang-async
        ac-source-yasnippet
        ac-source-c-headers
        ac-source-c-header-symbols
        ac-source-words-in-buffer))
-#+end_src
-*** Configure faces
-#+begin_src emacs-lisp
+
 (after 'auto-complete
   (copy-face 'ac-candidate-face 'ac-clang-candidate-face)
   (copy-face 'ac-selection-face 'ac-clang-selection-face))
 #+end_src
 ** eldoc
 #+begin_src emacs-lisp
-(cb:install-package 'c-eldoc)
 (add-hook 'c-mode-hook 'c-turn-on-eldoc-mode)
 #+end_src
 ** disable flyspell
@@ -801,12 +798,9 @@ Adds a flash when running eval-expression.
 #+end_src
 ** eldoc
 Shows documentation hints in the minibuffer.
-*** Enable for all Lisps
 #+begin_src emacs-lisp
 (add-hook 'cb:lisp-modes-hook 'turn-on-eldoc-mode)
-#+end_src
-*** Diminish
-#+begin_src emacs-lisp
+
 (hook-fn 'eldoc-mode-hook
   (diminish 'eldoc-mode))
 #+end_src
@@ -814,13 +808,9 @@ Shows documentation hints in the minibuffer.
 Provides refactoring commands for lisps.
 #+begin_src emacs-lisp
 (cb:install-package 'redshank)
-#+end_src
-*** Enable for all Lisps
-#+begin_src emacs-lisp
+
 (add-hook 'cb:lisp-modes-hook 'turn-on-redshank-mode)
-#+end_src
-*** Diminish
-#+begin_src emacs-lisp
+
 (hook-fn 'redshank-mode-hook
   (diminish 'redshank-mode))
 #+end_src
@@ -1280,14 +1270,11 @@ Byte-compile and check parens on save, unless this is a special buffer.
 #+RESULTS:
 
 * Clojure
-** clojure-mode
-Provides a major mode for editing Clojure files.
 #+begin_src emacs-lisp
-(cb:install-package 'clojure-mode)
-#+end_src
-
-#+begin_src emacs-lisp
-(add-hook 'clojure-mode-hook 'subword-mode)
+(cb:install-packages-on-buffer-name (rx "." (or "clj" "edn" "dtm" "cljs" "cljx"))
+  '(clojure-mode
+    cider
+    ac-nrepl))
 #+end_src
 ** documentation
 Add evil documentation lookup for Clojure.
@@ -1298,14 +1285,9 @@ Add evil documentation lookup for Clojure.
 ** cider
 Provides a Clojure IDE and REPL for Emacs, built on top of nREPL.
 #+begin_src emacs-lisp
-(cb:install-package 'cider)
-#+end_src
-
-#+begin_src emacs-lisp
 (setq cider-popup-stacktraces    nil
       nrepl-hide-special-buffers t)
 #+end_src
-
 *** Switch to cider repl
 #+begin_src emacs-lisp
 (defun cb:switch-to-cider ()
@@ -1450,7 +1432,6 @@ Advise back-to-indentation so evil bol commands work.
 ** ac-nrepl
 Provides auto-complete sources for Clojure using Cider.
 #+begin_src emacs-lisp
-(cb:install-package 'ac-nrepl)
 (add-hook 'cider-mode-hook 'ac-nrepl-setup)
 (add-hook 'cider-repl-mode-hook 'ac-nrepl-setup)
 (add-to-list 'ac-modes 'cider-mode)
@@ -1863,12 +1844,14 @@ With prefix, goes to the REPL buffer afterwards (as
         (0 font-lock-type-face))))))
 #+end_src
 * Python
-** python-mode
-Use the more recent python mode available on Marmalade.
 #+begin_src emacs-lisp
-(cb:install-package 'python)
+(cb:install-packages-on-buffer-name "\\.py"
+  '(python
+    python-info
+    jedi
+    virualenv))
 #+end_src
-*** Emulate prog-mode
+** Run prog-mode-hook in python-mode
 =python-mode= is not derived from prog mode, but we still want all the
 programming goodies, so run the hook manually.
 
@@ -1904,8 +1887,6 @@ Use ipython if it is installed.
 ** switch to python
 Define a command to switch from the repl to the last python buffer and
 vice-versa.
-*** Impl
-
 #+begin_src emacs-lisp
 (defun cb-py:restart-python ()
   (save-window-excursion
@@ -1939,15 +1920,12 @@ vice-versa.
       (select-window win)
       (goto-char (point-max))
       (cb:maybe-evil-append-line 1))))
-#+end_src
-*** Bind keys
-#+begin_src emacs-lisp
+
 (define-key python-mode-map (kbd "C-c C-z") 'cb:switch-to-python)
 (define-key inferior-python-mode-map (kbd "C-c C-z") 'cb:switch-to-python)
 #+end_src
 ** eval-dwim
 Define a command that performs a context-sensitive eval command.
-*** Impl
 #+begin_src emacs-lisp
 (defun cb-py:eval-dwim (&optional arg)
   (interactive "P")
@@ -1957,12 +1935,9 @@ Define a command that performs a context-sensitive eval command.
     (deactivate-mark))
    (t
     (python-shell-send-defun arg))))
-#+end_src
-*** Bind keys
-#+begin_src emacs-lisp
+
 (define-key python-mode-map (kbd "C-c C-c") 'cb-py:eval-dwim)
 #+end_src
-
 ** auto-complete
 Enable auto-complete in python modes.
 #+begin_src emacs-lisp
@@ -2074,7 +2049,6 @@ Each element is either a string or a cons of (var . default)."
                              keywords)))))))
 #+end_src
 ** insert a docstring for the function at point
-*** Define command
 #+begin_src emacs-lisp
 (defun cb-py:arglist-for-function-at-point ()
   "Return the arglist for the function at point, or nil if none."
@@ -2097,9 +2071,7 @@ Each element is either a string or a cons of (var . default)."
                       "    Returns:\n\n"
                       "    \"\"\"" ))
       (message "Arglist inserted."))))
-#+end_src
-*** Add to insertion picker
-#+begin_src emacs-lisp
+
 (add-to-list 'insertion-picker-options
              '("d" "Docstring" cb-py:insert-docstring :modes (python-mode)))
 #+end_src
@@ -2107,16 +2079,10 @@ Each element is either a string or a cons of (var . default)."
 #+begin_src emacs-lisp
 (define-key python-mode-map (kbd "M-q") 'indent-dwim)
 #+end_src
-** python-info
-Installs an info manual for Python 2.7
-#+begin_src emacs-lisp
-(cb:install-package 'python-info)
-#+end_src
 ** jedi
 Provides auto-completion, code search and documentation for python.
 
 #+begin_src emacs-lisp
-(cb:install-package 'jedi)
 (add-hook 'cb:python-modes-hook 'jedi:setup)
 #+end_src
 
@@ -2142,13 +2108,8 @@ Make the goto-definition key the same as for lisp modes.
 Configures Emacs according to the current python virtualenv settings.
 
 #+begin_src emacs-lisp
-(cb:install-package 'virtualenv)
 (add-hook 'cb:python-modes-hook 'virtualenv-minor-mode)
-#+end_src
 
-Mark virtualenv vars as safe.
-
-#+begin_src emacs-lisp
 (put 'virtualenv-default-directory 'safe-local-variable (K t))
 (put 'virtualenv-workon 'safe-local-variable (K t))
 #+end_src
@@ -2157,9 +2118,20 @@ Mark virtualenv vars as safe.
 )
 #+end_src
 * Ruby
-** ruby-mode
 #+begin_src emacs-lisp
-(cb:install-package 'ruby-mode)
+(cb:install-packages-on-buffer-name
+    (rx (or "Rakefile" "Vagrantfile" "Thorfile" "Capfile" "GuardFile" "Gemfile"
+            ".rb" ".ru" ".rake" ".jbuilder" ".thor" ".gemspec" ".podspec"))
+  '(ruby-mode
+    inf-ruby
+    rvm
+    rinari
+    yari
+    rubocop
+    robe))
+
+(cb:install-packages-on-buffer-name (rx ".ya" (? "ml") eol)
+  '(yaml-mode))
 #+end_src
 ** Ignore RBC files
 #+begin_src emacs-lisp
@@ -2195,9 +2167,6 @@ Define custom minor mode for ERB files.
 (after 'ruby-mode
 #+end_src
 ** inf-ruby
-#+begin_src emacs-lisp
-(cb:install-package 'inf-ruby)
-#+end_src
 *** Work around damaged package
 #+begin_src emacs-lisp
 (let ((file (f-join (-first (~ s-matches? "inf-ruby") (f-directories cb:elpa-dir))
@@ -2367,7 +2336,6 @@ an irb error message."
 #+end_src
 ** rvm
 #+begin_src emacs-lisp
-(cb:install-package 'rvm)
 (add-hook 'ruby-mode-hook 'rvm-activate-corresponding-ruby)
 #+end_src
 ** subword-mode
@@ -2394,9 +2362,6 @@ If this is the trailing colon for a hash key, insert padding."
 #+end_src
 ** rinari
 Provides navigation commands between files in Rails projects.
-#+begin_src emacs-lisp
-(cb:install-package 'rinari)
-#+end_src
 *** Enable in rails projects
 #+begin_src emacs-lisp
 (defun cb:rails-project? ()
@@ -2513,9 +2478,6 @@ Provides navigation commands between files in Rails projects.
 #+end_src
 ** yari
 Provides a frontend to Ruby ri docs.
-#+begin_src emacs-lisp
-(cb:install-package 'yari)
-#+end_src
 *** Bind to C-c C-h
 #+begin_src emacs-lisp
 (hook-fn 'cb:ruby-modes-hook
@@ -2523,14 +2485,8 @@ Provides a frontend to Ruby ri docs.
 #+end_src
 ** rubocop
 Rubocop is a Ruby style-checker.
-#+begin_src emacs-lisp
-(cb:install-package 'rubocop)
-#+end_src
 ** robe
 Robe provides auto-complete for Ruby.
-#+begin_src emacs-lisp
-(cb:install-package 'robe)
-#+end_src
 *** Enable for all Ruby modes
 #+begin_src emacs-lisp
 (-each cb:ruby-modes (~ add-to-list 'ac-modes))
@@ -2569,13 +2525,10 @@ Add evil doc lookup handler for Ruby.
 #+begin_src emacs-lisp
 )
 #+end_src
-** yaml-mode
-#+begin_src emacs-lisp
-(cb:install-package 'yaml-mode)
-#+end_src
 * Scala
 #+begin_src emacs-lisp
-(cb:install-package 'scala-mode2)
+(cb:install-packages-on-buffer-name (rx (or ".scala" ".sbt"))
+  '(scala-mode2))
 #+end_src
 ** DEFER
 #+begin_src emacs-lisp
@@ -2710,13 +2663,20 @@ point to the position of the join."
 )
 #+end_src
 * Haskell
+#+begin_src emacs-lisp
+(cb:install-packages-on-buffer-name
+    (rx "." (or "hs" "gs" "hi" "pghci" "cabal" "hsc" "hcr"))
+  '(haskell-mode
+    ghc
+    hi2
+    shm))
+#+end_src
 ** ignore .hi files
 #+begin_src emacs-lisp
 (add-to-list 'completion-ignored-extensions ".hi")
 #+end_src
 ** haskell-mode
 #+begin_src emacs-lisp
-(cb:install-package 'haskell-mode)
 (setq haskell-tags-on-save t
       haskell-stylish-on-save t)
 
@@ -2809,7 +2769,6 @@ See URL `http://www.haskell.org/ghc/'."
 #+end_src
 ** install ghc support package
 #+begin_src emacs-lisp
-(cb:install-package 'ghc t)
 (setq ghc-import-key nil)
 
 (defun cb:ghc-init ()
@@ -2845,7 +2804,6 @@ default commands.
 #+end_src
 ** install hi2 for haskell indentation
 #+begin_src emacs-lisp
-(cb:install-package 'hi2)
 (hook-fn 'haskell-mode-hook
   (turn-on-hi2)
   (diminish 'hi2-mode))
@@ -2869,7 +2827,6 @@ default commands.
 #+end_src
 ** install structured-haskell-mode
 #+begin_src emacs-lisp
-(cb:install-package 'shm t)
 (add-hook 'haskell-mode-hook 'structured-haskell-mode)
 
 (define-key shm-map (kbd "C-a") 'shm/goto-parent)
@@ -3458,7 +3415,8 @@ With a prefix arg, insert an arrow with padding at point."
 #+end_src
 * Idris
 #+begin_src emacs-lisp
-(cb:install-package 'idris-mode)
+(cb:install-packages-on-buffer-name (rx ".idr" eol)
+  '(idris-mode))
 #+end_src
 ** ignore .idr files
 #+begin_src emacs-lisp
@@ -4113,20 +4071,18 @@ SILENT? controls whether provide feedback to the user on the action performed."
 #+end_src
 * SML
 #+begin_src emacs-lisp
-(cb:install-package 'sml-mode)
-#+end_src
-** Customise variables
-#+begin_src emacs-lisp
+(cb:install-packages-on-buffer-name (rx "." (or "sml" "sig" "cm" "grm"))
+  '(sml-mode))
+
 (setq sml-indent-level 2)
-#+end_src
-** Ignore compiled ML files
-#+begin_src emacs-lisp
 (add-to-list 'completion-ignored-extensions "\\.cm")
 (add-to-list 'completion-ignored-extensions "\\.CM")
 #+end_src
 * OCaml
 #+begin_src emacs-lisp
-(cb:install-package 'tuareg)
+(cb:install-packages-on-buffer-name (rx ".ml" (? (any "y" "i" "l" "p")))
+  '(tuareg
+    merlin))
 #+end_src
 ** Configure OPAM
 OPAM is a source-based package manager for OCaml.
@@ -4163,7 +4119,6 @@ utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
 ** Configure Merlin
 #+begin_src emacs-lisp
 (after 'tuareg
-  (cb:install-package 'merlin t)
   (add-hook 'tuareg-mode-hook 'merlin-mode)
 
   (setq merlin-use-auto-complete-mode t)
@@ -4730,7 +4685,8 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
 F# is syntactically close enough to OCaml that we can reuse the utilities
 defined for that language.
 #+begin_src emacs-lisp
-(cb:install-package 'fsharp-mode)
+(cb:install-packages-on-buffer-name (rx ".fs" (? (any "i" "y" "l" "x")) eol)
+  '(fsharp-mode))
 #+end_src
 ** auto-complete
 #+begin_src emacs-lisp

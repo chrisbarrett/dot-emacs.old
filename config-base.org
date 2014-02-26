@@ -355,6 +355,22 @@ FEATURES may be a symbol or list of symbols."
        `(define-key ,map ,key ',command)))
     (funcall mode-name t)))
 #+end_src
+** define a command to install packages when visiting certain file types
+#+begin_src emacs-lisp
+(defun cb:install-packages-on-buffer-name (rx packages)
+  "Install and require packages when visiting certain files.
+
+RX is a regular extension matched against the buffer name.
+
+PACKAGES is a list of package names. Each package will be
+installed and loaded."
+  (declare (indent 1))
+  (--each packages
+    (eval `(hook-fns '(find-file-hook after-change-major-mode-hook)
+             (when (s-matches? ,rx (buffer-name))
+               (save-window-excursion
+                 (cb:install-package ',it t)))))))
+#+end_src
 * Convenience functions
 ** current region
 #+begin_src emacs-lisp
@@ -6413,7 +6429,7 @@ Define a command picker for printer and scanner functions.
 
 * Mutt
 #+begin_src emacs-lisp
-(cb:install-package 'muttrc-mode)
+(cb:install-packages-on-buffer-name "muttrc" '(muttrc-mode))
 #+end_src
 * Define functions for [[file:Makefile][Makefile]]
 #+begin_src emacs-lisp
