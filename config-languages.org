@@ -117,6 +117,26 @@ Useful for setting up keymaps manually."
   "Delete the smart operator that was just inserted, including padding."
   (or (cb-op:delete-last-smart-op) ad-do-it))
 #+end_src
+* lambda-mode
+Overlay greek lambda symbol in languages with lambda functions..
+#+begin_src emacs-lisp
+(require 'lambda-mode)
+(setq lambda-symbol (string (make-char 'greek-iso8859-7 107)))
+#+end_src
+** Apply lambda-mode to the hooks
+#+begin_src emacs-lisp
+(add-hook 'cb:scheme-modes-hook    'lambda-mode)
+(add-hook 'inferior-lisp-mode-hook 'lambda-mode)
+(add-hook 'lisp-mode-hook          'lambda-mode)
+(add-hook 'cb:elisp-modes-hook     'lambda-mode)
+(add-hook 'cb:python-modes-hook    'lambda-mode)
+(add-hook 'cb:slime-modes-hook     'lambda-mode)
+#+end_src
+** Diminish
+#+begin_src emacs-lisp
+(hook-fn 'lambda-mode-hook
+  (diminish 'lambda-mode))
+#+end_src
 * assembler
 ** DEFER
 #+begin_src emacs-lisp
@@ -4736,6 +4756,39 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
 (hook-fn 'sh-mode-hook
   (when (executable-find "shellcheck")
     (flycheck-select-checker 'sh-shellcheck)))
+#+end_src
+* Makefiles
+** DEFER
+#+begin_src emacs-lisp
+(after 'make-mode
+#+end_src
+** Undefine comment-region binding
+#+begin_src emacs-lisp
+(define-key makefile-mode-map (kbd "C-c C-c") nil)
+#+end_src
+** auto-complete
+#+begin_src emacs-lisp
+(after 'auto-complete
+  (add-to-list 'ac-modes 'makefile-mode)
+  (add-hook 'makefile-mode-hook 'auto-complete-mode))
+#+end_src
+** Ensure tabs are used in makefiles
+#+begin_src emacs-lisp
+(defun convert-leading-spaces-to-tabs ()
+  "Convert sequences of spaces at the beginning of a line to tabs."
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (while (search-forward-regexp (rx bol (group (>= 4 space))) nil t)
+      (replace-match "\t"))))
+
+(hook-fn 'makefile-mode-hook
+  (setq indent-tabs-mode t)
+  (add-hook 'before-save-hook 'convert-leading-spaces-to-tabs nil t))
+#+end_src
+** END
+#+begin_src emacs-lisp
+)
 #+end_src
 * TeX
 Auctex provides a development environment for tex
