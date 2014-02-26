@@ -3592,13 +3592,15 @@ ctags-related commands. Adapted from [[http://mattbriggs.net/blog/2012/03/18/awe
     ;; home dir.
     (unless (or (f-child-of? dir user-home-directory)
                 (y-or-n-p (format "Really create tags in \"%s\"? " dir)))
-      (error "Tags not created"))
-    ;; Write tags.
-    (if (zerop (%-sh "ctags -e -R --extra=+fq"
-                     (cb:format-tags-excludes)
-                     "-f" dir))
-        (message "Tags written to \"%s\"" tags)
-      (error "Failed to create tags"))))
+      (error "Aborted"))
+
+    ;; Create tags.
+    (async-shell-command (format "%s -e -R --extra=+fq %s -f %s"
+                                 ctags-update-command
+                                 (cb:format-tags-excludes)
+                                 tags)
+                         "*Tags*")
+    (message "Writing tags file to %s" tags)))
 #+end_src
 ** Define a command for visiting tags files
 #+begin_src emacs-lisp
@@ -3621,9 +3623,11 @@ ctags-related commands. Adapted from [[http://mattbriggs.net/blog/2012/03/18/awe
 (defun find-ctag ()
   "Find the tags at point, creating a tags file if none exists."
   (interactive)
-  (if (file-exists-p (f-join (cbtags:project-root) "TAGS"))
-      (visit-ctags)
-    (build-ctags))
+  (let ((tags (f-join (cbtags:project-root) "TAGS")))
+    (setq-local tags-file-name tags)
+    (if (file-exists-p tags)
+        (visit-ctags)
+      (build-ctags)))
   (etags-select-find-tag-at-point))
 #+end_src
 ** Set key bindings for the above commands
