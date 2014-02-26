@@ -46,9 +46,11 @@
   "Tangle and reload configuration files."
   (interactive)
   (message "Loading config files...")
-  (dolist (f (list "config-base.org" "config-orgmode.org" "config-languages.org"))
+  (dolist (f '("config-base.org" "config-orgmode.org" "config-languages.org"))
     (message "Loading %s" f)
-    (org-babel-load-file (concat user-emacs-directory f)))
+    (org-babel-load-file (concat user-emacs-directory f))
+    (byte-recompile-file (format "%s.el" (f-no-ext f))))
+
   (message "Loading config files...done"))
 
 (tangle-and-load-config-files)
