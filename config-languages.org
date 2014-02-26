@@ -3360,7 +3360,7 @@ With a prefix arg, insert an arrow with padding at point."
     (cb-hs:insert-function-template (cb-hs:first-word-on-line)))
 
    ;; Insert new pattern match case below the current one.
-   ((s-matches? (rx bol (* space) (+ word) "->") (current-line))
+   ((s-matches? (rx bol (* space) (+ (not (any "="))) "->") (current-line))
     (goto-char (line-end-position))
     (shm/simple-indent-newline-same-col)
     (yas-insert-first-snippet (C (~ equal "match-case") yas--template-name)))
