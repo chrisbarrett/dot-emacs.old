@@ -799,27 +799,6 @@ Adds a flash when running eval-expression.
 
 (add-to-list 'face-remapping-alist '(eval-sexp-fu-flash . intense-flash))
 #+end_src
-** slime
-Adds support for inferior Common Lisp processes.
-#+begin_src emacs-lisp
-(cb:install-package 'slime)
-(setq slime-lisp-implementations `((lisp ("sbcl" "--noinform"))))
-#+end_src
-*** Define a command to interactively run SLIME
-#+begin_src emacs-lisp
-(defun run-slime ()
-  "Run slime, prompting for a lisp implementation."
-  (interactive)
-  (let ((current-prefix-arg '-))
-    (slime)))
-#+end_src
-** ac-slime
-Adds an auto-complete source for slime.
-#+begin_src emacs-lisp
-(cb:install-package 'ac-slime)
-(add-hook 'slime-modes-hook 'set-up-slime-ac)
-(add-to-list 'ac-modes 'slime-repl-mode)
-#+end_src
 ** eldoc
 Shows documentation hints in the minibuffer.
 *** Enable for all Lisps
@@ -844,6 +823,32 @@ Provides refactoring commands for lisps.
 #+begin_src emacs-lisp
 (hook-fn 'redshank-mode-hook
   (diminish 'redshank-mode))
+#+end_src
+* Common Lisp
+** slime
+Adds support for inferior Common Lisp processes.
+#+begin_src emacs-lisp
+(hook-fn 'common-lisp-mode-hook
+  (cb:install-package 'slime t))
+
+(setq slime-lisp-implementations `((lisp ("sbcl" "--noinform"))))
+#+end_src
+*** Define a command to interactively run SLIME
+#+begin_src emacs-lisp
+(defun run-slime ()
+  "Run slime, prompting for a lisp implementation."
+  (interactive)
+  (let ((current-prefix-arg '-))
+    (slime)))
+#+end_src
+** ac-slime
+Adds an auto-complete source for slime.
+#+begin_src emacs-lisp
+(hook-fn 'common-lisp-mode-hook
+  (cb:install-package 'ac-slime t))
+
+(add-hook 'slime-modes-hook 'set-up-slime-ac)
+(add-to-list 'ac-modes 'slime-repl-mode)
 #+end_src
 * Elisp
 ** auto-mode-alist
