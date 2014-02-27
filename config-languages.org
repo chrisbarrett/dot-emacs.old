@@ -2959,6 +2959,10 @@ default commands.
    ((s-matches? (rx "[" (* (any "|" alnum)) eol)
                 (buffer-substring (line-beginning-position) (point)))
     (insert "|"))
+   ((s-matches? (rx "--" (* space) eol)
+                (buffer-substring (line-beginning-position) (point)))
+    (just-one-space)
+    (insert "| "))
    (t
     (smart-insert-op "|"))))
 
