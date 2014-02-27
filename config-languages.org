@@ -50,7 +50,10 @@ flaky.
       (just-one-space))
 
      (t
-      (just-one-space)
+      (unless (s-matches? (rx bol (* space) eol)
+                          (buffer-substring (line-beginning-position) (point)))
+        (just-one-space))
+
       (insert op)
       (just-one-space)))))
 
