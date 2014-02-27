@@ -2805,6 +2805,7 @@ default commands.
 #+begin_src emacs-lisp
 (add-hook 'haskell-mode-hook 'structured-haskell-mode)
 
+(define-key shm-map (kbd "M-r") nil)
 (define-key shm-map (kbd "C-a") 'shm/goto-parent)
 (define-key shm-map (kbd "C-e") 'shm/goto-parent-end)
 (define-key shm-map (kbd "M-t") 'shm/transpose)
