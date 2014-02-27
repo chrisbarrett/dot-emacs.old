@@ -5026,33 +5026,9 @@ buffer.
 #+end_src
 ** Define a global key binding
 #+begin_src emacs-lisp
-(bind-key "C-c r" 'iedit-mode)
+(bind-key "M-r" 'iedit-mode)
 #+end_src
-** Quick rename commands
-Define utilities for renaming the symbol at point.
-*** Impl
-#+begin_src emacs-lisp
-(defun rename-symbol-in-defun ()
-  (interactive)
-  (iedit-mode 0)
-  (unwind-protect
-      (iedit-replace-occurrences (read-string "Replace in function: "))
-    (iedit-done)))
-
-(defun rename-symbol-in-buffer ()
-  (interactive)
-  (iedit-mode)
-  (unwind-protect
-      (iedit-replace-occurrences (read-string "Replace in buffer: "))
-    (iedit-done)))
-#+end_src
-*** Key bindings
-#+begin_src emacs-lisp
-(bind-key "M-r" 'rename-symbol-in-defun)
-(bind-key "M-R" 'rename-symbol-in-buffer)
-#+end_src
-** iedit command picker
-*** Utilities
+** Define a command picker for iedit
 #+begin_src emacs-lisp
 (defun cbiedit:replace-read ()
   (iedit-replace-occurrences (read-string "Replace in buffer: ")))
@@ -5066,9 +5042,7 @@ Define utilities for renaming the symbol at point.
 (defun cbiedit:replace-in-region ()
   (cbiedit:restrict-to-region)
   (cbiedit:replace-read))
-#+end_src
-*** Impl
-#+begin_src emacs-lisp
+
 (define-command-picker iedit-picker
   :title "*iedit*"
   :options
@@ -5114,11 +5088,9 @@ Define utilities for renaming the symbol at point.
     ("c" "Toggle Case-Sensitivity" iedit-toggle-case-sensitive)
     ("t" "Toggle at Point" iedit-toggle-selection)
     ("d" "Done" iedit-done)))
-#+end_src
-*** Key binding
-#+begin_src emacs-lisp
+
 (after 'iedit
-  (bind-key "C-c r" 'iedit-picker iedit-mode-keymap))
+  (bind-key "M-r" 'iedit-picker iedit-mode-keymap))
 #+end_src
 * smooth-scrolling
 Changes the default scrolling behaviour to keep point away from the top or
