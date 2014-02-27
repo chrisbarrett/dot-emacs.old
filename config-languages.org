@@ -2776,7 +2776,6 @@ default commands.
 (define-key haskell-mode-map ghc-hoogle-key      'haskell-hoogle)
 (define-key haskell-mode-map ghc-shallower-key   'ghc-make-indent-shallower)
 (define-key haskell-mode-map ghc-deeper-key      'ghc-make-indent-deeper)
-
 #+end_src
 ** Enable hi2 for haskell indentation
 #+begin_src emacs-lisp
@@ -2948,6 +2947,7 @@ default commands.
       ad-do-it)))
 #+end_src
 ** smart operators
+*** Define general commands
 #+begin_src emacs-lisp
 (defun cb-hs:smart-pipe ()
   "Insert a pipe operator. Add padding, unless we're inside a list."
@@ -3047,7 +3047,7 @@ With a prefix arg, insert an arrow with padding at point."
      (t
       (smart-insert-op "#")))))
 #+end_src
-*** Define a custom smart colon command for GHCI
+*** Define custom commands for inferior-haskell
 #+begin_src emacs-lisp
 (defun cb-hs:ghci-smart-colon ()
   "Insert a smart operator, unless point is immediately after the GHCI prompt."
@@ -3055,6 +3055,16 @@ With a prefix arg, insert an arrow with padding at point."
   (if (s-blank? (buffer-substring (line-beginning-position) (point)))
       (insert ":")
     (smart-insert-op ":")))
+
+(defun cb-hs:ghci-smart-comma ()
+  "Insert a comma with padding."
+  (interactive)
+  (save-restriction
+    (narrow-to-region (line-beginning-position) (point))
+    (unless (s-blank? (current-line))
+      (delete-horizontal-space))
+
+    (insert ", ")))
 #+end_src
 *** Set key bindings
 #+begin_src emacs-lisp
@@ -3076,6 +3086,7 @@ With a prefix arg, insert an arrow with padding at point."
 (define-key inferior-haskell-mode-map (kbd ".") 'cb-hs:smart-dot)
 (define-key inferior-haskell-mode-map (kbd "|") 'cb-hs:smart-pipe)
 (define-key inferior-haskell-mode-map (kbd ":") 'cb-hs:ghci-smart-colon)
+(define-key inferior-haskell-mode-map (kbd ",") 'cb-hs:ghci-smart-comma)
 #+end_src
 ** hideshow
 *** Define helper functions
