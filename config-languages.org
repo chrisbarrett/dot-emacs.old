@@ -2808,7 +2808,7 @@ default commands.
 (define-key shm-map (kbd "C-a") 'shm/goto-parent)
 (define-key shm-map (kbd "C-e") 'shm/goto-parent-end)
 (define-key shm-map (kbd "M-t") 'shm/transpose)
-(define-key shm-map (kbd "C-k") 'shm/kill)
+(define-key shm-map (kbd "C-k") 'shm/kill-node)
 #+end_src
 *** Extend shm formatting commands
 #+begin_src emacs-lisp
