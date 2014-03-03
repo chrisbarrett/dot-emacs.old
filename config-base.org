@@ -5668,10 +5668,6 @@ Use `ledger-buffer' if the current buffer is not in ledger-mode."
 #+begin_src emacs-lisp
 (after 'ledger-mode
 #+end_src
-** highlight current column in ledger reports
-#+begin_src emacs-lisp
-(add-hook 'ledger-report-mode-hook 'vline-mode)
-#+end_src
 ** Utilities for finding the bounds of transactions
 #+begin_src emacs-lisp
 (defvar cbledger:transaction-start (rx bol (any digit "~" "="))
