@@ -4790,17 +4790,17 @@ Provides a shell implemented in emacs-lisp.
 #+end_src
 ** Cycle command
 Create a key-binding for showing and hiding the terminal.
-*** Impl
 #+begin_src emacs-lisp
 (defun cb:term-cycle (&optional arg)
   "Cycle through various terminal window states."
-  (interactive)
+  (interactive "P")
   (cond
+   (arg
+    (eshell arg))
 
    ;; If terminal is maximized, restore previous window config.
    ((and (derived-mode-p 'eshell-mode)
-         (equal 1 (length (window-list)))
-         (equal (buffer-name) "*eshell*"))
+         (equal 1 (length (window-list))))
     (or (ignore-errors (jump-to-register :term-fullscreen) t)
         (bury-buffer)))
 
@@ -4811,18 +4811,17 @@ Create a key-binding for showing and hiding the terminal.
    ;; Otherwise show the terminal.
    (t
     ;; Hide the term window if it's visible.
-    (-when-let (win (--first (equal (buffer-name (window-buffer it))
-                                    "*eshell*")
-                             (window-list)))
+    (-when-let (win (--first
+                     (with-current-buffer (window-buffer it)
+                       (derived-mode-p 'eshell-mode))
+                     (window-list)))
       (delete-window win))
     ;; Save this configuration to a register so that it can be restored
     ;; for later positions in the cycle.
     (window-configuration-to-register :term-fullscreen)
     ;; Show terminal.
-    (eshell arg))))
-#+end_src
-*** Key binding
-#+begin_src emacs-lisp
+    (switch-to-buffer (--first-buffer (derived-mode-p 'eshell-mode))))))
+
 (bind-key* "<f1>" 'cb:term-cycle)
 #+end_src
 ** Clear command
