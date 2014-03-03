@@ -5003,7 +5003,16 @@ Use the above prompt functions.
 (after 'smartparens
   (add-hook 'eshell-mode-hook 'smartparens-mode))
 #+end_src
+** Include current directory in buffer name
+#+begin_src emacs-lisp
+(defun cb-eshell:format-buffer-name ()
+  "Make a buffer name based on the current directory."
+  (generate-new-buffer-name
+   (concat "eshell: " (f-short (eshell/pwd)))))
 
+(hook-fn 'eshell-directory-change-hook
+  (rename-buffer (cb-eshell:format-buffer-name)))
+#+end_src
 * undo-tree
 Provides a graphical view of the undo history.
 #+begin_src emacs-lisp
