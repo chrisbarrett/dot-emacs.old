@@ -2881,7 +2881,7 @@ default commands.
           (shm-evaporate (point) (1+ (point)))))
 
        ((and (cb-hs:inside-parens?)
-             (s-matches? (rx ":" (* space))
+             (s-matches? (rx ":" (* space) eol)
                          (buffer-substring (line-beginning-position) (point))))
         (save-restriction
           (narrow-to-region (line-beginning-position) (point))
