@@ -2781,6 +2781,12 @@ Enable ANSI colour codes in terminals and compilation buffers.
 (hook-fn 'ido-setup-hook
   (define-key ido-common-completion-map (kbd "~") (command (insert "~/"))))
 #+end_src
+** Use self insert command for typing spaces
+This stops ido from trying to complete when typing spaces, which appears to be
+broken anyway.
+#+begin_src emacs-lisp
+(defalias 'ido-complete-space 'self-insert-command)
+#+end_src
 ** Ido vertical mode
 Shows ido menus using a vertical layout.
 #+begin_src emacs-lisp
