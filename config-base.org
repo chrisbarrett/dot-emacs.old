@@ -4804,6 +4804,10 @@ Create a key-binding for showing and hiding the terminal.
    (arg
     (eshell arg))
 
+   ((--none? (with-current-buffer it (derived-mode-p 'eshell-mode))
+             (buffer-list))
+    (eshell))
+
    ;; If terminal is maximized, restore previous window config.
    ((and (derived-mode-p 'eshell-mode)
          (equal 1 (length (window-list))))
