@@ -2803,129 +2803,6 @@ default commands.
       (hi2-disable-show-indentations)))
   )
 #+end_src
-** Configure structured-haskell-mode
-#+begin_src emacs-lisp
-(add-hook 'haskell-mode-hook 'structured-haskell-mode)
-
-(define-key shm-map (kbd "M-r") nil)
-(define-key shm-map (kbd ")")   nil)
-(define-key shm-map (kbd "C-a") 'shm/goto-parent)
-(define-key shm-map (kbd "C-e") 'shm/goto-parent-end)
-(define-key shm-map (kbd "M-t") 'shm/transpose)
-(define-key shm-map (kbd "C-k") 'shm/kill-node)
-#+end_src
-*** Extend shm formatting commands
-#+begin_src emacs-lisp
-(defun cb-hs:in-empty-braces? ()
-  "Non-nil if point is between empty square or curly braces."
-  (and (s-matches? (rx (or "{" "[") (* space) eol)
-                   (buffer-substring (line-beginning-position) (point)))
-       (s-matches? (rx bol (* space) (or "}" "]"))
-                   (buffer-substring (point) (line-end-position)))))
-
-(defun cb-hs:space ()
-  "Extend shm/space to provide additional formatting behaviours."
-  (interactive)
-  (cond
-   ((cb-hs:in-empty-braces?)
-    (just-one-space)
-    (save-excursion
-      (insert " ")))
-   (t
-    (call-interactively 'shm/space))))
-
-(defun cb-hs:del ()
-  "Extend shm/del with additional formatting behaviour."
-  (interactive)
-  (cond
-   ((and (cb-hs:in-empty-braces?)
-         (thing-at-point-looking-at (rx (+ space))))
-    (delete-horizontal-space))
-   (t
-    (or (cb-op:delete-last-smart-op)
-        (call-interactively 'shm/del)))))
-
-(define-key shm-map (kbd "SPC") 'cb-hs:space)
-(define-key shm-map (kbd "DEL") 'cb-hs:del)
-#+end_src
-*** Re-implement =shm/:= to use smart operators
-#+begin_src emacs-lisp
-(defun cb-hs:inside-parens? ()
-  "Non-nil if point is inside a parenthesised expression."
-  (save-excursion
-    (ignore-errors
-      (backward-up-list)
-      (equal (char-after)
-             (string-to-char "(")))))
-
-(defun cb-hs:smart-colon ()
-  "Re-implements `shm/:' to behave correctly in more cases."
-  (interactive)
-  (if (shm-literal-insertion)
-      (call-interactively 'self-insert-command)
-
-    (let ((current (shm-current-node)))
-      (cond
-       ((and current
-             (or (eq (shm-node-cons current)
-                     'SpliceDecl)
-                 (string= (shm-node-type-name current)
-                          "BangType")
-                 (string= (shm-node-type-name current)
-                          "FieldDecl")))
-        (unless (looking-back "[ ]+")
-          (insert " "))
-        (unless (looking-back "::[ ]+")
-          (shm-insert-string ":: a")
-          (forward-word -1)
-          (shm-evaporate (point) (1+ (point)))))
-
-       ((and (cb-hs:inside-parens?)
-             (s-matches? (rx ":" (* space) eol)
-                         (buffer-substring (line-beginning-position) (point))))
-        (save-restriction
-          (narrow-to-region (line-beginning-position) (point))
-          (save-excursion
-            (search-backward-regexp (rx (* space) ":" (* space)))
-            (delete-region (point) (point-max)))
-          (insert " :: ")))
-
-       ((cb-hs:inside-parens?)
-        (insert ":"))
-
-       (t
-        (smart-insert-op ":")
-        (shm/init t))))))
-
-(define-key shm-map (kbd ":") 'cb-hs:smart-colon)
-#+end_src
-*** Re-implement =shm/close-paren= to use smartparens
-#+begin_src emacs-lisp
-(defun cb-hs:close-brace ()
-  "Insert a closing brace."
-  (interactive)
-  (when (cb-hs:inside-parens?)
-    (sp-insert-or-up ")"))
-  (shm/reparse)
-  (shm/goto-parent-end))
-
-(define-key shm-map (kbd ")") 'cb-hs:close-brace)
-#+end_src
-*** Use TAB commands for indentation and moving between slots
-#+begin_src emacs-lisp
-(defun cb-hs:tab ()
-  "Jump to the next shm slot or indent the current line."
-  (interactive)
-  (or (shm/jump-to-slot) (hi2-indent-line)))
-
-(defun cb-hs:backtab ()
-  "Jump to the previous shm slot or backward indent the current line."
-  (interactive)
-  (or (shm/jump-to-previous-slot) (hi2-indent-backwards)))
-
-(define-key shm-map (kbd "TAB") 'cb-hs:tab)
-(define-key shm-map (kbd "<backtab>") 'cb-hs:backtab)
-#+end_src
 ** Configure commands for switching between src and REPL
 #+begin_src emacs-lisp
 (defadvice switch-to-haskell (after maybe-insert-state activate)
@@ -2951,8 +2828,23 @@ default commands.
       ad-do-it)))
 #+end_src
 ** smart operators
-*** Define general commands
+** Define smart operators
 #+begin_src emacs-lisp
+(defun cb-hs:inside-parens? ()
+  "Non-nil if point is inside a parenthesised expression."
+  (save-excursion
+    (ignore-errors
+      (backward-up-list)
+      (equal (char-after)
+             (string-to-char "(")))))
+
+(defun cb-hs:in-empty-braces? ()
+  "Non-nil if point is between empty square or curly braces."
+  (and (s-matches? (rx (or "{" "[") (* space) eol)
+                   (buffer-substring (line-beginning-position) (point)))
+       (s-matches? (rx bol (* space) (or "}" "]"))
+                   (buffer-substring (point) (line-end-position)))))
+
 (defun cb-hs:smart-pipe ()
   "Insert a pipe operator. Add padding, unless we're inside a list."
   (interactive)
@@ -3054,8 +2946,50 @@ With a prefix arg, insert an arrow with padding at point."
       (save-excursion (insert " #")))
      (t
       (smart-insert-op "#")))))
+
+(defun cb-hs:smart-colon ()
+  "Insert a colon, with context-sensitive formatting."
+  (interactive)
+  (cond
+   ((and (cb-hs:inside-parens?)
+         (s-matches? (rx ":" (* space) eol)
+                     (buffer-substring (line-beginning-position) (point))))
+    (save-restriction
+      (narrow-to-region (line-beginning-position) (point))
+      (save-excursion
+        (search-backward-regexp (rx (* space) ":" (* space)))
+        (delete-region (point) (point-max)))
+      (insert " :: ")))
+
+   ((cb-hs:inside-parens?)
+    (insert ":"))
+
+   (t
+    (smart-insert-op ":"))))
+
+(defun cb-hs:space ()
+  "Insert a space with context-sensitive formatting."
+  (interactive)
+  (cond
+   ((cb-hs:in-empty-braces?)
+    (just-one-space)
+    (save-excursion
+      (insert " ")))
+   (t
+    (call-interactively 'self-insert-command))))
+
+(defun cb-hs:del ()
+  "Delete backwards with context-sensitive formatting."
+  (interactive)
+  (cond
+   ((and (cb-hs:in-empty-braces?)
+         (thing-at-point-looking-at (rx (+ space))))
+    (delete-horizontal-space))
+   (t
+    (or (cb-op:delete-last-smart-op)
+        (call-interactively 'sp-backward-delete-char)))))
 #+end_src
-*** Define custom commands for inferior-haskell
+** Define custom smart ops for inferior-haskell
 #+begin_src emacs-lisp
 (defun cb-hs:ghci-smart-colon ()
   "Insert a smart operator, unless point is immediately after the GHCI prompt."
@@ -3074,19 +3008,17 @@ With a prefix arg, insert an arrow with padding at point."
 
     (insert ", ")))
 #+end_src
-*** Set key bindings
+** Set smart operator key bindings
 #+begin_src emacs-lisp
-;; Override SHM bindings
-(define-key shm-map (kbd "-") nil)
-(define-key shm-map (kbd "=") nil)
-(define-key shm-map (kbd "#") nil)
-
 (declare-smart-ops 'haskell-mode :add '("." "$" "," "="))
 
 (define-key haskell-mode-map (kbd "-") 'cb-hs:smart-minus)
 (define-key haskell-mode-map (kbd ".") 'cb-hs:smart-dot)
 (define-key haskell-mode-map (kbd "|") 'cb-hs:smart-pipe)
 (define-key haskell-mode-map (kbd "#") 'cb-hs:smart-hash)
+(define-key haskell-mode-map (kbd ":") 'cb-hs:smart-colon)
+(define-key haskell-mode-map (kbd "SPC") 'cb-hs:space)
+(define-key haskell-mode-map (kbd "DEL") 'cb-hs:del)
 
 (declare-smart-ops 'inferior-haskell-mode :add '("." "$" "," "="))
 
@@ -3171,7 +3103,7 @@ With a prefix arg, insert an arrow with padding at point."
                               ,(string-to-char "λ") 'decompose-region)
               nil)))))
 #+end_src
-** Key bindings
+** General key bindings
 #+begin_src emacs-lisp
 (define-key haskell-mode-map (kbd "C-c C-c") 'haskell-process-cabal-build)
 #+end_src
@@ -3272,6 +3204,13 @@ With a prefix arg, insert an arrow with padding at point."
   (indent-to col)
   (insert str))
 
+(defun cb-hs:newline-indent-to-same-col ()
+  "Make a new line below the current one and indent to the same column."
+  (let ((col (save-excursion (back-to-indentation) (current-column))))
+    (goto-char (line-end-position))
+    (newline)
+    (indent-to col)))
+
 (defvar cb-hs:haskell-keywords
   '("let" "where" "module" "case" "class" "data" "deriving" "default"
     "import" "infixl" "infixr" "newtype" "data" "type" "if" "then" "else"))
@@ -3340,10 +3279,8 @@ With a prefix arg, insert an arrow with padding at point."
 
    ;; Insert new type decl case below the current one.
    ((s-matches? (rx bol (* space) "|") (current-line))
-    (let ((col (save-excursion
-                 (back-to-indentation)
-                 (current-column))))
-      (cb-hs:newline-and-insert-at-col col "| "))
+    (cb-hs:newline-indent-to-same-col)
+    (insert "| ")
     (message "New data case"))
 
    ;; Insert pattern match at function definition.
@@ -3354,31 +3291,31 @@ With a prefix arg, insert an arrow with padding at point."
    ;; Insert new pattern match case below the current one.
    ((or (s-matches? (rx bol (* space) (+ (not (any "="))) "->") (current-line))
         (s-matches? (rx bol (* space) "case" (+ space)) (current-line)))
-    (goto-char (line-end-position))
-    (hi2-newline-and-indent)
+    (cb-hs:newline-indent-to-same-col)
     (yas-insert-first-snippet (C (~ equal "match-case") yas--template-name))
     (message "New pattern match case"))
 
    ;; Insert new line starting with comma.
    ((s-matches? (rx bol (* space) ",") (current-line))
-    (let ((col (save-excursion
-                 (back-to-indentation)
-                 (current-column))))
-      (cb-hs:newline-and-insert-at-col col ", "))
+    (cb-hs:newline-indent-to-same-col)
+    (insert ", ")
     (message "New entry"))
 
    ;; Insert new line starting with an arrow.
    ((s-matches? (rx bol (* space) "->") (current-line))
-    (let ((col (save-excursion
-                 (back-to-indentation)
-                 (current-column))))
-      (cb-hs:newline-and-insert-at-col col "-> "))
+    (cb-hs:newline-indent-to-same-col)
+    (insert "-> ")
     (message "New arrow"))
 
    ;; Insert new line with a binding in do-notation.
    ((s-matches? (rx bol (* space) (+ nonl) "<-") (current-line))
-    (goto-char (line-end-position))
-    (shm/simple-indent-newline-same-col)
+    (back-to-indentation)
+    (let ((col (current-column)))
+      (search-forward "<-")
+      (shm/forward-node)
+      (newline)
+      (indent-to col))
+
     (yas-insert-first-snippet (C (~ equal "do-binding") yas--template-name))
     (message "New do-binding"))
 
@@ -3394,8 +3331,7 @@ With a prefix arg, insert an arrow with padding at point."
 
    (t
     (goto-char (line-end-position))
-    (or (atomic-change-group (shm/newline-indent))
-        (hi2-newline-and-indent))
+    (hi2-newline-and-indent)
     (message "New line")))
 
   (when (true? evil-mode)
