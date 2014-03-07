@@ -2988,6 +2988,19 @@ With a prefix arg, insert an arrow with padding at point."
    (t
     (or (cb-op:delete-last-smart-op)
         (call-interactively 'sp-backward-delete-char)))))
+
+(defun cb-hs:smart-comma ()
+  "Insert a comma, with context-sensitive formatting."
+  (interactive)
+  (cond
+   ((ignore-errors (s-matches? "ExportSpec" (elt (shm-current-node) 0)))
+    (delete-horizontal-space)
+    (insert ",")
+    (hi2-indent-line)
+    (just-one-space))
+
+   (t
+    (insert ","))))
 #+end_src
 ** Define custom smart ops for inferior-haskell
 #+begin_src emacs-lisp
@@ -3014,6 +3027,7 @@ With a prefix arg, insert an arrow with padding at point."
 
 (define-key haskell-mode-map (kbd "-") 'cb-hs:smart-minus)
 (define-key haskell-mode-map (kbd ".") 'cb-hs:smart-dot)
+(define-key haskell-mode-map (kbd ",") 'cb-hs:smart-comma)
 (define-key haskell-mode-map (kbd "|") 'cb-hs:smart-pipe)
 (define-key haskell-mode-map (kbd "#") 'cb-hs:smart-hash)
 (define-key haskell-mode-map (kbd ":") 'cb-hs:smart-colon)
