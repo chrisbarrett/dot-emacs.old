@@ -1,5 +1,4 @@
-# -*- mode: snippet -*-
-# name: match-case
 # key: mc
+# name: match-case
 # --
-$1 -> $0
+${1:pat} -> $0
