@@ -2700,6 +2700,30 @@ point to the position of the join."
                                   nil t)
       (match-string-no-properties 1))))
 #+end_src
+** Enable shm-mode
+#+begin_src emacs-lisp
+(add-hook 'haskell-mode-hook 'structured-haskell-mode)
+#+end_src
+** Enable hi2 for haskell indentation
+#+begin_src emacs-lisp
+(hook-fn 'haskell-mode-hook
+  (setq-local indent-line-function 'hi2-indent-line)
+  (turn-on-hi2)
+  (diminish 'hi2-mode))
+#+end_src
+** Tweak GHC vars
+#+begin_src emacs-lisp
+(setq ghc-import-key nil)
+
+(defun cb:ghc-init ()
+  (ghc-abbrev-init)
+  (ghc-type-init)
+  (unless ghc-initialized
+    (ghc-comp-init)
+    (setq ghc-initialized t)))
+
+(add-hook 'haskell-mode-hook 'cb:ghc-init)
+#+end_src
 ** DEFER
 #+begin_src emacs-lisp
 (after '(haskell-mode ghc shm hi2)
@@ -2745,19 +2769,6 @@ See URL `http://www.haskell.org/ghc/'."
           line-end))
   :modes haskell-c-mode)
 #+end_src
-** Tweak GHC vars
-#+begin_src emacs-lisp
-(setq ghc-import-key nil)
-
-(defun cb:ghc-init ()
-  (ghc-abbrev-init)
-  (ghc-type-init)
-  (unless ghc-initialized
-    (ghc-comp-init)
-    (setq ghc-initialized t)))
-
-(add-hook 'haskell-mode-hook 'cb:ghc-init)
-#+end_src
 ** Set GHC key bindings
 These would normally be set in =ghc-init=, but I do not want to bind all of the
 default commands.
@@ -2779,12 +2790,6 @@ default commands.
 (define-key haskell-mode-map ghc-hoogle-key      'haskell-hoogle)
 (define-key haskell-mode-map ghc-shallower-key   'ghc-make-indent-shallower)
 (define-key haskell-mode-map ghc-deeper-key      'ghc-make-indent-deeper)
-#+end_src
-** Enable hi2 for haskell indentation
-#+begin_src emacs-lisp
-(hook-fn 'haskell-mode-hook
-  (turn-on-hi2)
-  (diminish 'hi2-mode))
 #+end_src
 ** Only show indentation guides in evil insert state
 #+begin_src emacs-lisp
@@ -3041,6 +3046,18 @@ With a prefix arg, insert an arrow with padding at point."
 (define-key inferior-haskell-mode-map (kbd "|") 'cb-hs:smart-pipe)
 (define-key inferior-haskell-mode-map (kbd ":") 'cb-hs:ghci-smart-colon)
 (define-key inferior-haskell-mode-map (kbd ",") 'cb-hs:ghci-smart-comma)
+#+end_src
+** Disable some shm keybindings
+#+begin_src emacs-lisp
+(define-key shm-map (kbd ",") nil)
+(define-key shm-map (kbd ":") nil)
+(define-key shm-map (kbd "#") nil)
+(define-key shm-map (kbd "-") nil)
+(define-key shm-map (kbd "DEL") nil)
+(define-key shm-map (kbd "SPC") nil)
+(define-key shm-map (kbd "<backtab>") nil)
+(define-key shm-map (kbd "TAB") nil)
+(define-key shm-map (kbd "M-r") nil)
 #+end_src
 ** hideshow
 *** Define helper functions
