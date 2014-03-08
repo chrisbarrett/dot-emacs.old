@@ -4376,6 +4376,10 @@ Update git status in the modeline magit commands.
 (hook-fn 'cb:magit-command-hook
   (force-mode-line-update t))
 #+end_src
+*** Diminish magit-auto-revert-mode
+#+begin_src emacs-lisp
+(diminish 'magit-auto-revert-mode)
+#+end_src
 ** git-auto-commit-mode
 Minor mode that will automatically commit changes on save.
 #+begin_src emacs-lisp
