@@ -911,7 +911,7 @@ They should be displayed modally.
                           ((org-agenda-overriding-header "Media"))))
               ((org-agenda-tag-filter-preset '("-@work"))))
 
-             ("W" "Agenda and work actions"
+             ("w" "Agenda and work actions"
               ((agenda "" ((org-agenda-ndays 14)))
                (todo "AWAITING|ORGANISE_IN"
                      ((org-agenda-overriding-header "Incoming")))
@@ -922,7 +922,7 @@ They should be displayed modally.
                (tags-todo "-someday-PeterBarrett-PeterRoberts/NEXT"
                           ((org-agenda-overriding-header "Next Actions")))
                (tags-todo "-someday/WAITING"
-                     ((org-agenda-overriding-header "Waiting")))
+                          ((org-agenda-overriding-header "Waiting")))
                (tags-todo "-someday+PeterBarrett"
                           ((org-agenda-overriding-header "Peter Barrett")))
                (tags-todo "-someday+PeterRoberts"
@@ -953,8 +953,8 @@ They should be displayed modally.
              ("gh" "Home"     tags-todo "@home")
              ("gl" "Leisure"  tags-todo "@leisure")
 
-             ("w" "Weekly Review"
-              ((agenda "" ((org-agenda-ndays 7)))
+             ("r" "Weekly Review"
+              ((agenda "" ((org-agenda-ndays 14)))
                (stuck "")
                (todo "WAITING"
                      ((org-agenda-overriding-header "Waiting")))
@@ -964,7 +964,9 @@ They should be displayed modally.
                           ((org-agenda-overriding-header "Skills")))
                (tags-todo "media"
                           ((org-agenda-overriding-header "Media"))))
-              ((org-agenda-tag-filter-preset '("-drill"))))
+
+              ((org-agenda-tag-filter-preset '("-drill" "-gtd"))
+               (org-habit-show-habits nil)))
 
              ("g" . "GTD contexts")
              ("gg" "Anywhere"
