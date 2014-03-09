@@ -1223,14 +1223,15 @@ The starting day is taken to be the weekday on which the event will repeat."
 #+begin_src emacs-lisp
 (defun cb-org:set-next-todo-state ()
   "When marking a todo to DONE, set the next TODO as NEXT.
-Do not change habits or repeating todos."
+Do not change habits, scheduled items or repeating todos."
   (when (equal org-state "DONE")
     (save-excursion
       (when (and (ignore-errors (outline-forward-same-level 1) t)
                  (equal (org-get-todo-state) "TODO"))
         (unless (or (org-is-habit-p)
                     (org-entry-get (point) "STYLE")
-                    (org-entry-get (point) "LAST_REPEAT"))
+                    (org-entry-get (point) "LAST_REPEAT")
+                    (org-get-scheduled-time (point)))
           (org-todo "NEXT"))))))
 
 (add-hook 'org-after-todo-state-change-hook 'cb-org:set-next-todo-state)
