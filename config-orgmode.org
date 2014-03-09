@@ -87,8 +87,8 @@ Add executors for common org views.
 #+begin_src emacs-lisp
 (declare-modal-executor org-agenda-fullscreen
   :command (if cb-org:at-work?
-               (org-agenda current-prefix-arg "W")
-             (org-agenda current-prefix-arg "A")))
+               (org-agenda current-prefix-arg "w")
+             (org-agenda current-prefix-arg "a")))
 
 (declare-modal-executor org-show-todo-list
   :command (progn
