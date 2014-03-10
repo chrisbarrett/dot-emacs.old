@@ -1852,7 +1852,8 @@ NOTES*
   :predicate (~ cm-matches? (rx bol "diary") 'subject)
   :parser (lambda (alist)
             (cl-destructuring-bind (header date &rest notes)
-                (s-split "\n" (cm-value 'body alist))
+                (s-split (rx (or "\n" (group bow (or "next" "on") eow)))
+                         (cm-value 'body alist))
               (format "%s\n<%s>%s"
                       header
                       (org-read-date nil nil (or date "."))
