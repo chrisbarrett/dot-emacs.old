@@ -88,7 +88,7 @@ Add executors for common org views.
 (declare-modal-executor org-agenda-fullscreen
   :command (if cb-org:at-work?
                (org-agenda current-prefix-arg "w")
-             (org-agenda current-prefix-arg "a")))
+             (org-agenda current-prefix-arg "A")))
 
 (declare-modal-executor org-show-todo-list
   :command (progn
