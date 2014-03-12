@@ -120,6 +120,17 @@ Useful for setting up keymaps manually."
   "Delete the smart operator that was just inserted, including padding."
   (or (cb-op:delete-last-smart-op) ad-do-it))
 #+end_src
+** Advise smart ops to only act in evil insert state
+#+begin_src emacs-lisp
+(defadvice smart-insert-op (around restrict-to-insert-state activate)
+  "If evil mode is active, only insert in insert state."
+  (cond
+   ((and (true? evil-mode) (evil-insert-state-p))
+    ad-do-it)
+   ((true? evil-mode))
+   (t
+    ad-do-it)))
+#+end_src
 * lambda-mode
 Overlay greek lambda symbol in languages with lambda functions..
 #+begin_src emacs-lisp
