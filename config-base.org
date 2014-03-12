@@ -3941,9 +3941,9 @@ Highlights the symbol at point.
 #+begin_src emacs-lisp
 (defface highlight-symbol-face
   '((((class color) (background dark))
-     (:bold t :foreground "wheat3"))
+     (:bold t))
     (((class color) (background light))
-     (:bold t :foreground "wheat4")))
+     (:bold t)))
   "Face used by `highlight-symbol-mode'."
   :group 'highlight-symbol)
 #+end_src
