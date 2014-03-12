@@ -2467,7 +2467,8 @@ themes.
     (set-face-bold        'sp-show-pair-match-face t))
 
   (after 'iedit
-    (set-face-attribute 'iedit-occurrence nil :underline solarized-hl-orange))
+    (set-face-attribute 'iedit-occurrence nil :bold t)
+    (set-face-attribute 'iedit-occurrence nil :foreground solarized-hl-red))
 
   (after 'org
     (set-face-underline  'org-block-begin-line t)
