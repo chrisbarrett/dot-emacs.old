@@ -5011,6 +5011,27 @@ Use the above prompt functions.
 (setq eshell-prompt-function 'cb-eshell:format-prompt)
 #+end_src
 
+** Custom find file command that tiles frames
+#+begin_src emacs-lisp
+(defun cb-eshell:find-file-or-files (files)
+  "Open FILES.
+If files is a small list, open each file and tile windows.
+Otherwise call `find-file' on FILES."
+  (let* ((fs (-flatten files))
+         (len (length fs)))
+    (cond ((equal 1 len)
+           (find-file (car fs)))
+          ((y-or-n-p (format "Open %s files?" len))
+           (if (<= len 5)
+               (let ((bs (-map 'find-file-noselect fs)))
+                 (message "BS: %s" bs)
+                 (expose-buffers bs))
+             (-map 'find-file fs))
+           (message "Viewing %s" (s-join ", " fs)))
+
+          (t
+           (user-error "Aborted")))))
+#+end_src
 ** Smartparens
 #+begin_src emacs-lisp
 (after 'smartparens

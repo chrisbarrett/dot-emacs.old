@@ -31,7 +31,7 @@ alias grs git reset $*
 alias git hub $*
 alias ll ls -l $*
 alias emacs find-file $1
-alias e find-file $1
+alias e cb-eshell:find-file-or-files $*
 alias w3m w3m-find-file $1
 alias clear recenter 0
 alias l ls $*
