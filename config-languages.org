@@ -3064,6 +3064,8 @@ With a prefix arg, insert an arrow with padding at point."
 (define-key shm-map (kbd "<backtab>") nil)
 (define-key shm-map (kbd "TAB") nil)
 (define-key shm-map (kbd "M-r") nil)
+
+(define-key shm-map (kbd "C-k") 'shm/kill-node)
 #+end_src
 ** hideshow
 *** Define helper functions
