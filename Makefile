@@ -157,4 +157,5 @@ clang :
 
 .PHONY: haskell
 haskell :
-	cabal install ghci-ng ghc-mod stylish-haskell structured-haskell-mode
+	cabal install happy alex ghci-ng ghc-mod \
+		stylish-haskell structured-haskell-mode
