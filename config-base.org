@@ -3942,10 +3942,7 @@ Highlights the symbol at point.
 ** Override default face
 #+begin_src emacs-lisp
 (defface highlight-symbol-face
-  '((((class color) (background dark))
-     (:bold t))
-    (((class color) (background light))
-     (:bold t)))
+  '((t (:bold t)))
   "Face used by `highlight-symbol-mode'."
   :group 'highlight-symbol)
 #+end_src
