@@ -3932,6 +3932,8 @@ Highlights the symbol at point.
 #+begin_src emacs-lisp
 (cb:install-package 'highlight-symbol)
 (add-hook 'prog-mode-hook 'highlight-symbol-mode)
+(add-hook 'sgml-mode-hook 'highlight-symbol-mode)
+(add-hook 'nxml-mode-hook 'highlight-symbol-mode)
 #+end_src
 ** Highlight after a delay
 #+begin_src emacs-lisp
