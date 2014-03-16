@@ -65,33 +65,9 @@ Also require the package when REQUIRE? is set."
   "Like `-partial', but does not require FN to be quoted."
   `(-partial ,(cblib:quote-if-fn fn) ,@args))
 
-(defmacro ~R (fn &rest args)
-  "Like `-rpartial', but does not require FN to be quoted."
-  `(-partial ,(cblib:quote-if-fn fn) ,@args))
-
-(defmacro π (&rest fns)
-  "Like `-juxt', but does not require FNS to be quoted."
-  `(-juxt ,@(-map 'cblib:quote-if-fn fns)))
-
 (defmacro C (&rest fns)
   "Like `-compose', but does not require FNS to be quoted."
   `(-compose ,@(-map 'cblib:quote-if-fn fns)))
-
-(defmacro <> (fn)
-  "Like `-flip', but does not require FN to be quoted."
-  `(-flip ,(cblib:quote-if-fn fn)))
-
-(defmacro & (&rest fns)
-  "Like `-andfn', but does not require FNS to be quoted."
-  `(-andfn ,@(-map 'cblib:quote-if-fn fns)))
-
-(defmacro | (&rest fns)
-  "Like `-orfn', but does not require FNS to be quoted."
-  `(-orfn ,@(-map 'cblib:quote-if-fn fns)))
-
-(defmacro @ (fn)
-  "Like `-applify', but does not require FN to be quoted."
-  `(-applify ,(cblib:quote-if-fn fn)))
 
 (defun -true-fn (&rest _)
   "Always return t."
