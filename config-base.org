@@ -1977,7 +1977,7 @@ PRED is a predicate to determine whether search method is currently available.
                  (funcall p)
                t))
             ;; Drop duplicated options.
-            (-uniq-by (π cbs-search-method-name cbs-search-method-key))
+            (-uniq-by (-juxt 'cbs-search-method-name 'cbs-search-method-key))
             ;; Sort by key.
             (-sort (-on 'string< (C s-upcase cbs-search-method-key)))))))
     (funcall (cbs-search-method-func m) default-search-term)))
