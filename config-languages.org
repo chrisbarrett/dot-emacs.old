@@ -2723,31 +2723,32 @@ point to the position of the join."
 #+end_src
 ** Enable hi2 for haskell indentation
 #+begin_src emacs-lisp
-(hook-fn 'haskell-mode-hook
-  (setq-local indent-line-function 'hi2-indent-line)
-  (turn-on-hi2)
-  (diminish 'hi2-mode))
+(add-hook 'haskell-mode-hook 'hi2-mode)
+(after 'hi2 (diminish 'hi2-mode))
 #+end_src
-** Tweak GHC vars
+** Initialize ghc helper commands
 #+begin_src emacs-lisp
-(setq ghc-import-key nil)
-
 (defun cb:ghc-init ()
-  (ghc-abbrev-init)
-  (ghc-type-init)
-  (unless ghc-initialized
-    (ghc-comp-init)
-    (setq ghc-initialized t)))
+  "Run `ghc-init' without setting any key bindings."
+  (noflet ((define-key (&rest _)))
+    (ghc-init)))
 
 (add-hook 'haskell-mode-hook 'cb:ghc-init)
+
+;; FIX: There is an issue preventing ghc-comp from being correctly loaded.
+;; Load this feature manually.
+(after 'haskell-mode
+  (load (->> (-first (~ s-matches? "/ghc") load-path)
+          f-files
+          (-first (~ s-matches? "ghc-comp")))))
 #+end_src
 ** DEFER
 #+begin_src emacs-lisp
-(after '(haskell-mode ghc shm hi2)
-#+end_src
-** Load inf-haskell for its keymap
-#+begin_src emacs-lisp
-(require 'inf-haskell)
+(after 'haskell-mode
+  (require 'hi2)
+  (require 'shm)
+  (require 'ghc)
+  (require 'inf-haskell)
 #+end_src
 ** Define flycheck checker for Haskell-C files
 #+begin_src emacs-lisp
@@ -2849,7 +2850,6 @@ default commands.
     (save-window-excursion
       ad-do-it)))
 #+end_src
-** smart operators
 ** Define smart operators
 #+begin_src emacs-lisp
 (defun cb-hs:inside-parens? ()
