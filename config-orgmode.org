@@ -1465,6 +1465,10 @@ blocks and encrypted regions.
 (defadvice org-insert-todo-heading (after insert-state activate)
   (when (called-interactively-p nil)
     (cb:maybe-evil-insert-state)))
+
+(defadvice org-insert-todo-heading-respect-content (after insert-state activate)
+  (when (called-interactively-p nil)
+    (cb:maybe-evil-insert-state)))
 #+end_src
 ** Adapt outline fold commands for Evil
 #+begin_src emacs-lisp
