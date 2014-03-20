@@ -2734,21 +2734,22 @@ point to the position of the join."
     (ghc-init)))
 
 (add-hook 'haskell-mode-hook 'cb:ghc-init)
-
-;; FIX: There is an issue preventing ghc-comp from being correctly loaded.
-;; Load this feature manually.
-(after 'haskell-mode
-  (load (->> (-first (~ s-matches? "/ghc") load-path)
-          f-files
-          (-first (~ s-matches? "ghc-comp")))))
 #+end_src
 ** DEFER
 #+begin_src emacs-lisp
 (after 'haskell-mode
   (require 'hi2)
   (require 'shm)
+  (require 'haskell-interactive-mode)
+
+  ;; FIX: There is an issue preventing ghc-comp from being correctly loaded.
+  ;; Load this feature manually.
+  (load (->> (-first (~ s-matches? "/ghc") load-path)
+          f-files
+          (-first (~ s-matches? "ghc-comp"))))
+
+
   (require 'ghc)
-  (require 'inf-haskell)
 #+end_src
 ** Define flycheck checker for Haskell-C files
 #+begin_src emacs-lisp
@@ -2828,19 +2829,15 @@ default commands.
 #+end_src
 ** Configure commands for switching between src and REPL
 #+begin_src emacs-lisp
-(defadvice switch-to-haskell (after maybe-insert-state activate)
-  "Enter insert state if point is at the end of the line."
-  (when (s-blank? (buffer-substring (point) (line-end-position)))
-    (cb:maybe-evil-insert-state)))
-
 (defun cb:switch-to-haskell ()
   "Switch to the last active Haskell buffer."
   (interactive)
   (-when-let (buf (--first-buffer (derived-mode-p 'haskell-mode)))
     (pop-to-buffer buf)))
 
-(hook-fn 'inferior-haskell-mode-hook
-  (local-set-key (kbd "C-c C-z") 'cb:switch-to-haskell))
+
+(define-key haskell-interactive-mode-map (kbd "C-c C-z") 'cb:switch-to-haskell)
+(define-key haskell-mode-map (kbd "C-c C-z") 'haskell-interactive-switch)
 #+end_src
 ** Stop errors during save from changing window state
 #+begin_src emacs-lisp
@@ -3024,7 +3021,7 @@ With a prefix arg, insert an arrow with padding at point."
    (t
     (insert ","))))
 #+end_src
-** Define custom smart ops for inferior-haskell
+** Define custom smart ops for haskell-interactive-mode
 #+begin_src emacs-lisp
 (defun cb-hs:ghci-smart-colon ()
   "Insert a smart operator, unless point is immediately after the GHCI prompt."
@@ -3056,13 +3053,13 @@ With a prefix arg, insert an arrow with padding at point."
 (define-key haskell-mode-map (kbd "SPC") 'cb-hs:space)
 (define-key haskell-mode-map (kbd "DEL") 'cb-hs:del)
 
-(declare-smart-ops 'inferior-haskell-mode :add '("." "$" "," "="))
+(declare-smart-ops 'haskell-interactive-mode :add '("." "$" "," "="))
 
-(define-key inferior-haskell-mode-map (kbd "-") 'cb-hs:smart-minus)
-(define-key inferior-haskell-mode-map (kbd ".") 'cb-hs:smart-dot)
-(define-key inferior-haskell-mode-map (kbd "|") 'cb-hs:smart-pipe)
-(define-key inferior-haskell-mode-map (kbd ":") 'cb-hs:ghci-smart-colon)
-(define-key inferior-haskell-mode-map (kbd ",") 'cb-hs:ghci-smart-comma)
+(define-key haskell-interactive-mode-map (kbd "-") 'cb-hs:smart-minus)
+(define-key haskell-interactive-mode-map (kbd ".") 'cb-hs:smart-dot)
+(define-key haskell-interactive-mode-map (kbd "|") 'cb-hs:smart-pipe)
+(define-key haskell-interactive-mode-map (kbd ":") 'cb-hs:ghci-smart-colon)
+(define-key haskell-interactive-mode-map (kbd ",") 'cb-hs:ghci-smart-comma)
 #+end_src
 ** Disable some shm keybindings
 #+begin_src emacs-lisp
@@ -3142,7 +3139,7 @@ With a prefix arg, insert an arrow with padding at point."
    (call-interactively 'hoogle))
  :when
  (lambda ()
-   (derived-mode-p 'haskell-mode 'inf-haskell-mode)))
+   (derived-mode-p 'haskell-mode 'haskell-interactive-mode)))
 #+end_src
 ** Use font-lock to display a λ-symbol for lambda functions
 #+begin_src emacs-lisp
@@ -3156,6 +3153,7 @@ With a prefix arg, insert an arrow with padding at point."
 ** General key bindings
 #+begin_src emacs-lisp
 (define-key haskell-mode-map (kbd "C-c C-c") 'haskell-process-cabal-build)
+(define-key haskell-mode-map (kbd "C-c C-l") 'haskell-process-load-file)
 #+end_src
 ** Insert language pragmas
 #+begin_src emacs-lisp
