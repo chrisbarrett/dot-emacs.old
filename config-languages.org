@@ -3023,18 +3023,34 @@ With a prefix arg, insert an arrow with padding at point."
 #+end_src
 ** Define custom smart ops for haskell-interactive-mode
 #+begin_src emacs-lisp
+(defun cb-hs:ghci-line-beginning-position ()
+  "Narrow to the current line, excluding the ghci prompt."
+  (save-excursion
+    (cond ((haskell-interactive-at-prompt)
+           (goto-char (line-beginning-position))
+           (or (search-forward-regexp haskell-interactive-prompt
+                                      (line-end-position)
+                                      t)
+               (line-beginning-position)))
+          (t
+           (line-beginning-position)))))
+
 (defun cb-hs:ghci-smart-colon ()
   "Insert a smart operator, unless point is immediately after the GHCI prompt."
   (interactive)
-  (if (s-blank? (buffer-substring (line-beginning-position) (point)))
-      (insert ":")
-    (smart-insert-op ":")))
+  (save-restriction
+    (narrow-to-region (cb-hs:ghci-line-beginning-position)
+                      (line-end-position))
+    (if (s-blank? (buffer-substring (line-beginning-position) (point)))
+        (insert ":")
+      (smart-insert-op ":"))))
 
 (defun cb-hs:ghci-smart-comma ()
   "Insert a comma with padding."
   (interactive)
   (save-restriction
-    (narrow-to-region (line-beginning-position) (point))
+    (narrow-to-region (cb-hs:ghci-line-beginning-position)
+                      (point))
     (unless (s-blank? (current-line))
       (delete-horizontal-space))
 
