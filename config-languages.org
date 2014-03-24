@@ -23,7 +23,7 @@ flaky.
   (ignore-errors
     (equal 'font-lock-comment-face (face-at-point))))
 
-(defun last-non-space-char ()
+(defun cb-op:last-non-space-char ()
   "Return the previous non-whitespace character on this line, as a string."
   (save-excursion
     (when (search-backward-regexp (rx (not space))
