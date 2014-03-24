@@ -3429,6 +3429,32 @@ With a prefix arg, insert an arrow with padding at point."
   (when (derived-mode-p 'haskell-mode)
     (setq-local flyspell-generic-check-word-predicate 'cb-hs:flyspell-verify)))
 #+end_src
+** Improve haskell-interactive default directory detection
+#+begin_src emacs-lisp
+(defun cb-hs:src-or-test-dir ()
+  "Find the containing src or test directory."
+  (-when-let (f-or-dir (or (buffer-file-name) default-directory))
+    (cadr (s-match (rx (group (+ nonl) "/" (or "src" "test") "/")) f-or-dir))))
+
+(defun cb-hs:guess-session-dir (session)
+  "Calculate a default directory for an interactive Haskell SESSION."
+  (or (cb-hs:src-or-test-dir)
+      (haskell-session-get session 'current-dir)
+      (haskell-session-get session 'cabal-dir)
+      (when (buffer-file-name) (f-dirname (buffer-file-name)))
+      user-home-directory))
+
+(defun haskell-session-pwd (session &optional change)
+  "Get the directory for SESSION.
+
+When optional argument CHANGE is set, prompt for the current directory."
+  (when (or change (null (haskell-session-get session 'current-dir)))
+    (let* ((prompt (if change "Change directory: " "Set current directory: "))
+           (default-dir (cb-hs:guess-session-dir session))
+           (dir (haskell-utils-read-directory-name prompt default-dir)))
+      (haskell-session-set-current-dir session dir)
+      dir)))
+#+end_src
 ** END
 #+begin_src emacs-lisp
 )
