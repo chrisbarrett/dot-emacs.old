@@ -30,6 +30,18 @@ flaky.
                                   (line-beginning-position) t)
       (thing-at-point 'char))))
 
+(defun cb-op:delete-horizontal-space-non-readonly ()
+  "Delete horizontal space around point that is not read-only."
+  (while (and (not (eobp))
+              (s-matches? (rx space) (char-to-string (char-after)))
+              (not (get-char-property (point) 'read-only)))
+    (forward-char 1))
+
+  (while (and (not (bobp))
+              (s-matches? (rx space) (char-to-string (char-before)))
+              (not (get-char-property (1- (point)) 'read-only)))
+    (delete-char -1)))
+
 (defun smart-insert-op (op)
   "Insert a smart operator, unless we're in a string or comment."
 
@@ -45,7 +57,7 @@ flaky.
       (insert op))
 
      ((-any? (~ equal (last-non-space-char)) smart-op-list)
-      (delete-horizontal-space)
+      (cb-op:delete-horizontal-space-non-readonly)
       (insert op)
       (just-one-space))
 
@@ -68,7 +80,7 @@ Useful for setting up keymaps manually."
          (smart-insert-op ,str))
        ',fname)))
 
-(defun cb-ops:add-smart-ops (map ops)
+(defun cb-op:add-smart-ops (map ops)
   "Populate MAP with smart operator insertion commands for OPS."
   (--each ops (eval `(define-key ,map (kbd ,it) (make-smart-op ,it)))))
 
@@ -89,10 +101,10 @@ Useful for setting up keymaps manually."
     ;; Set key bindings now if the keymap is available, otherwise set in mode
     ;; hook.
     (if (boundp map)
-        (cb-ops:add-smart-ops map ops)
+        (cb-op:add-smart-ops map ops)
       (eval `(add-hook ',hook
                        (lambda ()
-                         (cb-ops:add-smart-ops ',map ',ops)))))
+                         (cb-op:add-smart-ops ',map ',ops)))))
 
     (list :mode mode :ops ops)))
 #+end_src
@@ -107,13 +119,15 @@ Useful for setting up keymaps manually."
       (when (s-matches? (concat (regexp-opt smart-op-list) " *$")
                         (buffer-substring (line-beginning-position) (point)))
         ;; Delete op
-        (search-backward-regexp (regexp-opt smart-op-list))
-        (delete-region (point) (point-max))
+        (let ((op-pos
+               (save-excursion
+                 (search-backward-regexp (regexp-opt smart-op-list)))))
+          (while (and (/= (point) op-pos)
+                      (not (get-char-property (point) 'read-only)))
+            (delete-char -1)))
 
         ;; Delete preceding spaces.
-        (when (s-matches? (rx (not (any space)) (+ space) eol)
-                          (buffer-substring (line-beginning-position) (point)))
-          (delete-horizontal-space))
+        (cb-op:delete-horizontal-space-non-readonly)
         t))))
 
 (defadvice sp-backward-delete-char (around delete-smart-op activate)
