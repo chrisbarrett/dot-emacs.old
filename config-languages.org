@@ -56,7 +56,7 @@ flaky.
           (-contains? '(?\" ?\') (char-after)))
       (insert op))
 
-     ((-any? (~ equal (last-non-space-char)) smart-op-list)
+     ((-intersection smart-op-list (list (cb-op:last-non-space-char)))
       (cb-op:delete-horizontal-space-non-readonly)
       (insert op)
       (just-one-space))
