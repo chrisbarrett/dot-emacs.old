@@ -3503,7 +3503,6 @@ When optional argument CHANGE is set, prompt for the current directory."
 (hook-fns 'cb:idris-modes-hook
   (setq-local eldoc-documentation-function 'cb-idris:eldoc-fn)
   (turn-on-eldoc-mode))
-
 #+end_src
 ** Switch to REPL with C-c C-z
 #+begin_src emacs-lisp
