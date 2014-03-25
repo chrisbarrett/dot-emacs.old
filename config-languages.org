@@ -3469,6 +3469,18 @@ When optional argument CHANGE is set, prompt for the current directory."
 #+begin_src emacs-lisp
 (add-to-list 'completion-ignored-extensions ".ibc")
 #+end_src
+** Set idris variables
+#+begin_src emacs-lisp
+(hook-fn 'cb:idris-modes-hook
+  (setq-local tab-width 2)
+  (setq-local evil-shift-width 2))
+#+end_src
+** Use idris-indentation-mode
+#+begin_src emacs-lisp
+(add-hook 'idris-mode-hook 'idris-indentation-mode)
+(after 'idris-indentation
+  (diminish 'idris-indentation-mode))
+#+end_src
 ** DEFER
 #+begin_src emacs-lisp
 (after 'idris-mode
