@@ -3465,9 +3465,9 @@ When optional argument CHANGE is set, prompt for the current directory."
   :match (rx ".idr" eol)
   :packages (idris-mode))
 #+end_src
-** ignore .idr files
+** ignore .ibc files
 #+begin_src emacs-lisp
-(add-to-list 'completion-ignored-extensions ".idr")
+(add-to-list 'completion-ignored-extensions ".ibc")
 #+end_src
 ** DEFER
 #+begin_src emacs-lisp
