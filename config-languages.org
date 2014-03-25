@@ -3649,6 +3649,18 @@ With a prefix arg, insert an arrow with padding at point."
 
 (add-hook 'cb:idris-modes-hook 'cbidris:apply-unicode)
 #+end_src
+** Use global faces for idris repl faces
+#+begin_src emacs-lisp
+(-each
+    '((idris-semantic-type-face     . font-lock-type-face)
+      (idris-semantic-data-face     . default)
+      (idris-semantic-function-face . font-lock-function-name-face)
+      (idris-semantic-bound-face    . font-lock-variable-name-face)
+      (idris-semantic-implicit-face . font-lock-comment-face)
+      (idris-repl-output-face       . compilation-info)
+      )
+  (~ add-to-list 'face-remapping-alist))
+#+end_src
 ** smartparens
 #+begin_src emacs-lisp
 (defun sp-idris-just-one-space (id action ctx)
