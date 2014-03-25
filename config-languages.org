@@ -3473,6 +3473,26 @@ When optional argument CHANGE is set, prompt for the current directory."
 #+begin_src emacs-lisp
 (after 'idris-mode
 #+end_src
+** show types with eldoc
+#+begin_src emacs-lisp
+(defun cb-idris:eldoc-fn ()
+  "Display the type for a name"
+  (ignore-errors
+    (-when-let (name (idris-name-at-point))
+      (let* ((ty     (idris-eval (list :type-of name)))
+             (result (car ty))
+             (formatting (cdr ty)))
+        (with-temp-buffer
+          (idris-info-mode)
+          (idris-propertize-spans (idris-repl-semantic-text-props formatting)
+                                  (insert (format "%s" result)))
+          (buffer-string))))))
+
+(hook-fns 'cb:idris-modes-hook
+  (setq-local eldoc-documentation-function 'cb-idris:eldoc-fn)
+  (turn-on-eldoc-mode))
+
+#+end_src
 ** Switch to REPL with C-c C-z
 #+begin_src emacs-lisp
 (define-key idris-mode-map (kbd "C-c C-z") 'idris-switch-to-output-buffer)
