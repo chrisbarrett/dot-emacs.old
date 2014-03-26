@@ -4110,10 +4110,12 @@ SILENT? controls whether provide feedback to the user on the action performed."
     (let ((fn (cbidris:function-name-at-pt)))
 
       (unless (s-matches? (rx bol (* space) eol) (current-line))
-        (newline-and-indent))
+        (newline))
 
       (insert fn)
-      (just-one-space)))
+      (just-one-space)
+      (save-excursion
+        (indent-for-tab-command))))
 
    ((s-matches? comment-start (current-line))
     (fill-paragraph)
@@ -4121,7 +4123,9 @@ SILENT? controls whether provide feedback to the user on the action performed."
 
    (t
     (goto-char (line-end-position))
-    (idris-ret))))
+    (idris-ret)))
+
+  (cb:maybe-evil-insert-state))
 #+end_src
 *** Set key bindings
 #+begin_src emacs-lisp
