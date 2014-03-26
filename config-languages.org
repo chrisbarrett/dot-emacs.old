@@ -3494,7 +3494,9 @@ When optional argument CHANGE is set, prompt for the current directory."
                    (str (car (idris-eval (list :type-of name)))))
         (cl-destructuring-bind (_ ident type)
             (s-match (rx (group (+ nonl)) ":" (group (+ nonl)) eol) str)
-          (format "%s:%s" ident (propertize type 'face font-lock-type-face)))))))
+          (format "%s:%s"
+                  (propertize ident 'face font-lock-function-name-face)
+                  (propertize type 'face font-lock-type-face)))))))
 
 (hook-fn 'cb:idris-modes-hook
   (setq-local eldoc-documentation-function 'cb-idris:eldoc-fn)
