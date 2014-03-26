@@ -3496,7 +3496,7 @@ When optional argument CHANGE is set, prompt for the current directory."
             (s-match (rx (group (+ nonl)) ":" (group (+ nonl)) eol) str)
           (format "%s:%s" ident (propertize type 'face font-lock-type-face)))))))
 
-(hook-fns 'cb:idris-modes-hook
+(hook-fn 'cb:idris-modes-hook
   (setq-local eldoc-documentation-function 'cb-idris:eldoc-fn)
   (turn-on-eldoc-mode))
 #+end_src
