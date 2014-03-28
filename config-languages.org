@@ -2749,6 +2749,12 @@ point to the position of the join."
 
 (add-hook 'haskell-mode-hook 'cb:ghc-init)
 #+end_src
+** Enable auto-complete
+#+begin_src emacs-lisp
+(hook-fn 'haskell-mode-hook
+  (setq ac-sources (list ac-source-ghc-mod))
+  (auto-complete-mode +1))
+#+end_src
 ** DEFER
 #+begin_src emacs-lisp
 (after 'haskell-mode
