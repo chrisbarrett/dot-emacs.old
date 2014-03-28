@@ -2752,6 +2752,7 @@ point to the position of the join."
 ** DEFER
 #+begin_src emacs-lisp
 (after 'haskell-mode
+  (require 'ghc)
   (require 'hi2)
   (require 'shm)
   (require 'haskell-interactive-mode)
@@ -2811,7 +2812,6 @@ default commands.
 (define-key haskell-mode-map ghc-type-key        'ghc-show-type)
 (define-key haskell-mode-map ghc-info-key        'ghc-show-info)
 (define-key haskell-mode-map ghc-expand-key      'ghc-expand-th)
-(define-key haskell-mode-map ghc-jump-key        'ghc-flymake-jump)
 (define-key haskell-mode-map (kbd "M-P") 'flymake-goto-prev-error)
 (define-key haskell-mode-map (kbd "M-N") 'flymake-goto-next-error)
 (define-key haskell-mode-map ghc-help-key        'ghc-flymake-display-errors)
