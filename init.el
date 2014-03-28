@@ -33,12 +33,12 @@
 
 ;; Initialise packages and install org-mode.
 (require 'package)
-(add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/"))
-(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
-(add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
+(setq package-archives '(("org" . "http://orgmode.org/elpa/")
+                         ("melpa" . "http://melpa.milkbox.net/packages/")))
 (package-initialize)
-(when (not package-archive-contents) (package-refresh-contents))
-(unless (package-installed-p 'org-plus-contrib) (package-install 'org-plus-contrib))
+(unless package-archive-contents (package-refresh-contents))
+(unless (package-installed-p 'org-plus-contrib)
+  (package-install 'org-plus-contrib))
 
 (require 'ob-tangle)
 

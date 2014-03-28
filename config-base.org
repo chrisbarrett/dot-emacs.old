@@ -2484,8 +2484,8 @@ themes.
     (set-face-background  'helm-selection "white")
     (set-face-foreground  'helm-selection "black"))
 
-  (after 'parenface-plus
-    (set-face-foreground  'paren-face "grey80")))
+  (after 'parenface
+    (set-face-foreground  'parenface-paren-face "grey80")))
 #+end_src
 *** Configure Solarized Dark
 #+begin_src emacs-lisp
@@ -2503,8 +2503,8 @@ themes.
     (set-face-background 'ledger-font-xact-highlight-face "#073642")
     (set-face-background 'ledger-occur-xact-face "#073642"))
 
-  (after 'parenface-plus
-    (set-face-foreground  'paren-face "#505070"))
+  (after 'parenface
+    (set-face-foreground  'parenface-paren-face "#505070"))
 
   (after 'shm
     (set-face-background 'shm-current-face "#01304b")
@@ -3555,105 +3555,6 @@ Improves the performance of flyspell.
     (save-restriction
       (widen)
       ad-do-it)))
-#+end_src
-* Tags
-ctags-related commands. Adapted from [[http://mattbriggs.net/blog/2012/03/18/awesome-emacs-plugins-ctags/][Awesome Emacs Plugins: CTags]]
-** Set ctags program
-#+begin_src emacs-lisp
-(setq ctags-update-command (executable-find "ctags"))
-#+end_src
-** Make tags searches case-sensitive
-#+begin_src emacs-lisp
-(setq tags-case-fold-search nil)
-#+end_src
-** Install library used for tag searching
-#+begin_src emacs-lisp
-(cb:install-package 'etags-select)
-#+end_src
-** Define patterns to exclude
-#+begin_src emacs-lisp
-(defvar ctags-exclude-patterns '("db" "test" ".git" "public" "flycheck-"))
-#+end_src
-** Define a command for building tags
-#+begin_src emacs-lisp
-(defun cb:format-tags-excludes ()
-  (let ((sep " --exclude="))
-    (concat sep (s-join sep ctags-exclude-patterns))))
-
-(defun cbtags:project-root ()
-  (or (projectile-project-p) default-directory))
-
-(defun build-ctags ()
-  "Create a tags file at the root of the current project."
-  (interactive)
-  (message "Building project tags...")
-  (let* ((dir (cbtags:project-root))
-         (tags (concat dir "TAGS")))
-    ;; Confirm when creating tags outside the home dir, or at the root of the
-    ;; home dir.
-    (unless (or (f-child-of? dir user-home-directory)
-                (y-or-n-p (format "Really create tags in \"%s\"? " dir)))
-      (error "Aborted"))
-
-    ;; Create tags.
-    (async-shell-command (format "%s -e -R --extra=+fq %s -f %s"
-                                 ctags-update-command
-                                 (cb:format-tags-excludes)
-                                 tags)
-                         "*Tags*")
-    (message "Writing tags file to %s" tags)))
-#+end_src
-** Define a command for visiting tags files
-#+begin_src emacs-lisp
-(defun visit-ctags ()
-  "Visit the tags file at the root of the current project."
-  (interactive)
-  (let ((tags-revert-without-query t))
-    (visit-tags-table (cbtags:project-root))
-    (message "Loaded %s" tags-file-name)))
-#+end_src
-** Define a command for creating and loading tags
-#+begin_src emacs-lisp
-(defun load-ctags ()
-  "Create a tags file at the root of the current project, then load it."
-  (interactive)
-  (and (build-ctags) (visit-ctags)))
-#+end_src
-** Define a command for finding the tag at point
-#+begin_src emacs-lisp
-(defun find-ctag ()
-  "Find the tags at point, creating a tags file if none exists."
-  (interactive)
-  (let ((tags (f-join (cbtags:project-root) "TAGS")))
-    (setq-local tags-file-name tags)
-    (if (file-exists-p tags)
-        (visit-ctags)
-      (build-ctags)))
-  (etags-select-find-tag-at-point))
-#+end_src
-** Set key bindings for the above commands
-#+begin_src emacs-lisp
-(global-set-key (kbd "M-.") 'find-ctag)
-#+end_src
-** Evil
-#+begin_src emacs-lisp
-(after 'evil
-  (evil-global-set-key 'normal (kbd "M-.") 'find-ctag)
-  (evil-global-set-key 'normal (kbd "C-]") 'find-ctag))
-#+end_src
-** Auto-update tags
-#+begin_src emacs-lisp
-(cb:install-package 'ctags-update)
-(add-hook 'prog-mode-hook 'turn-on-ctags-auto-update-mode)
-#+end_src
-*** Use a tmp dir for tags if the current project does not have a tags file
-#+begin_src emacs-lisp
-(setq tags-file-name (f-join (make-temp-file "tags" t) "TAGS"))
-#+end_src
-*** Diminish
-#+begin_src emacs-lisp
-(hook-fn 'ctags-auto-update-mode-hook
-  (diminish 'ctags-auto-update-mode))
 #+end_src
 * Smartparens
 Provides commands creating balanced parens and editing such expressions in a

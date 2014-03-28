@@ -836,16 +836,15 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
   (sp-local-pair "(" ")" :post-handlers '(:add sp-lisp-just-one-space))
   (sp-local-pair "'" nil :actions nil))
 #+end_src
-** parenface-plus
+** parenface
 Adds a face for parentheses. Use to dim parens.
 #+begin_src emacs-lisp
-(cb:install-package 'parenface-plus t)
+(cb:install-package 'parenface t)
 #+end_src
 ** eval-sexp-fu
 Adds a flash when running eval-expression.
 #+begin_src emacs-lisp
-(cb:install-package 'highlight)
-(require 'eval-sexp-fu)
+(cb:install-package 'eval-sexp-fu t)
 (add-hook 'cb:lisp-modes-hook 'turn-on-eval-sexp-fu-flash-mode)
 (setq eval-sexp-fu-flash-duration 0.2)
 
