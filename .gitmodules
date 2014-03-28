@@ -31,9 +31,6 @@
 [submodule "lib/agda-mode"]
 	path = lib/agda-mode
 	url = https://github.com/jwiegley/agda-mode.git
-[submodule "lib/git-gutter-fringe-plus"]
-	path = lib/git-gutter-fringe-plus
-	url = https://github.com/nonsequitur/git-gutter-fringe-plus.git
 [submodule "lib/easy-convert"]
 	path = lib/easy-convert
 	url = https://github.com/Frozenlock/easy-convert.git
