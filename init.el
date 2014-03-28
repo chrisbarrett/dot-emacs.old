@@ -49,7 +49,7 @@
   (dolist (f '("config-base.org" "config-orgmode.org" "config-languages.org"))
     (message "Loading %s" f)
     (org-babel-load-file (concat user-emacs-directory f))
-    (byte-recompile-file (format "%s.el" (f-no-ext f))))
+    (byte-recompile-file (format "%s.el" (file-name-sans-extension f))))
 
   (message "Loading config files...done"))
 

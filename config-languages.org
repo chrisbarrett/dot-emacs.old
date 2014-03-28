@@ -3525,16 +3525,12 @@ When optional argument CHANGE is set, prompt for the current directory."
 Does not pad if inside a pair of brackets.
 
 OP is the operator as a string."
-  (let ((pt (point)))
-    (cond
-     ((cbidris:typing-operator-in-braces?)
-      (delete-horizontal-space)
-      (insert op))
-     (t
-      (smart-insert-op op)))
-    (save-excursion
-      (goto-char pt)
-      (idris-reformat-dwim t))))
+  (cond
+   ((cbidris:typing-operator-in-braces?)
+    (delete-horizontal-space)
+    (insert op))
+   (t
+    (smart-insert-op op))))
 
 (defun cbidris:inserting-cons-in-braces? ()
   (equal (char-after) ?\)))
