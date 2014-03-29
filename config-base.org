@@ -934,64 +934,6 @@ prevents the app bundle from being used as the default dir.
 #+begin_src emacs-lisp
 (setq-default transient-mark-mode t)
 #+end_src
-* Add commands for asynchronously installing packages
-** Define an icon for package-related growl notifications
-#+begin_src emacs-lisp
-(defvar cbpkg:package-icon (f-join cb:assets-dir "package.png"))
-#+end_src
-** Define a command for updating packages in the background
-#+begin_src emacs-lisp
-(defun cbpkg:install-packages (pkgs)
-  ;; Show summary of packages to be installed.
-  (-when-let (len (and pkgs (length pkgs)))
-    (growl "Installing Packages"
-           (format "%s package%s will be installed or updated:\n%s"
-                   len
-                   (if (= 1 len) "" "s")
-                   (s-join ", " (-map 'pp-to-string pkgs)))
-           cbpkg:package-icon)
-    ;; Perform installation.
-    (-each pkgs 'package-install)))
-
-(defun cbpkg:updateable-packages ()
-  "Return the packages with available updates."
-  ;; The easiest way to get this info is from the package menu.
-  (-keep 'car
-         (save-window-excursion
-           (save-excursion
-             (package-list-packages t)
-             (package-menu--find-upgrades)))))
-
-(defun update-packages ()
-  "Update all installed packages in the background."
-  (interactive)
-  (growl "Starting Updates"
-         "Updating packages in the background."
-         cbpkg:package-icon)
-  (async-start
-
-   `(lambda ()
-      (load-file ,user-init-file)
-      (package-refresh-contents)
-      (let ((pkgs (cbpkg:updateable-packages)))
-        (cbpkg:install-packages pkgs)
-        (length pkgs)))
-
-   (lambda (len)
-     (package-initialize)
-     (if (zerop len)
-         (growl "Updates Finished"
-                "No packages needed to be updated."
-                cbpkg:package-icon)
-
-       (growl "Updates Finished"
-              (concat
-               (format "%s package%s %s updated " len
-                       (if (= 1 len) "" "s")
-                       (if (= 1 len) "was" "were"))
-               "and will be loaded next time Emacs is started.")
-              cbpkg:package-icon)))))
-#+end_src
 * OS X
 ** CONDITIONAL
 #+begin_src emacs-lisp
