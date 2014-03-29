@@ -3476,6 +3476,8 @@ When optional argument CHANGE is set, prompt for the current directory."
 #+end_src
 ** Set idris variables
 #+begin_src emacs-lisp
+(setq idris-warnings-printing 'warnings-repl)
+
 (hook-fn 'cb:idris-modes-hook
   (setq-local tab-width 2)
   (setq-local evil-shift-width 2))
