@@ -3460,6 +3460,31 @@ When optional argument CHANGE is set, prompt for the current directory."
       (haskell-session-set-current-dir session dir)
       dir)))
 #+end_src
+** Redefine eldoc function to apply font lock
+#+begin_src emacs-lisp
+(defun cb:haskell-doc-current-info ()
+  "Return the info about symbol at point.
+Meant for `eldoc-documentation-function'."
+  (-when-let (sig (haskell-doc-sym-doc (haskell-ident-at-point)))
+    (with-temp-buffer
+      ;; Initialise haskell-mode's font-locking.
+      (set (make-local-variable 'font-lock-defaults)
+           '(haskell-font-lock-choose-keywords
+             nil nil ((?\' . "w") (?_  . "w")) nil
+             (font-lock-syntactic-keywords
+              . haskell-font-lock-choose-syntactic-keywords)
+             (font-lock-syntactic-face-function
+              . haskell-syntactic-face-function)
+             ;; Get help from font-lock-syntactic-keywords.
+             (parse-sexp-lookup-properties . t)))
+
+      (insert sig)
+      (font-lock-fontify-buffer)
+      (buffer-string))))
+
+(hook-fn 'cb:haskell-modes-hook
+  (setq-local eldoc-documentation-function 'cb:haskell-doc-current-info))
+#+end_src
 ** END
 #+begin_src emacs-lisp
 )
