@@ -1647,10 +1647,12 @@ Makes exiting Emacs and killing emacsclient instances consistent.
     ("b" "Block (org)" org-narrow-to-block :modes org-mode)
     ("e" "Element (org)" org-narrow-to-element :modes org-mode)
     ("s" "Subtree (org)" org-narrow-to-subtree :modes org-mode)))
-#+end_src
-** Create a binding for the narrowing picker
-#+begin_src emacs-lisp
+
 (bind-key* "C-x n" 'narrowing-picker)
+#+end_src
+** Bind C-x w to widen
+#+begin_src emacs-lisp
+(bind-key* "C-x w" 'widen)
 #+end_src
 * Insertion commands
 ** Insert time stamp with helm
