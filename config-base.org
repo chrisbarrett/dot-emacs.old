@@ -3147,6 +3147,12 @@ Provides commands for incrementing and decrementing numbers at point.
   "C--" 'evil-numbers/dec-at-pt
   "C-+" 'evil-numbers/inc-at-pt)
 #+end_src
+** Evil-exchange
+Adds commands to swap text from one region to another.
+#+begin_src emacs-lisp
+(cb:install-package 'evil-exchange t)
+(evil-exchange-install)
+#+end_src
 ** END
 #+begin_src emacs-lisp
 )
