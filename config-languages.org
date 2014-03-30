@@ -2680,7 +2680,8 @@ point to the position of the join."
 ** Configure haskell-mode vars
 #+begin_src emacs-lisp
 (setq haskell-tags-on-save t
-      haskell-stylish-on-save t)
+      haskell-stylish-on-save t
+      haskell-program-name "cabal repl")
 
 (hook-fn 'cb:haskell-modes-hook
   (setq-local tab-width 2)
