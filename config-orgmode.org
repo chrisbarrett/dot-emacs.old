@@ -1935,6 +1935,14 @@ Define keys for org-mode.
   ;; disable annoying comment toggle key
   "C-c ;" nil)
 #+end_src
+* Commands for working with latex
+#+begin_src emacs-lisp
+(defun org-latex-wrap ()
+  (interactive)
+  (let ((r (current-region)))
+    (delete-region (region-beginning) (region-end))
+    (insert (format "@@latex:%s@@" r))))
+#+end_src
 * Provide this file
 #+begin_src emacs-lisp
 (provide 'config-orgmode)
