@@ -4884,10 +4884,14 @@ Auctex provides a development environment for tex
 #+begin_src emacs-lisp
 (after 'tex
 #+end_src
-** Configure autex style variables
+** Configure autex variables
 #+begin_src emacs-lisp
-(setq TeX-auto-save t
-      TeX-parse-self t)
+(setq TeX-auto-save t)
+(setq TeX-parse-self t)
+(setq-default TeX-master nil)
+(setq TeX-PDF-mode t)
+(add-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
+(add-hook 'LaTeX-mode-hook (lambda () (abbrev-mode +1)))
 #+end_src
 ** Enable preview pane
 #+begin_src emacs-lisp
