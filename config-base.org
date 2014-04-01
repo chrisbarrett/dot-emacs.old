@@ -3154,19 +3154,6 @@ because it raises an error on autoload.
 ;(cb:install-package 'evil-exchange t)
 ;(evil-exchange-install)
 #+end_src
-** Evil-matchit
-Extends the paren-matching behaviour on =%= to other language constructs like
-if/else keywords, etc.
-#+begin_src emacs-lisp
-(cb:install-package 'evil-matchit t)
-
-(defun evilmi-customize-keybinding ()
-  (evil-define-key 'normal evil-matchit-mode-map
-    "%" 'evilmi-jump-items
-    ",*" 'evilmi-select-items))
-
-(global-evil-matchit-mode +1)
-#+end_src
 ** END
 #+begin_src emacs-lisp
 )
