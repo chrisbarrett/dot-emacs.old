@@ -4893,6 +4893,10 @@ Auctex provides a development environment for tex
 (add-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
 (add-hook 'LaTeX-mode-hook (lambda () (abbrev-mode +1)))
 #+end_src
+** Use standard faces for latex errors
+#+begin_src emacs-lisp
+(add-to-list 'face-remapping-alist '(bad-face . error))
+#+end_src
 ** Enable preview pane
 #+begin_src emacs-lisp
 (latex-preview-pane-enable)
