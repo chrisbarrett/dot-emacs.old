@@ -4895,7 +4895,7 @@ Auctex provides a development environment for tex
 #+end_src
 ** Use standard faces for latex errors
 #+begin_src emacs-lisp
-(add-to-list 'face-remapping-alist '(bad-face . error))
+(add-to-list 'face-remapping-alist '(bad-face . flycheck-error))
 #+end_src
 ** Enable preview pane
 #+begin_src emacs-lisp
