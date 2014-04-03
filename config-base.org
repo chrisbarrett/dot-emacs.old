@@ -363,8 +363,8 @@ PACKAGES is a list of packages that will be installed."
 
          (save-window-excursion
            (--each ',packages
-             (with-demoted-errors "Warn: %s"
-               (cb:install-package it)
+             (cb:install-package it)
+             (ignore-errors
                (require it nil t)))))
 
        ;; Install automatically on hooks when buffer or file name is a match.
