@@ -2669,6 +2669,7 @@ point to the position of the join."
 (cb:declare-package-installer haskell
   :match (rx "." (or "hs" "gs" "hi" "pghci" "cabal" "hsc" "hcr"))
   :packages (haskell-mode
+             flycheck-haskell
              ghc
              hi2
              shm))
@@ -2771,6 +2772,10 @@ point to the position of the join."
 
 
   (require 'ghc)
+#+end_src
+** Set up flycheck-haskell
+#+begin_src emacs-lisp
+(add-hook 'flycheck-mode-hook 'flycheck-haskell-setup)
 #+end_src
 ** Define flycheck checker for Haskell-C files
 #+begin_src emacs-lisp
