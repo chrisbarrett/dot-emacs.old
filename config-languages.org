@@ -3341,12 +3341,7 @@ With a prefix arg, insert an arrow with padding at point."
 
   (goto-char (line-end-position))
   (newline)
-  (shm-insert-string (concat fname " "))
-  (save-excursion
-    (insert " = ")
-    (let ((start (point)))
-      (insert "undefined")
-      (shm-evaporate start (line-end-position)))))
+  (shm-insert-string (concat fname " ")))
 
 (defun cb-hs:at-decl-for-function? (fname)
   (when fname
