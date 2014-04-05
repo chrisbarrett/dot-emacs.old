@@ -80,31 +80,44 @@ Useful for setting up keymaps manually."
          (smart-insert-op ,str))
        ',fname)))
 
-(defun cb-op:add-smart-ops (map ops)
-  "Populate MAP with smart operator insertion commands for OPS."
-  (--each ops (eval `(define-key ,map (kbd ,it) (make-smart-op ,it)))))
+(defun cb-op:add-smart-ops (ops custom)
+  (let ((custom-ops (-map 'car custom)))
+    (setq-local smart-op-list (-union ops custom-ops))
+    (--each ops
+      (local-set-key (kbd it) (eval `(make-smart-op ,it))))
+    (--each custom
+      (cl-destructuring-bind (op . fn) it
+        (local-set-key (kbd op) fn)))))
 
-(cl-defun declare-smart-ops (mode &key add rem)
+(cl-defun declare-smart-ops (mode &key add rem custom)
   "Define the smart operators for the given mode.
 
 - MODE is the mode to add the smart ops for.
 
 - ADD is a list of smart operators to add to the defaults.
 
-- REM is a list of smart operators to remove from the defaults."
-  (declare (indent 1))
-  (let ((map (intern (concat (symbol-name mode) "-map")))
-        (hook (intern (concat (symbol-name mode) "-hook")))
-        (ops (-difference (-concat smart-op-list add) rem)))
-    (put mode 'smart-op-list ops)
+- REM is a list of smart operators to remove from the defaults.
 
-    ;; Set key bindings now if the keymap is available, otherwise set in mode
-    ;; hook.
-    (if (boundp map)
-        (cb-op:add-smart-ops map ops)
-      (eval `(add-hook ',hook
-                       (lambda ()
-                         (cb-op:add-smart-ops ',map ',ops)))))
+- CUSTOM is a list of special operator insertion commands to use
+  instead of the defaults. It is an alist of (OP . FUNCTION),
+  where OP is a string and FUNCTION is a symbol."
+  (declare (indent 1))
+  (cl-assert (symbolp mode))
+  (cl-assert (null (-intersection add rem)))
+  (cl-assert (null (-intersection add (-map 'car custom))))
+  (cl-assert (null (-intersection rem (-map 'car custom))))
+
+  (let ((hook (intern (concat (symbol-name mode) "-hook")))
+        (ops (-union (-map 'car custom)
+                     (-difference (-union smart-op-list add) rem))))
+
+    ;; Set smart ops list for buffers that already exist.
+    (--each (--filter-buffers (derived-mode-p mode))
+      (with-current-buffer it
+        (cb-op:add-smart-ops ops custom)))
+    ;; Set smart ops in mode's hook.
+    (add-hook hook `(lambda ()
+                      (cb-op:add-smart-ops ',ops ',custom)))
 
     (list :mode mode :ops ops)))
 #+end_src
@@ -546,13 +559,15 @@ Remove horizontal whitespace if the insertion results in a ++."
 #+end_src
 *** Set bindings
 #+begin_src emacs-lisp
-(declare-smart-ops 'c-mode :add '("?"))
-(define-key c-mode-map (kbd ",") 'cb:comma-then-space)
-(define-key c-mode-map (kbd "=") 'c-insert-smart-equals)
-(define-key c-mode-map (kbd "+") 'c-insert-smart-plus)
-(define-key c-mode-map (kbd ">") 'c-insert-smart-gt)
-(define-key c-mode-map (kbd "-") 'c-insert-smart-minus)
-(define-key c-mode-map (kbd "*") 'c-insert-smart-star)
+(declare-smart-ops 'c-mode
+  :add '("?")
+  :custom
+  '(("," . cb:comma-then-space)
+    ("=" . c-insert-smart-equals)
+    ("+" . c-insert-smart-plus)
+    (">" . c-insert-smart-gt)
+    ("-" . c-insert-smart-minus)
+    ("*" . c-insert-smart-star)))
 #+end_src
 ** Smartparens
 Automatically format curly braces on insertion.
@@ -2038,16 +2053,14 @@ Add special smart-operator behaviours for python buffers.
   (insert ":")
   (just-one-space))
 
-(-each (list (cons 'python-mode python-mode-map)
-             (cons 'inferior-python-mode inferior-python-mode-map))
-  (lambda+ ((mode . map))
-    (declare-smart-ops mode :add '("?" "$"))
-
-    (define-keys map
-      "," 'cb-py:smart-comma
-      "*" 'cb-py:smart-asterisk
-      ":" 'cb-py:smart-colon
-      "=" 'cb-py:smart-equals)))
+(--each '(python-mode inferior-python-mode)
+  (declare-smart-ops it
+    :add '("?" "$")
+    :custom
+    '(("," . cb-py:smart-comma)
+      ("*" . cb-py:smart-asterisk)
+      (":" . cb-py:smart-colon)
+      ("=" . cb-py:smart-equals))))
 #+end_src
 ** smartparens
 #+begin_src emacs-lisp
@@ -2410,11 +2423,12 @@ If this is the trailing colon for a hash key, insert padding."
                     (buffer-substring (line-beginning-position) (point)))
     (just-one-space)))
 
-(hook-fn 'cb:ruby-modes-hook
-  (declare-smart-ops major-mode
-    :add '("~"))
-  (local-set-key (kbd ",") (command (insert ",") (just-one-space)))
-  (local-set-key (kbd ":") 'cb-rb:smart-colon))
+(--each cb:ruby-modes
+  (declare-smart-ops it
+    :add '("~")
+    :custom
+    '(("," . (command (insert ",") (just-one-space)))
+      (":" . cb-rb:smart-colon))))
 #+end_src
 ** smartparens
 #+begin_src emacs-lisp
@@ -2625,12 +2639,14 @@ Pad in normal expressions. Do not insert padding in variance annotations."
 #+end_src
 *** Set key bindings
 #+begin_src emacs-lisp
-(declare-smart-ops 'scala-mode)
+(declare-smart-ops 'scala-mode
+  :custom
+  '(("=" . cbscala:equals)
+    (":" . cbscala:colon)
+    ("+" . cbscala:plus)
+    ("-" . cbscala:minus)))
+
 (define-key scala-mode-map (kbd ".") nil)
-(define-key scala-mode-map "=" 'cbscala:equals)
-(define-key scala-mode-map ":" 'cbscala:colon)
-(define-key scala-mode-map "+" 'cbscala:plus)
-(define-key scala-mode-map "-" 'cbscala:minus)
 #+end_src
 ** Evil
 *** Adapt scala-mode's join-line command for evil-mode
@@ -3085,24 +3101,27 @@ With a prefix arg, insert an arrow with padding at point."
 #+end_src
 ** Set smart operator key bindings
 #+begin_src emacs-lisp
-(declare-smart-ops 'haskell-mode :add '("." "$" "," "="))
+(declare-smart-ops 'haskell-mode
+  :add '("$" "=")
+  :custom
+  '(("-" . cb-hs:smart-minus)
+    ("." . cb-hs:smart-dot)
+    ("," . cb-hs:smart-comma)
+    ("|" . cb-hs:smart-pipe)
+    ("#" . cb-hs:smart-hash)
+    (":" . cb-hs:smart-colon)))
 
-(define-key haskell-mode-map (kbd "-") 'cb-hs:smart-minus)
-(define-key haskell-mode-map (kbd ".") 'cb-hs:smart-dot)
-(define-key haskell-mode-map (kbd ",") 'cb-hs:smart-comma)
-(define-key haskell-mode-map (kbd "|") 'cb-hs:smart-pipe)
-(define-key haskell-mode-map (kbd "#") 'cb-hs:smart-hash)
-(define-key haskell-mode-map (kbd ":") 'cb-hs:smart-colon)
 (define-key haskell-mode-map (kbd "SPC") 'cb-hs:space)
 (define-key haskell-mode-map (kbd "DEL") 'cb-hs:del)
 
-(declare-smart-ops 'haskell-interactive-mode :add '("." "$" "," "="))
-
-(define-key haskell-interactive-mode-map (kbd "-") 'cb-hs:smart-minus)
-(define-key haskell-interactive-mode-map (kbd ".") 'cb-hs:smart-dot)
-(define-key haskell-interactive-mode-map (kbd "|") 'cb-hs:smart-pipe)
-(define-key haskell-interactive-mode-map (kbd ":") 'cb-hs:ghci-smart-colon)
-(define-key haskell-interactive-mode-map (kbd ",") 'cb-hs:ghci-smart-comma)
+(declare-smart-ops 'haskell-interactive-mode
+  :add '("$" "=")
+  :custom
+  '(("-" . cb-hs:smart-minus)
+    ("." . cb-hs:smart-dot)
+    ("|" . cb-hs:smart-pipe)
+    (":" . cb-hs:ghci-smart-colon)
+    ("," . cb-hs:ghci-smart-comma)))
 #+end_src
 ** Disable some shm keybindings
 #+begin_src emacs-lisp
@@ -3675,24 +3694,23 @@ With a prefix arg, insert an arrow with padding at point."
 #+end_src
 *** Key bindings
 #+begin_src emacs-lisp
-(declare-smart-ops 'idris-mode :add '("." "$"))
-
-(define-keys idris-mode-map
-  "," 'cbidris:smart-comma
-  "&" (command (cbidris:smart-insert-operator "&"))
-  "%" (command (cbidris:smart-insert-operator "%"))
-  "?" 'cbidris:smart-question-mark
-  "*" (command (cbidris:smart-insert-operator "*"))
-  "+" (command (cbidris:smart-insert-operator "+"))
-  "/" (command (cbidris:smart-insert-operator "/"))
-  "-" 'cbidris:smart-minus
-  "=" (command (cbidris:smart-insert-operator "="))
-  "<" 'cbidris:smart-lt
-  ">" (command (cbidris:smart-insert-operator ">"))
-  "." 'cbidris:smart-dot
-  ":" 'cbidris:smart-colon
-  "|" 'cbidris:smart-pipe
-  "$" (command (cbidris:smart-insert-operator "$")))
+(declare-smart-ops 'idris-mode
+  :custom
+  '(("," . cbidris:smart-comma)
+    ("?" . cbidris:smart-question-mark)
+    ("-" . cbidris:smart-minus)
+    ("<" . cbidris:smart-lt)
+    ("." . cbidris:smart-dot)
+    (":" . cbidris:smart-colon)
+    ("|" . cbidris:smart-pipe)
+    ("&" . (command (cbidris:smart-insert-operator "&")))
+    ("%" . (command (cbidris:smart-insert-operator "%")))
+    ("*" . (command (cbidris:smart-insert-operator "*")))
+    ("+" . (command (cbidris:smart-insert-operator "+")))
+    ("/" . (command (cbidris:smart-insert-operator "/")))
+    ("=" . (command (cbidris:smart-insert-operator "=")))
+    (">" . (command (cbidris:smart-insert-operator ">")))
+    ("$" . (command (cbidris:smart-insert-operator "$")))))
 #+end_src
 ** auto-complete
 #+begin_src emacs-lisp
