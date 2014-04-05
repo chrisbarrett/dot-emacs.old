@@ -2745,8 +2745,9 @@ point to the position of the join."
 ** Initialize ghc helper commands
 #+begin_src emacs-lisp
 (defun cb:ghc-init ()
-  "Run `ghc-init' without setting any key bindings."
-  (noflet ((define-key (&rest _)))
+  "Run `ghc-init' without setting any key bindings or running checks."
+  (noflet ((define-key (&rest _))
+           (ghc-check-syntax (&rest _)))
     (ghc-init)))
 
 (add-hook 'haskell-mode-hook 'cb:ghc-init)
