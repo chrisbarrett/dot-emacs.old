@@ -23,7 +23,7 @@ flaky.
   (ignore-errors
     (equal 'font-lock-comment-face (face-at-point))))
 
-(defun cb-op:last-non-space-char ()
+(defun cb-op:prev-non-space-char ()
   "Return the previous non-whitespace character on this line, as a string."
   (save-excursion
     (when (search-backward-regexp (rx (not space))
@@ -42,6 +42,16 @@ flaky.
               (not (get-char-property (1- (point)) 'read-only)))
     (delete-char -1)))
 
+(defun cb-op:maybe-just-one-space-after-operator ()
+  "Insert a trailing space unless:
+- the next char is an operator
+- we are in a parenthesised operator."
+  (unless (or (and (not (eolp))
+                   (-contains? smart-op-list (char-to-string (char-after))))
+              (thing-at-point-looking-at
+               (eval `(rx "(" (+ (or ,@smart-op-list)) ")"))))
+    (just-one-space)))
+
 (defun smart-insert-op (op)
   "Insert a smart operator, unless we're in a string or comment."
 
@@ -56,10 +66,10 @@ flaky.
           (-contains? '(?\" ?\') (char-after)))
       (insert op))
 
-     ((-contains? (cl-list* "(" smart-op-list) (cb-op:last-non-space-char))
+     ((-contains? (cl-list* "(" smart-op-list) (cb-op:prev-non-space-char))
       (cb-op:delete-horizontal-space-non-readonly)
       (insert op)
-      (just-one-space))
+      (cb-op:maybe-just-one-space-after-operator))
 
      (t
       (unless (s-matches? (rx bol (* space) eol)
@@ -67,7 +77,7 @@ flaky.
         (just-one-space))
 
       (insert op)
-      (just-one-space)))))
+      (cb-op:maybe-just-one-space-after-operator)))))
 
 (defmacro make-smart-op (str)
   "Return a function that will insert smart operator STR.
