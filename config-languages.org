@@ -3507,6 +3507,20 @@ Meant for `eldoc-documentation-function'."
 (hook-fn 'cb:haskell-modes-hook
   (setq-local eldoc-documentation-function 'cb:haskell-doc-current-info))
 #+end_src
+** Define a command for quickly starting a haskell-interactive session
+#+begin_src emacs-lisp
+(defun ghci ()
+  "Run a standalone instance of GHCI."
+  (interactive)
+  ;; Start session.
+  (let ((haskell-process-type 'ghci))
+    (unless (haskell-session-maybe)
+      (haskell-session-assign
+       (noflet ((haskell-session-cabal-dir (s) default-directory))
+         (haskell-session-make "ghci")))))
+  ;; Switch to window.
+  (haskell-interactive-bring))
+#+end_src
 ** END
 #+begin_src emacs-lisp
 )
