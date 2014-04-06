@@ -2699,7 +2699,8 @@ point to the position of the join."
 (setq haskell-tags-on-save t
       haskell-stylish-on-save t
       haskell-program-name "ghci"
-      haskell-process-type 'cabal-repl)
+      haskell-process-type 'cabal-repl
+      haskell-interactive-prompt "\nλ> ")
 
 (hook-fn 'cb:haskell-modes-hook
   (setq-local tab-width 2)
