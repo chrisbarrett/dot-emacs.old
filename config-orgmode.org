@@ -1672,7 +1672,7 @@ template."
             (org-capture-goto-target (or key "n"))
             ;; Prepare headline.
             (end-of-line)
-            (org-insert-subheading '(16))   ; 16 = at end of list
+            (org-insert-heading '(16))   ; 16 = at end of list
             ;; Insert item.
             (insert str)
             (org-set-tags-to tags)))))))
