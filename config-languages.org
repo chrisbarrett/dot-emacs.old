@@ -2516,7 +2516,7 @@ Robe provides auto-complete for Ruby.
 #+begin_src emacs-lisp
 (-each cb:ruby-modes (~ add-to-list 'ac-modes))
 (hook-fn 'cb:ruby-modes-hook
-  (require 'robe-ac)
+  (require 'ac-robe)
   (robe-mode)
   (setq ac-sources '(ac-source-robe ac-source-words-in-same-mode-buffers)))
 #+end_src
