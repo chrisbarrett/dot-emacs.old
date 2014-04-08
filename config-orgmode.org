@@ -35,7 +35,8 @@ org to restart interrupted clocks.
       org-M-RET-may-split-line nil
       org-blank-before-new-entry nil
       org-catch-invisible-edits 'smart
-      org-return-follows-link t)
+      org-return-follows-link t
+      org-support-shift-select t)
 #+end_src
 * Automatically renumber footnotes
 #+begin_src emacs-lisp
