@@ -3102,7 +3102,7 @@ With a prefix arg, insert an arrow with padding at point."
   (save-excursion
     (cond ((haskell-interactive-at-prompt)
            (goto-char (line-beginning-position))
-           (or (search-forward-regexp haskell-interactive-prompt
+           (or (search-forward-regexp (s-trim-left haskell-interactive-prompt)
                                       (line-end-position)
                                       t)
                (line-beginning-position)))
