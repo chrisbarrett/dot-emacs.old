@@ -1,4 +1,4 @@
-# -*- mode: snippet -*-
+# key: do-binding
 # name: do-binding
 # --
-${1:var} <- $0
+${1:x} <- $0
