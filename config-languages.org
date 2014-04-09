@@ -3156,6 +3156,7 @@ With a prefix arg, insert an arrow with padding at point."
 #+begin_src emacs-lisp
 (define-key haskell-mode-map (kbd "C-c C-c") 'haskell-process-cabal-build)
 (define-key haskell-mode-map (kbd "C-c C-l") 'haskell-process-load-file)
+(define-key haskell-mode-map (kbd "C-c C-f") 'haskell-cabal-visit-file)
 #+end_src
 ** Insert language pragmas
 #+begin_src emacs-lisp
