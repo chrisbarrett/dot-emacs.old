@@ -191,6 +191,14 @@ Shows completion popups, similar to auto-complete-mode.
   (global-company-mode)
   (diminish 'company-mode))
 #+end_src
+** Edit key bindings
+#+begin_src emacs-lisp
+(after 'company
+  (let ((m company-active-map))
+    (define-key m (kbd "C-n") 'company-select-next)
+    (define-key m (kbd "C-p") 'company-select-previous)
+    (define-key m (kbd "C-h") 'company-show-doc-buffer)))
+#+end_src
 * lambda-mode
 Overlay greek lambda symbol in languages with lambda functions..
 #+begin_src emacs-lisp
