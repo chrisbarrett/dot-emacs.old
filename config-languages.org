@@ -178,6 +178,18 @@ Show line numbers for programming modes
 (add-hook 'nxml-mode-hook 'turn-on-linum-mode)
 (add-hook 'sgml-mode-hook 'turn-on-linum-mode)
 #+end_src
+* company mode
+Shows completion popups, similar to auto-complete-mode.
+#+begin_src emacs-lisp
+(cb:install-package 'company)
+
+(setq company-idle-delay 0.5
+      company-tooltip-limit 10
+      company-minimum-prefix-length 2)
+
+(unless noninteractive
+  (global-company-mode)
+  (diminish 'company-mode))
 #+end_src
 * lambda-mode
 Overlay greek lambda symbol in languages with lambda functions..
@@ -267,10 +279,6 @@ Define a custom colon command.
 #+begin_src emacs-lisp
 (after 'json-mode
   (define-key json-mode-map (kbd "M-q") 'json-mode-beautify))
-#+end_src
-** auto-complete
-#+begin_src emacs-lisp
-(add-to-list 'ac-modes 'json-mode)
 #+end_src
 * csv-mode
 #+begin_src emacs-lisp
@@ -374,7 +382,6 @@ Define keys to move by headlines in normal state.
 * C
 #+begin_src emacs-lisp
 (--each '(ac-c-headers
-          auto-complete-clang-async
           google-c-style
           c-eldoc)
   (eval `(hook-fn 'c-common-mode-hook (cb:install-package ',it t))))
@@ -651,19 +658,6 @@ Ignore errors thrown by internals.
 (defadvice c-inside-bracelist-p (around ignore-errors activate)
   (ignore-errors ad-do-it))
 #+end_src
-** auto-complete
-#+begin_src emacs-lisp
-(put 'cc-mode 'ac-sources
-     '(ac-source-clang-async
-       ac-source-yasnippet
-       ac-source-c-headers
-       ac-source-c-header-symbols
-       ac-source-words-in-buffer))
-
-(after 'auto-complete
-  (copy-face 'ac-candidate-face 'ac-clang-candidate-face)
-  (copy-face 'ac-selection-face 'ac-clang-selection-face))
-#+end_src
 ** eldoc
 #+begin_src emacs-lisp
 (add-hook 'c-mode-hook 'c-turn-on-eldoc-mode)
@@ -921,15 +915,6 @@ Adds support for inferior Common Lisp processes.
   (let ((current-prefix-arg '-))
     (slime)))
 #+end_src
-** ac-slime
-Adds an auto-complete source for slime.
-#+begin_src emacs-lisp
-(hook-fn 'common-lisp-mode-hook
-  (cb:install-package 'ac-slime t))
-
-(add-hook 'slime-modes-hook 'set-up-slime-ac)
-(add-to-list 'ac-modes 'slime-repl-mode)
-#+end_src
 * Elisp
 ** auto-mode-alist
 #+begin_src emacs-lisp
@@ -983,16 +968,6 @@ Reserve backtick pair handling hyperlinks.
 #+begin_src emacs-lisp
 (sp-local-pair (-difference cb:lisp-modes cb:elisp-modes)
                "`" "`" :when '(sp-in-string-p))
-#+end_src
-** auto-complete
-#+begin_src emacs-lisp
-(after 'auto-complete
-  (-each cb:lisp-modes (~ add-to-list 'ac-modes))
-  (hook-fn 'ielm-mode-hook
-    (auto-complete-mode +1)
-    (setq ac-sources '(ac-source-features ac-source-functions
-                       ac-source-yasnippet ac-source-variables
-                       ac-source-symbols))))
 #+end_src
 ** Search methods
 Add elisp functions to global search picker.
@@ -1520,18 +1495,6 @@ Advise back-to-indentation so evil bol commands work.
 #+begin_src emacs-lisp
 )
 #+end_src
-** ac-nrepl
-Provides auto-complete sources for Clojure using Cider.
-#+begin_src emacs-lisp
-(add-hook 'cider-mode-hook 'ac-nrepl-setup)
-(add-hook 'cider-repl-mode-hook 'ac-nrepl-setup)
-(add-to-list 'ac-modes 'cider-mode)
-#+end_src
-
-#+begin_src emacs-lisp
-(after 'cider
-  (define-key cider-mode-map (kbd "C-c C-d") 'ac-nrepl-popup-doc))
-#+end_src
 ** yasnippet
 Define auxiliary functions for snippets.
 
@@ -1614,11 +1577,6 @@ under point, prompts for a var."
 (add-hook 'clojure-mode-hook 'global-overtone-mode)
 #+end_src
 * Scheme
-** auto-complete
-*** Enable for all scheme modes
-#+begin_src emacs-lisp
-(-each cb:scheme-modes (~ add-to-list 'ac-modes))
-#+end_src
 ** documentation
 #+begin_src emacs-lisp
 (after 'evil
@@ -1647,13 +1605,6 @@ below probably doesn't work for other Schemes.
       geiser-repl-startup-time 20000
       geiser-repl-history-filename (f-join cb:tmp-dir "geiser-history")
       geiser-active-implementations '(racket))
-#+end_src
-*** ac-geiser
-Provides auto-complete sources for geiser.
-#+begin_src emacs-lisp
-(cb:install-package 'ac-geiser t)
-(add-hook 'geiser-mode-hook 'ac-geiser-setup)
-(add-hook 'geiser-repl-mode-hook 'ac-geiser-setup)
 #+end_src
 *** eval-buffer command
 #+begin_src emacs-lisp
@@ -2030,12 +1981,6 @@ Define a command that performs a context-sensitive eval command.
 
 (define-key python-mode-map (kbd "C-c C-c") 'cb-py:eval-dwim)
 #+end_src
-** auto-complete
-Enable auto-complete in python modes.
-#+begin_src emacs-lisp
-(-each cb:python-modes (~ add-to-list 'ac-modes))
-(hook-fn 'cb:python-modes-hook (auto-complete-mode +1))
-#+end_src
 ** smart operators
 Add special smart-operator behaviours for python buffers.
 #+begin_src emacs-lisp
@@ -2170,13 +2115,13 @@ Each element is either a string or a cons of (var . default)."
 (define-key python-mode-map (kbd "M-q") 'indent-dwim)
 #+end_src
 ** jedi
-Provides auto-completion, code search and documentation for python.
+Provides completion, code search and documentation for python.
 
 #+begin_src emacs-lisp
 (add-hook 'cb:python-modes-hook 'jedi:setup)
 #+end_src
 
-Configure auto-complete.
+Configure completion.
 
 #+begin_src emacs-lisp
 (setq jedi:tooltip-method nil
@@ -2215,9 +2160,7 @@ Configures Emacs according to the current python virtualenv settings.
   :packages (ruby-mode
              inf-ruby
              rvm
-             yari
-             rubocop
-             robe))
+             rubocop))
 
 (cb:declare-package-installer yaml
   :match (rx ".ya" (? "ml") eol)
@@ -2521,26 +2464,6 @@ Provides a frontend to Ruby ri docs.
 #+end_src
 ** rubocop
 Rubocop is a Ruby style-checker.
-** robe
-Robe provides auto-complete for Ruby.
-*** Enable for all Ruby modes
-#+begin_src emacs-lisp
-(-each cb:ruby-modes (~ add-to-list 'ac-modes))
-(hook-fn 'cb:ruby-modes-hook
-  (require 'ac-robe)
-  (robe-mode)
-  (setq ac-sources '(ac-source-robe ac-source-words-in-same-mode-buffers)))
-#+end_src
-*** Undefine binding conflicting with org src mode
-#+begin_src emacs-lisp
-(after 'robe
-  (define-key robe-mode-map (kbd "C-c C-k") nil))
-#+end_src
-*** Diminish robe-mode
-#+begin_src emacs-lisp
-(hook-fn 'robe-mode-hook
-  (diminish 'robe-mode))
-#+end_src
 ** hideshow
 #+begin_src emacs-lisp
 (after 'hideshow
@@ -2576,33 +2499,6 @@ Add evil doc lookup handler for Ruby.
 (setq scala-indent:align-forms t
       scala-indent:align-parameters t
       scala-indent:default-run-on-strategy scala-indent:eager-strategy)
-#+end_src
-** auto-complete
-*** Auto-complete Scala language keywords
-#+begin_src emacs-lisp
-(defconst cbscala:scala-keywords
-  '("abstract" "case" "catch" "class" "def" "do" "else" "extends" "false" "final"
-    "finally" "for" "forSome" "if" "implicit" "import" "lazy" "match" "new" "null"
-    "object" "override" "package" "private" "protected" "return" "sealed" "super"
-    "this" "throw" "trait" "try" "true" "type" "val" "var" "while" "with" "yield"
-    "-" ":" "=" "=>" "<-" "<:" "<%" ">:" "#" "@")
-  "List of keywords reserved by the scala language.")
-
-(ac-define-source scala-keywords
-  '((symbol . "k")
-    (candidates . cbscala:scala-keywords)
-    (action . just-one-space)))
-#+end_src
-*** Configure auto-complete
-#+begin_src emacs-lisp
-(add-to-list 'ac-modes 'scala-mode)
-
-(hook-fn 'scala-mode-hook
-  (setq-local ac-auto-start 2)
-  (-each '(ac-source-yasnippet
-           ac-source-scala-keywords
-           ac-source-ensime-completions)
-         (~ add-to-list 'ac-sources)))
 #+end_src
 ** yasnippet utilities
 #+begin_src emacs-lisp
@@ -2789,12 +2685,6 @@ point to the position of the join."
     (ghc-init)))
 
 (add-hook 'haskell-mode-hook 'cb:ghc-init)
-#+end_src
-** Enable auto-complete
-#+begin_src emacs-lisp
-(hook-fn 'haskell-mode-hook
-  (setq ac-sources (list ac-source-ghc-mod))
-  (auto-complete-mode +1))
 #+end_src
 ** Define a command for quickly starting a haskell-interactive session
 #+begin_src emacs-lisp
@@ -3749,10 +3639,6 @@ With a prefix arg, insert an arrow with padding at point."
     (">" . (command (cbidris:smart-insert-operator ">")))
     ("$" . (command (cbidris:smart-insert-operator "$")))))
 #+end_src
-** auto-complete
-#+begin_src emacs-lisp
-(add-hook 'cb:idris-modes-hook 'auto-complete-mode)
-#+end_src
 ** Use font lock to display Unicode lambda in Idris buffers
 #+begin_src emacs-lisp
 (defun cbidris:apply-unicode ()
@@ -4266,23 +4152,10 @@ utop is an improved toplevel for OCaml. It can run in a terminal or in Emacs.
 (autoload 'utop-setup-ocaml-buffer "utop" "Toplevel for OCaml" t)
 (add-hook 'tuareg-mode-hook 'utop-setup-ocaml-buffer)
 #+end_src
-** Enable auto-complete
-#+begin_src emacs-lisp
-(add-to-list 'ac-modes 'tuareg-mode)
-(add-hook 'tuareg-mode-hook 'auto-complete-mode)
-
-(defun cb-ocaml:configure-merlin ()
-  (when (ignore-errors
-          (equal (f-ext (buffer-file-name)) "ml"))
-    (setq ac-sources '(ac-source-merlin))))
-
-(add-hook 'merlin-mode-hook 'cb-ocaml:configure-merlin)
-#+end_src
 ** Configure Merlin
 #+begin_src emacs-lisp
 
 (add-hook 'tuareg-mode-hook 'merlin-mode)
-(setq merlin-use-auto-complete-mode t)
 (setq merlin-default-flags "-w @A-4-33-41-42-43-34-44")
 (add-to-list 'face-remapping-alist '(merlin-type-face . intense-flash))
 
@@ -4850,16 +4723,6 @@ defined for that language.
   :match (rx ".fs" (? (any "i" "y" "l" "x")) eol)
   :packages (fsharp-mode))
 #+end_src
-** auto-complete
-#+begin_src emacs-lisp
-(after 'auto-complete
-  (add-to-list 'ac-modes 'fsharp-mode))
-#+end_src
-** Do not show ac popup in terminal
-#+begin_src emacs-lisp
-(unless (display-graphic-p)
-  (setq fsharp-ac-use-popup nil))
-#+end_src
 ** configure smart parens
 *** Define pairs
 #+begin_src emacs-lisp
@@ -4907,12 +4770,6 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
 ** Undefine comment-region binding
 #+begin_src emacs-lisp
 (define-key makefile-mode-map (kbd "C-c C-c") nil)
-#+end_src
-** auto-complete
-#+begin_src emacs-lisp
-(after 'auto-complete
-  (add-to-list 'ac-modes 'makefile-mode)
-  (add-hook 'makefile-mode-hook 'auto-complete-mode))
 #+end_src
 ** Ensure tabs are used in makefiles
 #+begin_src emacs-lisp

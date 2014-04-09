@@ -3159,55 +3159,6 @@ because it raises an error on autoload.
 #+begin_src emacs-lisp
 )
 #+end_src
-* Auto-complete
-Provides intellisense-style completion popops.
-#+begin_src emacs-lisp
-(cb:install-package 'auto-complete t)
-(global-auto-complete-mode +1)
-#+end_src
-** Start with default configuration
-#+begin_src emacs-lisp
-(require 'auto-complete-config)
-(ac-config-default)
-#+end_src
-** Customise vars
-#+begin_src emacs-lisp
-(setq ac-auto-show-menu t
-      ac-dwim t
-      ac-use-menu-map t
-      ac-quick-help-delay 0.4
-      ac-quick-help-height 60
-      ac-disable-inline t
-      ac-show-menu-immediately-on-auto-complete t
-      ac-auto-start 3
-      ac-candidate-menu-min 0
-      ac-comphist-file (f-join cb:tmp-dir "ac-comphist.dat"))
-#+end_src
-** Fix issues with flyspell
-#+begin_src emacs-lisp
-(ac-flyspell-workaround)
-#+end_src
-** Define user dictionary directory
-#+begin_src emacs-lisp
-(add-to-list 'ac-dictionary-directories (concat user-emacs-directory "ac-dict"))
-#+end_src
-** Diminish
-#+begin_src emacs-lisp
-(diminish 'auto-complete-mode)
-#+end_src
-** Ignore errors when showing help popups
-#+begin_src emacs-lisp
-(defadvice ac-quick-help (around ignore-errors activate)
-  "Ignore errors when showing help popups."
-  (ignore-errors ad-do-it))
-#+end_src
-** Define keys for auto-complete popups
-#+begin_src emacs-lisp
-(define-keys ac-completing-map
-  "<escape>" 'ac-stop
-  "C-n" 'ac-next
-  "C-p" 'ac-previous)
-#+end_src
 * Yasnippet
 Provides textmate-style snippets.
 #+begin_src emacs-lisp
