@@ -168,6 +168,17 @@ Useful for setting up keymaps manually."
    (t
     ad-do-it)))
 #+end_src
+* linum
+Show line numbers for programming modes
+#+begin_src emacs-lisp
+(defun turn-on-linum-mode ()
+  (linum-mode +1))
+
+(add-hook 'prog-mode-hook 'turn-on-linum-mode)
+(add-hook 'nxml-mode-hook 'turn-on-linum-mode)
+(add-hook 'sgml-mode-hook 'turn-on-linum-mode)
+#+end_src
+#+end_src
 * lambda-mode
 Overlay greek lambda symbol in languages with lambda functions..
 #+begin_src emacs-lisp
