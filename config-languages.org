@@ -2887,53 +2887,6 @@ default commands.
    (t
     (smart-insert-op "."))))
 
-(defun cb-hs:insert-arrow (arrow)
-  "If point is inside a tuple, insert an arrow inside.
-Otherwise insert an arrow at the end of the line."
-  (atomic-change-group
-    (cl-destructuring-bind (&key beg end op &allow-other-keys)
-        (sp-get-sexp t)
-      ;; Check whether point is inside a tuple.
-      (if (and (equal op "(")
-               (> (point) beg)
-               (< (point) end))
-          (sp-end-of-sexp)
-        (end-of-line)))
-    ;; Insert arrow.
-    (just-one-space)
-    (insert arrow)
-    (just-one-space)))
-
-(defun cb-hs:at-typedecl? ()
-  (s-matches? "::" (buffer-substring (line-beginning-position) (point))))
-
-(defun cb-hs:smart-minus (&optional arg)
-  "Insert an arrow if we're in a typesig, otherwise perform a normal insertion.
-With a prefix arg, insert an arrow with padding at point."
-  (interactive "*P")
-  (cond
-
-   (arg
-    (just-one-space)
-    (insert "->")
-    (just-one-space))
-
-   ((cb-hs:at-typedecl?)
-    (cb-hs:insert-arrow "->"))
-
-   ;; Position point inside comment
-   ((let ((before (buffer-substring (line-beginning-position) (point)))
-          (after (buffer-substring (point) (line-end-position))))
-      (and (s-matches? (rx "{" (* space) eol) before)
-           (s-matches? (rx bol (* space) "}") after)))
-    (delete-horizontal-space)
-    (insert "- ")
-    (save-excursion
-      (insert " -")))
-
-   (t
-    (smart-insert-op "-"))))
-
 (defun cb-hs:smart-hash ()
   "Insert a hash character, with special formatting behaviour for pragmas."
   (interactive "*")
@@ -3044,8 +2997,7 @@ With a prefix arg, insert an arrow with padding at point."
 (declare-smart-ops 'haskell-mode
   :add '("$" "=")
   :custom
-  '(("-" . cb-hs:smart-minus)
-    ("." . cb-hs:smart-dot)
+  '(("." . cb-hs:smart-dot)
     ("," . cb-hs:smart-comma)
     ("|" . cb-hs:smart-pipe)
     ("#" . cb-hs:smart-hash)
@@ -3057,8 +3009,7 @@ With a prefix arg, insert an arrow with padding at point."
 (declare-smart-ops 'haskell-interactive-mode
   :add '("$" "=")
   :custom
-  '(("-" . cb-hs:smart-minus)
-    ("." . cb-hs:smart-dot)
+  '(("." . cb-hs:smart-dot)
     ("|" . cb-hs:smart-pipe)
     (":" . cb-hs:ghci-smart-colon)
     ("," . cb-hs:ghci-smart-comma)))
