@@ -109,7 +109,6 @@ window is opened."
 
 (defun centred-mode--restore-linum ()
   "Restore linum state after disabling `centred-mode'."
-  (message "HERP")
   (when (and (boundp 'linum-mode) centred-mode--default-linum)
     (linum-mode +1)))
 
