@@ -1162,10 +1162,10 @@ The starting day is taken to be the weekday on which the event will repeat."
 ** Use special face for NEXT keyword
 #+begin_src emacs-lisp
 (defface org-todo-next
-  '((((background dark))
-     (:foreground "OrangeRed1" :bold t))
+  `((((background dark))
+     (:foreground ,solarized-hl-orange :bold t))
     (((background light))
-     (:foreground "OrangeRed4" :bold t))
+     (:foreground ,solarized-hl-orange :bold t))
     (t
      (:inherit org-todo)))
   "Face for todos with the NEXT label."
