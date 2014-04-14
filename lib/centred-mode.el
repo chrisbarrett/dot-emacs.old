@@ -41,6 +41,11 @@
   :group 'centred-mode
   :type 'hook)
 
+(defcustom centred-mode-toggled-hook nil
+  "Hook run after toggling `centred-mode' on or off."
+  :group 'centred-mode
+  :type 'hook)
+
 ;;; Internal
 
 (defvar-local centred-mode--default-margins nil
@@ -101,7 +106,8 @@ window is opened."
 (defun toggle-centred-mode ()
   "Toggle whether `centred-mode' is enabled for the current buffer."
   (interactive)
-  (centred-mode (if centred-mode -1 +1)))
+  (centred-mode (if centred-mode -1 +1))
+  (run-hooks 'centred-mode-toggled-hook))
 
 ;;; Linum compatibility.
 
@@ -123,6 +129,17 @@ window is opened."
 (add-hook 'centred-mode-before-change-margins-hook 'centred-mode--save-linum)
 ;;;###autoload
 (add-hook 'centred-mode-off-hook 'centred-mode--restore-linum)
+
+;;; w3m compatibility
+
+(defun centred-mode--redisplay-w3m ()
+  "Refresh the current w3m buffer so text is laid out."
+  (when (and (fboundp 'w3m-redisplay-this-page)
+             (derived-mode-p 'w3m-mode))
+    (w3m-redisplay-this-page)))
+
+(add-hook 'centred-mode-toggled-hook 'centred-mode--redisplay-w3m)
+
 
 (provide 'centred-mode)
 
