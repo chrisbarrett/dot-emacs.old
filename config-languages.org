@@ -2641,16 +2641,16 @@ point to the position of the join."
 ** File template utilities
 #+begin_src emacs-lisp
 (defun cb-hs:file-name->module ()
-  (-if-let (root (and (buffer-file-name)
-                      (projectile-project-p)))
+  (-if-let (root (and (buffer-file-name) (projectile-project-p)))
 
       (->> (f-no-ext (buffer-file-name))
         (s-chop-prefix root)
         f-split
         (-drop 1)
+        (-map 's-upper-camel-case)
         (s-join "."))
 
-    (s-capitalize (f-no-ext (buffer-name)))))
+    (s-upper-camel-case (f-no-ext (buffer-name)))))
 #+end_src
 ** Yasnippet utilities
 #+begin_src emacs-lisp
