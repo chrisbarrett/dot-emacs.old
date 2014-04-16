@@ -391,7 +391,8 @@ Define keys to move by headlines in normal state.
 #+begin_src emacs-lisp
 (--each '(ac-c-headers
           google-c-style
-          c-eldoc)
+          c-eldoc
+          clang-format)
   (eval `(hook-fn 'c-common-mode-hook (cb:install-package ',it t))))
 #+end_src
 ** Set indentation style to Google Style (similar to K&R)
@@ -412,7 +413,10 @@ Define keys to move by headlines in normal state.
 #+end_src
 ** Key bindings
 #+begin_src emacs-lisp
-(define-key c-mode-map (kbd "M-q") 'indent-dwim)
+(define-key c-mode-map (kbd "M-q")
+  (if (executable-find "clang-format")
+      'clang-format-region
+    'indent-dwim))
 #+end_src
 ** Insert headers
 #+begin_src emacs-lisp
