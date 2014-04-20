@@ -290,18 +290,10 @@ Define a custom colon command.
 #+end_src
 * csv-mode
 #+begin_src emacs-lisp
-(cb:declare-package-installer csv
-  :match "\\.csv$"
-  :packages (csv-mode))
-#+end_src
-** Customise separator face
-#+begin_src emacs-lisp
+(add-to-list 'auto-mode-alist '("\\.csv$" . csv-mode))
+
 (after 'csv-mode
-  (set-face-foreground csv-separator-face solarized-hl-orange))
-#+end_src
-** Override broken variable
-#+begin_src emacs-lisp
-(defconst csv-mode-line-help-echo "")
+  (set-face-foreground 'csv-separator-face solarized-hl-orange))
 #+end_src
 * XML
 Enable nxml-mode if when visiting a file with a DTD.
