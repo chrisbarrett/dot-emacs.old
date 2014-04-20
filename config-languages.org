@@ -292,8 +292,8 @@ Define a custom colon command.
 #+begin_src emacs-lisp
 (add-to-list 'auto-mode-alist '("\\.csv$" . csv-mode))
 
-(after 'csv-mode
-  (set-face-foreground 'csv-separator-face solarized-hl-orange))
+(setq csv-align-style 'auto)
+(add-hook 'csv-mode-hook 'csv-align-fields)
 #+end_src
 * XML
 Enable nxml-mode if when visiting a file with a DTD.
