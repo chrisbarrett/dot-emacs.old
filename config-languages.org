@@ -2724,6 +2724,7 @@ point to the position of the join."
   (require 'ghc)
   (require 'hi2)
   (require 'shm)
+  (require 'shm-case-split)
   (require 'haskell-interactive-mode)
 
   ;; FIX: There is an issue preventing ghc-comp from being correctly loaded.
@@ -3018,7 +3019,12 @@ default commands.
     (":" . cb-hs:ghci-smart-colon)
     ("," . cb-hs:ghci-smart-comma)))
 #+end_src
-** Disable some shm keybindings
+** Set SHM bindings
+#+begin_src emacs-lisp
+(define-key shm-map (kbd "C-k")     'shm/kill-node)
+(define-key shm-map (kbd "C-c C-s") 'shm/case-split)
+#+end_src
+** Disable some SHM keybindings
 #+begin_src emacs-lisp
 (define-key shm-map (kbd ",") nil)
 (define-key shm-map (kbd ":") nil)
@@ -3029,8 +3035,6 @@ default commands.
 (define-key shm-map (kbd "<backtab>") nil)
 (define-key shm-map (kbd "TAB") nil)
 (define-key shm-map (kbd "M-r") nil)
-
-(define-key shm-map (kbd "C-k") 'shm/kill-node)
 #+end_src
 ** hideshow
 *** Define helper functions
