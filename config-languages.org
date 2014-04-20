@@ -400,11 +400,13 @@ Define keys to move by headlines in normal state.
 #+end_src
 * C
 #+begin_src emacs-lisp
-(--each '(ac-c-headers
-          google-c-style
-          c-eldoc
-          clang-format)
-  (eval `(hook-fn 'c-common-mode-hook (cb:install-package ',it t))))
+(cb:declare-package-installer c-languages
+  :match (rx "." (or "c" "cc" "cpp" "h" "hh" "hpp" "m") eol)
+  :packages
+  (ac-c-headers
+   google-c-style
+   c-eldoc
+   clang-format))
 #+end_src
 ** Set indentation style to Google Style (similar to K&R)
 #+begin_src emacs-lisp
