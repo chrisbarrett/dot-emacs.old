@@ -295,6 +295,25 @@ Define a custom colon command.
 (setq csv-align-style 'auto)
 (add-hook 'csv-mode-hook 'csv-align-fields)
 #+end_src
+** Define a command to toggle field alignment
+#+begin_src emacs-lisp
+(defvar-local cb-csv:aligned? nil)
+
+(defadvice csv-align-fields (after set-aligned activate)
+  (setq cb-csv:aligned? t))
+
+(defadvice csv-unalign-fields (after set-unaligned activate)
+  (setq cb-csv:aligned? nil))
+
+(defun cb-csv:toggle-field-alignment ()
+  "Toggle field alignment in the current CSV buffer."
+  (interactive)
+  (call-interactively
+   (if cb-csv:aligned? 'csv-unalign-fields 'csv-align-fields)))
+
+(after 'csv-mode
+  (define-key csv-mode-map (kbd "C-c C-t") 'cb-csv:toggle-field-alignment))
+#+end_src
 * XML
 Enable nxml-mode if when visiting a file with a DTD.
 #+begin_src emacs-lisp
