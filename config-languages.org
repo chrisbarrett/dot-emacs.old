@@ -3023,6 +3023,17 @@ default commands.
 #+begin_src emacs-lisp
 (define-key shm-map (kbd "C-k")     'shm/kill-node)
 (define-key shm-map (kbd "C-c C-s") 'shm/case-split)
+(define-key shm-map (kbd "C-<return>") 'shm/newline-indent)
+
+(after 'evil
+
+  (defun cb-hs:join-line ()
+    (interactive)
+    (forward-line 1)
+    (goto-char (line-beginning-position))
+    (call-interactively 'shm/delete-indentation))
+
+  (evil-define-key 'normal shm-map "J" 'cb-hs:join-line))
 #+end_src
 ** Disable some SHM keybindings
 #+begin_src emacs-lisp
