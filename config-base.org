@@ -5033,25 +5033,6 @@ Provides ascii-art drawing functions.
 (after 'evil-mode
   (add-hook 'artist-mode-hook 'evil-emacs-state))
 #+end_src
-* ace-jump-mode
-Provides commands for quickly moving around the visible part of the buffer.
-#+begin_src emacs-lisp
-(cb:install-package 'ace-jump-mode)
-#+end_src
-** Bind a global hotkey
-#+begin_src emacs-lisp
-(bind-key "S-<return>" 'ace-jump-word-mode)
-#+end_src
-** Use ESC to quit ace-jump
-#+begin_src emacs-lisp
-(hook-fns '(ace-jump-line-mode ace-jump-word-mode ace-jump-char-mode)
-  (local-set-key (kbd "ESC") 'keyboard-quit))
-#+end_src
-** Exit recursive edits when jumping
-#+begin_src emacs-lisp
-(hook-fn 'ace-jump-mode-end-hook
-  (ignore-errors (exit-recursive-edit)))
-#+end_src
 * BBDB
 Provides an address book for emacs and integrates with many modes.
 #+begin_src emacs-lisp
