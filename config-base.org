@@ -4020,20 +4020,29 @@ entry in `modeline-custom-description-functions'."
 
    ;; Pomodoro
    ;;
-   ;; Show the current pomodoro time and an indicator for the length of the next
-   ;; break.
    (:eval
-    (if (true? org-pomodoro-mode-line)
-        (cl-destructuring-bind (bl s br)
-            org-pomodoro-mode-line
-          (let ((upcoming-long-break?
-                 (and (plusp org-pomodoro-count) ; starts at 0
-                      (zerop (mod org-pomodoro-count
-                                  org-pomodoro-long-break-frequency)))))
-            (concat bl s
-                    " → " (if upcoming-long-break? "L" "S")
-                    br)))
-      ""))
+    (cond
+
+     ;; Show the current pomodoro time and an indicator for the length of the
+     ;; next break.
+     ((and (true? org-pomodoro-mode-line)
+           (equal org-pomodoro-state :pomodoro))
+
+      (cl-destructuring-bind (bl s br)
+          org-pomodoro-mode-line
+        (let ((upcoming-long-break?
+               (and (plusp org-pomodoro-count) ; starts at 0
+                    (zerop (mod org-pomodoro-count
+                                org-pomodoro-long-break-frequency)))))
+          (concat bl s
+                  " → " (if upcoming-long-break? "L" "S")
+                  br))))
+
+     ;; Show just the time when on a break.
+     ((and (true? org-pomodoro-mode-line)
+           (concat org-pomodoro-mode-line)))
+     (t
+      "")))
 
    ;; Current org notes file
    (:eval
