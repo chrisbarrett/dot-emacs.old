@@ -423,6 +423,7 @@ Define keys to move by headlines in normal state.
 ** DEFER
 #+begin_src emacs-lisp
 (after 'cc-mode
+  (require 'google-c-style)
 #+end_src
 ** Key bindings
 #+begin_src emacs-lisp
