@@ -3696,7 +3696,15 @@ Adds refactoring commands for Lisps.
 * Whitespace
 Visualise whitespace chars.
 #+begin_src emacs-lisp
-(add-hook 'prog-mode-hook 'whitespace-mode)
+(defun cb-ws:set-whitespace-mode ()
+  "Conditionally enable whitespace mode.
+In particular, disable for org src blocks so ws highlighting is not exported."
+  (whitespace-mode
+   (if (or (true? org-src-mode)
+           (derived-mode-p 'haskell-mode)) ; Long lines are OK in Haskell
+       +1 -1)))
+
+(add-hook 'prog-mode-hook 'cb-ws:set-whitespace-mode)
 #+end_src
 ** Highlight trailing whitespace and long lines
 #+begin_src emacs-lisp
