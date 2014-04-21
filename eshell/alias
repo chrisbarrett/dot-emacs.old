@@ -1,5 +1,4 @@
-alias cid cabal install --only-dependencies $*
-alias ci cabal install $*
+alias ci cabal install --only-dependencies $*
 alias cb cabal build $*
 alias csi cabal sandbox init $*
 alias cg cabal get $*
