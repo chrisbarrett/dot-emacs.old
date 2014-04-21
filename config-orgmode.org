@@ -1053,7 +1053,25 @@ TARGET-DAYNAME is the day of the week that we want to match,
     (and (= dayname target-dayname)
          (< days-diff 4))))
 #+end_src
+** Find the next weekday if date falls on a weekend
+#+begin_src emacs-lisp
+(defun calendar-mondayised (target-day target-month)
+  "Given anniversary with DAY and MONTH, return non-nil if:
 
+- the given date is a weekday, or
+
+- it is the Monday after the given date if it falls on a weekend."
+  (or
+   ;; Weekday and on target date?
+   (and (memq (calendar-day-of-week date) '(1 2 3 4 5))
+
+        (let ((m (calendar-extract-month date))
+              (d (calendar-extract-day date)))
+          (and (equal d target-day)
+               (equal m target-month))))
+
+   ;; On 1st Monday after weekend date?
+   (calendar-nearest-to 1 target-day target-month)))
 #+end_src
 ** Find dates that occur at regular intervals of N days/weeks/months
 #+begin_src emacs-lisp
