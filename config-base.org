@@ -4013,34 +4013,36 @@ entry in `modeline-custom-description-functions'."
 
    ;; --------------------------------------------------------------------------
    ;; Mail status.
-   (:eval (or (and (true? cbm:mode-line-indicator)
-                   (concat " " cbm:mode-line-indicator " "))
-              ""))
+   (:eval
+    (if (true? cbm:mode-line-indicator)
+        (concat " " cbm:mode-line-indicator " ")
+      ""))
 
    ;; Pomodoro
    ;;
    ;; Show the current pomodoro time and an indicator for the length of the next
    ;; break.
-   (:eval (or (and (true? org-pomodoro-mode-line)
-                   (cl-destructuring-bind (bl s br)
-                       org-pomodoro-mode-line
-                     (let ((upcoming-long-break?
-                            (and (plusp org-pomodoro-count) ; starts at 0
-                                 (zerop (mod org-pomodoro-count
-                                             org-pomodoro-long-break-frequency)))))
-                       (concat bl s
-                               " → " (if upcoming-long-break? "L" "S")
-                               br))))
-              ""))
+   (:eval
+    (if (true? org-pomodoro-mode-line)
+        (cl-destructuring-bind (bl s br)
+            org-pomodoro-mode-line
+          (let ((upcoming-long-break?
+                 (and (plusp org-pomodoro-count) ; starts at 0
+                      (zerop (mod org-pomodoro-count
+                                  org-pomodoro-long-break-frequency)))))
+            (concat bl s
+                    " → " (if upcoming-long-break? "L" "S")
+                    br)))
+      ""))
 
    ;; Current org notes file
-   (:eval (or (and (true? org-init-notes-file)
-                   (not (equal org-init-notes-file org-default-notes-file))
-                   (propertize (concat " ["
-                                       (f-filename (f-no-ext org-default-notes-file))
-                                       "] ")
-                               'face 'modeline-org-notes-file-indicator))
-              ""))
+   (:eval
+    (if (and (true? org-init-notes-file)
+             (not (equal org-init-notes-file org-default-notes-file)))
+        (propertize
+         (concat " [" (f-filename (f-no-ext org-default-notes-file)) "] ")
+         'face 'modeline-org-notes-file-indicator)
+      ""))
 
    ;; --------------------------------------------------------------------------
    ;; File status.
@@ -4078,10 +4080,7 @@ entry in `modeline-custom-description-functions'."
    ;; Mode details.
 
    ;; Major mode.
-   " %["
-   (:propertize mode-name
-                face mode-line-mode)
-   "%] "
+   " %[" (:propertize mode-name face mode-line-mode) "%] "
 
    ;; Minor modes.
    (:eval (propertize (format-mode-line minor-mode-alist)
