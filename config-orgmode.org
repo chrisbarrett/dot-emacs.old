@@ -1042,17 +1042,17 @@ Define commands for skipping through agenda sections.
 (autoload 'calendar-day-of-week "calendar")
 
 (defun calendar-nearest-to (target-dayname target-day target-month)
-  "Non-nil if the current date is a certian weekday close to an anniversary.
+  "Non-nil if the current date is a certain weekday close to an anniversary.
 
 TARGET-DAYNAME is the day of the week that we want to match,
  while TARGET-DAY and TARGET-MONTH are the anniversary."
-  (interactive)
   (let* ((dayname (calendar-day-of-week date))
          (target-date (list target-month target-day (calendar-extract-year date)))
          (days-diff (abs (- (calendar-day-number date)
                             (calendar-day-number target-date)))))
     (and (= dayname target-dayname)
          (< days-diff 4))))
+#+end_src
 
 #+end_src
 ** Find dates that occur at regular intervals of N days/weeks/months
