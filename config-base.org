@@ -2827,7 +2827,7 @@ prevent Evil from being loaded.
              (true? evil-mode))
     (evil-insert-state)))
 
-(defun cb:maybe-evil-append-line ()
+(defun cb:maybe-evil-append-line (&rest _)
   "Go to the end of the line. Enter insert state if evil-mode is active."
   (if (and (fboundp 'evil-append-line)
            (true? evil-mode))
