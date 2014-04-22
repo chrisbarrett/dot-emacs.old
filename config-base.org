@@ -4018,6 +4018,14 @@ entry in `modeline-custom-description-functions'."
         (concat " " cbm:mode-line-indicator " ")
       ""))
 
+   " "
+
+   ;; Show clock for window 1.
+   (:eval (if (equal 1 (length (window-list)))
+              (propertize (format-time-string "[%h %d, %H:%M] ")
+                          'face 'modeline-minor-mode)
+            ""))
+
    ;; Pomodoro
    ;;
    (:eval
@@ -4046,7 +4054,8 @@ entry in `modeline-custom-description-functions'."
 
    ;; Current org notes file
    (:eval
-    (if (and (true? org-init-notes-file)
+    (if (and (equal 1 (length (window-list)))
+             (true? org-init-notes-file)
              (not (equal org-init-notes-file org-default-notes-file)))
         (propertize
          (concat " [" (f-filename (f-no-ext org-default-notes-file)) "] ")
