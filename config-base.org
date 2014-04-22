@@ -363,7 +363,9 @@ PACKAGES is a list of packages that will be installed."
 
          (save-window-excursion
            (--each ',packages
-             (cb:install-package it)
+             (unless (package-installed-p it)
+               (with-demoted-errors "Warning: %s"
+                 (package-install it)))
              (ignore-errors
                (require it nil t)))))
 
