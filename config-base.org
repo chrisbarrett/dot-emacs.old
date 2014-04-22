@@ -4114,6 +4114,12 @@ entry in `modeline-custom-description-functions'."
    " "
    (global-mode-string global-mode-string)))
 #+end_src
+** Update modeline on idle
+#+begin_src emacs-lisp
+(defvar cb:modeline-timer
+  (run-with-idle-timer 30 t 'force-mode-line-update t)
+  "Timer that updates the modeline once a minute.")
+#+end_src
 * Git
 ** Magit
 Magit provides a convenient interface to git commands.
