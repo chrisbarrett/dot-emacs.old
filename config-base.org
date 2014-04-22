@@ -4025,7 +4025,7 @@ entry in `modeline-custom-description-functions'."
    ;; Show clock for window 1.
    (:eval (if (equal 1 (length (window-list)))
               (propertize (format-time-string "[%h %d, %H:%M] ")
-                          'face 'modeline-minor-mode)
+                          'face 'mode-line-minor-mode)
             ""))
 
    ;; Pomodoro
