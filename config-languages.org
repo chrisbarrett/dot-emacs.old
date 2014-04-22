@@ -1918,7 +1918,7 @@ With prefix, goes to the REPL buffer afterwards (as
   :packages (python
              python-info
              jedi
-             virualenv))
+             virtualenv))
 #+end_src
 ** Run prog-mode-hook in python-mode
 =python-mode= is not derived from prog mode, but we still want all the
