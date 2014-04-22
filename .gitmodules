@@ -46,3 +46,6 @@
 [submodule "lib/org-reveal"]
 	path = lib/org-reveal
 	url = https://github.com/yjwen/org-reveal.git
+[submodule "lib/Pymacs"]
+	path = lib/Pymacs
+	url = https://github.com/pinard/Pymacs.git

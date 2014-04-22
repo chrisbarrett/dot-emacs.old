@@ -87,6 +87,8 @@ $(emacs_src) :| $(emacs_gz)
 # ----------------------------------------------------------------------------
 # Python
 
+pymacs = $(lib)/Pymacs/pymacs.el
+
 .PHONY: python
 python : jedi elpy pylint
 
@@ -101,6 +103,9 @@ elpy :
 .PHONY: pylint
 pylint :
 	pip install pylint
+
+$(pymacs) :
+	cd $(lib)/Pymacs && make
 
 # ----------------------------------------------------------------------------
 # SuperCollider
