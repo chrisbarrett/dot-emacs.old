@@ -90,7 +90,7 @@ $(emacs_src) :| $(emacs_gz)
 pymacs = $(lib)/Pymacs/pymacs.el
 
 .PHONY: python
-python : jedi elpy pylint
+python : jedi elpy pylint $(pymacs)
 
 .PHONY: jedi
 jedi :
