@@ -49,3 +49,6 @@
 [submodule "lib/Pymacs"]
 	path = lib/Pymacs
 	url = https://github.com/pinard/Pymacs.git
+[submodule "lib/emacs-deferred"]
+	path = lib/emacs-deferred
+	url = https://github.com/kiwanami/emacs-deferred.git

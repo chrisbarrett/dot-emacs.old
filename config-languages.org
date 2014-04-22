@@ -1930,7 +1930,9 @@ programming goodies, so run the hook manually.
 #+end_src
 ** DEFER
 #+begin_src emacs-lisp
-(after '(python jedi virtualenv)
+(after 'python
+  (require 'virtualenv)
+  (require 'jedi)
 #+end_src
 ** ipython support
 Use ipython if it is installed.
