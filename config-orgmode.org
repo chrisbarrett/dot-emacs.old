@@ -1061,17 +1061,13 @@ TARGET-DAYNAME is the day of the week that we want to match,
 - the given date is a weekday, or
 
 - it is the Monday after the given date if it falls on a weekend."
-  (or
-   ;; Weekday and on target date?
-   (and (memq (calendar-day-of-week date) '(1 2 3 4 5))
+  (if (memq (calendar-day-of-week date) '(6 0)) ; Sat or Sun
+      (calendar-nearest-to 1 target-day target-month)
 
-        (let ((m (calendar-extract-month date))
-              (d (calendar-extract-day date)))
-          (and (equal d target-day)
-               (equal m target-month))))
-
-   ;; On 1st Monday after weekend date?
-   (calendar-nearest-to 1 target-day target-month)))
+    (let ((m (calendar-extract-month date))
+          (d (calendar-extract-day date)))
+      (and (equal d target-day)
+           (equal m target-month)))) )
 #+end_src
 ** Find dates that occur at regular intervals of N days/weeks/months
 #+begin_src emacs-lisp
