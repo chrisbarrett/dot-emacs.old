@@ -1,6 +1,6 @@
-# -*- mode: snippet -*-
-# name: for
 # key: f
+# name: for
+# condition: (cbyas:bol?)
 # --
 for ${1:x} in ${2:xs}:
     $0

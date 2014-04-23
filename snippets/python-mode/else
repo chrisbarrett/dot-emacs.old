@@ -1,5 +1,5 @@
-# -*- mode: snippet -*-
-# name: else
 # key: e
+# name: else
+# condition: (cbyas:bol?)
 # --
 else:

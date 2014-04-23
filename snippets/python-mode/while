@@ -1,6 +1,6 @@
-# -*- mode: snippet -*-
+# key: wh
 # name: while
-# key: w
+# condition: (cbyas:bol?)
 # --
 while ${1:True}:
     $0

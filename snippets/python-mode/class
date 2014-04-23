@@ -1,5 +1,6 @@
 # key: c
 # name: class
+# condition: (cbyas:bol?)
 # --
 class ${1:$$(s-upper-camel-case yas/text)}${2: ($3)}:
 

@@ -1,6 +1,6 @@
-# -*- mode: snippet -*-
-# name: new
 # key: new
+# name: new
+# condition: (cbyas:bol?)
 # --
 def __new__(mcs, name, bases, dict):
     $0

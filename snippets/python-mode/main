@@ -1,6 +1,6 @@
-# -*- mode: snippet -*-
-# name: main
 # key: main
+# name: main
+# condition: (cbyas:bol?)
 # --
 if __name__ == '__main__':
     $0

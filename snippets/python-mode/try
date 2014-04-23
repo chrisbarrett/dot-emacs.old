@@ -1,8 +1,8 @@
-# -*- mode: snippet -*-
-# name: try
 # key: t
+# name: try
+# condition: (cbyas:bol?)
 # --
 try:
-    $1
+    ${1:expr}
 except ${2:Exception}:
     $0

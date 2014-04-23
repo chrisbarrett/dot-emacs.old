@@ -1,5 +1,5 @@
-# -*- mode: snippet -*-
-# name: print
 # key: p
+# name: print
+# condition: (cbyas:bol?)
 # --
 print($0)

@@ -1,5 +1,5 @@
-# -*- mode: snippet -*-
-# name: from
 # key: fr
+# name: from
+# condition: (cbyas:bol?)
 # --
 from $1 import ${2:*}
