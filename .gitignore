@@ -47,3 +47,4 @@ var
 el-get
 /config-*.el
 /custom.el
+/.python-environments/
