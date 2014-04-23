@@ -1917,7 +1917,6 @@ With prefix, goes to the REPL buffer afterwards (as
   :match "\\.py"
   :packages (python
              python-info
-             jedi
              virtualenvwrapper))
 #+end_src
 ** Run prog-mode-hook in python-mode
@@ -1931,7 +1930,6 @@ programming goodies, so run the hook manually.
 ** DEFER
 #+begin_src emacs-lisp
 (after 'python
-  (require 'jedi)
   (require 'pyvenv)
   (require 'virtualenvwrapper)
 #+end_src
@@ -2047,11 +2045,6 @@ Add special smart-operator behaviours for python buffers.
 (sp-with-modes cb:python-modes
   (sp-local-pair "{" "}" :post-handlers '(:add sp-generic-leading-space)))
 #+end_src
-** documentation
-#+begin_src emacs-lisp
-(after 'evil
-  (define-evil-doc-handler cb:python-modes (jedi:show-doc)))
-#+end_src
 ** auto-insert headers
 Auto-insert header in python files.
 #+begin_src emacs-lisp
@@ -2128,34 +2121,14 @@ Each element is either a string or a cons of (var . default)."
 #+begin_src emacs-lisp
 (define-key python-mode-map (kbd "M-q") 'indent-dwim)
 #+end_src
-** jedi
-Provides completion, code search and documentation for python.
-
-#+begin_src emacs-lisp
-(add-hook 'cb:python-modes-hook 'jedi:setup)
-#+end_src
-
-Configure completion.
-
-#+begin_src emacs-lisp
-(setq jedi:tooltip-method nil
-      jedi:complete-on-dot t)
-#+end_src
-
-Improve python support in imenu.
-
-#+begin_src emacs-lisp
-(setq jedi:install-imenu t)
-#+end_src
-
-Make the goto-definition key the same as for lisp modes.
-
-#+begin_src emacs-lisp
-(setq jedi:key-goto-definition (kbd "M-."))
-#+end_src
 ** virtualenvwrapper
 #+begin_src emacs-lisp
 (venv-initialize-eshell)
+#+end_src
+** ropemacs
+#+begin_src emacs-lisp
+(when (fboundp 'ropemacs-mode)
+  (add-hook 'python-mode-hook 'ropemacs-mode))
 #+end_src
 ** END
 #+begin_src emacs-lisp
