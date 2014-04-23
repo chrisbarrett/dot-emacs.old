@@ -2136,7 +2136,8 @@ Each element is either a string or a cons of (var . default)."
 (when (fboundp 'ropemacs-mode)
   (add-hook 'python-mode-hook 'ropemacs-mode))
 
-(setq ropemacs-use-pop-to-buffer t)
+(setq ropemacs-use-pop-to-buffer t
+      ropemacs-guess-project t)
 
 (after 'rope
   (define-key python-mode-map (kbd "M-.") 'rope-goto-definition))
