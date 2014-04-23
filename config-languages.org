@@ -1939,6 +1939,12 @@ programming goodies, so run the hook manually.
 (define-key inferior-python-mode-map (kbd ",") 'cb:comma-then-space)
 #+end_src
 
+** set evil documentation command
+#+begin_src emacs-lisp
+(after 'evil
+  (define-evil-doc-handler cb:python-modes
+    (call-interactively 'rope-show-doc)))
+#+end_src
 ** switch to python
 Define a command to switch from the repl to the last python buffer and
 vice-versa.
@@ -2129,6 +2135,9 @@ Each element is either a string or a cons of (var . default)."
 #+begin_src emacs-lisp
 (when (fboundp 'ropemacs-mode)
   (add-hook 'python-mode-hook 'ropemacs-mode))
+
+(setq ropemacs-use-pop-to-buffer t)
+
 #+end_src
 ** END
 #+begin_src emacs-lisp
