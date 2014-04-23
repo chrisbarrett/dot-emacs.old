@@ -1918,8 +1918,7 @@ With prefix, goes to the REPL buffer afterwards (as
   :packages (python
              python-info
              jedi
-             pyenv
-             pyenv-mode))
+             virtualenvwrapper))
 #+end_src
 ** Run prog-mode-hook in python-mode
 =python-mode= is not derived from prog mode, but we still want all the
@@ -1932,24 +1931,9 @@ programming goodies, so run the hook manually.
 ** DEFER
 #+begin_src emacs-lisp
 (after 'python
-  (require 'pyenv)
-  (require 'pyenv-mode)
   (require 'jedi)
-#+end_src
-** ipython support
-Use ipython if it is installed.
-#+begin_src emacs-lisp
-(-when-let (ipython (executable-find "ipython"))
-  (setq python-shell-interpreter ipython
-        python-shell-interpreter-args ""
-        python-shell-prompt-regexp "In \\[[0-9]+\\]: "
-        python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
-        python-shell-completion-setup-code
-        "from IPython.core.completerlib import module_completion"
-        python-shell-completion-module-string-code
-        "';'.join(module_completion('''%s'''))\n"
-        python-shell-completion-string-code
-        "';'.join(get_ipython().Completer.all_completions('''%s'''))\n"))
+  (require 'pyvenv)
+  (require 'virtualenvwrapper)
 #+end_src
 ** commas
 #+begin_src emacs-lisp
@@ -2169,13 +2153,9 @@ Make the goto-definition key the same as for lisp modes.
 #+begin_src emacs-lisp
 (setq jedi:key-goto-definition (kbd "M-."))
 #+end_src
-** virtualenv
-Configures Emacs according to the current python virtualenv settings.
-
+** virtualenvwrapper
 #+begin_src emacs-lisp
-(venv-initialize-interactive-shells)
-(put 'virtualenv-default-directory 'safe-local-variable (K t))
-(put 'virtualenv-workon 'safe-local-variable (K t))
+(venv-initialize-eshell)
 #+end_src
 ** END
 #+begin_src emacs-lisp
