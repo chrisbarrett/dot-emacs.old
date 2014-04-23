@@ -1,43 +1,52 @@
-alias ci cabal install --only-dependencies $*
-alias cb cabal build $*
-alias csi cabal sandbox init $*
-alias cg cabal get $*
-alias ge git exec $*
-alias gh cd ${git rev-parse --show-toplevel}
-alias l ls $*
-alias clear recenter 0
-alias w3m w3m-find-file $1
-alias e cb-eshell:find-file-or-files $*
-alias emacs find-file $1
-alias ll ls -l $*
-alias git hub $*
-alias grs git reset $*
-alias grh git reset --hard $*
-alias gb git branch -v $*
-alias ga git add $*
-alias gau git add --update $*
-alias gs git show $*
-alias gstat git status $*
-alias grm git rm $*
-alias gmv git mv $*
-alias gsub git submodule $*
-alias s git status --short $*
-alias gcm git commit -m $*
-alias gd git diff $*
-alias gco git checkout $*
-alias gr git rebase $*
-alias gm git merge --no-ff $*
-alias gref git reflog $*
-alias glp git log --patch $*
-alias gp git push $*
-alias gf git fetch $*
-alias gc git clean $*
-alias gclone git clone $*
-alias gbs git bisect $*
-alias gcp git cherry-pick $*
-alias la ls -lA $*
-alias afind ack-grep -il $*
-alias k tree -L 2 $*
-alias gup git pull -v --rebase
-alias t top -o cpu
+alias v.add2virtualenv add2virtualenv
+alias v.cdsitepackages cdsitepackages
+alias v.lssitepackages lssitepackages
+alias v.cd cdvirtualenv
+alias v.switch workon
+alias v.rm rmvirtualenv
+alias v.mk mkvirtualenv
+alias v.deactivate deactivate
+alias v workon
 alias rmr rm -r
+alias t top -o cpu
+alias gup git pull -v --rebase
+alias k tree -L 2 $*
+alias afind ack-grep -il $*
+alias la ls -lA $*
+alias gcp git cherry-pick $*
+alias gbs git bisect $*
+alias gclone git clone $*
+alias gc git clean $*
+alias gf git fetch $*
+alias gp git push $*
+alias glp git log --patch $*
+alias gref git reflog $*
+alias gm git merge --no-ff $*
+alias gr git rebase $*
+alias gco git checkout $*
+alias gd git diff $*
+alias gcm git commit -m $*
+alias s git status --short $*
+alias gsub git submodule $*
+alias gmv git mv $*
+alias grm git rm $*
+alias gstat git status $*
+alias gs git show $*
+alias gau git add --update $*
+alias ga git add $*
+alias gb git branch -v $*
+alias grh git reset --hard $*
+alias grs git reset $*
+alias git hub $*
+alias ll ls -l $*
+alias emacs find-file $1
+alias e cb-eshell:find-file-or-files $*
+alias w3m w3m-find-file $1
+alias clear recenter 0
+alias l ls $*
+alias gh cd ${git rev-parse --show-toplevel}
+alias ge git exec $*
+alias cg cabal get $*
+alias csi cabal sandbox init $*
+alias cb cabal build $*
+alias ci cabal install --only-dependencies $*
