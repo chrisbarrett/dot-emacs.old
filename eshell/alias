@@ -1,13 +1,13 @@
-alias v.add2virtualenv add2virtualenv
-alias v.cdsitepackages cdsitepackages
-alias v.lssitepackages lssitepackages
-alias v.cd cdvirtualenv
-alias v.switch workon
-alias v.rm rmvirtualenv
-alias v.mk mkvirtualenv
-alias v.deactivate deactivate
-alias v workon
-alias rmr rm -r
+alias v.add2virtualenv add2virtualenv $*
+alias v.cdsitepackages cdsitepackages $*
+alias v.lssitepackages lssitepackages $*
+alias v.cd cdvirtualenv $*
+alias v.switch workon $*
+alias v.rm rmvirtualenv $*
+alias v.mk mkvirtualenv $*
+alias v.deactivate deactivate $*
+alias v workon $*
+alias rmr rm -r $*
 alias t top -o cpu
 alias gup git pull -v --rebase
 alias k tree -L 2 $*
