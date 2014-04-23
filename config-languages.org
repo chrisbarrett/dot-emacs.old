@@ -2138,6 +2138,11 @@ Each element is either a string or a cons of (var . default)."
 
 (setq ropemacs-use-pop-to-buffer t)
 
+(after 'rope
+  (define-key python-mode-map (kbd "M-.") 'rope-goto-definition))
+
+(after 'evil
+  (evil-define-key 'normal python-mode-map (kbd "M-.") 'rope-goto-definition))
 #+end_src
 ** END
 #+begin_src emacs-lisp
