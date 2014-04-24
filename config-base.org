@@ -3226,11 +3226,19 @@ Provides textmate-style snippets.
 #+end_src
 ** Snippet utilities
 #+begin_src emacs-lisp
+(defun cbyas:line-matches-up-to-point? (rx)
+  "Non-nil if the current line matches RX up to the start of the current word."
+  (let ((pt (save-restriction
+              (narrow-to-region (line-beginning-position) (point))
+              (save-excursion
+                (forward-word -1)
+                (point)))))
+
+    (s-matches? rx (buffer-substring (line-beginning-position) pt))))
+
 (defun cbyas:bol? ()
   "Non-nil if point is on an empty line or at the first word."
-  (s-matches? (rx bol (* space) (* word) eol)
-              (buffer-substring (line-beginning-position)
-                                (point))))
+  (cbyas:line-matches-up-to-point? (rx bol (* space) (* word) eol)))
 
 (defun cbyas:msg (fmt &rest args)
   "Like `message', but returns the empty string.
