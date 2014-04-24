@@ -796,6 +796,14 @@ then
 (declare-smart-ops 'rust-mode
   :rem '("!"))
 #+end_src
+** flycheck
+Redefine flycheck command for Rust to fix incorrect usage for rustc 0.10.
+#+begin_src emacs-lisp
+(put 'rust :flycheck-command
+     '("rustc" "--crate-type" "lib" "--no-trans"
+       (option-list "-L" flycheck-rust-library-path s-prepend)
+       source-inplace))
+#+end_src
 * Bison
 #+begin_src emacs-lisp
 (autoload 'bison-mode "bison-mode")
