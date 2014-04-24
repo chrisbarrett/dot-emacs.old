@@ -785,6 +785,17 @@ then
 #+begin_src emacs-lisp
 )
 #+end_src
+* Rust
+#+begin_src emacs-lisp
+(cb:declare-package-installer rust
+  :match (rx ".rs" eol)
+  :packages (rust-mode))
+#+end_src
+** smart operators
+#+begin_src emacs-lisp
+(declare-smart-ops 'rust-mode
+  :rem '("!"))
+#+end_src
 * Bison
 #+begin_src emacs-lisp
 (autoload 'bison-mode "bison-mode")
