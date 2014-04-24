@@ -5180,6 +5180,8 @@ Declare a modal command to show w3m.
     "z z" 'evil-scroll-line-to-center
     "C-f" 'evil-scroll-page-down
     "C-b" 'evil-scroll-page-up
+    "w"   'evil-forward-word-begin
+    "b"   'evil-backward-word-begin
     "y"   'evil-yank
     "p"   'evil-paste-after
     "/"   'evil-search-forward
