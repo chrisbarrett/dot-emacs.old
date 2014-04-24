@@ -1,0 +1,6 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: println!
+# key: p
+# condition: (cbyas:bol?)
+# --
+println!($0);

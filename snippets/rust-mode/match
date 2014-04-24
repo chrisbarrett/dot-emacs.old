@@ -1,0 +1,9 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: match
+# key: m
+# condition: (or (cbyas:bol?) (cbyas:line-matches-up-to-point? (rx "=" (* space))))
+# --
+match ${1:expr} {
+    ${2:x} => $0,
+    _ =>
+}

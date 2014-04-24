@@ -1,0 +1,8 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: enum
+# key: en
+# condition: (cbyas:bol?)
+# --
+enum ${1:Name} {
+    $0
+}
