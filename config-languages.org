@@ -794,7 +794,7 @@ then
 ** smart operators
 #+begin_src emacs-lisp
 (declare-smart-ops 'rust-mode
-  :rem '("!"))
+  :rem '("!" "~"))
 #+end_src
 ** flycheck
 Redefine flycheck command for Rust to fix incorrect usage for rustc 0.10.
