@@ -1376,7 +1376,7 @@ This allows you to enter mathematical symbols easily.
 ** Toggle centred view
 #+begin_src emacs-lisp
 (autoload 'toggle-centred-mode "centred-mode")
-(global-set-key (kbd "C-x c") 'toggle-centred-mode)
+(bind-key "C-x c" 'toggle-centred-mode)
 #+end_src
 ** Define a more ergonomic M-x
 #+begin_src emacs-lisp
