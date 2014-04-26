@@ -794,7 +794,20 @@ then
 ** smart operators
 #+begin_src emacs-lisp
 (declare-smart-ops 'rust-mode
-  :rem '("!" "~"))
+  :rem '("!" "~" "&"))
+#+end_src
+** command to insert angle brackets for generics
+#+begin_src emacs-lisp
+(defun cbrs:insert-type-brackets ()
+  (interactive)
+  (save-restriction
+    (narrow-to-region (line-beginning-position) (point))
+    (delete-horizontal-space)
+    (insert "<>")
+    (forward-char -1)))
+
+(after 'rust-mode
+  (define-key rust-mode-map (kbd "C-c <") 'cbrs:insert-type-brackets))
 #+end_src
 ** flycheck
 Redefine flycheck command for Rust to fix incorrect usage for rustc 0.10.
