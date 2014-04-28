@@ -3516,6 +3516,9 @@ Meant for `eldoc-documentation-function'."
 ** Switch to REPL with C-c C-z
 #+begin_src emacs-lisp
 (define-key idris-mode-map (kbd "C-c C-z") 'idris-switch-to-output-buffer)
+
+(defadvice idris-switch-to-output-buffer (after evil-append activate)
+  (cb:append-buffer))
 #+end_src
 ** smart operators
 *** Impl
