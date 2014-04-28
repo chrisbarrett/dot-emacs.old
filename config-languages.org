@@ -3564,7 +3564,7 @@ function tries to send to the process.
          (-when-let (sym (thing-at-point 'symbol))
            (s-uppercase? (substring sym 0 1)))))
     (cond
-     ((looking-at-module-or-constructor?)
+     (looking-at-module-or-constructor?
       (insert "."))
      ((thing-at-point-looking-at (rx (or "(" "{" "[") (* space)))
       (insert "."))
