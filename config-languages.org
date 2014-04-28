@@ -2707,10 +2707,21 @@ point to the position of the join."
 #+end_src
 ** Initialize ghc helper commands
 #+begin_src emacs-lisp
+(defun cb:in-cabal-project? ()
+  "Find the root of the current cabal project."
+  (when (and (buffer-file-name) default-directory)
+    (f-traverse-upwards
+     (lambda (d)
+       (--any? (equal "cabal" (f-ext it)) (f-files d)))
+     default-directory)))
+
 (defun cb:ghc-init ()
   "Run `ghc-init' without setting any key bindings or running checks."
   (noflet ((define-key (&rest _))
-           (ghc-check-syntax (&rest _)))
+           (ghc-check-syntax (&rest _))
+           (ghc-comp-init (&rest _)
+                          (when (cb:in-cabal-project?)
+                            (funcall this-fn))))
     (ghc-init)))
 
 (add-hook 'haskell-mode-hook 'cb:ghc-init)
