@@ -3531,9 +3531,9 @@ function tries to send to the process.
 (defun cbidris:smart-colon ()
   (interactive)
   (cond
-   ((equal (char-to-string (char-before)) " ")
+   ((and (char-before) (equal (char-to-string (char-before)) " "))
     (smart-insert-op ":"))
-   ((equal (char-to-string (char-after)) ")")
+   ((and (char-after) (equal (char-to-string (char-after)) ")"))
     (insert ":"))
    (t
     (smart-insert-op ":"))))
