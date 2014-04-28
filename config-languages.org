@@ -3685,6 +3685,55 @@ function tries to send to the process.
 #+end_src
 ** Define custom newline commands
 #+begin_src emacs-lisp
+(defun cbidris:data-start-pos ()
+  "Find the start position of the datatype declaration at point."
+  (save-excursion
+    (end-of-line)
+    (when (search-backward-regexp (rx bol (* space) (or "record" "data") eow) nil t)
+      (skip-chars-forward " \t")
+      (point))))
+
+(defun cbidris:data-end-pos ()
+  "Find the end position of the datatype declaration at point."
+  (save-excursion
+    (let ((start (point)))
+
+      (goto-char (cbidris:data-start-pos))
+      (forward-line)
+      (goto-char (line-beginning-position))
+
+      (let ((end
+             (when (search-forward-regexp
+                    (rx bol (or (and (* space) eol) (not (any space "|"))))
+                    nil t)
+               (forward-line -1)
+               (line-end-position))))
+        (if (and end (<= start end))
+            end
+          (point-max))))))
+
+(cl-defun cbidris:data-decl-at-pt ()
+  "Return the data declaration at point."
+  (-when-let* ((start (cbidris:data-start-pos))
+               (end (cbidris:data-end-pos)))
+    (buffer-substring-no-properties start end)))
+
+(defun cbidris:at-data-decl? ()
+  (-when-let (dd (cbidris:data-decl-at-pt))
+    (let ((lines (s-split "\n" dd)))
+      (or (equal 1 (length lines))
+          (->> (-drop 1 lines)
+            (-all? (~ s-matches? (rx bol (or space "|")))))))))
+
+(defun cbidris:function-name-at-pt ()
+  "Return the name of the function at point."
+  (save-excursion
+    (search-backward-regexp (rx bol (* space) (group (+ (not (any space ":"))))))
+    (let ((s (s-trim (match-string-no-properties 1))))
+      (unless (or (-contains? idris-keywords s)
+                  (s-blank? s))
+        s))))
+
 (defun idris-ret ()
   "Indent and align on newline."
   (interactive "*")
