@@ -49,4 +49,5 @@ alias ge git exec $*
 alias cg cabal get $*
 alias csi cabal sandbox init $*
 alias cb cabal build $*
-alias ci cabal install --only-dependencies $*
+alias cid cabal install --only-dependencies $*
+alias ci cabal install $*
