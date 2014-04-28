@@ -3485,12 +3485,12 @@ Meant for `eldoc-documentation-function'."
   :modes idris-mode)
 #+end_src
 ** Run idris process automatically
+The idris process must be run before the mode function is called, because that
+function tries to send to the process.
 #+begin_src emacs-lisp
-(defun cbidris:maybe-run-idris ()
+(defadvice idris-mode (before start-process activate)
   (unless idris-process
     (idris-run)))
-
-(add-hook 'idris-mode-hook 'cbidris:maybe-run-idris)
 #+end_src
 ** DEFER
 #+begin_src emacs-lisp
