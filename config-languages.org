@@ -3690,7 +3690,6 @@ function tries to send to the process.
   (interactive "*")
   (if (s-matches? comment-start (current-line))
       (comment-indent-new-line)
-    (idris-reformat-dwim t)
 
     (cond
 
