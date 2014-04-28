@@ -3483,6 +3483,12 @@ Meant for `eldoc-documentation-function'."
   ((warning line-start (file-name) ":" line ":" column ":Warning - " (message) line-end)
    (error line-start (file-name) ":" line ":" column ":" (message) line-end))
   :modes idris-mode)
+
+(defun cbidris:flycheck-setup ()
+  (flycheck-mode +1)
+  (flycheck-select-checker 'idris))
+
+(add-hook 'idris-mode-hook 'cbidris:flycheck-setup)
 #+end_src
 ** Run idris process automatically
 The idris process must be run before the mode function is called, because that
