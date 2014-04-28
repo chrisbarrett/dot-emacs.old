@@ -3474,6 +3474,16 @@ Meant for `eldoc-documentation-function'."
 (after 'idris-indentation
   (diminish 'idris-indentation-mode))
 #+end_src
+** Define flycheck checker
+#+begin_src emacs-lisp
+(flycheck-define-checker idris
+  "An Idris syntax and type checker."
+  :command ("idris" "--check" "--nocolor" "--warnpartial" source)
+  :error-patterns
+  ((warning line-start (file-name) ":" line ":" column ":Warning - " (message) line-end)
+   (error line-start (file-name) ":" line ":" column ":" (message) line-end))
+  :modes idris-mode)
+#+end_src
 ** DEFER
 #+begin_src emacs-lisp
 (after 'idris-mode
