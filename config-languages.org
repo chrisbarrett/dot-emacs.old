@@ -3521,39 +3521,16 @@ Meant for `eldoc-documentation-function'."
   (cb:append-buffer))
 #+end_src
 ** smart operators
-*** Impl
 #+begin_src emacs-lisp
-(defun cbidris:typing-operator-in-braces? ()
-  (or (equal (char-before) ?\()
-      (and (not (s-matches? (rx alnum) (char-to-string (char-before))))
-           (equal (char-after) ?\)))))
-
-(defun cbidris:smart-insert-operator (op)
-  "Insert an operator with padding.
-Does not pad if inside a pair of brackets.
-
-OP is the operator as a string."
-  (cond
-   ((cbidris:typing-operator-in-braces?)
-    (delete-horizontal-space)
-    (insert op))
-   (t
-    (smart-insert-op op))))
-
-(defun cbidris:inserting-cons-in-braces? ()
-  (equal (char-after) ?\)))
-
 (defun cbidris:smart-colon ()
   (interactive)
   (cond
-   ((equal (string-to-char " ") (char-before))
+   ((equal (char-to-string (char-before)) " ")
     (smart-insert-op ":"))
-   ((cbidris:inserting-cons-in-braces?)
+   ((equal (char-to-string (char-after)) ")")
     (insert ":"))
    (t
-    (smart-insert-op ":")))
-
-  (idris-reformat-dwim t))
+    (smart-insert-op ":"))))
 
 (defun cbidris:smart-comma ()
   (interactive)
@@ -3571,71 +3548,22 @@ OP is the operator as a string."
   (if (s-matches? (rx "[" (* (any "|" alnum)) eol)
                   (buffer-substring (line-beginning-position) (point)))
       (insert "|")
-    (cbidris:smart-insert-operator "|")))
+    (smart-insert-op "|")))
 
-(defun cbidris:looking-at-module-or-constructor? ()
-  (-when-let (sym (thing-at-point 'symbol))
-    (s-uppercase? (substring sym 0 1))))
 
-(defun cbidris:smart-dot (&optional arg)
-  "Insert a period. Add padding, unless this line is an import statement.
-With a prefix arg, insert a period without padding."
-  (interactive "*P")
-  (cond
-   (arg
-    (insert "."))
-   ((cbidris:looking-at-module-or-constructor?)
-    (insert "."))
-   ((thing-at-point-looking-at (rx (or "(" "{" "[") (* space)))
-    (insert "."))
-   (t
-    (cbidris:smart-insert-operator "."))))
-
-(defun cbidris:insert-arrow (arrow)
-  "If point is inside a tuple or braces, insert an arrow inside.
-Otherwise insert an arrow at the end of the line."
-  (atomic-change-group
-    (cl-destructuring-bind (&key beg end op &allow-other-keys)
-        (sp-get-sexp t)
-      ;; Check whether point is inside a tuple.
-      (if (and (-contains? '("(" "{") op)
-               (> (point) beg)
-               (< (point) end))
-          (sp-end-of-sexp)
-        (end-of-line)))
-    ;; Insert arrow.
-    (just-one-space)
-    (insert arrow)
-    (just-one-space)))
-
-(defun cbidris:at-typedecl? ()
-  (s-matches? (rx space ":" (not (any ":")))
-              (buffer-substring (line-beginning-position) (point))))
-
-(defun cbidris:smart-minus (&optional arg)
-  "Insert an arrow if we're in a typesig, otherwise perform a normal insertion.
-With a prefix arg, insert an arrow with padding at point."
-  (interactive "*P")
-  (cond
-   (arg
-    (just-one-space)
-    (insert "->")
-    (just-one-space))
-   ((cbidris:at-typedecl?)
-    (cbidris:insert-arrow "->"))
-   (t
-    (cbidris:smart-insert-operator "-"))))
-
-(defun cbidris:smart-lt (&optional arg)
-  "Insert a less than symbol. With a prefix arg, insert an arrow at point."
-  (interactive "*P")
-  (cond
-   (arg
-    (just-one-space)
-    (insert "<-")
-    (just-one-space))
-   (t
-    (cbidris:smart-insert-operator "<"))))
+(defun cbidris:smart-dot ()
+  "Insert a period with context-sensitive padding."
+  (interactive)
+  (let ((looking-at-module-or-constructor?
+         (-when-let (sym (thing-at-point 'symbol))
+           (s-uppercase? (substring sym 0 1)))))
+    (cond
+     ((looking-at-module-or-constructor?)
+      (insert "."))
+     ((thing-at-point-looking-at (rx (or "(" "{" "[") (* space)))
+      (insert "."))
+     (t
+      (smart-insert-op ".")))))
 
 (defun cbidris:smart-question-mark ()
   "Insert a ? char as an operator, unless point is after an = sign."
@@ -3645,27 +3573,15 @@ With a prefix arg, insert an arrow with padding at point."
     (just-one-space)
     (insert "?"))
    (t
-    (cbidris:smart-insert-operator "?"))))
-#+end_src
-*** Key bindings
-#+begin_src emacs-lisp
+    (smart-insert-op "?"))))
+
 (declare-smart-ops 'idris-mode
   :custom
-  '(("," . cbidris:smart-comma)
-    ("?" . cbidris:smart-question-mark)
-    ("-" . cbidris:smart-minus)
-    ("<" . cbidris:smart-lt)
-    ("." . cbidris:smart-dot)
-    (":" . cbidris:smart-colon)
+  '(("?" . cbidris:smart-question-mark)
     ("|" . cbidris:smart-pipe)
-    ("&" . (command (cbidris:smart-insert-operator "&")))
-    ("%" . (command (cbidris:smart-insert-operator "%")))
-    ("*" . (command (cbidris:smart-insert-operator "*")))
-    ("+" . (command (cbidris:smart-insert-operator "+")))
-    ("/" . (command (cbidris:smart-insert-operator "/")))
-    ("=" . (command (cbidris:smart-insert-operator "=")))
-    (">" . (command (cbidris:smart-insert-operator ">")))
-    ("$" . (command (cbidris:smart-insert-operator "$")))))
+    ("." . cbidris:smart-dot)
+    ("," . cbidris:smart-comma)
+    (":" . cbidris:smart-colon)))
 #+end_src
 ** Use font lock to display Unicode lambda in Idris buffers
 #+begin_src emacs-lisp
