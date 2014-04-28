@@ -3484,6 +3484,14 @@ Meant for `eldoc-documentation-function'."
    (error line-start (file-name) ":" line ":" column ":" (message) line-end))
   :modes idris-mode)
 #+end_src
+** Run idris process automatically
+#+begin_src emacs-lisp
+(defun cbidris:maybe-run-idris ()
+  (unless idris-process
+    (idris-run)))
+
+(add-hook 'idris-mode-hook 'cbidris:maybe-run-idris)
+#+end_src
 ** DEFER
 #+begin_src emacs-lisp
 (after 'idris-mode
