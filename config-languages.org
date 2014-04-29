@@ -3532,10 +3532,22 @@ function tries to send to the process.
 (defun cbidris:smart-pipe ()
   "Insert a pipe operator. Add padding, unless we're inside a list."
   (interactive)
-  (if (s-matches? (rx "[" (* (any "|" alnum)) eol)
-                  (buffer-substring (line-beginning-position) (point)))
-      (insert "|")
-    (smart-insert-op "|")))
+  (let ((in-empty-square-braces?
+         (save-excursion
+           (-when-let (pair (sp-backward-up-sexp))
+             (cl-destructuring-bind (&key op beg end &allow-other-keys) pair
+               (and (equal "[" op)
+                    (s-blank? (buffer-substring (1+ beg) (1- end)))))))))
+    (cond
+     (in-empty-square-braces?
+      (delete-horizontal-space)
+      (insert "| ")
+      (save-excursion
+        (insert " |"))
+      (message "Inserting idiom brackets"))
+
+     (t
+      (smart-insert-op "|")))))
 
 
 (defun cbidris:smart-dot ()
