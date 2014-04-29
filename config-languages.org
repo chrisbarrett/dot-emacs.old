@@ -3631,7 +3631,9 @@ function tries to send to the process.
   (sp-local-pair "{" "}" :post-handlers '(:add sp-idris-just-one-space))
   (sp-local-pair "[" "]" :post-handlers '(:add sp-idris-just-one-space))
   (sp-local-pair "(" ")" :post-handlers '(:add sp-idris-just-one-space))
-  (sp-local-pair "'" nil :actions nil))
+  (sp-local-pair "`" "`" :post-handlers '(:add sp-idris-just-one-space))
+  (sp-local-pair "'" nil :actions nil)
+  (sp-local-pair "[|" "|]" :post-handlers '(:add sp-idris-just-one-space)))
 (sp-with-modes cb:idris-modes
   (sp-local-pair "'" "'" :actions '(:rem insert)))
 #+end_src
