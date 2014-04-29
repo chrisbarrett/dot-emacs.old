@@ -3761,35 +3761,43 @@ function tries to send to the process.
 - At comments, fill paragraph and insert a newline."
   (interactive)
   (cond
-   ((cbidris:at-data-decl?)
-    (let ((dt (cbidris:data-decl-at-pt)))
 
-      (unless (s-contains? "where" dt)
-        (save-excursion
-          (goto-char (cbidris:data-start-pos))
-          (unless (s-matches? (rx space "=" (not (any "="))) (current-line))
-            (goto-char (line-end-position))
-            (just-one-space)
-            (insert "where"))))
-
+   ;; Insert new type decl case below the current one.
+   ((s-matches? (rx bol (* space) "|") (current-line))
+    (let ((col (save-excursion (back-to-indentation) (current-column))))
       (goto-char (line-end-position))
-      (idris-ret)))
+      (newline)
+      (indent-to col))
 
+    (insert "| ")
+    (message "New data case"))
+
+   ;; Create new function case.
    ((cbidris:function-name-at-pt)
     (goto-char (line-end-position))
-    (let ((fn (cbidris:function-name-at-pt)))
+    (let ((fn (cbidris:function-name-at-pt))
+          (col (save-excursion
+                 (back-to-indentation)
+                 (current-column))))
 
       (unless (s-matches? (rx bol (* space) eol) (current-line))
         (newline))
 
+      (indent-to-column col)
       (insert fn)
-      (just-one-space)
-      (save-excursion
-        (indent-for-tab-command))))
+      (just-one-space)))
 
+   ;; Insert new line starting with comma.
+   ((s-matches? (rx bol (* space) ",") (current-line))
+    (cb-hs:newline-indent-to-same-col)
+    (insert ", ")
+    (message "New entry"))
+
+   ;; Create a new line in a comment.
    ((s-matches? comment-start (current-line))
     (fill-paragraph)
-    (comment-indent-new-line))
+    (comment-indent-new-line)
+    (message "New comment line"))
 
    (t
     (goto-char (line-end-position))
