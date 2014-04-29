@@ -3590,7 +3590,7 @@ function tries to send to the process.
 #+begin_src emacs-lisp
 (defun cbidris:apply-unicode ()
   (font-lock-add-keywords
-   'idris-mode `(("\\s ?(?\\(\\\\\\)\\s *\\(\\w\\|_\\|(.*)\\).*?\\s *=>"
+   nil `(("\\s ?(?\\(\\\\\\)\\s *\\(\\w\\|_\\|(.*)\\).*?\\s *=>"
                   (0
                    (progn (compose-region (match-beginning 1) (match-end 1)
                                           ?\λ 'decompose-region)
