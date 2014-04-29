@@ -3507,7 +3507,7 @@ function tries to send to the process.
 (defadvice idris-switch-to-output-buffer (after evil-append activate)
   (cb:append-buffer))
 #+end_src
-** smart operators
+** Define smart operator commands
 #+begin_src emacs-lisp
 (defun cbidris:smart-colon ()
   (interactive)
@@ -3573,14 +3573,18 @@ function tries to send to the process.
     (insert "?"))
    (t
     (smart-insert-op "?"))))
-
-(declare-smart-ops 'idris-mode
-  :custom
-  '(("?" . cbidris:smart-question-mark)
-    ("|" . cbidris:smart-pipe)
-    ("." . cbidris:smart-dot)
-    ("," . cbidris:smart-comma)
-    (":" . cbidris:smart-colon)))
+#+end_src
+** Configure smart operators
+#+begin_src emacs-lisp
+(--each cb:idris-modes
+  (declare-smart-ops it
+    :add '("$")
+    :custom
+    '(("?" . cbidris:smart-question-mark)
+      ("|" . cbidris:smart-pipe)
+      ("." . cbidris:smart-dot)
+      ("," . cbidris:smart-comma)
+      (":" . cbidris:smart-colon))))
 #+end_src
 ** Use smartparens for deletion
 #+begin_src emacs-lisp
