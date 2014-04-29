@@ -3582,6 +3582,10 @@ function tries to send to the process.
     ("," . cbidris:smart-comma)
     (":" . cbidris:smart-colon)))
 #+end_src
+** Use smartparens for deletion
+#+begin_src emacs-lisp
+(define-key idris-mode-map (kbd "<backspace>") 'sp-backward-delete-char)
+#+end_src
 ** Use font lock to display Unicode lambda in Idris buffers
 #+begin_src emacs-lisp
 (defun cbidris:apply-unicode ()
