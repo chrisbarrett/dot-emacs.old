@@ -3776,6 +3776,25 @@ function tries to send to the process.
     (insert "| ")
     (message "New data case"))
 
+   ;; Insert new type decl case below the current one.
+   ((and (s-matches? (rx bol (* space) "data") (current-line))
+         (not (s-matches? "where" (current-line))))
+
+    (-if-let (col (save-excursion
+                    (goto-char (line-beginning-position))
+                    (search-forward "=" nil t)
+                    (current-column)))
+        (progn
+          (goto-char (line-end-position))
+          (newline)
+          (indent-to (1- col)))
+
+      (goto-char (line-end-position))
+      (idris-newline-and-indent))
+
+    (insert "| ")
+    (message "New data case"))
+
    ;; Create new function case.
    ((cbidris:function-name-at-pt)
     (goto-char (line-end-position))
