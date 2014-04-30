@@ -1320,6 +1320,9 @@ into org-mode.
 (hook-fn 'org-mode-hook
   (when (equal (buffer-file-name) org-agenda-diary-file)
     (add-hook 'after-save-hook 'cb-org:save-diary nil t)))
+
+(defvar cb-org:appt-update-timer
+  (run-with-idle-timer 240 t 'org-agenda-to-appt t))
 #+end_src
 * org-protocol
 Allows other applications to connect to Emacs and prompt org-mode to perform
