@@ -3457,7 +3457,7 @@ Meant for `eldoc-documentation-function'."
 #+begin_src emacs-lisp
 (flycheck-define-checker idris
   "An Idris syntax and type checker."
-  :command ("idris" "--check" "--nocolor" "--warnpartial" source)
+  :command ("idris" "--check" "--nocolour" "--warnpartial" source)
   :error-patterns
   ((warning line-start (file-name) ":" line ":" column ":Warning - "
             (message (and (* nonl) (* "\n" (? (not (any "/" "~")) (* nonl))))))
