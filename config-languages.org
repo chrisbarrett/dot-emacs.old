@@ -2743,6 +2743,12 @@ point to the position of the join."
 
   (require 'ghc)
 #+end_src
+** Disable highlighting of long lines
+Exceeding 80 cols is acceptable in Haskell coding style.
+#+begin_src emacs-lisp
+(hook-fn 'cb:haskell-modes-hook
+  (whitespace-mode -1))
+#+end_src
 ** Set up flycheck-haskell
 #+begin_src emacs-lisp
 (add-hook 'flycheck-mode-hook 'flycheck-haskell-setup)
