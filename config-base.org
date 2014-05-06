@@ -427,6 +427,9 @@ TO-N-LINES is the number of blank lines to insert afterwards."
 
 (defalias 'hff 'hexl-find-file)
 (defalias 'hex 'hexl-mode)
+
+(defalias 'tsi 'text-scale-increase)
+(defalias 'tsd 'text-scale-decrease)
 #+end_src
 * Path variables
 Define important paths that should be global throughout the configuration.
