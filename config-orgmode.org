@@ -1156,6 +1156,7 @@ are between the current date (DATE) and Easter Sunday."
    (calc . t)
    (scala . t)
    (emacs-lisp . t)
+   (gnuplot . t)
    (ruby . t)
    (clojure . t)
    (haskell . t)))
@@ -1979,6 +1980,12 @@ Define keys for org-mode.
   "C-c C-j" (command (org-refile 'goto))
   ;; disable annoying comment toggle key
   "C-c ;" nil)
+#+end_src
+* org-plot
+#+begin_src emacs-lisp
+(when (executable-find "gnuplot")
+  (cb:install-package 'gnuplot)
+  (define-key org-mode-map (kbd "M-C-g") 'org-plot/gnuplot))
 #+end_src
 * Commands for working with latex
 #+begin_src emacs-lisp
