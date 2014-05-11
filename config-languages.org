@@ -2751,6 +2751,11 @@ point to the position of the join."
 #+begin_src emacs-lisp
 (define-key haskell-mode-map (kbd "M-.") 'haskell-mode-tag-find)
 (define-key haskell-mode-map (kbd "M-,") 'pop-tag-mark)
+
+(after 'evil
+  (evil-define-key 'normal haskell-mode-map
+    (kbd "M-.") 'haskell-mode-tag-find
+    (kbd "M-,") 'pop-tag-mark))
 #+end_src
 ** w3m haddock
 #+begin_src emacs-lisp
