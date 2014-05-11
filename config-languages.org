@@ -2622,6 +2622,8 @@ point to the position of the join."
 ** Configure haskell-mode vars
 #+begin_src emacs-lisp
 (setq haskell-tags-on-save t
+      haskell-process-suggest-remove-import-lines t
+      haskell-process-auto-import-loaded-modules t
       haskell-stylish-on-save t
       haskell-program-name "ghci"
       haskell-process-type 'cabal-repl
@@ -2742,6 +2744,17 @@ point to the position of the join."
 
 
   (require 'ghc)
+#+end_src
+** haskell tags
+#+begin_src emacs-lisp
+(define-key haskell-mode-map (kbd "M-.") 'haskell-mode-tag-find)
+(define-key haskell-mode-map (kbd "M-,") 'pop-tag-mark)
+#+end_src
+** w3m haddock
+#+begin_src emacs-lisp
+(require 'w3m-haddock)
+(add-hook 'w3m-display-hook 'w3m-haddock-display)
+(define-key haskell-mode-map (kbd "C-c C-d") 'haskell-w3m-open-haddock)
 #+end_src
 ** Disable highlighting of long lines
 Exceeding 80 cols is acceptable in Haskell coding style.
@@ -2949,7 +2962,7 @@ default commands.
     (save-excursion
       (insert " ")))
    (t
-    (call-interactively 'self-insert-command))))
+    (haskell-mode-contextual-space))))
 
 (defun cb-hs:del ()
   "Delete backwards with context-sensitive formatting."
@@ -3137,9 +3150,22 @@ default commands.
 #+end_src
 ** General key bindings
 #+begin_src emacs-lisp
+(define-key haskell-mode-map (kbd "C-,")     'haskell-move-nested-left)
+(define-key haskell-mode-map (kbd "C-.")     'haskell-move-nested-right)
+(define-key haskell-mode-map (kbd "C-c c")   'haskell-process-cabal)
 (define-key haskell-mode-map (kbd "C-c C-c") 'haskell-process-cabal-build)
 (define-key haskell-mode-map (kbd "C-c C-l") 'haskell-process-load-file)
 (define-key haskell-mode-map (kbd "C-c C-f") 'haskell-cabal-visit-file)
+(define-key haskell-mode-map (kbd "C-c C-t") 'haskell-process-do-type)
+(define-key haskell-mode-map (kbd "C-c C-i") 'haskell-process-do-info)
+(define-key haskell-mode-map (kbd "C-c C-c") 'haskell-process-cabal-build)
+(define-key haskell-mode-map (kbd "C-c C-k") 'haskell-interactive-mode-clear)
+(define-key haskell-mode-map (kbd "M-q")     'haskell-mode-stylish-buffer)
+
+(define-key haskell-cabal-mode-map (kbd "C-`") 'haskell-interactive-bring)
+(define-key haskell-cabal-mode-map (kbd "C-c C-k") 'haskell-interactive-mode-clear)
+(define-key haskell-cabal-mode-map (kbd "C-c C-c") 'haskell-process-cabal-build)
+(define-key haskell-cabal-mode-map (kbd "C-c c") 'haskell-process-cabal)
 #+end_src
 ** Insert language pragmas
 #+begin_src emacs-lisp
