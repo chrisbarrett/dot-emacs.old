@@ -2649,7 +2649,9 @@ point to the position of the join."
         (s-chop-prefix root)
         f-split
         (-drop 1)
-        (-map 's-upper-camel-case)
+        (--map (let ((x (substring it 0 1))
+                     (xs (substring it 1)))
+                 (concat (s-upcase x) xs)))
         (s-join "."))
 
     (s-upper-camel-case (f-no-ext (buffer-name)))))
