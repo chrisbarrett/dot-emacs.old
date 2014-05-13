@@ -3385,6 +3385,13 @@ Customise yasnippet behaviour to work better with evil-mode.
 (cb:install-package 'flycheck)
 (global-flycheck-mode)
 #+end_src
+** Disable flymake
+#+begin_src emacs-lisp
+(after 'flymake
+  (defun flymake-mode (&rest _))
+  (defun flymake-mode-on (&rest _))
+  )
+#+end_src
 ** Ignore thrown errors when checking a buffer
 #+begin_src emacs-lisp
 (defadvice flycheck-buffer (around ignore-errors activate)
