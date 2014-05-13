@@ -1119,10 +1119,6 @@ Defines a command for going to the definition of the symbol at point.
 (hook-fn 'elisp-slime-nav-mode-hook
   (diminish 'elisp-slime-nav-mode))
 #+end_src
-** litable
-#+begin_src emacs-lisp
-(cb:install-package 'litable)
-#+end_src
 ** cl-lib-highlight
 #+begin_src emacs-lisp
 (cb:install-package 'cl-lib-highlight)
