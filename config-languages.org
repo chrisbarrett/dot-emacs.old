@@ -2617,13 +2617,17 @@ point to the position of the join."
 #+end_src
 ** Configure haskell-mode vars
 #+begin_src emacs-lisp
-(setq haskell-tags-on-save t
-      haskell-process-suggest-remove-import-lines t
-      haskell-process-auto-import-loaded-modules t
-      haskell-stylish-on-save t
-      haskell-program-name "ghci"
-      haskell-process-type 'cabal-repl
-      haskell-interactive-prompt "\nλ> ")
+(custom-set-variables
+ '(haskell-process-suggest-hoogle-imports t)
+ '(haskell-tags-on-save t)
+ '(haskell-process-suggest-remove-import-lines t)
+ '(haskell-process-auto-import-loaded-modules t)
+ '(haskell-process-suggest-hoogle-imports t)
+ '(haskell-stylish-on-save t)
+ '(haskell-program-name "ghci")
+ '(haskell-process-type 'cabal-repl)
+ '(haskell-interactive-prompt "\nλ> ")
+ )
 
 (hook-fn 'cb:haskell-modes-hook
   (setq-local tab-width 2)
