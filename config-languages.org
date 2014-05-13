@@ -3214,11 +3214,13 @@ default commands.
         (s-split " " (buffer-substring-no-properties start end) t)))))
 
 (defun cb-hs:haskell-modules ()
-  "Get a list of all Haskell modules known to GHC."
-  (->> (%-string "ghc-pkg" "dump")
-    (s-split "---")
-    (-mapcat 'cb-hs:parse-module)
-    (-map 's-trim)))
+  "Get a list of all Haskell modules known to the current project or GHC."
+  (if (haskell-session-maybe)
+      (haskell-session-all-modules)
+    (->> (%-string "ghc-pkg" "dump")
+      (s-split "---")
+      (-mapcat 'cb-hs:parse-module)
+      (-map 's-trim))))
 
 (defun cb-hs:do-insert-at-imports (str)
   "Prepend STR to this buffer's list of imported modules."
