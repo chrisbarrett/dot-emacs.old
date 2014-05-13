@@ -3220,47 +3220,72 @@ default commands.
     (-mapcat 'cb-hs:parse-module)
     (-map 's-trim)))
 
+(defun cb-hs:do-insert-at-imports (str)
+  "Prepend STR to this buffer's list of imported modules."
+  (save-excursion
+    (goto-char (point-min))
+
+    (cond
+     ;; Move directly to import statements.
+     ((search-forward-regexp (rx bol "import") nil t))
+
+     ;; Move past module declaration.
+     ((search-forward "module" nil t)
+      (search-forward "where")
+      (forward-line)
+      (beginning-of-line)
+      (while (and (s-blank? (current-line))
+                  (not (eobp)))
+        (forward-line)))
+
+     ;; Otherwise insert on first blank line.
+     (t
+      (until (or (eobp) (s-blank? (current-line)))
+        (forward-line))))
+
+    ;; Insert import statement.
+    (beginning-of-line)
+    (open-line 1)
+    (insert str)))
+
+(defun cb-hs:module->qualified-name (module)
+  "Make a reasonable name for MODULE for use in a qualified import."
+  (s-word-initials (-last-item (s-split (rx ".") module))))
+
+(defun cb-hs:insert-qualified-import (module name)
+  "Interactively insert a qualified Haskell import statement for MODULE."
+  (interactive
+   (let ((m (s-trim (ido-completing-read "Module: " (cb-hs:haskell-modules)
+                                         nil t))))
+     (list m (s-trim (read-string "As: " (cb-hs:module->qualified-name m)
+                                  t)))))
+
+  (if (s-matches? (rx-to-string `(and "import" (+ space) "qualified" (+ space)
+                                      ,module (or space eol)))
+                  (buffer-string))
+      (when (called-interactively-p nil)
+        (message "Module '%s' is already imported" module))
+
+    (cb-hs:do-insert-at-imports (format "import qualified %s as %s" module name))))
+
 (defun cb-hs:insert-import (module)
   "Interactively insert a Haskell import statement for MODULE."
   (interactive (list (ido-completing-read "Module: " (cb-hs:haskell-modules)
                                           nil t)))
+
   (if (s-matches? (rx-to-string `(and "import" (+ space) ,module (or space eol)))
                   (buffer-string))
       (when (called-interactively-p nil)
         (message "Module '%s' is already imported" module))
 
-      (save-excursion
-        (goto-char (point-min))
-
-        (cond
-         ;; Move directly to import statements.
-         ((search-forward-regexp (rx bol "import") nil t))
-
-         ;; Move past module declaration.
-         ((search-forward "module" nil t)
-          (search-forward "where")
-          (forward-line)
-          (beginning-of-line)
-          (while (and (s-blank? (current-line))
-                      (not (eobp)))
-            (forward-line)))
-
-         ;; Otherwise insert on first blank line.
-         (t
-          (until (or (eobp) (s-blank? (current-line)))
-            (forward-line))))
-
-        ;; Insert import statement.
-        (beginning-of-line)
-        (open-line 1)
-        (insert (format "import %s" module)))))
+    (cb-hs:do-insert-at-imports (format "import %s" module))))
 #+end_src
 ** Add to global insertion commands list
 #+begin_src emacs-lisp
-(-each
- '(("i" "Haskell Import" cb-hs:insert-import :modes haskell-mode)
-   ("l" "Haskell Language Extension" cb-hs:insert-language-pragma :modes haskell-mode))
- (~ add-to-list 'insertion-picker-options))
+(-each '(("i" "Haskell Import" cb-hs:insert-import :modes haskell-mode)
+         ("q" "Haskell Qualified Import" cb-hs:insert-qualified-import :modes haskell-mode)
+         ("l" "Haskell Language Extension" cb-hs:insert-language-pragma :modes haskell-mode))
+  (~ add-to-list 'insertion-picker-options))
 #+end_src
 ** configure context-sensitive M-RET
 #+begin_src emacs-lisp
