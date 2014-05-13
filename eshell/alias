@@ -51,3 +51,4 @@ alias csi cabal sandbox init $*
 alias cb cabal build $*
 alias cid cabal install --only-dependencies $*
 alias ci cabal install $*
+alias ct cabal test
