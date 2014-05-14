@@ -56,6 +56,12 @@ Switch projects and subprojects from NEXT back to TODO."
            (cb-org:project?))
       "TODO"))))
 
+(hook-fn 'org-clock-out-hook
+  :append t
+  (save-excursion
+    (beginning-of-line 0)
+    (org-remove-empty-drawer-at "LOGBOOK" (point))))
+
 (provide 'config-org-clock)
 
 ;;; config-org-clock.el ends here

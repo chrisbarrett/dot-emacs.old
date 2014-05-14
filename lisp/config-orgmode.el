@@ -32,6 +32,8 @@
 (require 'config-modegroups)
 (require 'config-darwin)
 (require 'org)
+(autoload 'org-agenda-filter-apply "org-agenda")
+(autoload 'org-is-habit-p "org-habit")
 
 (defvar org-init-notes-file org-default-notes-file
   "Captures the original value of the `org-default-notes-file'.")
@@ -92,8 +94,6 @@
   :command (if (true? cb-org:at-work?)
                (org-agenda current-prefix-arg "w")
              (org-agenda current-prefix-arg "A")))
-
-(autoload 'org-agenda-filter-apply "org-agenda")
 
 (declare-modal-executor org-show-todo-list
   :command (progn
@@ -208,12 +208,6 @@ This will set which file org-capture will capture to."
 (hook-fns '(org-after-todo-state-change-hook org-clock-in-hook)
   :append t
   (cb-org:mark-next-parent-tasks-todo))
-
-(hook-fn 'org-clock-out-hook
-  :append t
-  (save-excursion
-    (beginning-of-line 0)
-    (org-remove-empty-drawer-at "LOGBOOK" (point))))
 
 (add-to-list 'org-global-properties
              `("Effort_ALL" . ,(concat "1:00 2:00 3:00 4:00 "
@@ -428,12 +422,6 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
   (when (called-interactively-p nil)
     (message "Subtree written to %s" dest)))
 
-(require 'org-habit)
-(custom-set-variables
- '(org-habit-preceding-days 14)
- '(org-habit-following-days 4)
- '(org-habit-graph-column 70))
-
 (defun cb-org:ctrl-c-ctrl-k (&optional n)
   "Kill subtrees, unless we're in a special buffer where it should cancel."
   (interactive "p")
@@ -514,8 +502,6 @@ Do not change habits, scheduled items or repeating todos."
           (org-todo "NEXT"))))))
 
 (add-hook 'org-after-todo-state-change-hook 'cb-org:set-next-todo-state)
-
-(require 'org-protocol)
 
 (require 'iimage)
 (add-to-list 'iimage-mode-image-regex-alist
@@ -614,24 +600,9 @@ Do not change habits, scheduled items or repeating todos."
   (f-join user-emacs-directory "assets" "org_unicorn.png"))
 
 (when (equal system-type 'darwin)
-
   (hook-fn 'org-timer-start-hook (growl "Timer Started" "" org-unicorn-png))
   (hook-fn 'org-timer-done-hook (growl "Timer Finished" "" org-unicorn-png))
-  (hook-fn 'org-timer-done-hook (osx-play-system-sound "glass"))
-
-  (defadvice org-protocol-do-capture (after show-growl-notification activate)
-    "Show Growl notification when capturing links."
-    (let* ((parts (org-protocol-split-data (ad-get-arg 0) t org-protocol-data-separator))
-           ;; Pop the template selector if present.
-           (template (or (and (>= 2 (length (car parts))) (pop parts))
-                         org-protocol-default-template-key))
-           (url (org-protocol-sanitize-uri (car parts)))
-           (type (if (string-match "^\\([a-z]+\\):" url)
-                     (match-string 1 url)))
-           (title (or (cadr parts) "")))
-      (growl "Link Stored" (or title url) org-unicorn-png)))
-
-  )
+  (hook-fn 'org-timer-done-hook (osx-play-system-sound "glass")))
 
 (defvar cb-org:notes-save-idle-delay 60)
 
