@@ -321,7 +321,7 @@ PACKAGES is a list of packages that will be installed."
          (interactive)
 
          ;; Prompt the user for confirmation.
-         (when (and (called-interactively-p)
+         (when (and (called-interactively-p nil)
                     (not
                      (y-or-n-p
                       ,(format "%s package%s will be installed (%s). Continue? "

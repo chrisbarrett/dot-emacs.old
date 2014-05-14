@@ -29,7 +29,7 @@
 (require 'utils-common)
 (require 'capture-mail)
 (require 'config-darwin)
-(require 'org)
+(require 'config-orgmode)
 
 (let ((account-dir (--first
                     (not (s-starts-with? "." (f-filename it)))

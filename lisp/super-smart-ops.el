@@ -29,6 +29,7 @@
 (require 'utils-common)
 (require 'utils-buffers)
 (require 'config-yasnippet)
+(require 'config-evil)
 
 (defvar-local smart-op-list
   '("=" "<" ">" "%" "+" "-" "*" "/" "&" "|" "!" ":")

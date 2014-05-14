@@ -34,15 +34,9 @@
 
 (add-to-list 'load-path (concat user-emacs-directory "lisp"))
 
-(require 'utils-buffers)
-(require 'utils-commands)
 (require 'utils-common)
-(require 'utils-shell)
-(require 'utils-ui)
-(require 'config-modegroups)
 (require 'config-base)
 (require 'config-modeline)
-(require 'config-orgmode)
 
 ;; Load all files in lisp dir.
 (mapc (lambda (f)
