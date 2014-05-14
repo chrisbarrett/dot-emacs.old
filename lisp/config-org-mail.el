@@ -1,4 +1,4 @@
-;;; cb-org-mail.el --- Configuration for email
+;;; config-org-mail.el --- Adapts org-mode for extending emails
 
 ;; Copyright (C) 2013 Chris Barrett
 
@@ -251,6 +251,21 @@ Kill the buffer when finished."
                         it)
              (cons (s-upcase key) (s-trim (substring-no-properties val)))))))
 
-(provide 'cb-org-mail)
+(define-command-picker mail-picker
+  :title "*Mail Commands*"
+  :options
+  '(("m" "Compose Mail" org-compose-mail)
+    ("s" "Compose Mail (subtree)" org-compose-mail-subtree :modes org-mode)))
 
-;;; cb-org-mail.el ends here
+(defun cb-compose-mail-dwim ()
+  "Either compose a new message immediately or show composition options."
+  (interactive)
+  (if (derived-mode-p 'org-mode)
+      (call-interactively 'mail-picker)
+    (call-interactively 'org-compose-mail)))
+
+(bind-key* "C-x m" 'cb-compose-mail-dwim)
+
+(provide 'config-org-mail)
+
+;;; config-org-mail.el ends here

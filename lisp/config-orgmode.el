@@ -28,6 +28,8 @@
 
 (require 'utils-common)
 (require 'utils-ui)
+(require 'utils-buffers)
+(require 'utils-commands)
 (require 'config-theme)
 (require 'config-modegroups)
 (require 'config-darwin)
@@ -382,23 +384,6 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
       (if visit-dir
           (dired attach-dir)
         (message "File \"%s\" is now a task attachment." basename)))))
-
-(require 'cb-org-mail)
-
-(define-command-picker mail-picker
-  :title "*Mail Commands*"
-  :options
-  '(("m" "Compose Mail" org-compose-mail)
-    ("s" "Compose Mail (subtree)" org-compose-mail-subtree :modes org-mode)))
-
-(defun cb-compose-mail-dwim ()
-  "Either compose a new message immediately or show composition options."
-  (interactive)
-  (if (derived-mode-p 'org-mode)
-      (call-interactively 'mail-picker)
-    (call-interactively 'org-compose-mail)))
-
-(bind-key* "C-x m" 'cb-compose-mail-dwim)
 
 (defun org-narrow-to-subtree-content ()
   "Narrow to the content of the subtree.  Excludes the heading line."
