@@ -89,7 +89,7 @@
     (ignore-errors (diminish it))))
 
 (declare-modal-executor org-agenda-fullscreen
-  :command (if cb-org:at-work?
+  :command (if (true? cb-org:at-work?)
                (org-agenda current-prefix-arg "w")
              (org-agenda current-prefix-arg "A")))
 
@@ -358,8 +358,10 @@ FILE is the file to use as the notes file while at work."
 
 (defun org-attach-attach (file &optional visit-dir method)
   "Move/copy/link FILE into the attachment directory of the current task.
-If VISIT-DIR is non-nil, visit the directory with dired. METHOD
-may be `cp', `mv', `ln', or `lns' default taken from
+
+If VISIT-DIR is non-nil, visit the directory with dired.
+
+METHOD may be `cp', `mv', `ln', or `lns' default taken from
 `org-attach-method'."
   (interactive
    (list
@@ -396,6 +398,7 @@ may be `cp', `mv', `ln', or `lns' default taken from
     ("s" "Compose Mail (subtree)" org-compose-mail-subtree :modes org-mode)))
 
 (defun cb-compose-mail-dwim ()
+  "Either compose a new message immediately or show composition options."
   (interactive)
   (if (derived-mode-p 'org-mode)
       (call-interactively 'mail-picker)
@@ -404,6 +407,7 @@ may be `cp', `mv', `ln', or `lns' default taken from
 (bind-key* "C-x m" 'cb-compose-mail-dwim)
 
 (defun org-narrow-to-subtree-content ()
+  "Narrow to the content of the subtree.  Excludes the heading line."
   (widen)
   (unless (org-at-heading-p) (org-back-to-heading))
   (org-narrow-to-subtree)
@@ -411,6 +415,7 @@ may be `cp', `mv', `ln', or `lns' default taken from
   (narrow-to-region (line-beginning-position) (point-max)))
 
 (defun org-subtree-content ()
+  "Return the content of the subtree at point as a string."
   (save-excursion
     (save-restriction
       (org-narrow-to-subtree)
@@ -448,7 +453,7 @@ may be `cp', `mv', `ln', or `lns' default taken from
 (define-key org-mode-map (kbd "C-c RET") 'cb-org:ctrl-c-ret)
 
 (defun tidy-org-buffer ()
-  "Perform cosmetic fixes to the current org-mode buffer."
+  "Perform cosmetic fixes to the current org buffer."
   (save-restriction
     (org-table-map-tables 'org-table-align 'quiet)
     ;; Realign tags.
@@ -521,8 +526,8 @@ Do not change habits, scheduled items or repeating todos."
   "Display images in the current orgmode buffer."
   (interactive)
   (if (face-underline-p 'org-link)
-      (set-face-underline-p 'org-link nil)
-    (set-face-underline-p 'org-link t))
+      (set-face-underline 'org-link nil)
+    (set-face-underline 'org-link t))
   (iimage-mode))
 
 (add-to-list 'org-structure-template-alist
@@ -668,9 +673,10 @@ Do not change habits, scheduled items or repeating todos."
   (cb:install-package 'gnuplot)
   (define-key org-mode-map (kbd "M-C-g") 'org-plot/gnuplot))
 
-(defun org-latex-wrap ()
-  (interactive)
-  (let ((r (current-region)))
+(defun org-latex-wrap (beg end)
+  "Wrap the current region from BEG to END in a latex directive."
+  (interactive "r")
+  (let ((r (buffer-substring beg end)))
     (delete-region (region-beginning) (region-end))
     (insert (format "@@latex:%s@@" r))))
 
