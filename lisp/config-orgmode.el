@@ -93,6 +93,8 @@
                (org-agenda current-prefix-arg "w")
              (org-agenda current-prefix-arg "A")))
 
+(autoload 'org-agenda-filter-apply "org-agenda")
+
 (declare-modal-executor org-show-todo-list
   :command (progn
              (org-agenda prefix-arg "t")
@@ -106,16 +108,6 @@
 
 (declare-modal-executor org-search-view
   :command (call-interactively 'org-search-view))
-
-(defun cb-org:yank-region-as-quote (beg end)
-  "Yank the current region as an org quote."
-  (interactive "r")
-  (if (region-active-p)
-      (progn
-        (kill-new (cb-org:buffer-substring-to-quote beg end))
-        (deactivate-mark)
-        (message "Region yanked as quote."))
-    (error "No region is active, so no quote could be yanked")))
 
 (defun cb-org:set-notes-file (file)
   "Select the notes file to use as the default.
@@ -162,8 +154,7 @@ This will set which file org-capture will capture to."
     ("s" "Search" executor:org-search-view)
     ("t" "Todo List" executor:org-show-todo-list)
     ("v" "View Tags (todos)" executor:org-tags-view-todos-fullscreen)
-    ("V" "View Tags (all)" executor:org-tags-view-all-fullscreen)
-    ("y" "Yank Region as Quote" cb-org:yank-region-as-quote :when region-active-p)))
+    ("V" "View Tags (all)" executor:org-tags-view-all-fullscreen)))
 
 (defadvice org-add-log-note (before exit-minibuffer activate)
   "If the minibuffer is active, exit before prompting for a note."
