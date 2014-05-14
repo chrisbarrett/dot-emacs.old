@@ -27,27 +27,23 @@
 ;;; Code:
 
 (require 'utils-common)
+(require 'config-theme)
+(require 'config-orgmode)
 
 (autoload 'ispell-send-string "ispell")
+(autoload 'thing-at-point-looking-at "thingatpt")
 
-(unless noninteractive
-  (require 'ispell))
-
-(setq ispell-program-name "aspell")
-
-(setq ispell-dictionary "en_GB")
-
-(setq ispell-silently-savep t)
+(custom-set-variables
+ '(ispell-program-name "aspell")
+ '(ispell-dictionary "en_GB")
+ '(ispell-silently-savep t)
+ '(flyspell-delay 1))
 
 (defun ispell-add-to-dict (word)
   "Add WORD to the user's dictionary."
   (ispell-send-string (concat "*" word "\n"))
   (setq ispell-pdict-modified-p '(t))
   (ispell-pdict-save ispell-silently-savep))
-
-(unless noninteractive (require 'flyspell))
-
-(setq flyspell-delay 1)
 
 (add-hook 'text-mode-hook 'flyspell-mode)
 (add-hook 'prog-mode-hook 'flyspell-prog-mode)
@@ -70,6 +66,28 @@
     (save-restriction
       (widen)
       ad-do-it)))
+
+(defun cb-org:in-no-spellcheck-zone? ()
+  (thing-at-point-looking-at (rx "#+begin_nospell" (*? anything ) "#+end_nospell")))
+
+(defun cb-org:flyspell-verify ()
+  "Prevent common flyspell false positives in org-mode."
+  (and (ignore-errors
+         (org-mode-flyspell-verify))
+       (not (or
+             (ignore-errors (org-at-encrypted-entry-p))
+             (ignore-errors (org-in-src-block-p))
+             (ignore-errors (org-at-TBLFM-p))
+             (ignore-errors (org-in-block-p '("src" "example" "latex" "html")))
+             (ignore-errors (org-in-verbatim-emphasis))
+             (ignore-errors (org-in-drawer-p))
+             (thing-at-point-looking-at (rx bol "#+" (* nonl) eol))
+             (cb-org:in-no-spellcheck-zone?)))))
+
+(put 'org-mode 'flyspell-mode-predicate 'cb-org:flyspell-verify)
+
+(hook-fn 'org-mode-hook
+  (setq-local flyspell-generic-check-word-predicate 'cb-org:flyspell-verify))
 
 (provide 'config-spelling)
 

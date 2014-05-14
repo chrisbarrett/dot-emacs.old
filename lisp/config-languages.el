@@ -1,5 +1,6 @@
 (require 'utils-common)
 (require 'utils-ui)
+(require 'config-search)
 
 (defvar-local smart-op-list
   '("=" "<" ">" "%" "+" "-" "*" "/" "&" "|" "!" ":")
