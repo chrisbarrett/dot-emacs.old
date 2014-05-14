@@ -107,10 +107,6 @@ Otherwise, use the value of said variable as argument to a funcall."
         (server-save-buffers-kill-terminal nil)
       (save-buffers-kill-emacs))))
 
-(defadvice save-buffers-kill-emacs (around no-query-kill-emacs activate)
-  (noflet ((process-list () nil))
-    ad-do-it))
-
 (bind-key* "C-x C-c" (command (message "Type <C-c k k> to exit Emacs")))
 (bind-key* "C-c k k" 'cb:exit-emacs-dwim)
 (bind-key* "C-c k e" 'cb:exit-emacs)

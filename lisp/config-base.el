@@ -70,6 +70,11 @@
 (add-hook 'before-save-hook 'whitespace-cleanup)
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
+(defadvice save-buffers-kill-emacs (around no-query-kill-emacs activate)
+  "Do not prompt for confirmation for active processes."
+  (noflet ((process-list () nil))
+    ad-do-it))
+
 (defadvice whitespace-cleanup (around whitespace-cleanup-indent-tab activate)
   (let ((whitespace-indent-tabs-mode indent-tabs-mode)
         (whitespace-tab-width tab-width))
