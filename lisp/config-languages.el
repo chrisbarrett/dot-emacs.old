@@ -1,219 +1,72 @@
+;;; config-languages.el --- Generic configuration for languages.
+
+;; Copyright (C) 2014 Chris Barrett
+
+;; Author: Chris Barrett <chris.d.barrett@me.com>
+;; Version: 0.1
+
+;; This file is not part of GNU Emacs.
+
+;; This program is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;; Generic configuration for languages.
+
+;;; Code:
+
+
 (require 'utils-common)
 (require 'utils-ui)
 (require 'config-search)
-
-(defvar-local smart-op-list
-  '("=" "<" ">" "%" "+" "-" "*" "/" "&" "|" "!" ":")
-  "A list of strings to treat as operators.")
-
-(defun in-string? ()
-  "Non-nil if point is inside a string according to font locking."
-  (-contains? '(font-lock-string-face
-                font-lock-doc-face
-                font-lock-doc-string-face)
-              (face-at-point)))
-
-(defun in-comment? ()
-  "Non-nil if point is inside a comment according to font locking."
-  (ignore-errors
-    (equal 'font-lock-comment-face (face-at-point))))
-
-(defun cb-op:prev-non-space-char ()
-  "Return the previous non-whitespace character on this line, as a string."
-  (save-excursion
-    (when (search-backward-regexp (rx (not space))
-                                  (line-beginning-position) t)
-      (thing-at-point 'char))))
-
-(defun cb-op:delete-horizontal-space-non-readonly ()
-  "Delete horizontal space around point that is not read-only."
-  (while (and (not (eobp))
-              (s-matches? (rx space) (char-to-string (char-after)))
-              (not (get-char-property (point) 'read-only)))
-    (forward-char 1))
-
-  (while (and (not (bobp))
-              (s-matches? (rx space) (char-to-string (char-before)))
-              (not (get-char-property (1- (point)) 'read-only)))
-    (delete-char -1)))
-
-(defun cb-op:maybe-just-one-space-after-operator ()
-  "Insert a trailing space unless:
-- the next char is an operator
-- we are in a parenthesised operator."
-  (unless (or (and (not (eolp))
-                   (-contains? smart-op-list (char-to-string (char-after))))
-              (thing-at-point-looking-at
-               (eval `(rx "(" (+ (or ,@smart-op-list)) ")"))))
-    (just-one-space)))
-
-(defun smart-insert-op (op)
-  "Insert a smart operator, unless we're in a string or comment."
-
-  ;; Narrow to the current active snippet field if yasnippet is active. This
-  ;; prevents errors when attempting to delete whitespace outside the current
-  ;; field.
-  (yas-with-field-restriction
-
-    (cond
-     ((or (in-string?) (in-comment?)
-          ;; Looking at quotation mark?
-          (-contains? '(?\" ?\') (char-after)))
-      (insert op))
-
-     ((-contains? (cl-list* "(" smart-op-list) (cb-op:prev-non-space-char))
-      (cb-op:delete-horizontal-space-non-readonly)
-      (insert op)
-      (cb-op:maybe-just-one-space-after-operator))
-
-     (t
-      (unless (s-matches? (rx bol (* space) eol)
-                          (buffer-substring (line-beginning-position) (point)))
-        (just-one-space))
-
-      (insert op)
-      (cb-op:maybe-just-one-space-after-operator)))))
-
-(defmacro make-smart-op (str)
-  "Return a function that will insert smart operator STR.
-Useful for setting up keymaps manually."
-  (let ((fname (intern (concat "smart-insert-op/" str))))
-    `(progn
-       (defun ,fname ()
-         "Auto-generated command.  Inserts a smart operator."
-         (interactive "*")
-         (smart-insert-op ,str))
-       ',fname)))
-
-(defun cb-op:add-smart-ops (ops custom)
-  (let ((custom-ops (-map 'car custom)))
-    (setq-local smart-op-list (-union ops custom-ops))
-    (--each ops
-      (local-set-key (kbd it) (eval `(make-smart-op ,it))))
-    (--each custom
-      (cl-destructuring-bind (op . fn) it
-        (local-set-key (kbd op) fn)))))
-
-(cl-defun declare-smart-ops (mode &key add rem custom)
-  "Define the smart operators for the given mode.
-
-- MODE is the mode to add the smart ops for.
-
-- ADD is a list of smart operators to add to the defaults.
-
-- REM is a list of smart operators to remove from the defaults.
-
-- CUSTOM is a list of special operator insertion commands to use
-  instead of the defaults. It is an alist of (OP . FUNCTION),
-  where OP is a string and FUNCTION is a symbol."
-  (declare (indent 1))
-  (cl-assert (symbolp mode))
-  (cl-assert (null (-intersection add rem)))
-  (cl-assert (null (-intersection add (-map 'car custom))))
-  (cl-assert (null (-intersection rem (-map 'car custom))))
-
-  (let ((hook (intern (concat (symbol-name mode) "-hook")))
-        (ops (-union (-map 'car custom)
-                     (-difference (-union smart-op-list add) rem))))
-
-    ;; Set smart ops list for buffers that already exist.
-    (--each (--filter-buffers (derived-mode-p mode))
-      (with-current-buffer it
-        (cb-op:add-smart-ops ops custom)))
-    ;; Set smart ops in mode's hook.
-    (add-hook hook `(lambda ()
-                      (cb-op:add-smart-ops ',ops ',custom)))
-
-    (list :mode mode :ops ops)))
-
-(defun cb-op:delete-last-smart-op ()
-  "Delete the last smart-operator that was inserted."
-  (unless (or (derived-mode-p 'text-mode) (in-string?) (in-comment?))
-    (save-restriction
-      (narrow-to-region (line-beginning-position) (point))
-
-      (when (s-matches? (concat (regexp-opt smart-op-list) " *$")
-                        (buffer-substring (line-beginning-position) (point)))
-        ;; Delete op
-        (let ((op-pos
-               (save-excursion
-                 (search-backward-regexp (regexp-opt smart-op-list)))))
-          (while (and (/= (point) op-pos)
-                      (not (get-char-property (point) 'read-only)))
-            (delete-char -1)))
-
-        ;; Delete preceding spaces.
-        (cb-op:delete-horizontal-space-non-readonly)
-        t))))
-
-(defadvice sp-backward-delete-char (around delete-smart-op activate)
-  "Delete the smart operator that was just inserted, including padding."
-  (or (cb-op:delete-last-smart-op) ad-do-it))
-
-(defadvice smart-insert-op (around restrict-to-insert-state activate)
-  "If evil mode is active, only insert in insert state."
-  (cond
-   ((and (true? evil-mode) (evil-insert-state-p))
-    ad-do-it)
-   ((true? evil-mode))
-   (t
-    ad-do-it)))
-
-(defun turn-on-linum-mode ()
-  (linum-mode +1))
-
-(add-hook 'prog-mode-hook 'turn-on-linum-mode)
-(add-hook 'nxml-mode-hook 'turn-on-linum-mode)
-(add-hook 'sgml-mode-hook 'turn-on-linum-mode)
-
-(require 'lambda-mode)
-(setq lambda-symbol (string (make-char 'greek-iso8859-7 107)))
-
-(add-hook 'cb:scheme-modes-hook    'lambda-mode)
-(add-hook 'inferior-lisp-mode-hook 'lambda-mode)
-(add-hook 'lisp-mode-hook          'lambda-mode)
-(add-hook 'cb:elisp-modes-hook     'lambda-mode)
-(add-hook 'cb:python-modes-hook    'lambda-mode)
-(add-hook 'cb:slime-modes-hook     'lambda-mode)
-
-(hook-fn 'lambda-mode-hook
-  (diminish 'lambda-mode))
+(require 'super-smart-ops)
 
 (after 'asm-mode
 
-(put 'asm-mode 'tab-width 8)
+  (put 'asm-mode 'tab-width 8)
 
-(declare-smart-ops 'asm-mode
-  :rem '("%" "-" "."))
+  (declare-smart-ops 'asm-mode
+    :rem '("%" "-" "."))
 
-(defun cb:asm-toggling-tab ()
-  (interactive)
-  (if (equal (line-beginning-position)
-             (progn (back-to-indentation) (point)))
-      (indent-for-tab-command)
-    (indent-to-left-margin)))
+  (defun cb:asm-toggling-tab ()
+    (interactive)
+    (if (equal (line-beginning-position)
+               (progn (back-to-indentation) (point)))
+        (indent-for-tab-command)
+      (indent-to-left-margin)))
 
-(defun cb:asm-tab ()
-  "Perform a context-sensitive indentation."
-  (interactive)
-  (if (s-contains? ":" (thing-at-point 'line))
-      (indent-to-left-margin)
-    (cb:asm-toggling-tab)))
+  (defun cb:asm-tab ()
+    "Perform a context-sensitive indentation."
+    (interactive)
+    (if (s-contains? ":" (thing-at-point 'line))
+        (indent-to-left-margin)
+      (cb:asm-toggling-tab)))
 
-(define-key asm-mode-map (kbd "<tab>") 'cb:asm-tab)
+  (define-key asm-mode-map (kbd "<tab>") 'cb:asm-tab)
 
-(defun cb:asm-electric-colon ()
-  "Insert a colon, indent, then newline."
-  (interactive)
-  (atomic-change-group
-    (unless (thing-at-point-looking-at (rx ":" (* space) eol))
-      (insert ":"))
-    (cb:asm-tab)
-    (newline-and-indent)))
+  (defun cb:asm-electric-colon ()
+    "Insert a colon, indent, then newline."
+    (interactive)
+    (atomic-change-group
+      (unless (thing-at-point-looking-at (rx ":" (* space) eol))
+        (insert ":"))
+      (cb:asm-tab)
+      (newline-and-indent)))
 
-(define-key asm-mode-map (kbd ":") 'cb:asm-electric-colon)
+  (define-key asm-mode-map (kbd ":") 'cb:asm-electric-colon)
 
-)
+  )
 
 (cb:declare-package-installer json
   :match "\\.json"
@@ -272,30 +125,30 @@ Useful for setting up keymaps manually."
 
 (after 'markdown-mode
 
-(put 'markdown-mode 'imenu-generic-expression
-     '(("title"  "^\\(.*\\)[\n]=+$" 1)
-       ("h2-"    "^\\(.*\\)[\n]-+$" 1)
-       ("h1"   "^# \\(.*\\)$" 1)
-       ("h2"   "^## \\(.*\\)$" 1)
-       ("h3"   "^### \\(.*\\)$" 1)
-       ("h4"   "^#### \\(.*\\)$" 1)
-       ("h5"   "^##### \\(.*\\)$" 1)
-       ("h6"   "^###### \\(.*\\)$" 1)
-       ("fn"   "^\\[\\^\\(.*\\)\\]" 1)))
+  (put 'markdown-mode 'imenu-generic-expression
+       '(("title"  "^\\(.*\\)[\n]=+$" 1)
+         ("h2-"    "^\\(.*\\)[\n]-+$" 1)
+         ("h1"   "^# \\(.*\\)$" 1)
+         ("h2"   "^## \\(.*\\)$" 1)
+         ("h3"   "^### \\(.*\\)$" 1)
+         ("h4"   "^#### \\(.*\\)$" 1)
+         ("h5"   "^##### \\(.*\\)$" 1)
+         ("h6"   "^###### \\(.*\\)$" 1)
+         ("fn"   "^\\[\\^\\(.*\\)\\]" 1)))
 
-(after 'smartparens
-  (sp-with-modes '(markdown-mode)
-    (sp-local-pair "```" "```")))
+  (after 'smartparens
+    (sp-with-modes '(markdown-mode)
+      (sp-local-pair "```" "```")))
 
-(set-face-attribute markdown-header-face-1 nil :height 1.3)
-(set-face-attribute markdown-header-face-2 nil :height 1.1)
+  (set-face-attribute markdown-header-face-1 nil :height 1.3)
+  (set-face-attribute markdown-header-face-2 nil :height 1.1)
 
-(after 'evil
-  (evil-define-key 'normal markdown-mode-map
-    (kbd "M-P") 'outline-previous-visible-heading
-    (kbd "M-N") 'outline-next-visible-heading))
+  (after 'evil
+    (evil-define-key 'normal markdown-mode-map
+      (kbd "M-P") 'outline-previous-visible-heading
+      (kbd "M-N") 'outline-next-visible-heading))
 
-)
+  )
 
 (cb:declare-package-installer c-languages
   :match (rx "." (or "c" "cc" "cpp" "h" "hh" "hpp" "m") eol)
@@ -316,248 +169,248 @@ Useful for setting up keymaps manually."
 (after 'cc-mode
   (require 'google-c-style)
 
-(define-key c-mode-map (kbd "M-q")
-  (if (executable-find "clang-format")
-      'clang-format-region
-    'indent-dwim))
+  (define-key c-mode-map (kbd "M-q")
+    (if (executable-find "clang-format")
+        'clang-format-region
+      'indent-dwim))
 
-(after 'emr
+  (after 'emr
 
-  (defun helm-insert-c-header ()
+    (defun helm-insert-c-header ()
+      (interactive)
+      (helm :sources
+            `((name . "C Headers")
+              (candidates . ,(-concat emr-c:standard-headers
+                                      (emr-c:headers-in-project)))
+              (action .
+                      (lambda (c)
+                        (emr-c-insert-include
+                         (format (if (-contains? emr-c:standard-headers c)
+                                     "<%s>"
+                                   "\"%s\"")
+                                 c))
+                        (when (derived-mode-p 'bison-mode)
+                          (bison-format-buffer))))
+              (volatile))
+            :prompt "Header: "
+            :buffer "*Helm C Headers*"))
+
+    (add-to-list 'insertion-picker-options
+                 '("i" "Header Include" helm-insert-c-header
+                   :modes (c-mode c++-mode))))
+
+  (defun cb-c:switch-between-header-and-impl ()
+    "Switch between a header file and its implementation."
     (interactive)
-    (helm :sources
-          `((name . "C Headers")
-            (candidates . ,(-concat emr-c:standard-headers
-                                    (emr-c:headers-in-project)))
-            (action .
-                    (lambda (c)
-                      (emr-c-insert-include
-                       (format (if (-contains? emr-c:standard-headers c)
-                                   "<%s>"
-                                 "\"%s\"")
-                               c))
-                      (when (derived-mode-p 'bison-mode)
-                        (bison-format-buffer))))
-            (volatile))
-          :prompt "Header: "
-          :buffer "*Helm C Headers*"))
+    (let* ((ext   (if (f-ext? (buffer-file-name) "h") "c" "h"))
+           (counterpart (format "%s.%s" (f-no-ext (buffer-file-name)) ext)))
+      (if (or (f-file? counterpart)
+              (y-or-n-p (format "%s does not exist.  Create it?" counterpart)))
+          (find-file counterpart)
+        (message "Aborted"))))
 
-  (add-to-list 'insertion-picker-options
-               '("i" "Header Include" helm-insert-c-header
-                 :modes (c-mode c++-mode))))
+  (define-key c-mode-map (kbd "C-c C-a") 'cb-c:switch-between-header-and-impl)
 
-(defun cb-c:switch-between-header-and-impl ()
-  "Switch between a header file and its implementation."
-  (interactive)
-  (let* ((ext   (if (f-ext? (buffer-file-name) "h") "c" "h"))
-         (counterpart (format "%s.%s" (f-no-ext (buffer-file-name)) ext)))
-    (if (or (f-file? counterpart)
-            (y-or-n-p (format "%s does not exist.  Create it?" counterpart)))
-        (find-file counterpart)
-      (message "Aborted"))))
-
-(define-key c-mode-map (kbd "C-c C-a") 'cb-c:switch-between-header-and-impl)
-
-(defun cb-c:looking-at-flow-control-header? ()
-  (thing-at-point-looking-at
-   (rx (* nonl) (? ";") (* space)
-       (or "if" "when" "while" "for")
-       (* nonl)
-       "("
-       (* (not (any ")"))))))
-
-(defun cb-c:looking-at-flow-control-keyword? ()
-  (thing-at-point-looking-at
-   (rx (or (group (or "if" "when" "while" "for") (or (+ space) "("))
-           (group (or "do" "else") (* space))))))
-
-(defun cb-c:looking-at-assignment-right-side? ()
-  (save-excursion
+  (defun cb-c:looking-at-flow-control-header? ()
     (thing-at-point-looking-at
-     (rx "=" (* space)
-         ;; Optional casts
-         (? (group "(" (* nonl) ")"))
-         (* space)))))
+     (rx (* nonl) (? ";") (* space)
+         (or "if" "when" "while" "for")
+         (* nonl)
+         "("
+         (* (not (any ")"))))))
 
-(defun cb-c:looking-at-cast? ()
-  (let ((cast (rx
+  (defun cb-c:looking-at-flow-control-keyword? ()
+    (thing-at-point-looking-at
+     (rx (or (group (or "if" "when" "while" "for") (or (+ space) "("))
+             (group (or "do" "else") (* space))))))
 
-               (or
-                "return"
-                (any
-                 ;; Operator
-                 "+" "-" "*" "/" "|" "&" ">" "<"
-                 ;; Expression delimiter
-                 ";" "[" "{" "(" ")" "="))
-
-               (* space)
-
-               ;; Cast and type
-               "(" (* nonl) ")"
-
-               (* space)))
-        )
-    (and (thing-at-point-looking-at cast)
-         (save-excursion
-           (search-backward-regexp cast)
-           (not (cb-c:looking-at-flow-control-keyword?))))))
-
-(defun cb-c:looking-at-struct-keyword? ()
-  (save-excursion
-    (beginning-of-sexp)
-    (thing-at-point-looking-at (rx (or "{" " " "(" ",") "."))))
-
-(cl-defun cb-c:header-guard-var (&optional (header-file (buffer-file-name)))
-  "Return the variable to use in a header guard for HEADER-FILE."
-  (format "_%s_H_" (s-upcase (f-filename (f-no-ext header-file)))))
-
-(defun cb-c:maybe-remove-spaces-after-insertion (pred-regex op-start-regex)
-  (when (thing-at-point-looking-at pred-regex)
+  (defun cb-c:looking-at-assignment-right-side? ()
     (save-excursion
-      (let ((back-limit (save-excursion
-                          (search-backward-regexp op-start-regex)
-                          (point))))
-        (while (search-backward-regexp (rx space) back-limit t)
-          (delete-horizontal-space)))
-      (indent-according-to-mode))))
+      (thing-at-point-looking-at
+       (rx "=" (* space)
+           ;; Optional casts
+           (? (group "(" (* nonl) ")"))
+           (* space)))))
 
-(defun cb-c:just-one-space-after-semicolon ()
-  (save-excursion
-    (when (search-backward-regexp (rx ";" (* space)) (line-beginning-position) t)
-      (replace-match "; " nil))))
+  (defun cb-c:looking-at-cast? ()
+    (let ((cast (rx
 
-(defun c-insert-smart-equals ()
-  "Insert an '=' with context-sensitive formatting."
-  (interactive)
-  (if (or (cb-c:looking-at-flow-control-header?)
-          (cb-c:looking-at-struct-keyword?))
-      (insert "=")
-    (smart-insert-op "=")))
+                 (or
+                  "return"
+                  (any
+                   ;; Operator
+                   "+" "-" "*" "/" "|" "&" ">" "<"
+                   ;; Expression delimiter
+                   ";" "[" "{" "(" ")" "="))
 
-(defun c-insert-smart-star ()
-  "Insert a * with padding in multiplication contexts."
-  (interactive)
-  (cond
-   ((s-matches? (rx bol (* space) eol)
-                (buffer-substring (line-beginning-position) (point)))
-    (indent-according-to-mode)
-    (insert "*"))
-   ((thing-at-point-looking-at (rx (any "(" "{" "[") (* space)))
-    (insert "*"))
-   ((thing-at-point-looking-at (rx (any digit "*") (* space)))
-    (smart-insert-op "*"))
-   (t
-    (just-one-space)
-    (insert "*"))))
+                 (* space)
 
-(defun c-insert-smart-minus ()
-  "Insert a minus with padding unless a unary minus is more appropriate."
-  (interactive)
-  (atomic-change-group
-    ;; Handle formatting for unary minus.
-    (if (thing-at-point-looking-at
-         (rx (or "return" "," "(" "[" "(" ";" "=") (* space)))
-        (insert "-")
-      (smart-insert-op "-"))
-    ;; Collapse whitespace for decrement operator.
-    (cb-c:maybe-remove-spaces-after-insertion
-     (rx "-" (* space) "-" (* space))
-     (rx (not (any "-" space))))
-    (cb-c:just-one-space-after-semicolon)))
+                 ;; Cast and type
+                 "(" (* nonl) ")"
 
-(defun c-insert-smart-gt ()
-  "Insert a > symbol with formatting.
+                 (* space)))
+          )
+      (and (thing-at-point-looking-at cast)
+           (save-excursion
+             (search-backward-regexp cast)
+             (not (cb-c:looking-at-flow-control-keyword?))))))
+
+  (defun cb-c:looking-at-struct-keyword? ()
+    (save-excursion
+      (beginning-of-sexp)
+      (thing-at-point-looking-at (rx (or "{" " " "(" ",") "."))))
+
+  (cl-defun cb-c:header-guard-var (&optional (header-file (buffer-file-name)))
+    "Return the variable to use in a header guard for HEADER-FILE."
+    (format "_%s_H_" (s-upcase (f-filename (f-no-ext header-file)))))
+
+  (defun cb-c:maybe-remove-spaces-after-insertion (pred-regex op-start-regex)
+    (when (thing-at-point-looking-at pred-regex)
+      (save-excursion
+        (let ((back-limit (save-excursion
+                            (search-backward-regexp op-start-regex)
+                            (point))))
+          (while (search-backward-regexp (rx space) back-limit t)
+            (delete-horizontal-space)))
+        (indent-according-to-mode))))
+
+  (defun cb-c:just-one-space-after-semicolon ()
+    (save-excursion
+      (when (search-backward-regexp (rx ";" (* space)) (line-beginning-position) t)
+        (replace-match "; " nil))))
+
+  (defun c-insert-smart-equals ()
+    "Insert an '=' with context-sensitive formatting."
+    (interactive)
+    (if (or (cb-c:looking-at-flow-control-header?)
+            (cb-c:looking-at-struct-keyword?))
+        (insert "=")
+      (smart-insert-op "=")))
+
+  (defun c-insert-smart-star ()
+    "Insert a * with padding in multiplication contexts."
+    (interactive)
+    (cond
+     ((s-matches? (rx bol (* space) eol)
+                  (buffer-substring (line-beginning-position) (point)))
+      (indent-according-to-mode)
+      (insert "*"))
+     ((thing-at-point-looking-at (rx (any "(" "{" "[") (* space)))
+      (insert "*"))
+     ((thing-at-point-looking-at (rx (any digit "*") (* space)))
+      (smart-insert-op "*"))
+     (t
+      (just-one-space)
+      (insert "*"))))
+
+  (defun c-insert-smart-minus ()
+    "Insert a minus with padding unless a unary minus is more appropriate."
+    (interactive)
+    (atomic-change-group
+      ;; Handle formatting for unary minus.
+      (if (thing-at-point-looking-at
+           (rx (or "return" "," "(" "[" "(" ";" "=") (* space)))
+          (insert "-")
+        (smart-insert-op "-"))
+      ;; Collapse whitespace for decrement operator.
+      (cb-c:maybe-remove-spaces-after-insertion
+       (rx "-" (* space) "-" (* space))
+       (rx (not (any "-" space))))
+      (cb-c:just-one-space-after-semicolon)))
+
+  (defun c-insert-smart-gt ()
+    "Insert a > symbol with formatting.
 If the insertion creates an right arrow (->), remove surrounding whitespace.
 If the insertion creates a <>, move the cursor inside."
-  (interactive)
-  (smart-insert-op ">")
-  (cb-c:maybe-remove-spaces-after-insertion
-   (rx (or "-" "<") (* space) ">" (* space))
-   (rx (not (any space "<" "-" ">"))))
-  (when (thing-at-point-looking-at "<>")
-    (forward-char -1)))
+    (interactive)
+    (smart-insert-op ">")
+    (cb-c:maybe-remove-spaces-after-insertion
+     (rx (or "-" "<") (* space) ">" (* space))
+     (rx (not (any space "<" "-" ">"))))
+    (when (thing-at-point-looking-at "<>")
+      (forward-char -1)))
 
-(defun c-insert-smart-plus ()
-  "Insert a + symbol with formatting.
+  (defun c-insert-smart-plus ()
+    "Insert a + symbol with formatting.
 Remove horizontal whitespace if the insertion results in a ++."
-  (interactive)
-  (smart-insert-op "+")
-  (cb-c:maybe-remove-spaces-after-insertion
-   (rx "+" (* space) "+" (* space))
-   (rx (not (any space "+"))))
-  (cb-c:just-one-space-after-semicolon))
+    (interactive)
+    (smart-insert-op "+")
+    (cb-c:maybe-remove-spaces-after-insertion
+     (rx "+" (* space) "+" (* space))
+     (rx (not (any space "+"))))
+    (cb-c:just-one-space-after-semicolon))
 
-(declare-smart-ops 'c-mode
-  :add '("?")
-  :custom
-  '(("," . cb:comma-then-space)
-    ("=" . c-insert-smart-equals)
-    ("+" . c-insert-smart-plus)
-    (">" . c-insert-smart-gt)
-    ("-" . c-insert-smart-minus)
-    ("*" . c-insert-smart-star)))
+  (declare-smart-ops 'c-mode
+    :add '("?")
+    :custom
+    '(("," . cb:comma-then-space)
+      ("=" . c-insert-smart-equals)
+      ("+" . c-insert-smart-plus)
+      (">" . c-insert-smart-gt)
+      ("-" . c-insert-smart-minus)
+      ("*" . c-insert-smart-star)))
 
-(defun cb-c:format-after-brace (_id action contexxt)
-  "Apply formatting after a brace insertion."
-  (when (and (equal action 'insert)
-             (equal context 'code)
-             (save-excursion
-               ;; Search backward for flow control keywords.
-               (search-backward "{")
-               (or (thing-at-point-looking-at
-                    (rx symbol-start (or "else" "do")))
-                   (progn
-                     (sp-previous-sexp)
-                     (thing-at-point-looking-at
-                      (rx symbol-start (or "if" "for" "while")))))))
-    ;; Insert a space for padding.
-    (save-excursion
-      (search-backward "{")
-      (just-one-space))
-    ;; Put braces on new line.
-    (newline)
-    (save-excursion (newline-and-indent))
-    (c-indent-line)))
+  (defun cb-c:format-after-brace (_id action contexxt)
+    "Apply formatting after a brace insertion."
+    (when (and (equal action 'insert)
+               (equal context 'code)
+               (save-excursion
+                 ;; Search backward for flow control keywords.
+                 (search-backward "{")
+                 (or (thing-at-point-looking-at
+                      (rx symbol-start (or "else" "do")))
+                     (progn
+                       (sp-previous-sexp)
+                       (thing-at-point-looking-at
+                        (rx symbol-start (or "if" "for" "while")))))))
+      ;; Insert a space for padding.
+      (save-excursion
+        (search-backward "{")
+        (just-one-space))
+      ;; Put braces on new line.
+      (newline)
+      (save-excursion (newline-and-indent))
+      (c-indent-line)))
 
-(defun cb-c:format-after-paren (_id action context)
-  "Insert a space after flow control keywords."
-  (when (and (equal action 'insert)
-             (equal context 'code)
-             (save-excursion
-               (search-backward "(")
-               (thing-at-point-looking-at
-                (rx symbol-start (or "=" "return" "if" "while" "for")
-                    (* space)))))
-    (save-excursion
-      (search-backward "(")
-      (just-one-space))))
+  (defun cb-c:format-after-paren (_id action context)
+    "Insert a space after flow control keywords."
+    (when (and (equal action 'insert)
+               (equal context 'code)
+               (save-excursion
+                 (search-backward "(")
+                 (thing-at-point-looking-at
+                  (rx symbol-start (or "=" "return" "if" "while" "for")
+                      (* space)))))
+      (save-excursion
+        (search-backward "(")
+        (just-one-space))))
 
-(after 'smartparens
-  (sp-with-modes '(c-mode cc-mode c++-mode)
-    (sp-local-pair "{" "}" :post-handlers '(:add cb-c:format-after-brace))
-    (sp-local-pair "(" ")" :post-handlers '(:add cb-c:format-after-paren))))
+  (after 'smartparens
+    (sp-with-modes '(c-mode cc-mode c++-mode)
+      (sp-local-pair "{" "}" :post-handlers '(:add cb-c:format-after-brace))
+      (sp-local-pair "(" ")" :post-handlers '(:add cb-c:format-after-paren))))
 
-(defun cbclang:flyspell-verify ()
-  (not (s-matches? (rx bol (* space) "#include ") (current-line))))
+  (defun cbclang:flyspell-verify ()
+    (not (s-matches? (rx bol (* space) "#include ") (current-line))))
 
-(hook-fns '(c-mode-hook c++-mode-hook)
-  (setq-local flyspell-generic-check-word-predicate 'cbclang:flyspell-verify))
+  (hook-fns '(c-mode-hook c++-mode-hook)
+    (setq-local flyspell-generic-check-word-predicate 'cbclang:flyspell-verify))
 
-(defadvice c-inside-bracelist-p (around ignore-errors activate)
-  (ignore-errors ad-do-it))
+  (defadvice c-inside-bracelist-p (around ignore-errors activate)
+    (ignore-errors ad-do-it))
 
-(add-hook 'c-mode-hook 'c-turn-on-eldoc-mode)
+  (add-hook 'c-mode-hook 'c-turn-on-eldoc-mode)
 
-(add-hook 'c-mode-hook 'flyspell-mode-off)
+  (add-hook 'c-mode-hook 'flyspell-mode-off)
 
-(defun cb-cc:between-empty-braces-same-line? ()
-  (and (s-matches? (rx "{" (* space) eol)
-                   (buffer-substring (line-beginning-position) (point)))
-       (s-matches? (rx bol (* space) "}")
-                   (buffer-substring (point) (line-end-position)))))
+  (defun cb-cc:between-empty-braces-same-line? ()
+    (and (s-matches? (rx "{" (* space) eol)
+                     (buffer-substring (line-beginning-position) (point)))
+         (s-matches? (rx bol (* space) "}")
+                     (buffer-substring (point) (line-end-position)))))
 
-(defun cb-cc:newline-and-indent ()
-  "Insert newlines, performing context-specific formatting.
+  (defun cb-cc:newline-and-indent ()
+    "Insert newlines, performing context-specific formatting.
 
 When point is between braces, insert an empty line between them so that
 
@@ -568,36 +421,36 @@ becomes
 {
   |
 }"
-  (interactive)
-  (when (cb-cc:between-empty-braces-same-line?)
-    (delete-horizontal-space)
+    (interactive)
+    (when (cb-cc:between-empty-braces-same-line?)
+      (delete-horizontal-space)
 
-    (save-excursion
-      (search-backward "{")
-      (unless (thing-at-point-looking-at (rx bol (* space) "{"))
+      (save-excursion
+        (search-backward "{")
+        (unless (thing-at-point-looking-at (rx bol (* space) "{"))
+          (newline-and-indent)))
+
+      (save-excursion
         (newline-and-indent)))
-
-    (save-excursion
-      (newline-and-indent)))
-  (call-interactively 'newline-and-indent))
+    (call-interactively 'newline-and-indent))
 
 
-(defun cb-cc:delete-brace-contents ()
-  (cl-destructuring-bind (&optional &key beg end op &allow-other-keys)
-      (sp-get-enclosing-sexp)
-    (when (equal op "{")
-      (delete-region (1+ beg) (1- end))
-      (goto-char (1+ beg)))))
+  (defun cb-cc:delete-brace-contents ()
+    (cl-destructuring-bind (&optional &key beg end op &allow-other-keys)
+        (sp-get-enclosing-sexp)
+      (when (equal op "{")
+        (delete-region (1+ beg) (1- end))
+        (goto-char (1+ beg)))))
 
-(defun cb-cc:between-empty-braces-any-lines? ()
-  (cl-destructuring-bind (&optional &key beg end op &allow-other-keys)
-      (sp-get-enclosing-sexp)
-    (when (equal op "{")
-      (s-matches? (rx bos (* (any space "\n")) eos)
-                  (buffer-substring (1+ beg) (1- end))))))
+  (defun cb-cc:between-empty-braces-any-lines? ()
+    (cl-destructuring-bind (&optional &key beg end op &allow-other-keys)
+        (sp-get-enclosing-sexp)
+      (when (equal op "{")
+        (s-matches? (rx bos (* (any space "\n")) eos)
+                    (buffer-substring (1+ beg) (1- end))))))
 
-(defun cb-cc:backward-delete-char ()
-  "Delete backwards, performing context-specific formatting.
+  (defun cb-cc:backward-delete-char ()
+    "Delete backwards, performing context-specific formatting.
 
 When point is between empty braces over any number of lines, collapse them:
 
@@ -612,29 +465,29 @@ becomes
 then
 
 {|}"
-  (interactive)
-  (cond
-   ((and (equal (char-before) ?{)
-         (equal (char-after) ?}))
-    (sp-backward-delete-char))
+    (interactive)
+    (cond
+     ((and (equal (char-before) ?{)
+           (equal (char-after) ?}))
+      (sp-backward-delete-char))
 
-   ((and (thing-at-point-looking-at (rx "{" (+ space) "}"))
-         (cb-cc:between-empty-braces-same-line?))
-    (delete-horizontal-space))
+     ((and (thing-at-point-looking-at (rx "{" (+ space) "}"))
+           (cb-cc:between-empty-braces-same-line?))
+      (delete-horizontal-space))
 
-   ((cb-cc:between-empty-braces-any-lines?)
-    (cb-cc:delete-brace-contents)
-    (insert "  ")
-    (forward-char -1))
+     ((cb-cc:between-empty-braces-any-lines?)
+      (cb-cc:delete-brace-contents)
+      (insert "  ")
+      (forward-char -1))
 
-   (t
-    (sp-backward-delete-char))))
+     (t
+      (sp-backward-delete-char))))
 
-(--each (list c-mode-map c++-mode-map java-mode-map objc-mode-map)
-  (define-key it (kbd "RET") 'cb-cc:newline-and-indent)
-  (define-key it (kbd "<backspace>") 'cb-cc:backward-delete-char))
+  (--each (list c-mode-map c++-mode-map java-mode-map objc-mode-map)
+    (define-key it (kbd "RET") 'cb-cc:newline-and-indent)
+    (define-key it (kbd "<backspace>") 'cb-cc:backward-delete-char))
 
-)
+  )
 
 (cb:declare-package-installer rust
   :match (rx ".rs" eol)
@@ -828,73 +681,73 @@ then
    (apply 'derived-mode-p cb:elisp-modes)))
 
 (defun cbel:find-identifier-prefix ()
-    "Find the commonest identifier prefix in use in this buffer."
-    (let ((ns-separators (rx (or ":" "--" "/"))))
-      (->> (buffer-string)
-        ;; Extract the identifiers from declarations.
-        (s-match-strings-all
-         (rx bol (* space)
-             "(" (? "cl-") (or "defun" "defmacro" "defvar" "defconst")
-             (+ space)
-             (group (+ (not space)))))
-        ;; Find the commonest prefix.
-        (-map 'cadr)
-        (-filter (~ s-matches? ns-separators))
-        (-map (C car (~ s-match (rx (group (* nonl) (or ":" "--" "/"))))))
-        (-group-by 'identity)
-        (-max-by (-on '>= 'length))
-        (car))))
+  "Find the commonest identifier prefix in use in this buffer."
+  (let ((ns-separators (rx (or ":" "--" "/"))))
+    (->> (buffer-string)
+      ;; Extract the identifiers from declarations.
+      (s-match-strings-all
+       (rx bol (* space)
+           "(" (? "cl-") (or "defun" "defmacro" "defvar" "defconst")
+           (+ space)
+           (group (+ (not space)))))
+      ;; Find the commonest prefix.
+      (-map 'cadr)
+      (-filter (~ s-matches? ns-separators))
+      (-map (C car (~ s-match (rx (group (* nonl) (or ":" "--" "/"))))))
+      (-group-by 'identity)
+      (-max-by (-on '>= 'length))
+      (car))))
 
-  (defun cbel:find-group-for-snippet ()
-    "Find the first group defined in the current file,
+(defun cbel:find-group-for-snippet ()
+  "Find the first group defined in the current file,
 falling back to the file name sans extension."
-    (or
-     (cadr (s-match (rx "(defgroup" (+ space) (group (+ (not
-     space))))
-                    (buffer-string)))
-     (cadr (s-match (rx ":group" (+ space) "'" (group (+ (any "-" alnum))))
-                    (buffer-string)))
-     (f-no-ext (f-filename buffer-file-name))))
+  (or
+   (cadr (s-match (rx "(defgroup" (+ space) (group (+ (not
+                                                       space))))
+                  (buffer-string)))
+   (cadr (s-match (rx ":group" (+ space) "'" (group (+ (any "-" alnum))))
+                  (buffer-string)))
+   (f-no-ext (f-filename buffer-file-name))))
 
-  (define-obsolete-function-alias 'cbel:bol-for-snippet? 'cbyas:bol?)
+(define-obsolete-function-alias 'cbel:bol-for-snippet? 'cbyas:bol?)
 
-  (defun cbel:simplify-arglist (text)
-    "Return a simplified docstring of arglist TEXT."
-    (->> (ignore-errors
-           (read (format "(%s)" text)))
-      (--keep
-       (ignore-errors
-         (cond
-          ((listp it)
-           (-first (& symbolp (C (N (~ s-starts-with? "&")) symbol-name))
-                   it))
-          ((symbolp it) it))))
-      (-remove (C (~ s-starts-with? "&") symbol-name))))
+(defun cbel:simplify-arglist (text)
+  "Return a simplified docstring of arglist TEXT."
+  (->> (ignore-errors
+         (read (format "(%s)" text)))
+    (--keep
+     (ignore-errors
+       (cond
+        ((listp it)
+         (-first (& symbolp (C (N (~ s-starts-with? "&")) symbol-name))
+                 it))
+        ((symbolp it) it))))
+    (-remove (C (~ s-starts-with? "&") symbol-name))))
 
-  (defun cbel:cl-arglist? (text)
-    "Non-nil if TEXT is a Common Lisp arglist."
-    (let ((al (ignore-errors (read (format "(%s)" text)))))
-      (or (-any? 'listp al)
-          (-intersection al '(&key &allow-other-keys &body)))))
+(defun cbel:cl-arglist? (text)
+  "Non-nil if TEXT is a Common Lisp arglist."
+  (let ((al (ignore-errors (read (format "(%s)" text)))))
+    (or (-any? 'listp al)
+        (-intersection al '(&key &allow-other-keys &body)))))
 
-  (defun cbel:defun-form-for-arglist (text)
-    "Return either 'defun or 'cl-defun depending on whether TEXT
+(defun cbel:defun-form-for-arglist (text)
+  "Return either 'defun or 'cl-defun depending on whether TEXT
 is a Common Lisp arglist."
-    (if (cbel:cl-arglist? text) 'cl-defun 'defun))
+  (if (cbel:cl-arglist? text) 'cl-defun 'defun))
 
-  (defun cbel:defmacro-form-for-arglist (text)
-    "Return either 'defmacro or 'cl-defmacro depending on whether TEXT
+(defun cbel:defmacro-form-for-arglist (text)
+  "Return either 'defmacro or 'cl-defmacro depending on whether TEXT
 is a Common Lisp arglist."
-    (if (cbel:cl-arglist? text) 'cl-defmacro 'defmacro))
+  (if (cbel:cl-arglist? text) 'cl-defmacro 'defmacro))
 
-  (defun cbel:process-docstring (text)
-    "Format a function docstring for a snippet.
+(defun cbel:process-docstring (text)
+  "Format a function docstring for a snippet.
 TEXT is the content of the docstring."
-    (let ((docs (->> (cbel:simplify-arglist text)
-                  (-map (C s-upcase symbol-name))
-                  (s-join "\n\n"))))
-      (unless (s-blank? docs)
-        (concat "\n\n" docs))))
+  (let ((docs (->> (cbel:simplify-arglist text)
+                (-map (C s-upcase symbol-name))
+                (s-join "\n\n"))))
+    (unless (s-blank? docs)
+      (concat "\n\n" docs))))
 
 (hook-fn 'minibuffer-setup-hook
   (when (equal this-command 'eval-expression)
@@ -1134,84 +987,84 @@ TEXT is the content of the docstring."
 
 (after 'cider
 
-(define-key clojure-mode-map (kbd "C-c C-h") 'cider-doc)
+  (define-key clojure-mode-map (kbd "C-c C-h") 'cider-doc)
 
-(defadvice cider-popup-buffer-display (after set-mode activate)
-  (with-current-buffer (ad-get-arg 0)
-    (help-mode)))
+  (defadvice cider-popup-buffer-display (after set-mode activate)
+    (with-current-buffer (ad-get-arg 0)
+      (help-mode)))
 
-(defun cb:switch-to-clojure ()
-  "Switch to the last active clojure buffer."
-  (interactive)
-  (-when-let (buf (--first-buffer (derived-mode-p 'clojure-mode)))
-    (pop-to-buffer buf)))
+  (defun cb:switch-to-clojure ()
+    "Switch to the last active clojure buffer."
+    (interactive)
+    (-when-let (buf (--first-buffer (derived-mode-p 'clojure-mode)))
+      (pop-to-buffer buf)))
 
-(define-key cider-repl-mode-map (kbd "C-c C-z") 'cb:switch-to-clojure)
+  (define-key cider-repl-mode-map (kbd "C-c C-z") 'cb:switch-to-clojure)
 
-(after 'cider-interaction
+  (after 'cider-interaction
 
-  (defun cider-emit-doc-into-popup-buffer (buffer value)
-    "Emit into BUFFER the provided VALUE."
-    (with-current-buffer buffer
-      (let ((inhibit-read-only t)
-            (buffer-undo-list t))
-        (goto-char (point-max))
-        (insert (format "%s" value))
-        (indent-sexp)
-        (font-lock-fontify-buffer)
-        (goto-char (point-min)))))
+    (defun cider-emit-doc-into-popup-buffer (buffer value)
+      "Emit into BUFFER the provided VALUE."
+      (with-current-buffer buffer
+        (let ((inhibit-read-only t)
+              (buffer-undo-list t))
+          (goto-char (point-max))
+          (insert (format "%s" value))
+          (indent-sexp)
+          (font-lock-fontify-buffer)
+          (goto-char (point-min)))))
 
-  (defun cider-doc--handler (buffer)
-    "Make a handler for evaluating and printing stdout/stderr in popup BUFFER."
-    (nrepl-make-response-handler buffer
-                                 '()
-                                 (lambda (buffer str)
-                                   (cider-emit-doc-into-popup-buffer buffer str))
-                                 (lambda (buffer str)
-                                   (cider-emit-doc-into-popup-buffer buffer str))
-                                 '()))
+    (defun cider-doc--handler (buffer)
+      "Make a handler for evaluating and printing stdout/stderr in popup BUFFER."
+      (nrepl-make-response-handler buffer
+                                   '()
+                                   (lambda (buffer str)
+                                     (cider-emit-doc-into-popup-buffer buffer str))
+                                   (lambda (buffer str)
+                                     (cider-emit-doc-into-popup-buffer buffer str))
+                                   '()))
 
-  (defun cider-doc-handler (symbol)
-    "Create a handler to lookup documentation for SYMBOL."
-    (let ((form (format "(clojure.repl/doc %s)" symbol))
-          (doc-buffer (cider-popup-buffer cider-doc-buffer t)))
-      (cider-tooling-eval form
-                          (cider-doc--handler doc-buffer)
-                          nrepl-buffer-ns))))
+    (defun cider-doc-handler (symbol)
+      "Create a handler to lookup documentation for SYMBOL."
+      (let ((form (format "(clojure.repl/doc %s)" symbol))
+            (doc-buffer (cider-popup-buffer cider-doc-buffer t)))
+        (cider-tooling-eval form
+                            (cider-doc--handler doc-buffer)
+                            nrepl-buffer-ns))))
 
-(hook-fns '(clojure-mode-hook cider-repl-mode-hook)
-  (cider-turn-on-eldoc-mode))
+  (hook-fns '(clojure-mode-hook cider-repl-mode-hook)
+    (cider-turn-on-eldoc-mode))
 
-(-each (--filter-buffers (derived-mode-p 'clojure-mode))
-       'cider-turn-on-eldoc-mode)
+  (-each (--filter-buffers (derived-mode-p 'clojure-mode))
+    'cider-turn-on-eldoc-mode)
 
-(defun cb:eval-last-clj-buffer ()
-  "Evaluate that last active clojure buffer without leaving the repl."
-  (interactive)
-  (-when-let (buf (--first-buffer (derived-mode-p 'clojure-mode)))
-    (with-current-buffer buf
-      (cider-eval-buffer))))
+  (defun cb:eval-last-clj-buffer ()
+    "Evaluate that last active clojure buffer without leaving the repl."
+    (interactive)
+    (-when-let (buf (--first-buffer (derived-mode-p 'clojure-mode)))
+      (with-current-buffer buf
+        (cider-eval-buffer))))
 
-(define-key clojure-mode-map (kbd "C-c C-f") 'cider-eval-buffer)
-(define-key cider-repl-mode-map (kbd "C-c C-f") 'cb:eval-last-clj-buffer)
+  (define-key clojure-mode-map (kbd "C-c C-f") 'cider-eval-buffer)
+  (define-key cider-repl-mode-map (kbd "C-c C-f") 'cb:eval-last-clj-buffer)
 
-(set-face-attribute 'cider-error-highlight-face t :inherit 'error)
-(set-face-underline 'cider-error-highlight-face nil)
+  (set-face-attribute 'cider-error-highlight-face t :inherit 'error)
+  (set-face-underline 'cider-error-highlight-face nil)
 
-(add-hook 'cider-repl-mode-hook 'cb:maybe-evil-insert-state)
+  (add-hook 'cider-repl-mode-hook 'cb:maybe-evil-insert-state)
 
-(defadvice cider-switch-to-repl-buffer (after insert-at-end-of-cider-line activate)
-  (cb:maybe-evil-insert-state))
+  (defadvice cider-switch-to-repl-buffer (after insert-at-end-of-cider-line activate)
+    (cb:maybe-evil-insert-state))
 
-(defadvice back-to-indentation (around move-to-cider-bol activate)
-  "Move to position after prompt in cider."
-  (if (equal major-mode 'cider-mode)
-      (nrepl-bol)
-    ad-do-it))
+  (defadvice back-to-indentation (around move-to-cider-bol activate)
+    "Move to position after prompt in cider."
+    (if (equal major-mode 'cider-mode)
+        (nrepl-bol)
+      ad-do-it))
 
-(define-key cider-repl-mode-map (kbd "C-l") 'cider-repl-clear-buffer)
+  (define-key cider-repl-mode-map (kbd "C-l") 'cider-repl-clear-buffer)
 
-)
+  )
 
 (defun cbclj:pad-for-arglist (text)
   "Pad TEXT for insertion into an arglist after existing parameters."
@@ -1295,52 +1148,52 @@ under point, prompts for a var."
 
 (after 'geiser
 
-(setq geiser-mode-start-repl-p t
-      geiser-repl-startup-time 20000
-      geiser-repl-history-filename (f-join cb:tmp-dir "geiser-history")
-      geiser-active-implementations '(racket))
+  (setq geiser-mode-start-repl-p t
+        geiser-repl-startup-time 20000
+        geiser-repl-history-filename (f-join cb:tmp-dir "geiser-history")
+        geiser-active-implementations '(racket))
 
-(defun geiser-eval-buffer (&optional and-go raw nomsg)
-  "Eval the current buffer in the Geiser REPL.
+  (defun geiser-eval-buffer (&optional and-go raw nomsg)
+    "Eval the current buffer in the Geiser REPL.
 
 With prefix, goes to the REPL buffer afterwards (as
 `geiser-eval-buffer-and-go')"
-  (interactive "P")
-  (let ((start (progn
-                 (goto-char (point-min))
-                 (while (s-matches? (rx bol "#") (current-line))
-                   (forward-line))
-                 (point)))
-        (end (point-max)))
-    (save-restriction
-      (narrow-to-region start end)
-      (check-parens))
-    (geiser-debug--send-region nil
-                               start
-                               end
-                               (and and-go 'geiser--go-to-repl)
-                               (not raw)
-                               nomsg)))
+    (interactive "P")
+    (let ((start (progn
+                   (goto-char (point-min))
+                   (while (s-matches? (rx bol "#") (current-line))
+                     (forward-line))
+                   (point)))
+          (end (point-max)))
+      (save-restriction
+        (narrow-to-region start end)
+        (check-parens))
+      (geiser-debug--send-region nil
+                                 start
+                                 end
+                                 (and and-go 'geiser--go-to-repl)
+                                 (not raw)
+                                 nomsg)))
 
-(define-key geiser-mode-map (kbd "C-c C-f") 'geiser-eval-buffer)
+  (define-key geiser-mode-map (kbd "C-c C-f") 'geiser-eval-buffer)
 
-(define-key geiser-mode-map (kbd "C-c C-h") 'geiser-doc-look-up-manual)
-(define-key geiser-repl-mode-map (kbd "C-c C-h") 'geiser-doc-look-up-manual)
+  (define-key geiser-mode-map (kbd "C-c C-h") 'geiser-doc-look-up-manual)
+  (define-key geiser-repl-mode-map (kbd "C-c C-h") 'geiser-doc-look-up-manual)
 
-(defadvice switch-to-geiser (after append-with-evil activate)
-  (when (derived-mode-p 'comint-mode)
-    (goto-char (point-max))))
-
-(after 'evil
-  (evil-define-key 'normal geiser-mode-map
-    (kbd "M-.") 'geiser-edit-symbol-at-point))
-
-(after 'evil
   (defadvice switch-to-geiser (after append-with-evil activate)
     (when (derived-mode-p 'comint-mode)
-      (cb:maybe-evil-insert-state))))
+      (goto-char (point-max))))
 
-)
+  (after 'evil
+    (evil-define-key 'normal geiser-mode-map
+      (kbd "M-.") 'geiser-edit-symbol-at-point))
+
+  (after 'evil
+    (defadvice switch-to-geiser (after append-with-evil activate)
+      (when (derived-mode-p 'comint-mode)
+        (cb:maybe-evil-insert-state))))
+
+  )
 
 (defconst cbscm:scm-buf "*execute scheme*")
 
@@ -1566,188 +1419,188 @@ With prefix, goes to the REPL buffer afterwards (as
   (require 'pyvenv)
   (require 'virtualenvwrapper)
 
-(define-key python-mode-map (kbd ",") 'cb:comma-then-space)
-(define-key inferior-python-mode-map (kbd ",") 'cb:comma-then-space)
+  (define-key python-mode-map (kbd ",") 'cb:comma-then-space)
+  (define-key inferior-python-mode-map (kbd ",") 'cb:comma-then-space)
 
-(after 'evil
-  (define-evil-doc-handler cb:python-modes
-    (call-interactively 'rope-show-doc)))
+  (after 'evil
+    (define-evil-doc-handler cb:python-modes
+      (call-interactively 'rope-show-doc)))
 
-(defun cb-py:restart-python ()
-  (save-window-excursion
-    (let (kill-buffer-query-functions
-          (buf (get-buffer "*Python*")))
-      (when buf (kill-buffer buf)))
-    (call-interactively 'run-python)))
+  (defun cb-py:restart-python ()
+    (save-window-excursion
+      (let (kill-buffer-query-functions
+            (buf (get-buffer "*Python*")))
+        (when buf (kill-buffer buf)))
+      (call-interactively 'run-python)))
 
-(defun cb:switch-to-python ()
-  "Switch to the last active Python buffer."
-  (interactive)
-  ;; Start inferior python if necessary.
-  (unless (->> (--first-buffer (derived-mode-p 'inferior-python-mode))
-            (get-buffer-process)
-            (processp))
-    (cb-py:restart-python))
+  (defun cb:switch-to-python ()
+    "Switch to the last active Python buffer."
+    (interactive)
+    ;; Start inferior python if necessary.
+    (unless (->> (--first-buffer (derived-mode-p 'inferior-python-mode))
+              (get-buffer-process)
+              (processp))
+      (cb-py:restart-python))
 
-  (if (derived-mode-p 'inferior-python-mode)
-      ;; Switch from inferior python to source file.
-      (switch-to-buffer-other-window
-       (--first-buffer (derived-mode-p 'python-mode)))
-    ;; Switch from source file to REPL.
-    ;; HACK: `switch-to-buffer-other-window' does not change window
-    ;; when switching to REPL buffer. Work around this.
-    (-when-let* ((buf (--first-buffer (derived-mode-p 'inferior-python-mode)))
-                 (win (or (--first-window (equal (get-buffer "*Python*")
-                                                 (window-buffer it)))
-                          (split-window-sensibly)
-                          (next-window))))
-      (set-window-buffer win buf)
-      (select-window win)
-      (goto-char (point-max))
-      (cb:maybe-evil-append-line 1))))
+    (if (derived-mode-p 'inferior-python-mode)
+        ;; Switch from inferior python to source file.
+        (switch-to-buffer-other-window
+         (--first-buffer (derived-mode-p 'python-mode)))
+      ;; Switch from source file to REPL.
+      ;; HACK: `switch-to-buffer-other-window' does not change window
+      ;; when switching to REPL buffer. Work around this.
+      (-when-let* ((buf (--first-buffer (derived-mode-p 'inferior-python-mode)))
+                   (win (or (--first-window (equal (get-buffer "*Python*")
+                                                   (window-buffer it)))
+                            (split-window-sensibly)
+                            (next-window))))
+        (set-window-buffer win buf)
+        (select-window win)
+        (goto-char (point-max))
+        (cb:maybe-evil-append-line 1))))
 
-(define-key python-mode-map (kbd "C-c C-z") 'cb:switch-to-python)
-(define-key inferior-python-mode-map (kbd "C-c C-z") 'cb:switch-to-python)
+  (define-key python-mode-map (kbd "C-c C-z") 'cb:switch-to-python)
+  (define-key inferior-python-mode-map (kbd "C-c C-z") 'cb:switch-to-python)
 
-(defun cb-py:eval-dwim (&optional arg)
-  (interactive "P")
-  (cond
-   ((region-active-p)
-    (python-shell-send-region (region-beginning) (region-end))
-    (deactivate-mark))
-   (t
-    (python-shell-send-defun arg))))
+  (defun cb-py:eval-dwim (&optional arg)
+    (interactive "P")
+    (cond
+     ((region-active-p)
+      (python-shell-send-region (region-beginning) (region-end))
+      (deactivate-mark))
+     (t
+      (python-shell-send-defun arg))))
 
-(define-key python-mode-map (kbd "C-c C-c") 'cb-py:eval-dwim)
+  (define-key python-mode-map (kbd "C-c C-c") 'cb-py:eval-dwim)
 
-(defun cb-py:smart-equals ()
-  "Insert an '=' char padded by spaces, except in function arglists."
-  (interactive)
-  (if (s-matches? (rx (* space) "def" space) (current-line))
-      (insert "=")
-    (smart-insert-op "=")))
+  (defun cb-py:smart-equals ()
+    "Insert an '=' char padded by spaces, except in function arglists."
+    (interactive)
+    (if (s-matches? (rx (* space) "def" space) (current-line))
+        (insert "=")
+      (smart-insert-op "=")))
 
-(defun cb-py:smart-asterisk ()
-  "Insert an asterisk with padding unless we're in an arglist."
-  (interactive "*")
-  (cond
-   ((s-matches? (rx (* space) "def" space) (current-line))
-    (insert "*"))
-   ;; Collapse whitespace around exponentiation operator.
-   ((thing-at-point-looking-at (rx (* space) "*" (* space)))
-    (delete-horizontal-space)
-    (save-excursion
-      (search-backward "*")
-      (delete-horizontal-space))
-    (insert "*"))
-   (t
-    (smart-insert-op "*"))))
+  (defun cb-py:smart-asterisk ()
+    "Insert an asterisk with padding unless we're in an arglist."
+    (interactive "*")
+    (cond
+     ((s-matches? (rx (* space) "def" space) (current-line))
+      (insert "*"))
+     ;; Collapse whitespace around exponentiation operator.
+     ((thing-at-point-looking-at (rx (* space) "*" (* space)))
+      (delete-horizontal-space)
+      (save-excursion
+        (search-backward "*")
+        (delete-horizontal-space))
+      (insert "*"))
+     (t
+      (smart-insert-op "*"))))
 
-(defun cb-py:smart-comma ()
-  "Insert a comma with padding."
-  (interactive "*")
-  (insert ",")
-  (just-one-space))
+  (defun cb-py:smart-comma ()
+    "Insert a comma with padding."
+    (interactive "*")
+    (insert ",")
+    (just-one-space))
 
-(defun cb-py:smart-colon ()
-  "Insert a colon with padding."
-  (interactive "*")
-  (insert ":")
-  (just-one-space))
+  (defun cb-py:smart-colon ()
+    "Insert a colon with padding."
+    (interactive "*")
+    (insert ":")
+    (just-one-space))
 
-(--each '(python-mode inferior-python-mode)
-  (declare-smart-ops it
-    :add '("?" "$")
-    :custom
-    '(("," . cb-py:smart-comma)
-      ("*" . cb-py:smart-asterisk)
-      (":" . cb-py:smart-colon)
-      ("=" . cb-py:smart-equals))))
+  (--each '(python-mode inferior-python-mode)
+    (declare-smart-ops it
+      :add '("?" "$")
+      :custom
+      '(("," . cb-py:smart-comma)
+        ("*" . cb-py:smart-asterisk)
+        (":" . cb-py:smart-colon)
+        ("=" . cb-py:smart-equals))))
 
-(sp-with-modes cb:python-modes
-  (sp-local-pair "{" "}" :post-handlers '(:add sp-generic-leading-space)))
+  (sp-with-modes cb:python-modes
+    (sp-local-pair "{" "}" :post-handlers '(:add sp-generic-leading-space)))
 
-(after 'autoinsert
-  (define-auto-insert
-    '("\\.py$" . "Python skeleton")
-    '("Short description: "
-      "\"\"\"\n"
-      str
-      "\n\"\"\"\n\n"
-      _
-      "\n")))
+  (after 'autoinsert
+    (define-auto-insert
+      '("\\.py$" . "Python skeleton")
+      '("Short description: "
+        "\"\"\"\n"
+        str
+        "\n\"\"\"\n\n"
+        _
+        "\n")))
 
-(defun cb-py:split-arglist (arglist)
-  "Parse ARGLIST into a list of parameters.
+  (defun cb-py:split-arglist (arglist)
+    "Parse ARGLIST into a list of parameters.
 Each element is either a string or a cons of (var . default)."
-  (cl-loop
-   for arg in (s-split (rx ",") arglist t)
-   for (x . y)  = (s-split "=" arg)
-   for (_ name) = (s-match (rx (* (any "*")) (group (* (any "_" alnum)))) x)
-   for default  = (when y (car y))
-   when (not (s-blank? (s-trim name)))
-   collect (if default (cons name default) name)))
+    (cl-loop
+     for arg in (s-split (rx ",") arglist t)
+     for (x . y)  = (s-split "=" arg)
+     for (_ name) = (s-match (rx (* (any "*")) (group (* (any "_" alnum)))) x)
+     for default  = (when y (car y))
+     when (not (s-blank? (s-trim name)))
+     collect (if default (cons name default) name)))
 
-(defun cb-py:python-docstring (arglist)
-  "Format a docstring according to ARGLIST."
-  (let ((al (s-replace " " "" arglist)))
-    (if (s-blank? al)
-        ""
-      (cl-destructuring-bind (keywords formal)
-          (-separate 'listp (cb-py:split-arglist al))
-        (concat
-         (when (or formal keywords) "\n")
-         ;; Formal args
-         (when (and formal keywords) "    Formal arguments:\n")
-         (s-join "\n" (--map (format "    %s --" it) formal))
-         (when keywords "\n\n")
-         ;; Keyword args
-         (when (and formal keywords) "    Keyword arguments:\n")
-         (s-join "\n" (--map (format "    %s (default %s) --" (car it) (cdr it))
-                             keywords)))))))
+  (defun cb-py:python-docstring (arglist)
+    "Format a docstring according to ARGLIST."
+    (let ((al (s-replace " " "" arglist)))
+      (if (s-blank? al)
+          ""
+        (cl-destructuring-bind (keywords formal)
+            (-separate 'listp (cb-py:split-arglist al))
+          (concat
+           (when (or formal keywords) "\n")
+           ;; Formal args
+           (when (and formal keywords) "    Formal arguments:\n")
+           (s-join "\n" (--map (format "    %s --" it) formal))
+           (when keywords "\n\n")
+           ;; Keyword args
+           (when (and formal keywords) "    Keyword arguments:\n")
+           (s-join "\n" (--map (format "    %s (default %s) --" (car it) (cdr it))
+                               keywords)))))))
 
-(defun cb-py:arglist-for-function-at-point ()
-  "Return the arglist for the function at point, or nil if none."
-  (save-excursion
-    (when (beginning-of-defun)
-      (let ((start (search-forward "("))
-            (end (1- (search-forward ")"))))
-        (buffer-substring start end)))))
+  (defun cb-py:arglist-for-function-at-point ()
+    "Return the arglist for the function at point, or nil if none."
+    (save-excursion
+      (when (beginning-of-defun)
+        (let ((start (search-forward "("))
+              (end (1- (search-forward ")"))))
+          (buffer-substring start end)))))
 
-(defun cb-py:insert-docstring ()
-  "Insert a docstring for the python function at point."
-  (interactive "*")
-  (-when-let (arglist (cb-py:arglist-for-function-at-point))
-    (when (beginning-of-defun)
-      (search-forward-regexp (rx ":" (* space) eol))
-      (newline)
-      (open-line 1)
-      (insert (concat "    \"\"\"\n"
-                      (cb-py:python-docstring arglist) "\n\n"
-                      "    Returns:\n\n"
-                      "    \"\"\"" ))
-      (message "Arglist inserted."))))
+  (defun cb-py:insert-docstring ()
+    "Insert a docstring for the python function at point."
+    (interactive "*")
+    (-when-let (arglist (cb-py:arglist-for-function-at-point))
+      (when (beginning-of-defun)
+        (search-forward-regexp (rx ":" (* space) eol))
+        (newline)
+        (open-line 1)
+        (insert (concat "    \"\"\"\n"
+                        (cb-py:python-docstring arglist) "\n\n"
+                        "    Returns:\n\n"
+                        "    \"\"\"" ))
+        (message "Arglist inserted."))))
 
-(add-to-list 'insertion-picker-options
-             '("d" "Docstring" cb-py:insert-docstring :modes (python-mode)))
+  (add-to-list 'insertion-picker-options
+               '("d" "Docstring" cb-py:insert-docstring :modes (python-mode)))
 
-(define-key python-mode-map (kbd "M-q") 'indent-dwim)
+  (define-key python-mode-map (kbd "M-q") 'indent-dwim)
 
-(venv-initialize-eshell)
+  (venv-initialize-eshell)
 
-(when (fboundp 'ropemacs-mode)
-  (add-hook 'python-mode-hook 'ropemacs-mode))
+  (when (fboundp 'ropemacs-mode)
+    (add-hook 'python-mode-hook 'ropemacs-mode))
 
-(setq ropemacs-use-pop-to-buffer t
-      ropemacs-guess-project t)
+  (setq ropemacs-use-pop-to-buffer t
+        ropemacs-guess-project t)
 
-(after 'rope
-  (define-key python-mode-map (kbd "M-.") 'rope-goto-definition))
+  (after 'rope
+    (define-key python-mode-map (kbd "M-.") 'rope-goto-definition))
 
-(after 'evil
-  (evil-define-key 'normal python-mode-map (kbd "M-.") 'rope-goto-definition))
+  (after 'evil
+    (evil-define-key 'normal python-mode-map (kbd "M-.") 'rope-goto-definition))
 
-)
+  )
 
 (cb:declare-package-installer ruby
   :match (rx (or "Rakefile" "Vagrantfile" "Thorfile" "Capfile" "GuardFile" "Gemfile"
@@ -1774,7 +1627,7 @@ Each element is either a string or a cons of (var . default)."
          ("Thorfile\\'" . ruby-mode)
          ("Vagrantfile\\'" . ruby-mode)
          ("\\.jbuilder\\'" . ruby-mode))
-       (~ add-to-list 'auto-mode-alist))
+  (~ add-to-list 'auto-mode-alist))
 
 (define-derived-mode erb-mode html-mode
   "ERB" nil
@@ -1785,237 +1638,237 @@ Each element is either a string or a cons of (var . default)."
 
 (after 'ruby-mode
 
-(let ((file (f-join (-first (~ s-matches? "inf-ruby") (f-directories cb:elpa-dir))
-                    "inf-ruby.el")))
+  (let ((file (f-join (-first (~ s-matches? "inf-ruby") (f-directories cb:elpa-dir))
+                      "inf-ruby.el")))
 
-  (autoload 'inf-ruby-mode file nil t)
-  (load-file file))
+    (autoload 'inf-ruby-mode file nil t)
+    (load-file file))
 
-(after '(ruby-mode inf-ruby)
+  (after '(ruby-mode inf-ruby)
 
-(defadvice ruby-switch-to-inf (around start-inf-ruby activate)
-  "Start an inferior ruby if one is not running."
-  (condition-case _
-      ad-do-it
-    (wrong-type-argument
-     (run-ruby))))
+    (defadvice ruby-switch-to-inf (around start-inf-ruby activate)
+      "Start an inferior ruby if one is not running."
+      (condition-case _
+          ad-do-it
+        (wrong-type-argument
+         (run-ruby))))
 
-(defun set-ruby-interpreter (cmd)
-  "Set the default ruby interpreter to CMD."
-  (interactive
-   (list
-    (ido-completing-read
-     "Inferior Ruby Program: "
-     (->> inf-ruby-implementations
-       (-map 'car)
-       (-filter 'executable-find)))))
-  (setq inf-ruby-default-implementation cmd))
+    (defun set-ruby-interpreter (cmd)
+      "Set the default ruby interpreter to CMD."
+      (interactive
+       (list
+        (ido-completing-read
+         "Inferior Ruby Program: "
+         (->> inf-ruby-implementations
+           (-map 'car)
+           (-filter 'executable-find)))))
+      (setq inf-ruby-default-implementation cmd))
 
-(defun cb-rb:inf-ruby-window ()
-  (-when-let (buf (get-buffer inf-ruby-buffer))
-    (--first-window (equal (window-buffer it) buf))))
+    (defun cb-rb:inf-ruby-window ()
+      (-when-let (buf (get-buffer inf-ruby-buffer))
+        (--first-window (equal (window-buffer it) buf))))
 
-(defun restart-ruby ()
-  (interactive)
-  ;; Suppress exit query.
-  (-when-let (proc (ignore-errors (inf-ruby-proc)))
-    (set-process-query-on-exit-flag proc nil))
-  ;; Kill and relaunch IRB, reusing existing window.
-  (let ((win (cb-rb:inf-ruby-window)))
-    (ignore-errors (kill-buffer inf-ruby-buffer))
-    (save-window-excursion (run-ruby))
-    (when win
-      (set-window-buffer win inf-ruby-buffer))))
+    (defun restart-ruby ()
+      (interactive)
+      ;; Suppress exit query.
+      (-when-let (proc (ignore-errors (inf-ruby-proc)))
+        (set-process-query-on-exit-flag proc nil))
+      ;; Kill and relaunch IRB, reusing existing window.
+      (let ((win (cb-rb:inf-ruby-window)))
+        (ignore-errors (kill-buffer inf-ruby-buffer))
+        (save-window-excursion (run-ruby))
+        (when win
+          (set-window-buffer win inf-ruby-buffer))))
 
-(defun cb-rb:switch-to-ruby ()
-  "Toggle between irb and the last ruby buffer.
+    (defun cb-rb:switch-to-ruby ()
+      "Toggle between irb and the last ruby buffer.
 Start an inferior ruby if necessary."
-  (interactive)
-  (cond
-   ((derived-mode-p 'inf-ruby-mode)
-    (switch-to-buffer-other-window
-     (--first-buffer (derived-mode-p 'ruby-mode))))
-   ((and inf-ruby-buffer (get-buffer inf-ruby-buffer))
-    (ruby-switch-to-inf t))
-   (t
-    (run-ruby))))
+      (interactive)
+      (cond
+       ((derived-mode-p 'inf-ruby-mode)
+        (switch-to-buffer-other-window
+         (--first-buffer (derived-mode-p 'ruby-mode))))
+       ((and inf-ruby-buffer (get-buffer inf-ruby-buffer))
+        (ruby-switch-to-inf t))
+       (t
+        (run-ruby))))
 
-(define-key ruby-mode-map (kbd "C-c C-z") 'cb-rb:switch-to-ruby)
-(define-key inf-ruby-mode-map (kbd "C-c C-z") 'cb-rb:switch-to-ruby)
-(define-key inf-ruby-minor-mode-map (kbd "C-c C-z") 'cb-rb:switch-to-ruby)
+    (define-key ruby-mode-map (kbd "C-c C-z") 'cb-rb:switch-to-ruby)
+    (define-key inf-ruby-mode-map (kbd "C-c C-z") 'cb-rb:switch-to-ruby)
+    (define-key inf-ruby-minor-mode-map (kbd "C-c C-z") 'cb-rb:switch-to-ruby)
 
-(defun cb-rb:eval-dwim ()
-  "Perform a context-sensitive evaluation."
-  (interactive)
-  ;; Start ruby if necessary.
-  (unless (get-buffer "*ruby*")
-    (run-ruby)
-    (cb-rb:switch-to-ruby)
-    ;; Revert window layout.
-    (when (= 2 (length (window-list)))
-      (delete-other-windows)))
-  (cond
-   ;; Evaluate active region.
-   ((region-active-p)
-    (ruby-send-region (region-beginning) (region-end)))
-   ;; Evaluate the block at or just before point.
-   ((or (thing-at-point-looking-at
-         (rx (or "end" "]" "}" ")") (* space) (* "\n")))
-        (ruby-block-contains-point (point)))
-    (ruby-send-block))
-   ;; Eval the block-like thing around point.
-   (t
-    (ruby-send-region (line-beginning-position)
-                      (line-end-position)))))
+    (defun cb-rb:eval-dwim ()
+      "Perform a context-sensitive evaluation."
+      (interactive)
+      ;; Start ruby if necessary.
+      (unless (get-buffer "*ruby*")
+        (run-ruby)
+        (cb-rb:switch-to-ruby)
+        ;; Revert window layout.
+        (when (= 2 (length (window-list)))
+          (delete-other-windows)))
+      (cond
+       ;; Evaluate active region.
+       ((region-active-p)
+        (ruby-send-region (region-beginning) (region-end)))
+       ;; Evaluate the block at or just before point.
+       ((or (thing-at-point-looking-at
+             (rx (or "end" "]" "}" ")") (* space) (* "\n")))
+            (ruby-block-contains-point (point)))
+        (ruby-send-block))
+       ;; Eval the block-like thing around point.
+       (t
+        (ruby-send-region (line-beginning-position)
+                          (line-end-position)))))
 
-(define-key ruby-mode-map (kbd "C-c C-c") 'cb-rb:eval-dwim)
+    (define-key ruby-mode-map (kbd "C-c C-c") 'cb-rb:eval-dwim)
 
-(defun cb-rb:format-irb-error (lines)
-  "Return a propertized error string for the given LINES of
+    (defun cb-rb:format-irb-error (lines)
+      "Return a propertized error string for the given LINES of
 an irb error message."
-  (-when-let* ((err (--first (s-matches? "Error:" it) lines))
-               (colon (s-index-of ":" err)))
-    (concat (propertize (substring err 0 colon) 'face 'error)
-            (substring err colon))))
+      (-when-let* ((err (--first (s-matches? "Error:" it) lines))
+                   (colon (s-index-of ":" err)))
+        (concat (propertize (substring err 0 colon) 'face 'error)
+                (substring err colon))))
 
-(defun cb-rb:apply-font-lock (str)
-  "Apply ruby font-locking to string STR."
-  (with-temp-buffer
-    (insert str)
-    (require 'ruby-mode)
-    ;; Configure ruby font-lock.
-    (set (make-local-variable 'font-lock-defaults)
-         '((ruby-font-lock-keywords) nil nil))
-    (set (make-local-variable 'syntax-propertize-function)
-         'ruby-syntax-propertize-function)
+    (defun cb-rb:apply-font-lock (str)
+      "Apply ruby font-locking to string STR."
+      (with-temp-buffer
+        (insert str)
+        (require 'ruby-mode)
+        ;; Configure ruby font-lock.
+        (set (make-local-variable 'font-lock-defaults)
+             '((ruby-font-lock-keywords) nil nil))
+        (set (make-local-variable 'syntax-propertize-function)
+             'ruby-syntax-propertize-function)
 
-    (font-lock-fontify-buffer)
-    (buffer-string)))
+        (font-lock-fontify-buffer)
+        (buffer-string)))
 
-(defun cb-rb:filter-irb-output (str &rest _)
-  "Print IRB output to messages."
-  (ignore-errors
-    (when (and (fboundp 'inf-ruby-proc) (inf-ruby-proc))
-      (let ((lines
-             (->> (s-lines str)
-               (--remove (or (s-contains? "--inf-ruby" it)
-                             (s-blank? it)
-                             (s-matches? inf-ruby-prompt-pattern it)))
-               (-map 's-trim))))
-        (message (or (cb-rb:format-irb-error lines)
-                     (cb-rb:apply-font-lock (car (reverse lines))))))))
-  str)
+    (defun cb-rb:filter-irb-output (str &rest _)
+      "Print IRB output to messages."
+      (ignore-errors
+        (when (and (fboundp 'inf-ruby-proc) (inf-ruby-proc))
+          (let ((lines
+                 (->> (s-lines str)
+                   (--remove (or (s-contains? "--inf-ruby" it)
+                                 (s-blank? it)
+                                 (s-matches? inf-ruby-prompt-pattern it)))
+                   (-map 's-trim))))
+            (message (or (cb-rb:format-irb-error lines)
+                         (cb-rb:apply-font-lock (car (reverse lines))))))))
+      str)
 
-(hook-fn 'inf-ruby-mode-hook
-  (add-hook 'comint-preoutput-filter-functions 'cb-rb:filter-irb-output)
-  ;; Stop IRB from echoing input.
-  (setq comint-process-echoes t))
+    (hook-fn 'inf-ruby-mode-hook
+      (add-hook 'comint-preoutput-filter-functions 'cb-rb:filter-irb-output)
+      ;; Stop IRB from echoing input.
+      (setq comint-process-echoes t))
 
-)
+    )
 
-(defun cb-rb:rockets->colons ()
-  "Convert old-style rockets to new hash literal syntax in the current buffer."
-  (interactive)
-  (save-excursion
-    (goto-char (point-min))
-    (while (search-forward-regexp (rx ":" (group-n 1 (+ (not space)))
-                                      (* space)
-                                      "=>"
-                                      (* space))
-                                  nil t)
-      (replace-match "\\1: " t nil))))
+  (defun cb-rb:rockets->colons ()
+    "Convert old-style rockets to new hash literal syntax in the current buffer."
+    (interactive)
+    (save-excursion
+      (goto-char (point-min))
+      (while (search-forward-regexp (rx ":" (group-n 1 (+ (not space)))
+                                        (* space)
+                                        "=>"
+                                        (* space))
+                                    nil t)
+        (replace-match "\\1: " t nil))))
 
-(add-hook 'ruby-mode-hook 'rvm-activate-corresponding-ruby)
+  (add-hook 'ruby-mode-hook 'rvm-activate-corresponding-ruby)
 
-(add-hook 'cb:ruby-modes-hook 'subword-mode)
+  (add-hook 'cb:ruby-modes-hook 'subword-mode)
 
-(defun cb-rb:smart-colon ()
-  "Insert a colon, with or without padding.
+  (defun cb-rb:smart-colon ()
+    "Insert a colon, with or without padding.
 If this is the leading colon for a symbol, do not insert padding.
 If this is the trailing colon for a hash key, insert padding."
-  (interactive)
-  (insert ":")
-  (when (s-matches? (rx (+ alnum) ":" eol)
-                    (buffer-substring (line-beginning-position) (point)))
-    (just-one-space)))
+    (interactive)
+    (insert ":")
+    (when (s-matches? (rx (+ alnum) ":" eol)
+                      (buffer-substring (line-beginning-position) (point)))
+      (just-one-space)))
 
-(--each cb:ruby-modes
-  (declare-smart-ops it
-    :add '("~")
-    :custom
-    '(("," . (command (insert ",") (just-one-space)))
-      (":" . cb-rb:smart-colon))))
+  (--each cb:ruby-modes
+    (declare-smart-ops it
+      :add '("~")
+      :custom
+      '(("," . (command (insert ",") (just-one-space)))
+        (":" . cb-rb:smart-colon))))
 
-(require 'smartparens-ruby)
+  (require 'smartparens-ruby)
 
-(modify-syntax-entry ?@ "w" ruby-mode-syntax-table)
-(modify-syntax-entry ?_ "w" ruby-mode-syntax-table)
-(modify-syntax-entry ?! "w" ruby-mode-syntax-table)
-(modify-syntax-entry ?? "w" ruby-mode-syntax-table)
+  (modify-syntax-entry ?@ "w" ruby-mode-syntax-table)
+  (modify-syntax-entry ?_ "w" ruby-mode-syntax-table)
+  (modify-syntax-entry ?! "w" ruby-mode-syntax-table)
+  (modify-syntax-entry ?? "w" ruby-mode-syntax-table)
 
-(defun sp-ruby-should-insert-pipe-close (_id _action _ctx)
-  "Test whether to insert the closing pipe for a lambda-binding pipe pair."
-  (thing-at-point-looking-at
-   (rx-to-string `(and (or "do" "{") (* space) "|"))))
+  (defun sp-ruby-should-insert-pipe-close (_id _action _ctx)
+    "Test whether to insert the closing pipe for a lambda-binding pipe pair."
+    (thing-at-point-looking-at
+     (rx-to-string `(and (or "do" "{") (* space) "|"))))
 
-(defun sp-ruby-sp-hook-space-before (_id action _ctx)
-  "Move to point before ID and insert a space."
-  (when (equal 'insert action)
-    (save-excursion
-      (search-backward "|")
-      (just-one-space))))
+  (defun sp-ruby-sp-hook-space-before (_id action _ctx)
+    "Move to point before ID and insert a space."
+    (when (equal 'insert action)
+      (save-excursion
+        (search-backward "|")
+        (just-one-space))))
 
-(defun sp-ruby-sp-hook-space-after (_id action _ctx)
-  "Move to point after ID and insert a space."
-  (when (equal 'insert action)
-    (save-excursion
-      (search-forward "|")
-      (just-one-space))))
+  (defun sp-ruby-sp-hook-space-after (_id action _ctx)
+    "Move to point after ID and insert a space."
+    (when (equal 'insert action)
+      (save-excursion
+        (search-forward "|")
+        (just-one-space))))
 
-(sp-with-modes '(ruby-mode inf-ruby-mode)
+  (sp-with-modes '(ruby-mode inf-ruby-mode)
 
-  (sp-local-pair "{" "}"
-                 :post-handlers '(:add sp-generic-leading-space))
+    (sp-local-pair "{" "}"
+                   :post-handlers '(:add sp-generic-leading-space))
 
-  (sp-local-pair "[" "]"
-                 :pre-handlers '(sp-ruby-pre-handler))
+    (sp-local-pair "[" "]"
+                   :pre-handlers '(sp-ruby-pre-handler))
 
-  (sp-local-pair "%q{" "}" :when '(sp-in-code-p))
-  (sp-local-pair "%Q{" "}" :when '(sp-in-code-p))
-  (sp-local-pair "%w{" "}" :when '(sp-in-code-p))
-  (sp-local-pair "%W{" "}" :when '(sp-in-code-p))
-  (sp-local-pair  "%(" ")" :when '(sp-in-code-p))
-  (sp-local-pair "%x(" ")" :when '(sp-in-code-p))
-  (sp-local-pair  "#{" "}" :when '(sp-in-string-p))
+    (sp-local-pair "%q{" "}" :when '(sp-in-code-p))
+    (sp-local-pair "%Q{" "}" :when '(sp-in-code-p))
+    (sp-local-pair "%w{" "}" :when '(sp-in-code-p))
+    (sp-local-pair "%W{" "}" :when '(sp-in-code-p))
+    (sp-local-pair  "%(" ")" :when '(sp-in-code-p))
+    (sp-local-pair "%x(" ")" :when '(sp-in-code-p))
+    (sp-local-pair  "#{" "}" :when '(sp-in-string-p))
 
-  (sp-local-pair "|" "|"
-                 :when '(sp-ruby-should-insert-pipe-close)
-                 :unless '(sp-in-string-p)
-                 :pre-handlers '(sp-ruby-sp-hook-space-before)
-                 :post-handlers '(sp-ruby-sp-hook-space-after))
+    (sp-local-pair "|" "|"
+                   :when '(sp-ruby-should-insert-pipe-close)
+                   :unless '(sp-in-string-p)
+                   :pre-handlers '(sp-ruby-sp-hook-space-before)
+                   :post-handlers '(sp-ruby-sp-hook-space-after))
 
-  (sp-local-pair "case" "end"
-                 :when '(("SPC" "RET" "<evil-ret>"))
-                 :unless '(sp-ruby-in-string-or-word-p)
-                 :actions '(insert)
-                 :pre-handlers '(sp-ruby-pre-handler)
-                 :post-handlers '(sp-ruby-block-post-handler)))
+    (sp-local-pair "case" "end"
+                   :when '(("SPC" "RET" "<evil-ret>"))
+                   :unless '(sp-ruby-in-string-or-word-p)
+                   :actions '(insert)
+                   :pre-handlers '(sp-ruby-pre-handler)
+                   :post-handlers '(sp-ruby-block-post-handler)))
 
-(hook-fn 'cb:ruby-modes-hook
-  (local-set-key (kbd "C-c C-h") 'yari))
+  (hook-fn 'cb:ruby-modes-hook
+    (local-set-key (kbd "C-c C-h") 'yari))
 
-(after 'hideshow
-  (add-to-list 'hs-special-modes-alist
-               `(ruby-mode
-                 ,(rx (or "def" "class" "module" "{" "[")) ; Block start
-                 ,(rx (or "}" "]" "end"))                  ; Block end
-                 ,(rx (or "#" "=begin"))                   ; Comment start
-                 ruby-forward-sexp nil)))
+  (after 'hideshow
+    (add-to-list 'hs-special-modes-alist
+                 `(ruby-mode
+                   ,(rx (or "def" "class" "module" "{" "[")) ; Block start
+                   ,(rx (or "}" "]" "end"))                  ; Block end
+                   ,(rx (or "#" "=begin"))                   ; Comment start
+                   ruby-forward-sexp nil)))
 
-(after 'evil
-  (define-evil-doc-handler cb:ruby-modes (call-interactively 'robe-doc)))
+  (after 'evil
+    (define-evil-doc-handler cb:ruby-modes (call-interactively 'robe-doc)))
 
-)
+  )
 
 (cb:declare-package-installer scala
   :match (rx (or ".scala" ".sbt"))
@@ -2023,70 +1876,70 @@ If this is the trailing colon for a hash key, insert padding."
 
 (after 'scala-mode2
 
-(setq scala-indent:align-forms t
-      scala-indent:align-parameters t
-      scala-indent:default-run-on-strategy scala-indent:eager-strategy)
+  (setq scala-indent:align-forms t
+        scala-indent:align-parameters t
+        scala-indent:default-run-on-strategy scala-indent:eager-strategy)
 
-(defun cbscala:find-case-class-parent ()
-  (save-excursion
-    (if (search-backward-regexp
-         (rx (or
-              (and bol (* space)
-                   (or (and (? "abstract" (+ space)) "class")
-                       "trait")
-                   (+ space) (group-n 1 (+ alnum)))
-              (and bol (* space)
-                   "case" (+ space) "class" (* anything) space
-                   "extends" (+ space) (group-n 1 (+ alnum)) (* space) eol)))
-         nil t)
-        (match-string 1)
-      "")))
+  (defun cbscala:find-case-class-parent ()
+    (save-excursion
+      (if (search-backward-regexp
+           (rx (or
+                (and bol (* space)
+                     (or (and (? "abstract" (+ space)) "class")
+                         "trait")
+                     (+ space) (group-n 1 (+ alnum)))
+                (and bol (* space)
+                     "case" (+ space) "class" (* anything) space
+                     "extends" (+ space) (group-n 1 (+ alnum)) (* space) eol)))
+           nil t)
+          (match-string 1)
+        "")))
 
-(defun cbscala:equals ()
-  (interactive)
-  (smart-insert-op "=")
-  (just-one-space))
+  (defun cbscala:equals ()
+    (interactive)
+    (smart-insert-op "=")
+    (just-one-space))
 
-(defun cbscala:colon ()
-  (interactive)
-  (smart-insert-op ":")
-  (just-one-space))
+  (defun cbscala:colon ()
+    (interactive)
+    (smart-insert-op ":")
+    (just-one-space))
 
-(defmacro define-scala-variance-op-command (sym op)
-  "Define command named SYM to insert a variance operator OP."
-  `(defun ,sym ()
-     "Insert a variance operator.
+  (defmacro define-scala-variance-op-command (sym op)
+    "Define command named SYM to insert a variance operator OP."
+    `(defun ,sym ()
+       "Insert a variance operator.
 Pad in normal expressions. Do not insert padding in variance annotations."
-     (interactive "*")
-     (cond
-      ;; No padding at the start of type parameter.
-      ((thing-at-point-looking-at (rx "[" (* space)))
-       (delete-horizontal-space)
-       (insert ,op))
-      ;; Leading padding after a comma, e.g. for a type parameter or function call.
-      ((thing-at-point-looking-at (rx "," (* space)))
-       (just-one-space)
-       (insert ,op))
-      ;; Otherwise leading and trailing padding.
-      (t
-       (smart-insert-op ,op)))))
+       (interactive "*")
+       (cond
+        ;; No padding at the start of type parameter.
+        ((thing-at-point-looking-at (rx "[" (* space)))
+         (delete-horizontal-space)
+         (insert ,op))
+        ;; Leading padding after a comma, e.g. for a type parameter or function call.
+        ((thing-at-point-looking-at (rx "," (* space)))
+         (just-one-space)
+         (insert ,op))
+        ;; Otherwise leading and trailing padding.
+        (t
+         (smart-insert-op ,op)))))
 
-(define-scala-variance-op-command cbscala:plus "+")
-(define-scala-variance-op-command cbscala:minus "-")
+  (define-scala-variance-op-command cbscala:plus "+")
+  (define-scala-variance-op-command cbscala:minus "-")
 
-(declare-smart-ops 'scala-mode
-  :custom
-  '(("=" . cbscala:equals)
-    (":" . cbscala:colon)
-    ("+" . cbscala:plus)
-    ("-" . cbscala:minus)))
+  (declare-smart-ops 'scala-mode
+    :custom
+    '(("=" . cbscala:equals)
+      (":" . cbscala:colon)
+      ("+" . cbscala:plus)
+      ("-" . cbscala:minus)))
 
-(define-key scala-mode-map (kbd ".") nil)
+  (define-key scala-mode-map (kbd ".") nil)
 
-(after 'evil
+  (after 'evil
 
-  (defun cbscala:join-line ()
-    "Adapt `scala-indent:join-line' to behave more like evil's line join.
+    (defun cbscala:join-line ()
+      "Adapt `scala-indent:join-line' to behave more like evil's line join.
 
 `scala-indent:join-line' acts like the vanilla `join-line',
 joining the current line with the previous one. The vimmy way is
@@ -2094,21 +1947,21 @@ to join the current line with the next.
 
 Try to move to the subsequent line and then join. Then manually move
 point to the position of the join."
-    (interactive)
-    (let (join-pos)
-      (save-excursion
-        (goto-char (line-end-position))
-        (unless (eobp)
-          (forward-line)
-          (call-interactively 'scala-indent:join-line)
-          (setq join-pos (point))))
+      (interactive)
+      (let (join-pos)
+        (save-excursion
+          (goto-char (line-end-position))
+          (unless (eobp)
+            (forward-line)
+            (call-interactively 'scala-indent:join-line)
+            (setq join-pos (point))))
 
-      (when join-pos
-        (goto-char join-pos))))
+        (when join-pos
+          (goto-char join-pos))))
 
-  (evil-define-key 'normal scala-mode-map "J" 'cbscala:join-line))
+    (evil-define-key 'normal scala-mode-map "J" 'cbscala:join-line))
 
-)
+  )
 
 (cb:declare-package-installer haskell
   :match (rx "." (or "hs" "gs" "hi" "pghci" "cabal" "hsc" "hcr"))
@@ -2231,694 +2084,694 @@ point to the position of the join."
 
   (require 'ghc)
 
-(define-key haskell-mode-map (kbd "M-.") 'haskell-mode-tag-find)
-(define-key haskell-mode-map (kbd "M-,") 'pop-tag-mark)
+  (define-key haskell-mode-map (kbd "M-.") 'haskell-mode-tag-find)
+  (define-key haskell-mode-map (kbd "M-,") 'pop-tag-mark)
 
-(after 'evil
-  (evil-define-key 'normal haskell-mode-map
-    (kbd "M-.") 'haskell-mode-tag-find
-    (kbd "M-,") 'pop-tag-mark))
+  (after 'evil
+    (evil-define-key 'normal haskell-mode-map
+      (kbd "M-.") 'haskell-mode-tag-find
+      (kbd "M-,") 'pop-tag-mark))
 
-(require 'w3m-haddock)
-(add-hook 'w3m-display-hook 'w3m-haddock-display)
-(define-key haskell-mode-map (kbd "C-c C-d") 'haskell-w3m-open-haddock)
+  (require 'w3m-haddock)
+  (add-hook 'w3m-display-hook 'w3m-haddock-display)
+  (define-key haskell-mode-map (kbd "C-c C-d") 'haskell-w3m-open-haddock)
 
-(hook-fn 'cb:haskell-modes-hook
-  (whitespace-mode -1))
+  (hook-fn 'cb:haskell-modes-hook
+    (whitespace-mode -1))
 
-(add-hook 'flycheck-mode-hook 'flycheck-haskell-setup)
+  (add-hook 'flycheck-mode-hook 'flycheck-haskell-setup)
 
-(flycheck-define-checker haskell-c-ghc
-  "A Haskell C syntax and type checker using ghc.
+  (flycheck-define-checker haskell-c-ghc
+    "A Haskell C syntax and type checker using ghc.
 
 See URL `http://www.haskell.org/ghc/'."
-  :command ("flycheck_haskell_c.sh"
-            source
-            ;; Include the parent directory of the current module tree, to
-            ;; properly resolve local imports
-            (eval (concat
-                   "-i"
-                   (flycheck-module-root-directory
-                    (flycheck-find-in-buffer flycheck-haskell-module-re))))
-            (option-flag "-no-user-package-db"
-                         flycheck-ghc-no-user-package-database)
-            (option-list "-package-db" flycheck-ghc-package-databases)
-            (option-list "-i" flycheck-ghc-search-path s-prepend))
-  :error-patterns
-  ((warning line-start (file-name) ":" line ":" column ":"
-            (or " " "\n    ") "Warning:" (optional "\n")
-            (one-or-more " ")
-            (message (one-or-more not-newline)
-                     (zero-or-more "\n"
-                                   (one-or-more " ")
-                                   (one-or-more not-newline)))
-            line-end)
-   (error line-start (file-name) ":" line ":" column ":"
-          (or (message (one-or-more not-newline))
-              (and "\n" (one-or-more " ")
-                   (message (one-or-more not-newline)
-                            (zero-or-more "\n"
-                                          (one-or-more " ")
-                                          (one-or-more not-newline)))))
-          line-end))
-  :modes haskell-c-mode)
+    :command ("flycheck_haskell_c.sh"
+              source
+              ;; Include the parent directory of the current module tree, to
+              ;; properly resolve local imports
+              (eval (concat
+                     "-i"
+                     (flycheck-module-root-directory
+                      (flycheck-find-in-buffer flycheck-haskell-module-re))))
+              (option-flag "-no-user-package-db"
+                           flycheck-ghc-no-user-package-database)
+              (option-list "-package-db" flycheck-ghc-package-databases)
+              (option-list "-i" flycheck-ghc-search-path s-prepend))
+    :error-patterns
+    ((warning line-start (file-name) ":" line ":" column ":"
+              (or " " "\n    ") "Warning:" (optional "\n")
+              (one-or-more " ")
+              (message (one-or-more not-newline)
+                       (zero-or-more "\n"
+                                     (one-or-more " ")
+                                     (one-or-more not-newline)))
+              line-end)
+     (error line-start (file-name) ":" line ":" column ":"
+            (or (message (one-or-more not-newline))
+                (and "\n" (one-or-more " ")
+                     (message (one-or-more not-newline)
+                              (zero-or-more "\n"
+                                            (one-or-more " ")
+                                            (one-or-more not-newline)))))
+            line-end))
+    :modes haskell-c-mode)
 
-(define-key haskell-mode-map ghc-completion-key  'ghc-complete)
-(define-key haskell-mode-map ghc-document-key    'ghc-browse-document)
-(define-key haskell-mode-map ghc-type-key        'ghc-show-type)
-(define-key haskell-mode-map ghc-info-key        'ghc-show-info)
-(define-key haskell-mode-map ghc-expand-key      'ghc-expand-th)
-(define-key haskell-mode-map (kbd "M-P") 'flymake-goto-prev-error)
-(define-key haskell-mode-map (kbd "M-N") 'flymake-goto-next-error)
-(define-key haskell-mode-map ghc-help-key        'ghc-flymake-display-errors)
-(define-key haskell-mode-map ghc-insert-key      'ghc-insert-template)
-(define-key haskell-mode-map ghc-sort-key        'ghc-sort-lines)
-(define-key haskell-mode-map ghc-check-key       'ghc-save-buffer)
-(define-key haskell-mode-map ghc-toggle-key      'ghc-flymake-toggle-command)
-(define-key haskell-mode-map ghc-module-key      'ghc-insert-module)
-(define-key haskell-mode-map ghc-hoogle-key      'haskell-hoogle)
-(define-key haskell-mode-map ghc-shallower-key   'ghc-make-indent-shallower)
-(define-key haskell-mode-map ghc-deeper-key      'ghc-make-indent-deeper)
+  (define-key haskell-mode-map ghc-completion-key  'ghc-complete)
+  (define-key haskell-mode-map ghc-document-key    'ghc-browse-document)
+  (define-key haskell-mode-map ghc-type-key        'ghc-show-type)
+  (define-key haskell-mode-map ghc-info-key        'ghc-show-info)
+  (define-key haskell-mode-map ghc-expand-key      'ghc-expand-th)
+  (define-key haskell-mode-map (kbd "M-P") 'flymake-goto-prev-error)
+  (define-key haskell-mode-map (kbd "M-N") 'flymake-goto-next-error)
+  (define-key haskell-mode-map ghc-help-key        'ghc-flymake-display-errors)
+  (define-key haskell-mode-map ghc-insert-key      'ghc-insert-template)
+  (define-key haskell-mode-map ghc-sort-key        'ghc-sort-lines)
+  (define-key haskell-mode-map ghc-check-key       'ghc-save-buffer)
+  (define-key haskell-mode-map ghc-toggle-key      'ghc-flymake-toggle-command)
+  (define-key haskell-mode-map ghc-module-key      'ghc-insert-module)
+  (define-key haskell-mode-map ghc-hoogle-key      'haskell-hoogle)
+  (define-key haskell-mode-map ghc-shallower-key   'ghc-make-indent-shallower)
+  (define-key haskell-mode-map ghc-deeper-key      'ghc-make-indent-deeper)
 
-(after 'evil
+  (after 'evil
 
-  (hook-fn 'evil-normal-state-entry-hook
-    (when (true? hi2-mode)
-      (hi2-disable-show-indentations)))
+    (hook-fn 'evil-normal-state-entry-hook
+      (when (true? hi2-mode)
+        (hi2-disable-show-indentations)))
 
-  (hook-fn 'evil-insert-state-entry-hook
-    (when (true? hi2-mode)
-      (hi2-enable-show-indentations)))
+    (hook-fn 'evil-insert-state-entry-hook
+      (when (true? hi2-mode)
+        (hi2-enable-show-indentations)))
 
-  (hook-fn 'evil-insert-state-exit-hook
-    (when (true? hi2-mode)
-      (hi2-disable-show-indentations)))
-  )
+    (hook-fn 'evil-insert-state-exit-hook
+      (when (true? hi2-mode)
+        (hi2-disable-show-indentations)))
+    )
 
-(defun cb:switch-to-haskell ()
-  "Switch to the last active Haskell buffer."
-  (interactive)
-  (-when-let (buf (--first-buffer (derived-mode-p 'haskell-mode)))
-    (pop-to-buffer buf)))
+  (defun cb:switch-to-haskell ()
+    "Switch to the last active Haskell buffer."
+    (interactive)
+    (-when-let (buf (--first-buffer (derived-mode-p 'haskell-mode)))
+      (pop-to-buffer buf)))
 
 
-(define-key haskell-interactive-mode-map (kbd "C-c C-z") 'cb:switch-to-haskell)
-(define-key haskell-mode-map (kbd "C-c C-z") 'haskell-interactive-switch)
+  (define-key haskell-interactive-mode-map (kbd "C-c C-z") 'cb:switch-to-haskell)
+  (define-key haskell-mode-map (kbd "C-c C-z") 'haskell-interactive-switch)
 
-(defadvice haskell-mode-after-save-handler (around ignore-warnings activate)
-  "Prevent subprocess warnings from changing window state."
-  (let ((inhibit-redisplay t))
-    (save-window-excursion
-      ad-do-it)))
+  (defadvice haskell-mode-after-save-handler (around ignore-warnings activate)
+    "Prevent subprocess warnings from changing window state."
+    (let ((inhibit-redisplay t))
+      (save-window-excursion
+        ad-do-it)))
 
-(defun cb-hs:inside-parens? ()
-  "Non-nil if point is inside a parenthesised expression."
-  (save-excursion
-    (ignore-errors
-      (backward-up-list)
-      (equal (char-after)
-             (string-to-char "(")))))
-
-(defun cb-hs:in-empty-braces? ()
-  "Non-nil if point is between empty square or curly braces."
-  (and (s-matches? (rx (or "{" "[") (* space) eol)
-                   (buffer-substring (line-beginning-position) (point)))
-       (s-matches? (rx bol (* space) (or "}" "]"))
-                   (buffer-substring (point) (line-end-position)))))
-
-(defun cb-hs:smart-pipe ()
-  "Insert a pipe operator. Add padding, unless we're inside a list."
-  (interactive)
-  (cond
-   ((s-matches? (rx "[" (* (any "|" alnum)) eol)
-                (buffer-substring (line-beginning-position) (point)))
-    (insert "|"))
-   ((s-matches? (rx "--" (* space) eol)
-                (buffer-substring (line-beginning-position) (point)))
-    (just-one-space)
-    (insert "|"))
-   (t
-    (smart-insert-op "|"))))
-
-(defun cb-hs:looking-at-module-or-constructor? ()
-  (-when-let (sym (thing-at-point 'symbol))
-    (s-uppercase? (substring sym 0 1))))
-
-(defun cb-hs:smart-dot ()
-  "Insert a period. Add padding, unless this line is an import statement."
-  (interactive)
-  (cond
-   ((thing-at-point-looking-at (rx digit (* space) "."))
+  (defun cb-hs:inside-parens? ()
+    "Non-nil if point is inside a parenthesised expression."
     (save-excursion
-      (search-backward ".")
-      (just-one-space))
-    (insert ". "))
+      (ignore-errors
+        (backward-up-list)
+        (equal (char-after)
+               (string-to-char "(")))))
 
-   ((thing-at-point-looking-at (rx digit))
-    (insert "."))
+  (defun cb-hs:in-empty-braces? ()
+    "Non-nil if point is between empty square or curly braces."
+    (and (s-matches? (rx (or "{" "[") (* space) eol)
+                     (buffer-substring (line-beginning-position) (point)))
+         (s-matches? (rx bol (* space) (or "}" "]"))
+                     (buffer-substring (point) (line-end-position)))))
 
-   ((cb-hs:looking-at-module-or-constructor?)
-    (insert "."))
-
-   ((thing-at-point-looking-at (rx (or "(" "{" "[") (* space)))
-    (insert "."))
-
-   (t
-    (smart-insert-op "."))))
-
-(defun cb-hs:smart-hash ()
-  "Insert a hash character, with special formatting behaviour for pragmas."
-  (interactive "*")
-  (let* ((before (buffer-substring (line-beginning-position) (point)))
-         (after (buffer-substring (point) (line-end-position)))
-         (in-comment? (and (s-matches? (rx "{-" (* space) eol) before)
-                           (s-matches? (rx bol (* space) "-}") after))))
+  (defun cb-hs:smart-pipe ()
+    "Insert a pipe operator. Add padding, unless we're inside a list."
+    (interactive)
     (cond
-     (in-comment?
-      (delete-horizontal-space)
-      (insert "# ")
-      (save-excursion (insert " #")))
+     ((s-matches? (rx "[" (* (any "|" alnum)) eol)
+                  (buffer-substring (line-beginning-position) (point)))
+      (insert "|"))
+     ((s-matches? (rx "--" (* space) eol)
+                  (buffer-substring (line-beginning-position) (point)))
+      (just-one-space)
+      (insert "|"))
      (t
-      (smart-insert-op "#")))))
+      (smart-insert-op "|"))))
 
-(defun cb-hs:smart-colon ()
-  "Insert a colon, with context-sensitive formatting."
-  (interactive)
-  (cond
-   ((and (cb-hs:inside-parens?)
-         (s-matches? (rx ":" (* space) eol)
-                     (buffer-substring (line-beginning-position) (point))))
-    (save-restriction
-      (narrow-to-region (line-beginning-position) (point))
+  (defun cb-hs:looking-at-module-or-constructor? ()
+    (-when-let (sym (thing-at-point 'symbol))
+      (s-uppercase? (substring sym 0 1))))
+
+  (defun cb-hs:smart-dot ()
+    "Insert a period. Add padding, unless this line is an import statement."
+    (interactive)
+    (cond
+     ((thing-at-point-looking-at (rx digit (* space) "."))
       (save-excursion
-        (search-backward-regexp (rx (* space) ":" (* space)))
-        (delete-region (point) (point-max)))
-      (insert " :: ")))
+        (search-backward ".")
+        (just-one-space))
+      (insert ". "))
 
-   ((cb-hs:inside-parens?)
-    (insert ":"))
+     ((thing-at-point-looking-at (rx digit))
+      (insert "."))
 
-   (t
-    (smart-insert-op ":"))))
+     ((cb-hs:looking-at-module-or-constructor?)
+      (insert "."))
 
-(defun cb-hs:space ()
-  "Insert a space with context-sensitive formatting."
-  (interactive)
-  (cond
-   ((cb-hs:in-empty-braces?)
-    (just-one-space)
-    (save-excursion
-      (insert " ")))
-   (t
-    (haskell-mode-contextual-space))))
+     ((thing-at-point-looking-at (rx (or "(" "{" "[") (* space)))
+      (insert "."))
 
-(defun cb-hs:del ()
-  "Delete backwards with context-sensitive formatting."
-  (interactive)
-  (cond
-   ((and (cb-hs:in-empty-braces?)
-         (thing-at-point-looking-at (rx (+ space))))
-    (delete-horizontal-space))
-   (t
-    (or (cb-op:delete-last-smart-op)
-        (call-interactively 'sp-backward-delete-char)))))
+     (t
+      (smart-insert-op "."))))
 
-(defun cb-hs:smart-comma ()
-  "Insert a comma, with context-sensitive formatting."
-  (interactive)
-  (cond
-   ((ignore-errors (s-matches? "ExportSpec" (elt (shm-current-node) 0)))
-    (delete-horizontal-space)
-    (insert ",")
-    (hi2-indent-line)
-    (just-one-space))
+  (defun cb-hs:smart-hash ()
+    "Insert a hash character, with special formatting behaviour for pragmas."
+    (interactive "*")
+    (let* ((before (buffer-substring (line-beginning-position) (point)))
+           (after (buffer-substring (point) (line-end-position)))
+           (in-comment? (and (s-matches? (rx "{-" (* space) eol) before)
+                             (s-matches? (rx bol (* space) "-}") after))))
+      (cond
+       (in-comment?
+        (delete-horizontal-space)
+        (insert "# ")
+        (save-excursion (insert " #")))
+       (t
+        (smart-insert-op "#")))))
 
-   (t
-    (insert ","))))
+  (defun cb-hs:smart-colon ()
+    "Insert a colon, with context-sensitive formatting."
+    (interactive)
+    (cond
+     ((and (cb-hs:inside-parens?)
+           (s-matches? (rx ":" (* space) eol)
+                       (buffer-substring (line-beginning-position) (point))))
+      (save-restriction
+        (narrow-to-region (line-beginning-position) (point))
+        (save-excursion
+          (search-backward-regexp (rx (* space) ":" (* space)))
+          (delete-region (point) (point-max)))
+        (insert " :: ")))
 
-(defun cb-hs:ghci-line-beginning-position ()
-  "Narrow to the current line, excluding the ghci prompt."
-  (save-excursion
-    (cond ((haskell-interactive-at-prompt)
-           (goto-char (line-beginning-position))
-           (or (search-forward-regexp (s-trim-left haskell-interactive-prompt)
-                                      (line-end-position)
-                                      t)
-               (line-beginning-position)))
-          (t
-           (line-beginning-position)))))
+     ((cb-hs:inside-parens?)
+      (insert ":"))
 
-(defun cb-hs:ghci-smart-colon ()
-  "Insert a smart operator, unless point is immediately after the GHCI prompt."
-  (interactive)
-  (save-restriction
-    (narrow-to-region (cb-hs:ghci-line-beginning-position)
-                      (line-end-position))
-    (if (s-blank? (buffer-substring (line-beginning-position) (point)))
-        (insert ":")
+     (t
       (smart-insert-op ":"))))
 
-(defun cb-hs:ghci-smart-comma ()
-  "Insert a comma with padding."
-  (interactive)
-  (save-restriction
-    (narrow-to-region (cb-hs:ghci-line-beginning-position)
-                      (point))
-    (unless (s-blank? (current-line))
-      (delete-horizontal-space))
-
-    (insert ", ")))
-
-(declare-smart-ops 'haskell-mode
-  :add '("$" "=")
-  :custom
-  '(("." . cb-hs:smart-dot)
-    ("," . cb-hs:smart-comma)
-    ("|" . cb-hs:smart-pipe)
-    ("#" . cb-hs:smart-hash)
-    (":" . cb-hs:smart-colon)))
-
-(define-key haskell-mode-map (kbd "SPC") 'cb-hs:space)
-(define-key haskell-mode-map (kbd "DEL") 'cb-hs:del)
-
-(declare-smart-ops 'haskell-interactive-mode
-  :add '("$" "=")
-  :custom
-  '(("." . cb-hs:smart-dot)
-    ("|" . cb-hs:smart-pipe)
-    (":" . cb-hs:ghci-smart-colon)
-    ("," . cb-hs:ghci-smart-comma)))
-
-(define-key shm-map (kbd "C-k")     'shm/kill-node)
-(define-key shm-map (kbd "C-c C-s") 'shm/case-split)
-(define-key shm-map (kbd "C-<return>") 'shm/newline-indent)
-
-(after 'evil
-
-  (defun cb-hs:join-line ()
+  (defun cb-hs:space ()
+    "Insert a space with context-sensitive formatting."
     (interactive)
-    (forward-line 1)
-    (goto-char (line-beginning-position))
-    (call-interactively 'shm/delete-indentation))
+    (cond
+     ((cb-hs:in-empty-braces?)
+      (just-one-space)
+      (save-excursion
+        (insert " ")))
+     (t
+      (haskell-mode-contextual-space))))
 
-  (evil-define-key 'normal shm-map "J" 'cb-hs:join-line))
+  (defun cb-hs:del ()
+    "Delete backwards with context-sensitive formatting."
+    (interactive)
+    (cond
+     ((and (cb-hs:in-empty-braces?)
+           (thing-at-point-looking-at (rx (+ space))))
+      (delete-horizontal-space))
+     (t
+      (or (cb-op:delete-last-smart-op)
+          (call-interactively 'sp-backward-delete-char)))))
 
-(define-key shm-map (kbd ",") nil)
-(define-key shm-map (kbd ":") nil)
-(define-key shm-map (kbd "#") nil)
-(define-key shm-map (kbd "-") nil)
-(define-key shm-map (kbd "DEL") nil)
-(define-key shm-map (kbd "SPC") nil)
-(define-key shm-map (kbd "<backtab>") nil)
-(define-key shm-map (kbd "TAB") nil)
-(define-key shm-map (kbd "M-r") nil)
+  (defun cb-hs:smart-comma ()
+    "Insert a comma, with context-sensitive formatting."
+    (interactive)
+    (cond
+     ((ignore-errors (s-matches? "ExportSpec" (elt (shm-current-node) 0)))
+      (delete-horizontal-space)
+      (insert ",")
+      (hi2-indent-line)
+      (just-one-space))
 
-(defun cb-hs:next-separator-pos ()
-  (save-excursion
-    (when (search-forward-regexp (rx bol "---") nil t)
-      (ignore-errors (forward-line -1))
-      (while (and (emr-blank-line?)
-                  (not (bobp)))
-        (forward-line -1))
-      (end-of-line)
-      (point))))
+     (t
+      (insert ","))))
 
-(defun cb-hs:next-decl-pos ()
-  (save-excursion
-    (haskell-ds-forward-decl)
-    ;; Skip infix and import groups.
-    (while (emr-line-matches? (rx bol (or "import" "infix") (+ space)))
-      (haskell-ds-forward-decl))
-    (unless (eobp)
-      (ignore-errors (forward-line -1))
-      (while (and (emr-line-matches? (rx bol (* space) "--" space))
-                  (not (bobp)))
-        (forward-line -1)))
-    (point)))
+  (defun cb-hs:ghci-line-beginning-position ()
+    "Narrow to the current line, excluding the ghci prompt."
+    (save-excursion
+      (cond ((haskell-interactive-at-prompt)
+             (goto-char (line-beginning-position))
+             (or (search-forward-regexp (s-trim-left haskell-interactive-prompt)
+                                        (line-end-position)
+                                        t)
+                 (line-beginning-position)))
+            (t
+             (line-beginning-position)))))
 
-(defun cb-hs:forward-fold (&rest _)
-  (let ((sep (cb-hs:next-separator-pos))
-        (decl (cb-hs:next-decl-pos)))
-    (goto-char (min (or sep (point-max))
-                    (or decl (point-max))))))
+  (defun cb-hs:ghci-smart-colon ()
+    "Insert a smart operator, unless point is immediately after the GHCI prompt."
+    (interactive)
+    (save-restriction
+      (narrow-to-region (cb-hs:ghci-line-beginning-position)
+                        (line-end-position))
+      (if (s-blank? (buffer-substring (line-beginning-position) (point)))
+          (insert ":")
+        (smart-insert-op ":"))))
 
-(after 'hideshow
-  (add-to-list 'hs-special-modes-alist
-               `(haskell-mode
-                 ;; Beginning function
-                 ,(rx (or
-                       ;; Function
-                       (group  (* nonl) (+ space) "::" (+ space ) (* nonl))
-                       ;; FFI declarations.
-                       (group (? "foreign") (+ space) "import")
-                       ;; Groupings
-                       (group (or "class" "instance" "newtype" "data")
-                              (+ space) (* nonl))))
-                 ;; End function
-                 nil
-                 ;; Comment start
-                 ,(rx "{-")
-                 ;; Forward-sexp function
-                 cb-hs:forward-fold)))
+  (defun cb-hs:ghci-smart-comma ()
+    "Insert a comma with padding."
+    (interactive)
+    (save-restriction
+      (narrow-to-region (cb-hs:ghci-line-beginning-position)
+                        (point))
+      (unless (s-blank? (current-line))
+        (delete-horizontal-space))
 
-(cbs-define-search-method
- :name "hoogle"
- :key "h"
- :command
- (lambda (_)
-   (call-interactively 'hoogle))
- :when
- (lambda ()
-   (derived-mode-p 'haskell-mode 'haskell-interactive-mode)))
+      (insert ", ")))
 
-(font-lock-add-keywords
- 'haskell-mode
- `(("\\s ?(?\\(\\\\\\)\\s *\\(\\w\\|_\\|(.*)\\).*?\\s *->"
-    (0 (progn (compose-region (match-beginning 1) (match-end 1)
-                              ,(string-to-char "λ") 'decompose-region)
-              nil)))))
+  (declare-smart-ops 'haskell-mode
+    :add '("$" "=")
+    :custom
+    '(("." . cb-hs:smart-dot)
+      ("," . cb-hs:smart-comma)
+      ("|" . cb-hs:smart-pipe)
+      ("#" . cb-hs:smart-hash)
+      (":" . cb-hs:smart-colon)))
 
-(define-key haskell-mode-map (kbd "C-,")     'haskell-move-nested-left)
-(define-key haskell-mode-map (kbd "C-.")     'haskell-move-nested-right)
-(define-key haskell-mode-map (kbd "C-c c")   'haskell-process-cabal)
-(define-key haskell-mode-map (kbd "C-c C-c") 'haskell-process-cabal-build)
-(define-key haskell-mode-map (kbd "C-c C-l") 'haskell-process-load-file)
-(define-key haskell-mode-map (kbd "C-c C-f") 'haskell-cabal-visit-file)
-(define-key haskell-mode-map (kbd "C-c C-t") 'haskell-process-do-type)
-(define-key haskell-mode-map (kbd "C-c C-i") 'haskell-process-do-info)
-(define-key haskell-mode-map (kbd "C-c C-c") 'haskell-process-cabal-build)
-(define-key haskell-mode-map (kbd "C-c C-k") 'haskell-interactive-mode-clear)
-(define-key haskell-mode-map (kbd "M-q")     'haskell-mode-stylish-buffer)
+  (define-key haskell-mode-map (kbd "SPC") 'cb-hs:space)
+  (define-key haskell-mode-map (kbd "DEL") 'cb-hs:del)
 
-(define-key haskell-cabal-mode-map (kbd "C-`") 'haskell-interactive-bring)
-(define-key haskell-cabal-mode-map (kbd "C-c C-k") 'haskell-interactive-mode-clear)
-(define-key haskell-cabal-mode-map (kbd "C-c C-c") 'haskell-process-cabal-build)
-(define-key haskell-cabal-mode-map (kbd "C-c c") 'haskell-process-cabal)
+  (declare-smart-ops 'haskell-interactive-mode
+    :add '("$" "=")
+    :custom
+    '(("." . cb-hs:smart-dot)
+      ("|" . cb-hs:smart-pipe)
+      (":" . cb-hs:ghci-smart-colon)
+      ("," . cb-hs:ghci-smart-comma)))
 
-(defvar cb-hs:language-pragmas
-  (s-split "\n" (%-string "ghc --supported-languages"))
-  "List the language pragmas available in GHC.")
+  (define-key shm-map (kbd "C-k")     'shm/kill-node)
+  (define-key shm-map (kbd "C-c C-s") 'shm/case-split)
+  (define-key shm-map (kbd "C-<return>") 'shm/newline-indent)
 
-(defun cb-hs:language-pragmas-in-file ()
-  "List the language pragmas set in the current file."
-  (--filter (s-matches? it (buffer-string))
-            cb-hs:language-pragmas))
+  (after 'evil
 
-(defun cb-hs:available-language-pragmas ()
-  "List the language pragmas that have not been set in the current file."
-  (-difference cb-hs:language-pragmas (cb-hs:language-pragmas-in-file)))
+    (defun cb-hs:join-line ()
+      (interactive)
+      (forward-line 1)
+      (goto-char (line-beginning-position))
+      (call-interactively 'shm/delete-indentation))
 
-(defun cb-hs:insert-language-pragma (pragma)
-  "Read a language pragma to be inserted at the start of this file."
-  (interactive (list (ido-completing-read "Pragma: "
-                                          (cb-hs:available-language-pragmas)
-                                          nil t)))
-  (let ((s (format "{-# LANGUAGE %s #-}\n" pragma)))
+    (evil-define-key 'normal shm-map "J" 'cb-hs:join-line))
+
+  (define-key shm-map (kbd ",") nil)
+  (define-key shm-map (kbd ":") nil)
+  (define-key shm-map (kbd "#") nil)
+  (define-key shm-map (kbd "-") nil)
+  (define-key shm-map (kbd "DEL") nil)
+  (define-key shm-map (kbd "SPC") nil)
+  (define-key shm-map (kbd "<backtab>") nil)
+  (define-key shm-map (kbd "TAB") nil)
+  (define-key shm-map (kbd "M-r") nil)
+
+  (defun cb-hs:next-separator-pos ()
+    (save-excursion
+      (when (search-forward-regexp (rx bol "---") nil t)
+        (ignore-errors (forward-line -1))
+        (while (and (emr-blank-line?)
+                    (not (bobp)))
+          (forward-line -1))
+        (end-of-line)
+        (point))))
+
+  (defun cb-hs:next-decl-pos ()
+    (save-excursion
+      (haskell-ds-forward-decl)
+      ;; Skip infix and import groups.
+      (while (emr-line-matches? (rx bol (or "import" "infix") (+ space)))
+        (haskell-ds-forward-decl))
+      (unless (eobp)
+        (ignore-errors (forward-line -1))
+        (while (and (emr-line-matches? (rx bol (* space) "--" space))
+                    (not (bobp)))
+          (forward-line -1)))
+      (point)))
+
+  (defun cb-hs:forward-fold (&rest _)
+    (let ((sep (cb-hs:next-separator-pos))
+          (decl (cb-hs:next-decl-pos)))
+      (goto-char (min (or sep (point-max))
+                      (or decl (point-max))))))
+
+  (after 'hideshow
+    (add-to-list 'hs-special-modes-alist
+                 `(haskell-mode
+                   ;; Beginning function
+                   ,(rx (or
+                         ;; Function
+                         (group  (* nonl) (+ space) "::" (+ space ) (* nonl))
+                         ;; FFI declarations.
+                         (group (? "foreign") (+ space) "import")
+                         ;; Groupings
+                         (group (or "class" "instance" "newtype" "data")
+                                (+ space) (* nonl))))
+                   ;; End function
+                   nil
+                   ;; Comment start
+                   ,(rx "{-")
+                   ;; Forward-sexp function
+                   cb-hs:forward-fold)))
+
+  (cbs-define-search-method
+   :name "hoogle"
+   :key "h"
+   :command
+   (lambda (_)
+     (call-interactively 'hoogle))
+   :when
+   (lambda ()
+     (derived-mode-p 'haskell-mode 'haskell-interactive-mode)))
+
+  (font-lock-add-keywords
+   'haskell-mode
+   `(("\\s ?(?\\(\\\\\\)\\s *\\(\\w\\|_\\|(.*)\\).*?\\s *->"
+      (0 (progn (compose-region (match-beginning 1) (match-end 1)
+                                ,(string-to-char "λ") 'decompose-region)
+                nil)))))
+
+  (define-key haskell-mode-map (kbd "C-,")     'haskell-move-nested-left)
+  (define-key haskell-mode-map (kbd "C-.")     'haskell-move-nested-right)
+  (define-key haskell-mode-map (kbd "C-c c")   'haskell-process-cabal)
+  (define-key haskell-mode-map (kbd "C-c C-c") 'haskell-process-cabal-build)
+  (define-key haskell-mode-map (kbd "C-c C-l") 'haskell-process-load-file)
+  (define-key haskell-mode-map (kbd "C-c C-f") 'haskell-cabal-visit-file)
+  (define-key haskell-mode-map (kbd "C-c C-t") 'haskell-process-do-type)
+  (define-key haskell-mode-map (kbd "C-c C-i") 'haskell-process-do-info)
+  (define-key haskell-mode-map (kbd "C-c C-c") 'haskell-process-cabal-build)
+  (define-key haskell-mode-map (kbd "C-c C-k") 'haskell-interactive-mode-clear)
+  (define-key haskell-mode-map (kbd "M-q")     'haskell-mode-stylish-buffer)
+
+  (define-key haskell-cabal-mode-map (kbd "C-`") 'haskell-interactive-bring)
+  (define-key haskell-cabal-mode-map (kbd "C-c C-k") 'haskell-interactive-mode-clear)
+  (define-key haskell-cabal-mode-map (kbd "C-c C-c") 'haskell-process-cabal-build)
+  (define-key haskell-cabal-mode-map (kbd "C-c c") 'haskell-process-cabal)
+
+  (defvar cb-hs:language-pragmas
+    (s-split "\n" (%-string "ghc --supported-languages"))
+    "List the language pragmas available in GHC.")
+
+  (defun cb-hs:language-pragmas-in-file ()
+    "List the language pragmas set in the current file."
+    (--filter (s-matches? it (buffer-string))
+              cb-hs:language-pragmas))
+
+  (defun cb-hs:available-language-pragmas ()
+    "List the language pragmas that have not been set in the current file."
+    (-difference cb-hs:language-pragmas (cb-hs:language-pragmas-in-file)))
+
+  (defun cb-hs:insert-language-pragma (pragma)
+    "Read a language pragma to be inserted at the start of this file."
+    (interactive (list (ido-completing-read "Pragma: "
+                                            (cb-hs:available-language-pragmas)
+                                            nil t)))
+    (let ((s (format "{-# LANGUAGE %s #-}\n" pragma)))
+      (save-excursion
+        (goto-char (point-min))
+        (insert s))))
+
+  (defun cb-hs:parse-module (str)
+    (with-temp-buffer
+      (insert str)
+      (goto-char (point-min))
+      (when (search-forward-regexp (rx bol "exposed-modules: ") nil t)
+        (let (start end)
+          (setq start (point))
+          (setq end (if (search-forward ":" nil t)
+                        (progn (beginning-of-line) (point))
+                      (point-max)))
+          (s-split " " (buffer-substring-no-properties start end) t)))))
+
+  (defun cb-hs:haskell-modules ()
+    "Get a list of all Haskell modules known to the current project or GHC."
+    (if (haskell-session-maybe)
+        (haskell-session-all-modules)
+      (->> (%-string "ghc-pkg" "dump")
+        (s-split "---")
+        (-mapcat 'cb-hs:parse-module)
+        (-map 's-trim))))
+
+  (defun cb-hs:do-insert-at-imports (str)
+    "Prepend STR to this buffer's list of imported modules."
     (save-excursion
       (goto-char (point-min))
-      (insert s))))
 
-(defun cb-hs:parse-module (str)
-  (with-temp-buffer
-    (insert str)
-    (goto-char (point-min))
-    (when (search-forward-regexp (rx bol "exposed-modules: ") nil t)
-      (let (start end)
-        (setq start (point))
-        (setq end (if (search-forward ":" nil t)
-                      (progn (beginning-of-line) (point))
-                    (point-max)))
-        (s-split " " (buffer-substring-no-properties start end) t)))))
+      (cond
+       ;; Move directly to import statements.
+       ((search-forward-regexp (rx bol "import") nil t))
 
-(defun cb-hs:haskell-modules ()
-  "Get a list of all Haskell modules known to the current project or GHC."
-  (if (haskell-session-maybe)
-      (haskell-session-all-modules)
-    (->> (%-string "ghc-pkg" "dump")
-      (s-split "---")
-      (-mapcat 'cb-hs:parse-module)
-      (-map 's-trim))))
+       ;; Move past module declaration.
+       ((search-forward "module" nil t)
+        (search-forward "where")
+        (forward-line)
+        (beginning-of-line)
+        (while (and (s-blank? (current-line))
+                    (not (eobp)))
+          (forward-line)))
 
-(defun cb-hs:do-insert-at-imports (str)
-  "Prepend STR to this buffer's list of imported modules."
-  (save-excursion
-    (goto-char (point-min))
+       ;; Otherwise insert on first blank line.
+       (t
+        (until (or (eobp) (s-blank? (current-line)))
+          (forward-line))))
 
-    (cond
-     ;; Move directly to import statements.
-     ((search-forward-regexp (rx bol "import") nil t))
-
-     ;; Move past module declaration.
-     ((search-forward "module" nil t)
-      (search-forward "where")
-      (forward-line)
+      ;; Insert import statement.
       (beginning-of-line)
-      (while (and (s-blank? (current-line))
-                  (not (eobp)))
-        (forward-line)))
+      (open-line 1)
+      (insert str)))
 
-     ;; Otherwise insert on first blank line.
-     (t
-      (until (or (eobp) (s-blank? (current-line)))
-        (forward-line))))
+  (defun cb-hs:module->qualified-name (module)
+    "Make a reasonable name for MODULE for use in a qualified import."
+    (s-word-initials (-last-item (s-split (rx ".") module))))
 
-    ;; Insert import statement.
-    (beginning-of-line)
-    (open-line 1)
-    (insert str)))
+  (defun cb-hs:insert-qualified-import (module name)
+    "Interactively insert a qualified Haskell import statement for MODULE."
+    (interactive
+     (let ((m (s-trim (ido-completing-read "Module: " (cb-hs:haskell-modules)
+                                           nil t))))
+       (list m (s-trim (read-string "As: " (cb-hs:module->qualified-name m)
+                                    t)))))
 
-(defun cb-hs:module->qualified-name (module)
-  "Make a reasonable name for MODULE for use in a qualified import."
-  (s-word-initials (-last-item (s-split (rx ".") module))))
+    (if (s-matches? (rx-to-string `(and "import" (+ space) "qualified" (+ space)
+                                        ,module (or space eol)))
+                    (buffer-string))
+        (when (called-interactively-p nil)
+          (message "Module '%s' is already imported" module))
 
-(defun cb-hs:insert-qualified-import (module name)
-  "Interactively insert a qualified Haskell import statement for MODULE."
-  (interactive
-   (let ((m (s-trim (ido-completing-read "Module: " (cb-hs:haskell-modules)
-                                         nil t))))
-     (list m (s-trim (read-string "As: " (cb-hs:module->qualified-name m)
-                                  t)))))
+      (cb-hs:do-insert-at-imports (format "import qualified %s as %s" module name))))
 
-  (if (s-matches? (rx-to-string `(and "import" (+ space) "qualified" (+ space)
-                                      ,module (or space eol)))
-                  (buffer-string))
-      (when (called-interactively-p nil)
-        (message "Module '%s' is already imported" module))
+  (defun cb-hs:insert-import (module)
+    "Interactively insert a Haskell import statement for MODULE."
+    (interactive (list (ido-completing-read "Module: " (cb-hs:haskell-modules)
+                                            nil t)))
 
-    (cb-hs:do-insert-at-imports (format "import qualified %s as %s" module name))))
+    (if (s-matches? (rx-to-string `(and "import" (+ space) ,module (or space eol)))
+                    (buffer-string))
+        (when (called-interactively-p nil)
+          (message "Module '%s' is already imported" module))
 
-(defun cb-hs:insert-import (module)
-  "Interactively insert a Haskell import statement for MODULE."
-  (interactive (list (ido-completing-read "Module: " (cb-hs:haskell-modules)
-                                          nil t)))
+      (cb-hs:do-insert-at-imports (format "import %s" module))))
 
-  (if (s-matches? (rx-to-string `(and "import" (+ space) ,module (or space eol)))
-                  (buffer-string))
-      (when (called-interactively-p nil)
-        (message "Module '%s' is already imported" module))
+  (-each '(("i" "Haskell Import" cb-hs:insert-import :modes haskell-mode)
+           ("q" "Haskell Qualified Import" cb-hs:insert-qualified-import :modes haskell-mode)
+           ("l" "Haskell Language Extension" cb-hs:insert-language-pragma :modes haskell-mode))
+    (~ add-to-list 'insertion-picker-options))
 
-    (cb-hs:do-insert-at-imports (format "import %s" module))))
-
-(-each '(("i" "Haskell Import" cb-hs:insert-import :modes haskell-mode)
-         ("q" "Haskell Qualified Import" cb-hs:insert-qualified-import :modes haskell-mode)
-         ("l" "Haskell Language Extension" cb-hs:insert-language-pragma :modes haskell-mode))
-  (~ add-to-list 'insertion-picker-options))
-
-(defun cb-hs:newline-and-insert-at-col (col str)
-  "Insert STR on a new line at COL."
-  (goto-char (line-end-position))
-  (newline)
-  (indent-to col)
-  (insert str))
-
-(defun cb-hs:newline-indent-to-same-col ()
-  "Make a new line below the current one and indent to the same column."
-  (let ((col (save-excursion (back-to-indentation) (current-column))))
+  (defun cb-hs:newline-and-insert-at-col (col str)
+    "Insert STR on a new line at COL."
     (goto-char (line-end-position))
     (newline)
-    (indent-to col)))
+    (indent-to col)
+    (insert str))
 
-(defvar cb-hs:haskell-keywords
-  '("let" "where" "module" "case" "class" "data" "deriving" "default"
-    "import" "infixl" "infixr" "newtype" "data" "type" "if" "then" "else"))
-
-(defun cb-hs:first-ident-on-line ()
-  (car (-difference (s-split (rx space) (current-line) t)
-                    cb-hs:haskell-keywords)))
-
-(defun cb-hs:first-ident-on-line ()
-  (car (-difference (s-split (rx space) (current-line) t)
-                    cb-hs:haskell-keywords)))
-
-(defun cb-hs:insert-function-template (fname)
-  (back-to-indentation)
-
-  (when (shm-current-node)
-    (shm/goto-parent-end))
-
-  (goto-char (line-end-position))
-  (newline)
-  (shm-insert-string (concat fname " ")))
-
-(defun cb-hs:at-decl-for-function? (fname)
-  (when fname
-    (or
-     ;; A type decl exists in this buffer?
-     (s-matches? (eval `(rx bol (* space)
-                            (? (or "let" "where") (+ space))
-                            ,fname (+ space) "::"))
-                 (buffer-string))
-     ;; At an equation?
-     (s-matches? (eval `(rx bol (* space)
-                            (? (or "let" "where") (+ space))
-                            ,fname (+ nonl) "="))
-                 (current-line)))))
-
-(defun cb-hs:start-col-of-string-on-line (str)
-  "Return the column where STR starts on this line."
-  (when str
-    (save-excursion
-      (goto-char (line-beginning-position))
-      (search-forward str)
-      (goto-char (match-beginning 0))
-      (current-column))))
-
-(defun cb-hs:meta-ret ()
-  "Open a new line in a context-sensitive way."
-  (interactive)
-  (yas-exit-all-snippets)
-  (cond
-
-   ;; Insert new case below the current type decl.
-   ((s-matches? (rx bol (* space) "data") (current-line))
-    (goto-char (line-end-position))
-    (newline)
-    (insert "| ")
-    (goto-char (line-beginning-position))
-    (hi2-indent-line)
-    (goto-char (line-end-position))
-    (message "New data case"))
-
-   ;; Insert new type decl case below the current one.
-   ((s-matches? (rx bol (* space) "|") (current-line))
-    (cb-hs:newline-indent-to-same-col)
-    (insert "| ")
-    (message "New data case"))
-
-   ;; Insert pattern match at function definition.
-   ((s-matches? (rx bol (* space) (+ word) (+ space) "::") (current-line))
-    (cb-hs:insert-function-template (cb-hs:first-ident-on-line))
-    (message "New function case"))
-
-   ;; Insert new pattern match case below the current one.
-   ((or (s-matches? (rx bol (* space) (+ (not (any "="))) "->") (current-line))
-        (s-matches? (rx bol (* space) "case" (+ space)) (current-line)))
-    (cb-hs:newline-indent-to-same-col)
-    (yas-insert-first-snippet (C (~ equal "match-case") yas--template-name))
-    (message "New pattern match case"))
-
-   ;; Insert new line starting with comma.
-   ((s-matches? (rx bol (* space) ",") (current-line))
-    (cb-hs:newline-indent-to-same-col)
-    (insert ", ")
-    (message "New entry"))
-
-   ;; Insert new line starting with an arrow.
-   ((s-matches? (rx bol (* space) "->") (current-line))
-    (cb-hs:newline-indent-to-same-col)
-    (insert "-> ")
-    (message "New arrow"))
-
-   ;; Insert new line with a binding in do-notation.
-   ((s-matches? (rx bol (* space) (+ nonl) "<-") (current-line))
-    (back-to-indentation)
-    (let ((col (current-column)))
-      (search-forward "<-")
-      (shm/forward-node)
+  (defun cb-hs:newline-indent-to-same-col ()
+    "Make a new line below the current one and indent to the same column."
+    (let ((col (save-excursion (back-to-indentation) (current-column))))
+      (goto-char (line-end-position))
       (newline)
-      (indent-to col))
+      (indent-to col)))
 
-    (yas-insert-first-snippet (C (~ equal "do-binding") yas--template-name))
-    (message "New do-binding"))
+  (defvar cb-hs:haskell-keywords
+    '("let" "where" "module" "case" "class" "data" "deriving" "default"
+      "import" "infixl" "infixr" "newtype" "data" "type" "if" "then" "else"))
 
-   ;; New function case.
-   ((cb-hs:at-decl-for-function? (cb-hs:first-ident-on-line))
-    (let* ((ident (cb-hs:first-ident-on-line))
-           (col (cb-hs:start-col-of-string-on-line ident)))
-      (cb-hs:insert-function-template ident)
-      (save-excursion
-        (back-to-indentation)
-        (indent-to col)))
-    (message "New binding case"))
+  (defun cb-hs:first-ident-on-line ()
+    (car (-difference (s-split (rx space) (current-line) t)
+                      cb-hs:haskell-keywords)))
 
-   (t
+  (defun cb-hs:first-ident-on-line ()
+    (car (-difference (s-split (rx space) (current-line) t)
+                      cb-hs:haskell-keywords)))
+
+  (defun cb-hs:insert-function-template (fname)
+    (back-to-indentation)
+
+    (when (shm-current-node)
+      (shm/goto-parent-end))
+
     (goto-char (line-end-position))
-    (hi2-newline-and-indent)
-    (message "New line")))
+    (newline)
+    (shm-insert-string (concat fname " ")))
 
-  (when (true? evil-mode)
-    (evil-insert-state)))
+  (defun cb-hs:at-decl-for-function? (fname)
+    (when fname
+      (or
+       ;; A type decl exists in this buffer?
+       (s-matches? (eval `(rx bol (* space)
+                              (? (or "let" "where") (+ space))
+                              ,fname (+ space) "::"))
+                   (buffer-string))
+       ;; At an equation?
+       (s-matches? (eval `(rx bol (* space)
+                              (? (or "let" "where") (+ space))
+                              ,fname (+ nonl) "="))
+                   (current-line)))))
 
-(define-key haskell-mode-map (kbd "M-RET") 'cb-hs:meta-ret)
+  (defun cb-hs:start-col-of-string-on-line (str)
+    "Return the column where STR starts on this line."
+    (when str
+      (save-excursion
+        (goto-char (line-beginning-position))
+        (search-forward str)
+        (goto-char (match-beginning 0))
+        (current-column))))
 
-(defun cb-hs:flyspell-verify ()
-  "Prevent common flyspell false positives in haskell-mode."
-  (and (flyspell-generic-progmode-verify)
-       (not (or (s-matches? (rx bol (* space) "{-#") (current-line))
-                (s-matches? (rx bol (* space) "foreign import") (current-line))))))
+  (defun cb-hs:meta-ret ()
+    "Open a new line in a context-sensitive way."
+    (interactive)
+    (yas-exit-all-snippets)
+    (cond
 
-(hook-fn 'flyspell-prog-mode-hook
-  (when (derived-mode-p 'haskell-mode)
-    (setq-local flyspell-generic-check-word-predicate 'cb-hs:flyspell-verify)))
+     ;; Insert new case below the current type decl.
+     ((s-matches? (rx bol (* space) "data") (current-line))
+      (goto-char (line-end-position))
+      (newline)
+      (insert "| ")
+      (goto-char (line-beginning-position))
+      (hi2-indent-line)
+      (goto-char (line-end-position))
+      (message "New data case"))
 
-(defun cb-hs:src-or-test-dir ()
-  "Find the containing src or test directory."
-  (-when-let (f-or-dir (or (buffer-file-name) default-directory))
-    (cadr (s-match (rx (group (+ nonl) "/" (or "src" "test") "/")) f-or-dir))))
+     ;; Insert new type decl case below the current one.
+     ((s-matches? (rx bol (* space) "|") (current-line))
+      (cb-hs:newline-indent-to-same-col)
+      (insert "| ")
+      (message "New data case"))
 
-(defun cb-hs:guess-session-dir (session)
-  "Calculate a default directory for an interactive Haskell SESSION."
-  (or (cb-hs:src-or-test-dir)
-      (haskell-session-get session 'current-dir)
-      (haskell-session-get session 'cabal-dir)
-      (when (buffer-file-name) (f-dirname (buffer-file-name)))
-      user-home-directory))
+     ;; Insert pattern match at function definition.
+     ((s-matches? (rx bol (* space) (+ word) (+ space) "::") (current-line))
+      (cb-hs:insert-function-template (cb-hs:first-ident-on-line))
+      (message "New function case"))
 
-(defun haskell-session-pwd (session &optional change)
-  "Get the directory for SESSION.
+     ;; Insert new pattern match case below the current one.
+     ((or (s-matches? (rx bol (* space) (+ (not (any "="))) "->") (current-line))
+          (s-matches? (rx bol (* space) "case" (+ space)) (current-line)))
+      (cb-hs:newline-indent-to-same-col)
+      (yas-insert-first-snippet (C (~ equal "match-case") yas--template-name))
+      (message "New pattern match case"))
+
+     ;; Insert new line starting with comma.
+     ((s-matches? (rx bol (* space) ",") (current-line))
+      (cb-hs:newline-indent-to-same-col)
+      (insert ", ")
+      (message "New entry"))
+
+     ;; Insert new line starting with an arrow.
+     ((s-matches? (rx bol (* space) "->") (current-line))
+      (cb-hs:newline-indent-to-same-col)
+      (insert "-> ")
+      (message "New arrow"))
+
+     ;; Insert new line with a binding in do-notation.
+     ((s-matches? (rx bol (* space) (+ nonl) "<-") (current-line))
+      (back-to-indentation)
+      (let ((col (current-column)))
+        (search-forward "<-")
+        (shm/forward-node)
+        (newline)
+        (indent-to col))
+
+      (yas-insert-first-snippet (C (~ equal "do-binding") yas--template-name))
+      (message "New do-binding"))
+
+     ;; New function case.
+     ((cb-hs:at-decl-for-function? (cb-hs:first-ident-on-line))
+      (let* ((ident (cb-hs:first-ident-on-line))
+             (col (cb-hs:start-col-of-string-on-line ident)))
+        (cb-hs:insert-function-template ident)
+        (save-excursion
+          (back-to-indentation)
+          (indent-to col)))
+      (message "New binding case"))
+
+     (t
+      (goto-char (line-end-position))
+      (hi2-newline-and-indent)
+      (message "New line")))
+
+    (when (true? evil-mode)
+      (evil-insert-state)))
+
+  (define-key haskell-mode-map (kbd "M-RET") 'cb-hs:meta-ret)
+
+  (defun cb-hs:flyspell-verify ()
+    "Prevent common flyspell false positives in haskell-mode."
+    (and (flyspell-generic-progmode-verify)
+         (not (or (s-matches? (rx bol (* space) "{-#") (current-line))
+                  (s-matches? (rx bol (* space) "foreign import") (current-line))))))
+
+  (hook-fn 'flyspell-prog-mode-hook
+    (when (derived-mode-p 'haskell-mode)
+      (setq-local flyspell-generic-check-word-predicate 'cb-hs:flyspell-verify)))
+
+  (defun cb-hs:src-or-test-dir ()
+    "Find the containing src or test directory."
+    (-when-let (f-or-dir (or (buffer-file-name) default-directory))
+      (cadr (s-match (rx (group (+ nonl) "/" (or "src" "test") "/")) f-or-dir))))
+
+  (defun cb-hs:guess-session-dir (session)
+    "Calculate a default directory for an interactive Haskell SESSION."
+    (or (cb-hs:src-or-test-dir)
+        (haskell-session-get session 'current-dir)
+        (haskell-session-get session 'cabal-dir)
+        (when (buffer-file-name) (f-dirname (buffer-file-name)))
+        user-home-directory))
+
+  (defun haskell-session-pwd (session &optional change)
+    "Get the directory for SESSION.
 
 When optional argument CHANGE is set, prompt for the current directory."
-  (when (or change (null (haskell-session-get session 'current-dir)))
-    (let* ((prompt (if change "Change directory: " "Set current directory: "))
-           (default-dir (cb-hs:guess-session-dir session))
-           (dir (haskell-utils-read-directory-name prompt default-dir)))
-      (haskell-session-set-current-dir session dir)
-      dir)))
+    (when (or change (null (haskell-session-get session 'current-dir)))
+      (let* ((prompt (if change "Change directory: " "Set current directory: "))
+             (default-dir (cb-hs:guess-session-dir session))
+             (dir (haskell-utils-read-directory-name prompt default-dir)))
+        (haskell-session-set-current-dir session dir)
+        dir)))
 
-(defun cb:haskell-doc-current-info ()
-  "Return the info about symbol at point.
+  (defun cb:haskell-doc-current-info ()
+    "Return the info about symbol at point.
 Meant for `eldoc-documentation-function'."
-  (-when-let (sig (haskell-doc-sym-doc (haskell-ident-at-point)))
-    (with-temp-buffer
-      ;; Initialise haskell-mode's font-locking.
-      (set (make-local-variable 'font-lock-defaults)
-           '(haskell-font-lock-choose-keywords
-             nil nil ((?\' . "w") (?_  . "w")) nil
-             (font-lock-syntactic-keywords
-              . haskell-font-lock-choose-syntactic-keywords)
-             (font-lock-syntactic-face-function
-              . haskell-syntactic-face-function)
-             ;; Get help from font-lock-syntactic-keywords.
-             (parse-sexp-lookup-properties . t)))
+    (-when-let (sig (haskell-doc-sym-doc (haskell-ident-at-point)))
+      (with-temp-buffer
+        ;; Initialise haskell-mode's font-locking.
+        (set (make-local-variable 'font-lock-defaults)
+             '(haskell-font-lock-choose-keywords
+               nil nil ((?\' . "w") (?_  . "w")) nil
+               (font-lock-syntactic-keywords
+                . haskell-font-lock-choose-syntactic-keywords)
+               (font-lock-syntactic-face-function
+                . haskell-syntactic-face-function)
+               ;; Get help from font-lock-syntactic-keywords.
+               (parse-sexp-lookup-properties . t)))
 
-      (insert sig)
-      (font-lock-fontify-buffer)
-      (buffer-string))))
+        (insert sig)
+        (font-lock-fontify-buffer)
+        (buffer-string))))
 
-(hook-fn 'cb:haskell-modes-hook
-  (setq-local eldoc-documentation-function 'cb:haskell-doc-current-info))
+  (hook-fn 'cb:haskell-modes-hook
+    (setq-local eldoc-documentation-function 'cb:haskell-doc-current-info))
 
-)
+  )
 
 (cb:declare-package-installer idris
   :match (rx ".idr" eol)
@@ -2942,337 +2795,337 @@ Meant for `eldoc-documentation-function'."
 
 (after 'idris-mode
 
-(defun cb-idris:eldoc-fn ()
-  (ignore-errors
-    (noflet ((message (&rest _)))
-      (-when-let* ((name (idris-name-at-point))
-                   (str (car (idris-eval (list :type-of name)))))
-        (cl-destructuring-bind (_ ident type)
-            (s-match (rx (group (+ nonl)) ":" (group (+ nonl)) eol) str)
-          (format "%s:%s"
-                  (propertize ident 'face font-lock-function-name-face)
-                  (propertize type 'face font-lock-type-face)))))))
+  (defun cb-idris:eldoc-fn ()
+    (ignore-errors
+      (noflet ((message (&rest _)))
+        (-when-let* ((name (idris-name-at-point))
+                     (str (car (idris-eval (list :type-of name)))))
+          (cl-destructuring-bind (_ ident type)
+              (s-match (rx (group (+ nonl)) ":" (group (+ nonl)) eol) str)
+            (format "%s:%s"
+                    (propertize ident 'face font-lock-function-name-face)
+                    (propertize type 'face font-lock-type-face)))))))
 
-(hook-fn 'cb:idris-modes-hook
-  (setq-local eldoc-documentation-function 'cb-idris:eldoc-fn)
-  (turn-on-eldoc-mode))
+  (hook-fn 'cb:idris-modes-hook
+    (setq-local eldoc-documentation-function 'cb-idris:eldoc-fn)
+    (turn-on-eldoc-mode))
 
-(define-key idris-mode-map (kbd "C-c C-z") 'idris-switch-to-output-buffer)
+  (define-key idris-mode-map (kbd "C-c C-z") 'idris-switch-to-output-buffer)
 
-(defadvice idris-switch-to-output-buffer (after evil-append activate)
-  (cb:append-buffer))
+  (defadvice idris-switch-to-output-buffer (after evil-append activate)
+    (cb:append-buffer))
 
-(defun cbidris:smart-colon ()
-  (interactive)
-  (cond
-   ((and (char-before) (equal (char-to-string (char-before)) " "))
-    (smart-insert-op ":"))
-   ((and (char-after) (equal (char-to-string (char-after)) ")"))
-    (insert ":"))
-   (t
-    (smart-insert-op ":"))))
-
-(defun cbidris:smart-comma ()
-  (interactive)
-  (cond
-   ((s-matches? (rx bol (* space) eol)
-                (buffer-substring (line-beginning-position) (point)))
-    (insert ", ")
-    (idris-indentation-indent-line))
-   (t
-    (insert ","))))
-
-(defun cbidris:smart-pipe ()
-  "Insert a pipe operator. Add padding, unless we're inside a list."
-  (interactive)
-  (let ((in-empty-square-braces?
-         (save-excursion
-           (-when-let (pair (sp-backward-up-sexp))
-             (cl-destructuring-bind (&key op beg end &allow-other-keys) pair
-               (and (equal "[" op)
-                    (s-blank? (buffer-substring (1+ beg) (1- end)))))))))
+  (defun cbidris:smart-colon ()
+    (interactive)
     (cond
-     (in-empty-square-braces?
-      (delete-horizontal-space)
-      (insert "| ")
-      (save-excursion
-        (insert " |"))
-      (message "Inserting idiom brackets"))
-
+     ((and (char-before) (equal (char-to-string (char-before)) " "))
+      (smart-insert-op ":"))
+     ((and (char-after) (equal (char-to-string (char-after)) ")"))
+      (insert ":"))
      (t
-      (smart-insert-op "|")))))
+      (smart-insert-op ":"))))
 
-
-(defun cbidris:smart-dot ()
-  "Insert a period with context-sensitive padding."
-  (interactive)
-  (let ((looking-at-module-or-constructor?
-         (-when-let (sym (thing-at-point 'symbol))
-           (s-uppercase? (substring sym 0 1)))))
+  (defun cbidris:smart-comma ()
+    (interactive)
     (cond
-     (looking-at-module-or-constructor?
-      (insert "."))
-     ((thing-at-point-looking-at (rx (or "(" "{" "[") (* space)))
-      (insert "."))
-     (t
-      (smart-insert-op ".")))))
-
-(defun cbidris:smart-question-mark ()
-  "Insert a ? char as an operator, unless point is after an = sign."
-  (interactive)
-  (cond
-   ((s-matches? (rx "=" (* space) eol) (current-line))
-    (just-one-space)
-    (insert "?"))
-   (t
-    (smart-insert-op "?"))))
-
-(--each cb:idris-modes
-  (declare-smart-ops it
-    :add '("$")
-    :custom
-    '(("?" . cbidris:smart-question-mark)
-      ("|" . cbidris:smart-pipe)
-      ("." . cbidris:smart-dot)
-      ("," . cbidris:smart-comma)
-      (":" . cbidris:smart-colon))))
-
-(define-key idris-mode-map (kbd "<backspace>") 'sp-backward-delete-char)
-
-(defun cbidris:apply-unicode ()
-  (font-lock-add-keywords
-   nil `(("\\s ?(?\\(\\\\\\)\\s *\\(\\w\\|_\\|(.*)\\).*?\\s *=>"
-                  (0
-                   (progn (compose-region (match-beginning 1) (match-end 1)
-                                          ?\λ 'decompose-region)
-                          nil))))))
-
-(add-to-list 'font-lock-keywords-alist
-             '(idris-mode
-               ((("^ *record\\>" . font-lock-keyword-face)))))
-
-(add-hook 'cb:idris-modes-hook 'cbidris:apply-unicode)
-
-(-each
-    '((idris-semantic-type-face     . font-lock-type-face)
-      (idris-semantic-data-face     . default)
-      (idris-semantic-function-face . font-lock-function-name-face)
-      (idris-semantic-bound-face    . font-lock-variable-name-face)
-      (idris-semantic-implicit-face . font-lock-comment-face)
-      (idris-repl-output-face       . compilation-info)
-      )
-  (~ add-to-list 'face-remapping-alist))
-
-(defun sp-idris-just-one-space (id action ctx)
-  "Pad parens with spaces."
-  (when (and (equal 'insert action)
-             (sp-in-code-p id action ctx))
-    ;; Insert a leading space, unless
-    ;; 1. this is a quoted form
-    ;; 2. this is the first position of another list
-    ;; 3. this form begins a new line.
-    (save-excursion
-      (search-backward id)
-      (unless (s-matches?
-               (rx (or (group bol (* space))
-                       (any "," "`" "@" "(" "[" "{")) eol)
-               (buffer-substring (line-beginning-position) (point)))
-        (just-one-space)))
-    ;; Insert space after separator, unless
-    ;; 1. this form is at the end of another list.
-    ;; 2. this form is at the end of the line.
-    (save-excursion
-      (search-forward (sp-get-pair id :close))
-      (unless (s-matches? (rx (or (any ")" "]" "}")
-                                  eol))
-                          (buffer-substring (point) (1+ (point))))
-        (just-one-space)))))
-
-(sp-with-modes cb:idris-modes
-  ;; Pad delimiters with spaces.
-  (sp-local-pair "\"" "\"" :post-handlers '(:add sp-idris-just-one-space))
-  (sp-local-pair "{" "}" :post-handlers '(:add sp-idris-just-one-space))
-  (sp-local-pair "[" "]" :post-handlers '(:add sp-idris-just-one-space))
-  (sp-local-pair "(" ")" :post-handlers '(:add sp-idris-just-one-space))
-  (sp-local-pair "`" "`" :post-handlers '(:add sp-idris-just-one-space))
-  (sp-local-pair "'" nil :actions nil)
-  (sp-local-pair "[|" "|]" :post-handlers '(:add sp-idris-just-one-space)))
-(sp-with-modes cb:idris-modes
-  (sp-local-pair "'" "'" :actions '(:rem insert)))
-
-(defun cbidris:get-docstring ()
-  "Format a docstring for eldoc."
-  (ignore-errors
-    (-when-let* ((name (car (idris-thing-at-point)))
-                 (s (idris-eval `(:type-of ,name))))
-      (nth 1 (s-match (rx (* (any "-" "\n" space)) (group (* anything)))
-                      s)))))
-
-(defun cbidris:configure-eldoc ()
-  "Set up eldoc for Idris."
-  (setq-local eldoc-documentation-function 'cbidris:get-docstring)
-  (eldoc-mode +1))
-
-(add-hook 'cb:idris-modes-hook 'cbidris:configure-eldoc)
-
-(defun idris-switch-to-src ()
-  "Pop to the last idris source buffer."
-  (interactive)
-  (-if-let (buf (car (--filter-buffers (derived-mode-p 'idris-mode))))
-      (pop-to-buffer buf)
-    (error "No idris buffers")))
-
-(after 'idris-repl
-  (define-key idris-repl-mode-map (kbd "C-c C-z") 'idris-switch-to-src))
-
-(defun cbidris:data-start-pos ()
-  "Find the start position of the datatype declaration at point."
-  (save-excursion
-    (end-of-line)
-    (when (search-backward-regexp (rx bol (* space) (or "record" "data") eow) nil t)
-      (skip-chars-forward " \t")
-      (point))))
-
-(defun cbidris:data-end-pos ()
-  "Find the end position of the datatype declaration at point."
-  (save-excursion
-    (let ((start (point)))
-
-      (goto-char (cbidris:data-start-pos))
-      (forward-line)
-      (goto-char (line-beginning-position))
-
-      (let ((end
-             (when (search-forward-regexp
-                    (rx bol (or (and (* space) eol) (not (any space "|"))))
-                    nil t)
-               (forward-line -1)
-               (line-end-position))))
-        (if (and end (<= start end))
-            end
-          (point-max))))))
-
-(cl-defun cbidris:data-decl-at-pt ()
-  "Return the data declaration at point."
-  (-when-let* ((start (cbidris:data-start-pos))
-               (end (cbidris:data-end-pos)))
-    (buffer-substring-no-properties start end)))
-
-(defun cbidris:at-data-decl? ()
-  (-when-let (dd (cbidris:data-decl-at-pt))
-    (let ((lines (s-split "\n" dd)))
-      (or (equal 1 (length lines))
-          (->> (-drop 1 lines)
-            (-all? (~ s-matches? (rx bol (or space "|")))))))))
-
-(defun cbidris:function-name-at-pt ()
-  "Return the name of the function at point."
-  (save-excursion
-    (search-backward-regexp (rx bol (* space) (group (+ (not (any space ":"))))))
-    (let ((s (s-trim (match-string-no-properties 1))))
-      (unless (or (-contains? idris-keywords s)
-                  (s-blank? s))
-        s))))
-
-(defun idris-ret ()
-  "Indent and align on newline."
-  (interactive "*")
-  (if (s-matches? comment-start (current-line))
-      (comment-indent-new-line)
-
-    (cond
-
-     ((s-matches? (rx space "->" (* space))
+     ((s-matches? (rx bol (* space) eol)
                   (buffer-substring (line-beginning-position) (point)))
-      (newline)
-      (delete-horizontal-space)
-      (indent-for-tab-command))
-
-     ((s-matches? (rx bol (* space) eol) (current-line))
-      (delete-horizontal-space)
-      (newline))
-
+      (insert ", ")
+      (idris-indentation-indent-line))
      (t
-      (idris-newline-and-indent)))))
+      (insert ","))))
 
-(defun idris-meta-ret ()
-  "Create a newline and perform a context-sensitive continuation.
+  (defun cbidris:smart-pipe ()
+    "Insert a pipe operator. Add padding, unless we're inside a list."
+    (interactive)
+    (let ((in-empty-square-braces?
+           (save-excursion
+             (-when-let (pair (sp-backward-up-sexp))
+               (cl-destructuring-bind (&key op beg end &allow-other-keys) pair
+                 (and (equal "[" op)
+                      (s-blank? (buffer-substring (1+ beg) (1- end)))))))))
+      (cond
+       (in-empty-square-braces?
+        (delete-horizontal-space)
+        (insert "| ")
+        (save-excursion
+          (insert " |"))
+        (message "Inserting idiom brackets"))
+
+       (t
+        (smart-insert-op "|")))))
+
+
+  (defun cbidris:smart-dot ()
+    "Insert a period with context-sensitive padding."
+    (interactive)
+    (let ((looking-at-module-or-constructor?
+           (-when-let (sym (thing-at-point 'symbol))
+             (s-uppercase? (substring sym 0 1)))))
+      (cond
+       (looking-at-module-or-constructor?
+        (insert "."))
+       ((thing-at-point-looking-at (rx (or "(" "{" "[") (* space)))
+        (insert "."))
+       (t
+        (smart-insert-op ".")))))
+
+  (defun cbidris:smart-question-mark ()
+    "Insert a ? char as an operator, unless point is after an = sign."
+    (interactive)
+    (cond
+     ((s-matches? (rx "=" (* space) eol) (current-line))
+      (just-one-space)
+      (insert "?"))
+     (t
+      (smart-insert-op "?"))))
+
+  (--each cb:idris-modes
+    (declare-smart-ops it
+      :add '("$")
+      :custom
+      '(("?" . cbidris:smart-question-mark)
+        ("|" . cbidris:smart-pipe)
+        ("." . cbidris:smart-dot)
+        ("," . cbidris:smart-comma)
+        (":" . cbidris:smart-colon))))
+
+  (define-key idris-mode-map (kbd "<backspace>") 'sp-backward-delete-char)
+
+  (defun cbidris:apply-unicode ()
+    (font-lock-add-keywords
+     nil `(("\\s ?(?\\(\\\\\\)\\s *\\(\\w\\|_\\|(.*)\\).*?\\s *=>"
+            (0
+             (progn (compose-region (match-beginning 1) (match-end 1)
+                                    ?\λ 'decompose-region)
+                    nil))))))
+
+  (add-to-list 'font-lock-keywords-alist
+               '(idris-mode
+                 ((("^ *record\\>" . font-lock-keyword-face)))))
+
+  (add-hook 'cb:idris-modes-hook 'cbidris:apply-unicode)
+
+  (-each
+      '((idris-semantic-type-face     . font-lock-type-face)
+        (idris-semantic-data-face     . default)
+        (idris-semantic-function-face . font-lock-function-name-face)
+        (idris-semantic-bound-face    . font-lock-variable-name-face)
+        (idris-semantic-implicit-face . font-lock-comment-face)
+        (idris-repl-output-face       . compilation-info)
+        )
+    (~ add-to-list 'face-remapping-alist))
+
+  (defun sp-idris-just-one-space (id action ctx)
+    "Pad parens with spaces."
+    (when (and (equal 'insert action)
+               (sp-in-code-p id action ctx))
+      ;; Insert a leading space, unless
+      ;; 1. this is a quoted form
+      ;; 2. this is the first position of another list
+      ;; 3. this form begins a new line.
+      (save-excursion
+        (search-backward id)
+        (unless (s-matches?
+                 (rx (or (group bol (* space))
+                         (any "," "`" "@" "(" "[" "{")) eol)
+                 (buffer-substring (line-beginning-position) (point)))
+          (just-one-space)))
+      ;; Insert space after separator, unless
+      ;; 1. this form is at the end of another list.
+      ;; 2. this form is at the end of the line.
+      (save-excursion
+        (search-forward (sp-get-pair id :close))
+        (unless (s-matches? (rx (or (any ")" "]" "}")
+                                    eol))
+                            (buffer-substring (point) (1+ (point))))
+          (just-one-space)))))
+
+  (sp-with-modes cb:idris-modes
+    ;; Pad delimiters with spaces.
+    (sp-local-pair "\"" "\"" :post-handlers '(:add sp-idris-just-one-space))
+    (sp-local-pair "{" "}" :post-handlers '(:add sp-idris-just-one-space))
+    (sp-local-pair "[" "]" :post-handlers '(:add sp-idris-just-one-space))
+    (sp-local-pair "(" ")" :post-handlers '(:add sp-idris-just-one-space))
+    (sp-local-pair "`" "`" :post-handlers '(:add sp-idris-just-one-space))
+    (sp-local-pair "'" nil :actions nil)
+    (sp-local-pair "[|" "|]" :post-handlers '(:add sp-idris-just-one-space)))
+  (sp-with-modes cb:idris-modes
+    (sp-local-pair "'" "'" :actions '(:rem insert)))
+
+  (defun cbidris:get-docstring ()
+    "Format a docstring for eldoc."
+    (ignore-errors
+      (-when-let* ((name (car (idris-thing-at-point)))
+                   (s (idris-eval `(:type-of ,name))))
+        (nth 1 (s-match (rx (* (any "-" "\n" space)) (group (* anything)))
+                        s)))))
+
+  (defun cbidris:configure-eldoc ()
+    "Set up eldoc for Idris."
+    (setq-local eldoc-documentation-function 'cbidris:get-docstring)
+    (eldoc-mode +1))
+
+  (add-hook 'cb:idris-modes-hook 'cbidris:configure-eldoc)
+
+  (defun idris-switch-to-src ()
+    "Pop to the last idris source buffer."
+    (interactive)
+    (-if-let (buf (car (--filter-buffers (derived-mode-p 'idris-mode))))
+        (pop-to-buffer buf)
+      (error "No idris buffers")))
+
+  (after 'idris-repl
+    (define-key idris-repl-mode-map (kbd "C-c C-z") 'idris-switch-to-src))
+
+  (defun cbidris:data-start-pos ()
+    "Find the start position of the datatype declaration at point."
+    (save-excursion
+      (end-of-line)
+      (when (search-backward-regexp (rx bol (* space) (or "record" "data") eow) nil t)
+        (skip-chars-forward " \t")
+        (point))))
+
+  (defun cbidris:data-end-pos ()
+    "Find the end position of the datatype declaration at point."
+    (save-excursion
+      (let ((start (point)))
+
+        (goto-char (cbidris:data-start-pos))
+        (forward-line)
+        (goto-char (line-beginning-position))
+
+        (let ((end
+               (when (search-forward-regexp
+                      (rx bol (or (and (* space) eol) (not (any space "|"))))
+                      nil t)
+                 (forward-line -1)
+                 (line-end-position))))
+          (if (and end (<= start end))
+              end
+            (point-max))))))
+
+  (cl-defun cbidris:data-decl-at-pt ()
+    "Return the data declaration at point."
+    (-when-let* ((start (cbidris:data-start-pos))
+                 (end (cbidris:data-end-pos)))
+      (buffer-substring-no-properties start end)))
+
+  (defun cbidris:at-data-decl? ()
+    (-when-let (dd (cbidris:data-decl-at-pt))
+      (let ((lines (s-split "\n" dd)))
+        (or (equal 1 (length lines))
+            (->> (-drop 1 lines)
+              (-all? (~ s-matches? (rx bol (or space "|")))))))))
+
+  (defun cbidris:function-name-at-pt ()
+    "Return the name of the function at point."
+    (save-excursion
+      (search-backward-regexp (rx bol (* space) (group (+ (not (any space ":"))))))
+      (let ((s (s-trim (match-string-no-properties 1))))
+        (unless (or (-contains? idris-keywords s)
+                    (s-blank? s))
+          s))))
+
+  (defun idris-ret ()
+    "Indent and align on newline."
+    (interactive "*")
+    (if (s-matches? comment-start (current-line))
+        (comment-indent-new-line)
+
+      (cond
+
+       ((s-matches? (rx space "->" (* space))
+                    (buffer-substring (line-beginning-position) (point)))
+        (newline)
+        (delete-horizontal-space)
+        (indent-for-tab-command))
+
+       ((s-matches? (rx bol (* space) eol) (current-line))
+        (delete-horizontal-space)
+        (newline))
+
+       (t
+        (idris-newline-and-indent)))))
+
+  (defun idris-meta-ret ()
+    "Create a newline and perform a context-sensitive continuation.
 - At functions, create a new case for the function.
 - At types, add a 'where' statement if one does not exist.
 - At comments, fill paragraph and insert a newline."
-  (interactive)
-  (cond
+    (interactive)
+    (cond
 
-   ;; Insert new type decl case below the current one.
-   ((s-matches? (rx bol (* space) "|") (current-line))
-    (let ((col (save-excursion (back-to-indentation) (current-column))))
+     ;; Insert new type decl case below the current one.
+     ((s-matches? (rx bol (* space) "|") (current-line))
+      (let ((col (save-excursion (back-to-indentation) (current-column))))
+        (goto-char (line-end-position))
+        (newline)
+        (indent-to col))
+
+      (insert "| ")
+      (message "New data case"))
+
+     ;; Insert new type decl case below the current one.
+     ((and (s-matches? (rx bol (* space) "data") (current-line))
+           (not (s-matches? "where" (current-line))))
+
+      (-if-let (col (save-excursion
+                      (goto-char (line-beginning-position))
+                      (search-forward "=" nil t)
+                      (current-column)))
+          (progn
+            (goto-char (line-end-position))
+            (newline)
+            (indent-to (1- col)))
+
+        (goto-char (line-end-position))
+        (idris-newline-and-indent))
+
+      (insert "| ")
+      (message "New data case"))
+
+     ;; Create new function case.
+     ((cbidris:function-name-at-pt)
       (goto-char (line-end-position))
-      (newline)
-      (indent-to col))
+      (let ((fn (cbidris:function-name-at-pt))
+            (col (save-excursion
+                   (back-to-indentation)
+                   (current-column))))
 
-    (insert "| ")
-    (message "New data case"))
+        (unless (s-matches? (rx bol (* space) eol) (current-line))
+          (newline))
 
-   ;; Insert new type decl case below the current one.
-   ((and (s-matches? (rx bol (* space) "data") (current-line))
-         (not (s-matches? "where" (current-line))))
+        (indent-to-column col)
+        (insert fn)
+        (just-one-space)))
 
-    (-if-let (col (save-excursion
-                    (goto-char (line-beginning-position))
-                    (search-forward "=" nil t)
-                    (current-column)))
-        (progn
-          (goto-char (line-end-position))
-          (newline)
-          (indent-to (1- col)))
+     ;; Insert new line starting with comma.
+     ((s-matches? (rx bol (* space) ",") (current-line))
+      (cb-hs:newline-indent-to-same-col)
+      (insert ", ")
+      (message "New entry"))
 
+     ;; Create a new line in a comment.
+     ((s-matches? comment-start (current-line))
+      (fill-paragraph)
+      (comment-indent-new-line)
+      (message "New comment line"))
+
+     (t
       (goto-char (line-end-position))
-      (idris-newline-and-indent))
+      (idris-ret)))
 
-    (insert "| ")
-    (message "New data case"))
+    (cb:maybe-evil-insert-state))
 
-   ;; Create new function case.
-   ((cbidris:function-name-at-pt)
-    (goto-char (line-end-position))
-    (let ((fn (cbidris:function-name-at-pt))
-          (col (save-excursion
-                 (back-to-indentation)
-                 (current-column))))
+  (define-keys idris-mode-map
+    "<return>" 'idris-ret
+    "M-<return>" 'idris-meta-ret)
 
-      (unless (s-matches? (rx bol (* space) eol) (current-line))
-        (newline))
+  (after 'evil
+    (add-hook 'idris-info-mode-hook 'evil-emacs-state))
 
-      (indent-to-column col)
-      (insert fn)
-      (just-one-space)))
-
-   ;; Insert new line starting with comma.
-   ((s-matches? (rx bol (* space) ",") (current-line))
-    (cb-hs:newline-indent-to-same-col)
-    (insert ", ")
-    (message "New entry"))
-
-   ;; Create a new line in a comment.
-   ((s-matches? comment-start (current-line))
-    (fill-paragraph)
-    (comment-indent-new-line)
-    (message "New comment line"))
-
-   (t
-    (goto-char (line-end-position))
-    (idris-ret)))
-
-  (cb:maybe-evil-insert-state))
-
-(define-keys idris-mode-map
-  "<return>" 'idris-ret
-  "M-<return>" 'idris-meta-ret)
-
-(after 'evil
-  (add-hook 'idris-info-mode-hook 'evil-emacs-state))
-
-)
+  )
 
 (cb:declare-package-installer standard-ml
   :match (rx "." (or "sml" "sig" "cm" "grm"))
@@ -3433,8 +3286,8 @@ Meant for `eldoc-documentation-function'."
      ;;    (*| *) -> (** | *)
      ;;
      ((s-matches? (rx "(" (+ "*") (* space) eol) (buffer-substring
-                                           (line-beginning-position)
-                                           (point)))
+                                                  (line-beginning-position)
+                                                  (point)))
       (delete-horizontal-space 'back)
       (insert "*")
       (just-one-space 2)
@@ -3853,21 +3706,21 @@ where they should not be padded."
 
 (after 'make-mode
 
-(define-key makefile-mode-map (kbd "C-c C-c") nil)
+  (define-key makefile-mode-map (kbd "C-c C-c") nil)
 
-(defun convert-leading-spaces-to-tabs ()
-  "Convert sequences of spaces at the beginning of a line to tabs."
-  (interactive)
-  (save-excursion
-    (goto-char (point-min))
-    (while (search-forward-regexp (rx bol (group (>= 4 space))) nil t)
-      (replace-match "\t"))))
+  (defun convert-leading-spaces-to-tabs ()
+    "Convert sequences of spaces at the beginning of a line to tabs."
+    (interactive)
+    (save-excursion
+      (goto-char (point-min))
+      (while (search-forward-regexp (rx bol (group (>= 4 space))) nil t)
+        (replace-match "\t"))))
 
-(hook-fn 'makefile-mode-hook
-  (setq indent-tabs-mode t)
-  (add-hook 'before-save-hook 'convert-leading-spaces-to-tabs nil t))
+  (hook-fn 'makefile-mode-hook
+    (setq indent-tabs-mode t)
+    (add-hook 'before-save-hook 'convert-leading-spaces-to-tabs nil t))
 
-)
+  )
 
 (cb:declare-package-installer tex
   :match (rx "." (or "tex" "dtx" "ins" "ltx" "sty"
@@ -3878,70 +3731,70 @@ where they should not be padded."
 
 (after 'tex
 
-(setq TeX-auto-save t)
-(setq TeX-parse-self t)
-(setq-default TeX-master nil)
-(setq TeX-PDF-mode t)
-(add-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
-(add-hook 'LaTeX-mode-hook (lambda () (abbrev-mode +1)))
+  (setq TeX-auto-save t)
+  (setq TeX-parse-self t)
+  (setq-default TeX-master nil)
+  (setq TeX-PDF-mode t)
+  (add-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
+  (add-hook 'LaTeX-mode-hook (lambda () (abbrev-mode +1)))
 
-(add-to-list 'face-remapping-alist '(bad-face . flycheck-error))
+  (add-to-list 'face-remapping-alist '(bad-face . flycheck-error))
 
-(latex-preview-pane-enable)
+  (latex-preview-pane-enable)
 
-(defadvice TeX-complete-symbol (after position-point activate)
-  "Position point inside braces."
-  (when (equal (char-before) ?\})
-    (forward-char -1)))
+  (defadvice TeX-complete-symbol (after position-point activate)
+    "Position point inside braces."
+    (when (equal (char-before) ?\})
+      (forward-char -1)))
 
-(require 'whizzytex)
+  (require 'whizzytex)
 
-(defvar whizzytex-sty-installation "/usr/local/share/whizzytex/latex/whizzytex.sty"
-  "Path to the whizzytex macro package.")
+  (defvar whizzytex-sty-installation "/usr/local/share/whizzytex/latex/whizzytex.sty"
+    "Path to the whizzytex macro package.")
 
-(defvar whizzytex-src (f-join cb:lib-dir "whizzytex" "src")
-  "Path to the whizzytex sources.")
+  (defvar whizzytex-src (f-join cb:lib-dir "whizzytex" "src")
+    "Path to the whizzytex sources.")
 
-(defvar whizzy-command-name (f-join whizzytex-src "whizzytex"))
+  (defvar whizzy-command-name (f-join whizzytex-src "whizzytex"))
 
-(defun cbwh:install-tex-macros ()
-  "Prompt the user to install the tex macros if they do not exist."
-  (unless (f-exists? whizzytex-sty-installation)
-    (when (y-or-n-p (format "Install whizzytex macros into %s? "
-                            (f-dirname whizzytex-sty-installation)))
-      ;; Make installation directory and copy package there.
-      (%-sudo (%-sh "mkdir -p" (f-dirname whizzytex-sty-installation)))
-      (%-sudo (%-sh "cp -f"
-                    (%-quote (f-join whizzytex-src "whizzytex.sty"))
-                    (%-quote whizzytex-sty-installation))))))
+  (defun cbwh:install-tex-macros ()
+    "Prompt the user to install the tex macros if they do not exist."
+    (unless (f-exists? whizzytex-sty-installation)
+      (when (y-or-n-p (format "Install whizzytex macros into %s? "
+                              (f-dirname whizzytex-sty-installation)))
+        ;; Make installation directory and copy package there.
+        (%-sudo (%-sh "mkdir -p" (f-dirname whizzytex-sty-installation)))
+        (%-sudo (%-sh "cp -f"
+                      (%-quote (f-join whizzytex-src "whizzytex.sty"))
+                      (%-quote whizzytex-sty-installation))))))
 
-(hook-fn 'tex-mode-hook
-  (cbwh:install-tex-macros)
-  (whizzytex-mode +1))
+  (hook-fn 'tex-mode-hook
+    (cbwh:install-tex-macros)
+    (whizzytex-mode +1))
 
-(TeX-global-PDF-mode +1)
+  (TeX-global-PDF-mode +1)
 
-(require 'preview)
-(require 'latex)
+  (require 'preview)
+  (require 'latex)
 
-(after 'flycheck
-  (bind-keys
-    :map TeX-mode-map
-    "M-P" 'flycheck-previous-error
-    "M-N" 'flycheck-next-error
-    "TAB" 'TeX-complete-symbol))
+  (after 'flycheck
+    (bind-keys
+      :map TeX-mode-map
+      "M-P" 'flycheck-previous-error
+      "M-N" 'flycheck-next-error
+      "TAB" 'TeX-complete-symbol))
 
-(autoload 'TeX-fold-mode "tex-fold")
-(hook-fns '(tex-mode-hook latex-mode-hook)
-  (TeX-fold-mode +1))
+  (autoload 'TeX-fold-mode "tex-fold")
+  (hook-fns '(tex-mode-hook latex-mode-hook)
+    (TeX-fold-mode +1))
 
-(after '(evil tex)
-  (evil-define-key 'normal TeX-mode-map
-    (kbd "z m") 'TeX-fold-buffer
-    (kbd "z r") 'TeX-fold-clearout-buffer
-    (kbd "SPC") 'TeX-fold-dwim))
+  (after '(evil tex)
+    (evil-define-key 'normal TeX-mode-map
+      (kbd "z m") 'TeX-fold-buffer
+      (kbd "z r") 'TeX-fold-clearout-buffer
+      (kbd "SPC") 'TeX-fold-dwim))
 
-)
+  )
 
 (autoload 'sclang-mode "sclang")
 (autoload 'sclang-start "sclang")
