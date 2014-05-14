@@ -27,6 +27,15 @@
 ;;; Code:
 
 (require 'utils-common)
+(require 'utils-buffers)
+(require 'utils-shell)
+(require 'config-modegroups)
+
+(autoload 'org-move-item-down "org-list")
+(autoload 'sp-beginning-of-sexp "smartparens")
+(autoload 'org-move-item-up "org-list")
+(autoload 'sp-get-enclosing-sexp "smartparens")
+(autoload 'thing-at-point-looking-at "thingatpt")
 
 (defun cb:maybe-evil-insert-state ()
   "Only enter insert state if evil-mode is active."
@@ -210,6 +219,7 @@ With prefix argument ARG, justify text."
       (add-hook 'kill-buffer-hook 'tramp-cleanup-this-connection nil t)))))
 
 (defun maybe-sudo-edit ()
+  "Attempt to sudo-edit if the current file is not writeable."
   (let ((dir (file-name-directory (buffer-file-name))))
     (when (or (and (not (file-writable-p (buffer-file-name)))
                    (file-exists-p (buffer-file-name)))
@@ -350,6 +360,28 @@ Changes the selected buffer."
       (message "Password copied to kill ring."))
      (t
       pass))))
+
+(defun rewrite-setq-as-custom-set-variables ()
+  "Rewrite the `setq' at point to a usage of `custom-set-variables'."
+  (interactive "*")
+  (cond
+   ((and (sp-beginning-of-sexp)
+         (thing-at-point-looking-at "setq"))
+    (cl-destructuring-bind (&key beg end &allow-other-keys)
+        (sp-get-enclosing-sexp)
+      (let* ((form (read (buffer-substring beg end)))
+             (updated
+              (pp-to-string
+               (cons 'custom-set-variables
+                     (->> (cdr form)
+                       (-partition-in-steps 2 2)
+                       (--map (cons 'quote (list it))))))))
+        (goto-char beg)
+        (delete-region beg end)
+        (insert updated))))
+   (t
+    (user-error
+     "Not at a setq form"))))
 
 (provide 'utils-commands)
 
