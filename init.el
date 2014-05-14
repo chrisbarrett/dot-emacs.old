@@ -1,4 +1,4 @@
-;;; init.el --- Load org-babel to bootstrap configuration
+;;; init.el --- Bootstrap configuration
 
 ;; Copyright (C) 2013, 2014 Chris Barrett
 
@@ -22,41 +22,74 @@
 
 ;;; Commentary:
 
-;; My configuration is managed in a number of org-mode files in this directory.
-;; This file is responsible for initialising org-babel before loading those
-;; files.
-
 ;;; Code:
 
-(defvar cb:use-vim-keybindings? t
-  "Set to nil to disable Evil-mode and associated key bindings.")
-
-;; Initialise packages and install org-mode.
 (require 'package)
 (setq package-archives '(("org" . "http://orgmode.org/elpa/")
                          ("gnu" . "http://elpa.gnu.org/packages/")
                          ("melpa" . "http://melpa.milkbox.net/packages/")))
 (package-initialize)
-(unless package-archive-contents (package-refresh-contents))
-(unless (package-installed-p 'org-plus-contrib)
-  (package-install 'org-plus-contrib))
+(unless package-archive-contents
+  (package-refresh-contents))
 
-(require 'ob-tangle)
+(add-to-list 'load-path (concat user-emacs-directory "lisp"))
 
-(defun tangle-and-load-config-files ()
-  "Tangle and reload configuration files."
-  (interactive)
-  (message "Loading config files...")
-  (dolist (f '("config-base.org" "config-orgmode.org" "config-languages.org"))
-    (message "Loading %s" f)
-    (org-babel-load-file (concat user-emacs-directory f))
-    (byte-recompile-file (format "%s.el" (file-name-sans-extension f))))
-
-  (message "Loading config files...done"))
-
-(tangle-and-load-config-files)
+(require 'utils-buffers)
+(require 'utils-commands)
+(require 'utils-common)
+(require 'utils-shell)
+(require 'utils-ui)
+(require 'config-modegroups)
+(require 'config-base)
+(require 'config-bbdb)
+(require 'config-calc)
+(require 'config-company)
+(require 'config-compilation)
+(require 'config-darwin)
+(require 'config-diff)
+(require 'config-dired)
+(require 'config-eshell)
+(require 'config-evil)
+(require 'config-expand-region)
+(require 'config-file-template)
+(require 'config-flycheck)
+(require 'config-fortune)
+(require 'config-git)
+(require 'config-helm)
+(require 'config-highlight-symbol)
+(require 'config-hl-line)
+(require 'config-ido)
+(require 'config-iedit)
+(require 'config-info)
+(require 'config-insertion)
+(require 'config-irc)
+(require 'config-ledger)
+(require 'config-mail)
+(require 'config-modeline)
+(require 'config-pickers)
+(require 'config-popwin)
+(require 'config-projectile)
+(require 'config-recentf)
+(require 'config-scanner)
+(require 'config-search)
+(require 'config-server)
+(require 'config-skeletor)
+(require 'config-smartparens)
+(require 'config-spelling)
+(require 'config-theme)
+(require 'config-undo-tree)
+(require 'config-w3m)
+(require 'config-whitespace)
+(require 'config-yasnippet)
+(require 'config-languages)
+(require 'config-orgmode)
+(require 'custom)
 (require 'personal-config nil t)
 
 (provide 'init)
 
 ;;; init.el ends here
+
+;; Local Variables:
+;; no-byte-compile: t
+;; End:

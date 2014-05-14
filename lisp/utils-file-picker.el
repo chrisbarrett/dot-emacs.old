@@ -1,4 +1,4 @@
-;;; cb-file-picker-widget.el --- Provides a file picker widget.
+;;; utils-file-picker.el --- Provides a file picker widget.
 
 ;; Copyright (C) 2013 Chris Barrett
 
@@ -25,6 +25,9 @@
 ;; Provides a file picker widget. See the docstring for `file-picker'.
 
 ;;; Code:
+
+(require 'utils-common)
+(require 'config-theme)
 
 (autoload 'cl-gensym "cl-macs")
 (autoload 'undo-tree-redo "undo-tree")
@@ -293,22 +296,53 @@ KEY and DESC are the key binding and command description."
 
 (defun file-picker-format-key-summary ()
   "Format a string listing available key commands."
-  (let* ((cmds (-map (@ 'file-picker--pp-option)
-                     '(("a" "Add File")
-                       ("g" "Add Files (Glob)")
-                       ("d" "Remove File")
-                       ("c" "Clear")
-                       ("C-c C-c" "Accept")
-                       ("C-c C-k" "Abort"))))
+  (let* ((cmds (--map (apply 'file-picker--pp-option it)
+                      '(("a" "Add File")
+                        ("g" "Add Files (Glob)")
+                        ("d" "Remove File")
+                        ("c" "Clear")
+                        ("C-c C-c" "Accept")
+                        ("C-c C-k" "Abort"))))
          (max-width (-max (-map 'length cmds))))
     (concat
      (propertize "Commands:\n" 'face 'file-picker-header-line)
-     (->> cmds
-       (AP (<> cb-lib:columnate-lines) (+ 4 max-width))
+     (->> (file-picker-columnate-lines cmds (+ 4 max-width))
        (s-split "\n")
        (-map (~ s-prepend "    "))
        (s-join "\n")))))
 
+(defun file-picker-columnate-lines (lines column-width)
+  "Columnate LINES by splitting the lines into two lists then
+zipping them together again, such that:
+
+  '(A B C D)
+
+becomes:
+
+  A C
+  B D
+
+COLUMN-WIDTH sets the width of each column."
+  (let* ((mid (ceiling (/ (length lines) 2.0)))
+         (xs (-slice lines 0 mid))
+         (ys (-slice lines mid)))
+    (->>
+        ;; Add an extra line to YS if there is an odd number of options so
+        ;; the zip does not discard an option.
+        (if (/= (length xs) (length ys))
+            (-concat ys '(""))
+          ys)
+      (-zip-with
+       (lambda (l r) (concat (s-pad-right column-width " " l) r)) xs)
+      (s-join "\n"))))
+
+(defun cb-lib:maybe-columnate-lines (thresh-hold column-width lines)
+  "Return a formatted string that may columnate the input.
+The columnation will occur if LINES exceeds THRESH-HOLD in length.
+COLUMN-WIDTH specifies the width of columns if columnation is used."
+  (if (< (length lines) thresh-hold)
+      (s-join "\n" lines)
+    (file-picker-columnate-lines lines column-width)))
 
 (defun file-picker--format-header ()
   "Prepare the header section for file-picker buffer."
@@ -365,6 +399,6 @@ The picker allows the user to input a number of files.
        (setq buffer-undo-list nil
              buffer-undo-tree nil))))
 
-(provide 'cb-file-picker-widget)
+(provide 'utils-file-picker)
 
-;;; cb-file-picker-widget.el ends here
+;;; utils-file-picker.el ends here

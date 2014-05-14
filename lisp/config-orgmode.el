@@ -1,34 +1,43 @@
-#+TITLE: Config: Orgmode
-#+DESCRIPTION: Configuration options loaded at Emacs startup.
-#+AUTHOR: Chris Barrett
-#+OPTIONS: toc:3 num:nil ^:nil
+;;; config-orgmode.el --- configure org-mode
 
-org-mode is a suite of editing and management tools centred around
-human-readable text files. See http://orgmode.org/.
+;; Copyright (C) 2014 Chris Barrett
 
-* Set file paths
-** Create a var to hold the original value of the notes file
-=org-default-notes-file= may be changed interactively by
-=cb-org:set-notes-file=, so we need a reference to the original for some
-functions.
-#+begin_src emacs-lisp
+;; Author: Chris Barrett <chris.d.barrett@me.com>
+;; Version: 0.1
+
+;; This file is not part of GNU Emacs.
+
+;; This program is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;; Configure org-mode
+
+;;; Code:
+
+(require 'utils-common)
+(require 'utils-ui)
+
 (defvar org-init-notes-file org-default-notes-file
   "Captures the original value of the `org-default-notes-file'.")
-#+end_src
-** Clock persist file
-The clock persist file is used to save clocking data between sessions. It allows
-org to restart interrupted clocks.
-#+begin_src emacs-lisp
+
 (setq org-clock-persist-file  (f-join org-directory ".org-clock-save"))
-#+end_src
-** Miscellaneous file paths
-#+begin_src emacs-lisp
+
 (setq org-id-locations-file   (f-join cb:tmp-dir "org-id-locations")
       org-agenda-diary-file   (f-join org-directory "diary.org")
       calendar-date-style     'european)
-#+end_src
-* Customise miscellaneous vars
-#+begin_src emacs-lisp
+
 (setq org-completion-use-ido t
       org-link-mailto-program (quote (compose-mail "%a" "%s"))
       org-insert-heading-respect-content nil
@@ -37,55 +46,32 @@ org to restart interrupted clocks.
       org-catch-invisible-edits 'smart
       org-return-follows-link t
       org-support-shift-select t)
-#+end_src
-* Automatically renumber footnotes
-#+begin_src emacs-lisp
+
 (setq org-footnote-auto-adjust t)
-#+end_src
-* Auto-revert org files
-Since they are under VC with git-auto-push, this should keep them in sync if
-they are changed on different computers.
-#+begin_src emacs-lisp
+
 (add-hook 'org-mode-hook 'auto-revert-mode)
-#+end_src
-* Use auto-fill
-This will automatically insert line breaks to keep lines shorter
-than =fill-column=.
-#+begin_src emacs-lisp
+
 (add-hook 'org-mode-hook 'auto-fill-mode)
-#+end_src
-* Diminish org minor modes
-#+begin_src emacs-lisp
+
 (hook-fn 'cb:org-minor-modes-hook
   (--each cb:org-minor-modes
     (ignore-errors (diminish it))))
-#+end_src
-* Drawers
-#+begin_src emacs-lisp
+
 (setq org-drawers '("COMMENTS" "NOTES" "PROPERTIES"
                     "CLOCK" "LOGBOOK" "RESULTS"))
-#+end_src
-* Display style
-#+begin_src emacs-lisp
+
 (setq org-put-time-stamp-overlays t
       org-indirect-buffer-display 'current-window
       org-startup-indented t
       org-startup-with-inline-images t
       org-cycle-separator-lines 0)
-#+end_src
-* Render latex-style character sequences as unicode chars
-#+begin_src emacs-lisp
+
 (setq org-pretty-entities t)
-#+end_src
-* Logging
-#+begin_src emacs-lisp
+
 (setq org-log-into-drawer t
       org-log-done 'time
       org-reverse-note-order nil)
-#+end_src
-* Modal views
-Add executors for common org views.
-#+begin_src emacs-lisp
+
 (declare-modal-executor org-agenda-fullscreen
   :command (if cb-org:at-work?
                (org-agenda current-prefix-arg "w")
@@ -104,10 +90,7 @@ Add executors for common org views.
 
 (declare-modal-executor org-search-view
   :command (call-interactively 'org-search-view))
-#+end_src
-* Org command picker
-** Utilities
-#+begin_src emacs-lisp
+
 (defun cb-org:yank-region-as-quote (beg end)
   "Yank the current region as an org quote."
   (interactive "r")
@@ -147,9 +130,7 @@ This will set which file org-capture will capture to."
   (let ((k (car (read-option "*Org Capture*" 'car 'cadr
                              org-capture-templates))))
     (org-capture nil k)))
-#+end_src
-** Impl
-#+begin_src emacs-lisp
+
 (define-command-picker org-action-picker
   :title "*Org Commands*"
   :options
@@ -167,25 +148,14 @@ This will set which file org-capture will capture to."
     ("v" "View Tags (todos)" executor:org-tags-view-todos-fullscreen)
     ("V" "View Tags (all)" executor:org-tags-view-all-fullscreen)
     ("y" "Yank Region as Quote" cb-org:yank-region-as-quote :when region-active-p)))
-#+end_src
 
-* Notes
-** Prevent attempts to expand the minibuffer
-#+begin_src emacs-lisp
 (defadvice org-add-log-note (before exit-minibuffer activate)
   (when (minibufferp (window-buffer (selected-window)))
     (other-window 1)))
-#+end_src
-* Statistics
-Perhaps confusingly, setting hierarchy vars to non-nil values makes statistics
-functions shallow.
-#+begin_src emacs-lisp
+
 (setq org-hierarchical-todo-statistics nil
       org-checkbox-hierarchical-statistics t)
-#+end_src
-* Tags
-Make GTD context tags available in all buffers.
-#+begin_src emacs-lisp
+
 (setq org-tag-persistent-alist
       '((:startgroup . nil)
         ("@computer" . ?c)
@@ -195,44 +165,26 @@ Make GTD context tags available in all buffers.
         ("@phone" . ?p)
         ("@work" . ?w)
         (:endgroup . nil)))
-#+end_src
-* Clocking
-#+begin_src emacs-lisp
+
 (require 'org-clock)
-#+end_src
-** Persist the clock across Emacs sessions
-#+begin_src emacs-lisp
+
 (unless noninteractive
   (setq org-clock-persist t)
   (org-clock-persistence-insinuate))
-#+end_src
-** Clock out of tasks automatically when they are marked as DONE
-#+begin_src emacs-lisp
+
 (setq org-clock-out-when-done t)
-#+end_src
-** Automatically resume interrupted clocks when starting Emacs
-#+begin_src emacs-lisp
+
 (setq org-clock-persist-query-resume nil)
-#+end_src
-** Add clocking info to a special drawer
-#+begin_src emacs-lisp
+
 (setq org-clock-into-drawer t)
-#+end_src
-** Increase clock history length
-#+begin_src emacs-lisp
+
 (setq org-clock-history-length 20)
-#+end_src
-** Customise clock resolution
-#+begin_src emacs-lisp
+
 (setq org-clock-in-resume t
       org-clock-auto-clock-resolution 'when-no-clock-is-running)
-#+end_src
-** Include the running clock when generating clocking reports
-#+begin_src emacs-lisp
+
 (setq org-clock-report-include-clocking-task t)
-#+end_src
-** Utilities used by clocking customisations
-#+begin_src emacs-lisp
+
 (defun cb-org:project? ()
   "Any task with a todo keyword subtask"
   (save-restriction
@@ -264,9 +216,7 @@ Make GTD context tags available in all buffers.
           (when (member (org-get-todo-state) org-todo-keywords-1)
             (setq has-subtask t))))
       (and is-a-task (not has-subtask)))))
-#+end_src
-** Clocking into a TODO changes state to NEXT
-#+begin_src emacs-lisp
+
 (defun cb-org:clock-in-to-next-state (_kw)
   "Move a task from TODO to NEXT when clocking in.
 Skips capture tasks, projects, and subprojects.
@@ -281,10 +231,7 @@ Switch projects and subprojects from NEXT back to TODO."
       "TODO"))))
 
 (setq org-clock-in-switch-to-state 'cb-org:clock-in-to-next-state)
-#+end_src
 
-** Automatically change clocked projects from NEXT to TODO
-#+begin_src emacs-lisp
 (defun cb-org:mark-next-parent-tasks-todo ()
   "Visit each parent task and change state to TODO"
   (let ((mystate (or (and (fboundp 'org-state)
@@ -300,29 +247,20 @@ Switch projects and subprojects from NEXT back to TODO."
 (hook-fns '(org-after-todo-state-change-hook org-clock-in-hook)
   :append t
   (cb-org:mark-next-parent-tasks-todo))
-#+end_src
-** Remove empty clock entries
-#+begin_src emacs-lisp
+
 (setq org-clock-out-remove-zero-time-clocks t)
-#+end_src
-** Remove empty LOGBOOK drawers when clocking out
-#+begin_src emacs-lisp
+
 (hook-fn 'org-clock-out-hook
   :append t
   (save-excursion
     (beginning-of-line 0)
     (org-remove-empty-drawer-at "LOGBOOK" (point))))
-#+end_src
 
-* Effort estimates
-#+begin_src emacs-lisp
 (add-to-list 'org-global-properties
              `("Effort_ALL" . ,(concat "1:00 2:00 3:00 4:00 "
                                        "5:00 6:00 7:00 8:00 9:00 "
                                        "0:05 0:10 0:30")))
-#+end_src
-* Customise capture templates
-#+begin_src emacs-lisp
+
 (defvar org-work-capture-templates nil
   "Capture templates that should only be available when at work.")
 
@@ -390,9 +328,7 @@ Switch projects and subprojects from NEXT back to TODO."
   (~ add-to-list 'org-capture-templates))
 
 (-each org-home-capture-templates (~ add-to-list 'org-capture-templates))
-#+end_src
-* Clocking in/out for work
-#+begin_src emacs-lisp
+
 (defvar org-work-file (f-join org-directory "work.org")
   "Defines the path to file for work-related todos, etc.")
 
@@ -458,36 +394,26 @@ FILE is the file to use as the notes file while at work."
 (add-hook 'after-init-hook 'cb-org:maybe-set-to-work)
 
 (bind-key "<f12>" 'cb-org:toggle-at-work)
-#+end_src
-* Projects
-#+begin_src emacs-lisp
+
 (setq org-stuck-projects
       '("+project&TODO={.+}/-DONE-CANCELLED"
         ("NEXT" "TODO") nil "\\<IGNORE\\>"))
-#+end_src
-* Refiling
-#+begin_src emacs-lisp
+
 (setq org-refile-use-outline-path t
       org-outline-path-complete-in-steps nil
       org-refile-allow-creating-parent-nodes 'confirm
       org-refile-targets '((nil :maxlevel . 9)
                            (org-agenda-files :maxlevel . 9)))
-#+end_src
-** Exclude todo keywords with a DONE state from refile targets
-#+begin_src emacs-lisp
+
 (setq org-refile-target-verify-function
       (lambda ()
         (not (member (nth 2 (org-heading-components))
                      org-done-keywords))))
-#+end_src
-* Attachments
-#+begin_src emacs-lisp
+
 (require 'org-attach)
 (setq org-link-abbrev-alist '(("att" . org-attach-expand-link))
       org-attach-directory (f-join org-directory "data"))
-#+end_src
-** Redefine `org-attach-attach' to use ido to read files
-#+begin_src emacs-lisp
+
 (defun org-attach-attach (file &optional visit-dir method)
   "Move/copy/link FILE into the attachment directory of the current task.
 If VISIT-DIR is non-nil, visit the directory with dired. METHOD
@@ -518,20 +444,14 @@ may be `cp', `mv', `ln', or `lns' default taken from
       (if visit-dir
           (dired attach-dir)
         (message "File \"%s\" is now a task attachment." basename)))))
-#+end_src
-* Archiving
-#+begin_src emacs-lisp
+
 (require 'org-archive)
-#+end_src
-** Apply inherited tags to archived items
-#+begin_src emacs-lisp
+
 (defadvice org-archive-subtree
   (before add-inherited-tags-before-org-archive-subtree activate)
   "Add inherited tags before org-archive-subtree."
   (org-set-tags-to (org-get-tags-at)))
-#+end_src
-** Archive only DONE tasks by default
-#+begin_src emacs-lisp
+
 (defun cb-org:archive-done-tasks ()
   (interactive)
   (atomic-change-group
@@ -543,23 +463,14 @@ may be `cp', `mv', `ln', or `lns' default taken from
                      "/DONE|PAID|VOID|CANCELLED" 'tree)))
 
 (setq org-archive-default-command 'cb-org:archive-done-tasks)
-#+end_src
-* Encryption
-#+begin_src emacs-lisp
+
 (require 'org-crypt)
-#+end_src
-** Enable auto-encryption
-#+begin_src emacs-lisp
+
 (org-crypt-use-before-save-magic)
 (setq org-crypt-disable-auto-save 'encypt)
-#+end_src
-** Do not inherit encryption property
-Prevents nested encrypting.
-#+begin_src emacs-lisp
+
 (add-to-list 'org-tags-exclude-from-inheritance "crypt")
-#+end_src
-** Extend org C-c C-c command to decrypt entry at point
-#+begin_src emacs-lisp
+
 (defun cb-org:looking-at-pgp-section? ()
   (unless (org-before-first-heading-p)
     (save-excursion
@@ -578,40 +489,26 @@ Prevents nested encrypting.
     t))
 
 (add-hook 'org-ctrl-c-ctrl-c-hook 'cb-org:decrypt-entry)
-#+end_src
-* MIME
-Provides MIME exporting functions, allowing you to export org buffers to HTML
-emails.
-#+begin_src emacs-lisp
+
 (require 'org-mime)
-#+end_src
-** Define key bindings for HTML conversion commands
-#+begin_src emacs-lisp
+
 (define-key org-mode-map (kbd "C-c M-o") 'org-mime-org-buffer-htmlize)
 
 (after 'message
   (define-key message-mode-map  (kbd "C-c M-o") 'org-mime-htmlize))
-#+end_src
-** Offset block quotes and source code
-#+begin_src emacs-lisp
+
 (hook-fn 'org-mime-html-hook
   (org-mime-change-element-style
    "blockquote" "border-left: 2px solid #B0B0B0; padding-left: 4px;")
   (org-mime-change-element-style
    "pre" "border-left: 2px solid #B0B0B0; padding-left: 4px;"))
-#+end_src
-** Fix undefined function
-#+begin_src emacs-lisp
+
 (defun org-export-grab-title-from-buffer ()
   "")
-#+end_src
-** Set default org header options
-#+begin_src emacs-lisp
+
 (setq org-mime-default-header "#+OPTIONS: num:nil toc:nil latex:t\n")
-#+end_src
-** Define a command picker for sending mail
-#+begin_src emacs-lisp
-(require 'cb-org-mail)
+
+(require 'cb-org-mail (f-join cb:lisp-dir "cb-org-mail"))
 
 (define-command-picker mail-picker
   :title "*Mail Commands*"
@@ -626,9 +523,7 @@ emails.
     (call-interactively 'org-compose-mail)))
 
 (bind-key* "C-x m" 'cb-compose-mail-dwim)
-#+end_src
-* Write subtrees to new files
-#+begin_src emacs-lisp
+
 (defun org-narrow-to-subtree-content ()
   (widen)
   (unless (org-at-heading-p) (org-back-to-heading))
@@ -648,23 +543,13 @@ emails.
   (f-write-text (org-subtree-content) 'utf-8 dest)
   (when (called-interactively-p nil)
     (message "Subtree written to %s" dest)))
-#+end_src
-* Export
-#+begin_src emacs-lisp
+
 (setq org-export-exclude-tags '("noexport" "crypt"))
-#+end_src
-** HTML
-*** Use HTML5 tags
-#+begin_src emacs-lisp
+
 (setq org-html-html5-fancy t)
-#+end_src
-*** Do not export a postamble
-The postamble usually displays the creator, org version, etc.
-#+begin_src emacs-lisp
+
 (setq org-html-postamble nil)
-#+end_src
-*** Use alternating table row colours
-#+begin_src emacs-lisp
+
 (setq org-html-head-extra
       "
 <style type=\"text/css\">
@@ -684,15 +569,11 @@ table tr.tr-even td {
                           "<tr class=\"tr-odd\">"
                         "<tr class=\"tr-even\">")))
             "</tr>"))
-#+end_src
-** texinfo
-#+begin_src emacs-lisp
+
 (require 'ox-texinfo)
 (add-to-list 'org-export-snippet-translation-alist
              '("info" . "texinfo"))
-#+end_src
-** ox-koma-letter
-#+begin_src emacs-lisp
+
 (require 'ox-koma-letter)
 (add-to-list 'org-latex-classes '("koma-letter" "
 \\documentclass[paper=A4,pagesize,fromalign=right,
@@ -737,48 +618,30 @@ The PDF will be created at DEST."
               (call-interactively 'org-export-koma-letter-at-subtree)
               'export-koma-letter))
           t)
-#+end_src
-* Habits
-#+begin_src emacs-lisp
+
 (require 'org-habit)
 (setq org-habit-preceding-days 14
       org-habit-following-days 4
       org-habit-graph-column 70)
-#+end_src
-* Tree killing
-Define a command for killing the subtree at point. If we're in a special org
-buffer, this should fall back to the cancel action.
-** Impl
-#+begin_src emacs-lisp
+
 (defun cb-org:ctrl-c-ctrl-k (&optional n)
   "Kill subtrees, unless we're in a special buffer where it should cancel."
   (interactive "p")
   (if (s-starts-with? "*Org" (buffer-name))
       (org-kill-note-or-show-branches)
     (org-cut-subtree n)))
-#+end_src
-** Key binding
-#+begin_src emacs-lisp
+
 (define-key org-mode-map (kbd "C-c C-k") 'cb-org:ctrl-c-ctrl-k)
-#+end_src
-* Special C-c C-RET command
-Define a custom command to insert todo headings, etc. This is mainly needed
-because the default keybinding conflicts with my window manager on OS X.
-** Impl
-#+begin_src emacs-lisp
+
 (defun cb-org:ctrl-c-ret ()
   "Call `org-table-hline-and-move' or `org-insert-todo-heading' dep. on context."
   (interactive)
   (cond
    ((org-at-table-p) (call-interactively 'org-table-hline-and-move))
    (t (call-interactively 'org-insert-todo-heading))))
-#+end_src
-** Key binding
-#+begin_src emacs-lisp
+
 (define-key org-mode-map (kbd "C-c RET") 'cb-org:ctrl-c-ret)
-#+end_src
-* Define a command to tidy org buffers
-#+begin_src emacs-lisp
+
 (defun tidy-org-buffer ()
   "Perform cosmetic fixes to the current org-mode buffer."
   (save-restriction
@@ -791,44 +654,28 @@ because the default keybinding conflicts with my window manager on OS X.
       (while (search-forward-regexp ":PROPERTIES:" nil t)
         (save-excursion
           (org-remove-empty-drawer-at "PROPERTIES" (match-beginning 0)))))))
-#+end_src
-* Tidy org buffers when saving
-#+begin_src emacs-lisp
+
 (hook-fn 'org-mode-hook
   (add-hook 'before-save-hook 'tidy-org-buffer nil t))
-#+end_src
-* Agenda
-#+begin_src emacs-lisp
+
 (require 'org-agenda)
-#+end_src
-** Show appointment notifications in the modeline
-#+begin_src emacs-lisp
+
 (add-hook 'org-agenda-mode-hook 'org-agenda-to-appt)
-#+end_src
-** Read all org files in the org directory for items to add to the agenda
-#+begin_src emacs-lisp
+
 (add-to-list 'org-agenda-files org-directory)
-#+end_src
-** Use the timestamp set in diary entries
-#+begin_src emacs-lisp
+
 (setq org-agenda-insert-diary-extract-time t)
-#+end_src
-** Show the whole coming week in the agenda
-#+begin_src emacs-lisp
+
 (setq org-agenda-start-on-weekday nil
       org-agenda-span 'week
       org-agenda-ndays 7)
-#+end_src
-** Define a hook for setting up agenda windows
-#+begin_src emacs-lisp
+
 (defvar org-agenda-customise-window-hook nil
   "Relay hook for `org-agenda-mode-hook'. Suitable for setting up the window.")
 
 (hook-fn 'org-agenda-mode-hook
   (run-hooks 'org-agenda-customise-window-hook))
-#+end_src
-** Show today's agenda after a period of inactivity
-#+begin_src emacs-lisp
+
 (defvar cb-org:show-agenda-idle-delay (* 30 60)
   "The delay in seconds after which to pop up today's agenda.")
 
@@ -838,44 +685,26 @@ because the default keybinding conflicts with my window manager on OS X.
                          'executor:org-agenda-fullscreen))
   "Idle timer that will display today's org agenda.
 See `cb-org:show-agenda-idle-delay'.")
-#+end_src
-** Exclude tasks with 'hold' tag
-#+begin_src emacs-lisp
+
 (defun cb-org:exclude-tasks-on-hold (tag)
   (and (equal tag "hold") (concat "-" tag)))
 
 (setq org-agenda-auto-exclude-function 'cb-org:exclude-tasks-on-hold)
-#+end_src
-** Searches include archives
-#+begin_src emacs-lisp
+
 (setq org-agenda-text-search-extra-files '(agenda-archives))
-#+end_src
-** Searches are boolean, like a Google search
-#+begin_src emacs-lisp
+
 (setq org-agenda-search-view-always-boolean t)
-#+end_src
-** Deadlines
-Don't show deadlines or scheduled tasks that have been completed.
-#+begin_src emacs-lisp
+
 (setq org-agenda-skip-deadline-if-done t
       org-agenda-skip-scheduled-if-done t
       org-agenda-skip-deadline-prewarning-if-scheduled t)
-#+end_src
-** Hide ubiquitous tags from agenda
-#+begin_src emacs-lisp
+
 (setq org-agenda-hide-tags-regexp (rx (or "noexport" "someday")))
-#+end_src
-** Hide inherited tags from the agenda
-#+begin_src emacs-lisp
+
 (setq org-agenda-show-inherited-tags nil)
-#+end_src
-** Only show dates with entries in agenda
-#+begin_src emacs-lisp
+
 (setq org-agenda-show-all-dates nil)
-#+end_src
-** Define agenda views
-They should be displayed modally.
-#+begin_src emacs-lisp
+
 (setq org-agenda-custom-commands
       (->> '(("A" "Agenda and next actions"
               ((tags-todo "-someday-media/NEXT"
@@ -962,19 +791,13 @@ They should be displayed modally.
                     (append it
                             '(((org-agenda-customise-window-hook
                                 'delete-other-windows)))))))
-#+end_src
-** Sort order
-#+begin_src emacs-lisp
+
 (setq org-agenda-sorting-strategy
       '((agenda habit-down time-up priority-down category-keep)
         (todo priority-down category-keep scheduled-up)
         (tags priority-down category-keep)
         (search category-keep)))
-#+end_src
-** Navigation commands
-Define commands for skipping through agenda sections.
-*** Impl
-#+begin_src emacs-lisp
+
 (defun cb-org:agenda-next-section ()
   "Move to the next section in the agenda."
   (interactive)
@@ -1006,20 +829,14 @@ Define commands for skipping through agenda sections.
 
          (forward-line 1)
          (goto-char (line-beginning-position)))))))
-#+end_src
-*** Key bindings
-#+begin_src emacs-lisp
+
 (define-key org-agenda-mode-map (kbd "M-N") 'cb-org:agenda-next-section)
 (define-key org-agenda-mode-map (kbd "M-P") 'cb-org:agenda-prev-section)
-#+end_src
-** Disable smartparens
-#+begin_src emacs-lisp
+
 (after 'smartparens
   (hook-fn 'org-agenda-mode-hook
     (smartparens-mode -1)))
-#+end_src
-** Configure agenda auto-exclusion
-#+begin_src emacs-lisp
+
 (defun cb-org:agenda-auto-exclude (tag)
   "Hide drills."
   (when (equal "drill" tag)
@@ -1030,10 +847,7 @@ Define commands for skipping through agenda sections.
 
 (add-hook 'org-agenda-mode-hook 'cb-org:apply-auto-exclude)
 (setq org-agenda-auto-exclude-function 'cb-org:agenda-auto-exclude)
-#+end_src
-* Define commands for use in diary entries
-** Find the closest date to the given date an a certain day of the week
-#+begin_src emacs-lisp
+
 (defvar date nil
   "Dynamic var bound to current date by calendaring functions.")
 
@@ -1052,9 +866,7 @@ TARGET-DAYNAME is the day of the week that we want to match,
                             (calendar-day-number target-date)))))
     (and (= dayname target-dayname)
          (< days-diff 4))))
-#+end_src
-** Find the next weekday if date falls on a weekend
-#+begin_src emacs-lisp
+
 (defun calendar-mondayised (target-day target-month)
   "Given anniversary with DAY and MONTH, return non-nil if:
 
@@ -1068,9 +880,7 @@ TARGET-DAYNAME is the day of the week that we want to match,
           (d (calendar-extract-day date)))
       (and (equal d target-day)
            (equal m target-month)))) )
-#+end_src
-** Find dates that occur at regular intervals of N days/weeks/months
-#+begin_src emacs-lisp
+
 (defun diary-limited-cyclic (recurrences interval m d y)
   "For use in emacs diary. Cyclic item with limited number of recurrences.
 Occurs every INTERVAL days, starting on YYYY-MM-DD, for a total of
@@ -1081,9 +891,6 @@ RECURRENCES occasions."
          (zerop (% (- today startdate) interval))
          (< (floor (- today startdate) interval) recurrences))))
 
-#+end_src
-** Define a command to read a class sexpr and insert at point
-#+begin_src emacs-lisp
 (cl-defun cb-org:format-class-sexpr ((s1 m1 h1 d1 m1 y1 . _)
                                      (s2 m2 h2 d2 m2 y2 . _)
                                      desc)
@@ -1115,9 +922,7 @@ The starting day is taken to be the weekday on which the event will repeat."
   "Read and insert a class diary sexp at point."
   (interactive "*")
   (insert (org-read-class)))
-#+end_src
-** Helpers for calculating Easter holidays
-#+begin_src emacs-lisp
+
 (defun calendar-easter-date (year)
   "Calculate the date for Easter Sunday in YEAR. Returns the date in the
 Gregorian calendar, ie (MM DD YY) format."
@@ -1142,10 +947,7 @@ Gregorian calendar, ie (MM DD YY) format."
 are between the current date (DATE) and Easter Sunday."
   (- (calendar-absolute-from-gregorian date)
      (calendar-easter-date (calendar-extract-year date))))
-#+end_src
-* Babel
-** Load languages
-#+begin_src emacs-lisp
+
 (org-babel-do-load-languages
  'org-babel-load-languages
  '((python . t)
@@ -1160,49 +962,30 @@ are between the current date (DATE) and Easter Sunday."
    (ruby . t)
    (clojure . t)
    (haskell . t)))
-#+end_src
-** Apply font-locking to source blocks
-#+begin_src emacs-lisp
+
 (setq org-src-fontify-natively t)
-#+end_src
-** Do not prompt for confirmation when eval'ing source blocks
-#+begin_src emacs-lisp
+
 (setq org-confirm-babel-evaluate nil)
-#+end_src
-** Do not indent source blocks
-#+begin_src emacs-lisp
+
 (setq org-edit-src-content-indentation 0)
-#+end_src
-** Run a hook when exiting source blocks
-#+begin_src emacs-lisp
+
 (defvar org-edit-src-before-exit-hook nil
   "Hook run before exiting a code block.")
 
 (defadvice org-edit-src-exit (before run-hook activate)
   (run-hooks 'org-edit-src-before-exit-hook))
-#+end_src
-** Do not add a final newline to org source buffers
-#+begin_src emacs-lisp
+
 (hook-fn 'org-src-mode-hook
   (setq-local require-final-newline nil))
-#+end_src
-** Remove trailing spaces when exiting org code blocks
-#+begin_src emacs-lisp
+
 (add-hook 'org-edit-src-before-exit-hook 'delete-trailing-whitespace)
-#+end_src
-* Todos
-** Do not allow todos to be marked as DONE when children are not DONE
-#+begin_src emacs-lisp
+
 (setq org-enforce-todo-dependencies t)
-#+end_src
-** Define todo keywords
-#+begin_src emacs-lisp
+
 (setq org-todo-keywords
       '((type "MAYBE(m)" "TODO(t)" "NEXT(n)" "WAITING(w@/!)"
               "|" "DONE(d!)" "CANCELLED(c@)" "DELEGATED(D@)")))
-#+end_src
-** Use special face for NEXT keyword
-#+begin_src emacs-lisp
+
 (defface org-todo-next
   `((((background dark))
      (:foreground ,solarized-hl-orange :bold t))
@@ -1229,16 +1012,12 @@ are between the current date (DATE) and Easter Sunday."
         ("ORGANISE_OUT" . org-todo-next)
         ("TODO_OUT" . org-todo-out)
         ("READY" . org-todo-ready)))
-#+end_src
-** Sub-task completion triggers parent completion
-#+begin_src emacs-lisp
+
 (hook-fn 'org-after-todo-statistics-hook
   :arglist (n-done n-not-done)
   (let (org-log-done org-log-states) ; turn off logging
     (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
-#+end_src
-** When setting a todo as DONE, set the next TODO to NEXT
-#+begin_src emacs-lisp
+
 (defun cb-org:set-next-todo-state ()
   "When marking a todo to DONE, set the next TODO as NEXT.
 Do not change habits, scheduled items or repeating todos."
@@ -1253,65 +1032,37 @@ Do not change habits, scheduled items or repeating todos."
           (org-todo "NEXT"))))))
 
 (add-hook 'org-after-todo-state-change-hook 'cb-org:set-next-todo-state)
-#+end_src
-* orglink
-Adds support for org-mode-style and plain links in other modes.
-#+begin_src emacs-lisp
+
 (cb:install-package 'orglink t)
-#+end_src
-** Define which link types to highlight
-#+begin_src emacs-lisp
+
 (setq orglink-activate-links '(angle plain))
-#+end_src
-** Don't show in the modeline
-#+begin_src emacs-lisp
+
 (setq orglink-mode-lighter nil)
-#+end_src
-** Use orglink in most modes
-#+begin_src emacs-lisp
+
 (hook-fns '(prog-mode-hook text-mode-hook comint-mode)
   (ignore-errors
     (unless (derived-mode-p 'org-mode 'nxml-mode 'sgml-mode 'snippet-mode)
       (orglink-mode +1))))
-#+end_src
-* org-pomodoro
-Implements Pomodoro timers using org-mode's clocking functions. I have my own
-fork, since the original wasn't keeping up with pull requests and has since
-diverged.
-** Set a key binding for starting a pomodoro
-#+begin_src emacs-lisp
+
 (autoload 'org-pomodoro "org-pomodoro")
 (bind-key* "<f5>" 'org-pomodoro)
-#+end_src
-** Set pomodoro length
-#+begin_src emacs-lisp
+
 (setq org-pomodoro-long-break-length 25)
-#+end_src
-** Customise display format
-#+begin_src emacs-lisp
+
 (setq org-pomodoro-format "• %s"
       org-pomodoro-short-break-format "Break %s"
       org-pomodoro-long-break-format "Break %s"
       org-pomodoro-show-seconds nil)
-#+end_src
-Don't use the built-in display mechanism, since I use custom logic in my
-modeline format string.
-#+begin_src emacs-lisp
+
 (setq org-pomodoro-show-in-mode-line nil)
-#+end_src
-* appt
-=appt= is emacs' generic scheduling system for calendar. Configure it to hook
-into org-mode.
-#+begin_src emacs-lisp
+
 (require 'appt)
 (setq appt-message-warning-time 60
       appt-display-interval 15)
 
 (save-window-excursion
   (appt-activate +1))
-#+end_src
-** Update appointments when saving the diary file
-#+begin_src emacs-lisp
+
 (defun cb-org:save-diary ()
   (save-restriction
     (save-window-excursion
@@ -1324,24 +1075,13 @@ into org-mode.
 
 (defvar cb-org:appt-update-timer
   (run-with-idle-timer 240 t 'org-agenda-to-appt t))
-#+end_src
-* org-protocol
-Allows other applications to connect to Emacs and prompt org-mode to perform
-certain actions, including saving links.
-#+begin_src emacs-lisp
+
 (require 'org-protocol)
-#+end_src
-* org-reveal
-Provides a Reveal.js exporter for making presentations.
-#+begin_src emacs-lisp
+
 (cb:install-package 'ox-reveal t)
-#+end_src
-** Set path to reveal.js
-#+begin_src emacs-lisp
+
 (setq org-reveal-root (concat "file://" (f-join cb:lib-dir "reveal.js")))
-#+end_src
-** Define auxiliary functions for snippets
-#+begin_src emacs-lisp
+
 (defun cb-org:reveal-read-transition ()
   (popup-menu*
    (-map 'popup-make-item
@@ -1360,17 +1100,12 @@ Provides a Reveal.js exporter for making presentations.
          '("grow" "shrink" "roll-in" "fade-out"
            "highlight-red" "highlight-green" "highlight-blue"))
    :isearch t))
-#+end_src
-* org-drill
-** save org buffers without prompting after drill session
-#+begin_src emacs-lisp
+
 (setq org-drill-save-buffers-after-drill-sessions-p nil)
 
 (defadvice org-drill (after save-buffers activate)
   (org-save-all-org-buffers))
-#+end_src
-** autoload org-drill commands
-#+begin_src emacs-lisp
+
 (--each '(org-drill
           org-drill-strip-all-data
           org-drill-cram
@@ -1381,14 +1116,10 @@ Provides a Reveal.js exporter for making presentations.
           org-drill-directory
           org-drill-again)
   (autoload it "org-drill" nil t))
-#+end_src
-** Use org-drill-table to generate drill cards
-#+begin_src emacs-lisp
+
 (cb:install-package 'org-drill-table t)
 (add-hook 'org-ctrl-c-ctrl-c-hook 'org-drill-table-update)
-#+end_src
-** Add org-drill-again to org action picker
-#+begin_src emacs-lisp
+
 (defun cb-org:drill-buffer? ()
   "Non-nil if the current buffer contains any drill items."
   (and
@@ -1397,21 +1128,15 @@ Provides a Reveal.js exporter for making presentations.
 
 (add-to-list 'org-action-picker-options
              '("r" "Org Drill" (lambda () (org-drill 'agenda))))
-#+end_src
-* Display inline images in org buffers
-#+begin_src emacs-lisp
+
 (after 'org
   (require 'iimage))
-#+end_src
-** Show images in file links
-#+begin_src emacs-lisp
+
 (after 'iimage
   (add-to-list 'iimage-mode-image-regex-alist
                (cons (concat "\\[\\[file:\\(~?" iimage-mode-image-filename-regex
                              "\\)\\]")  1)))
-#+end_src
-** Define a command to toggle images
-#+begin_src emacs-lisp
+
 (defun org-toggle-iimage-in-org ()
   "Display images in the current orgmode buffer."
   (interactive)
@@ -1419,17 +1144,10 @@ Provides a Reveal.js exporter for making presentations.
       (set-face-underline-p 'org-link nil)
     (set-face-underline-p 'org-link t))
   (iimage-mode))
-#+end_src
-* flyspell
-Prevent flyspell from incorrectly flagging common org-mode content such as code
-blocks and encrypted regions.
-** Define a structure element for suppressing spell checks
-#+begin_src emacs-lisp
+
 (add-to-list 'org-structure-template-alist
              '("n" "#+begin_nospell\n?\n#+end_nospell" "?"))
-#+end_src
-** Define a custom flyspell predicate for org buffers
-#+begin_src emacs-lisp
+
 (defun cb-org:in-no-spellcheck-zone? ()
   (thing-at-point-looking-at (rx "#+begin_nospell" (*? anything ) "#+end_nospell")))
 
@@ -1446,45 +1164,28 @@ blocks and encrypted regions.
              (ignore-errors (org-in-drawer-p))
              (thing-at-point-looking-at (rx bol "#+" (* nonl) eol))
              (cb-org:in-no-spellcheck-zone?)))))
-#+end_src
-** Apply custom flyspell predicate
-#+begin_src emacs-lisp
+
 (put 'org-mode 'flyspell-mode-predicate 'cb-org:flyspell-verify)
 
 (hook-fn 'org-mode-hook
   (setq-local flyspell-generic-check-word-predicate 'cb-org:flyspell-verify))
-#+end_src
-* Use lowercase structure keys, e.g. "begin_src" instead of "BEGIN_SRC"
-#+begin_src emacs-lisp
+
 (setq org-structure-template-alist
       (-map (~ -map 's-downcase) org-structure-template-alist))
-#+end_src
-* Disable auto-complete
-#+begin_src emacs-lisp
+
 (after 'auto-complete
   (hook-fn 'org-mode-hook
     (setq-local ac-sources nil)
     (auto-complete-mode -1)))
-#+end_src
-* Evil
-** DEFER
-#+begin_src emacs-lisp
+
 (after 'evil
-#+end_src
-** Enter insertion mode in capture buffer
-#+begin_src emacs-lisp
+
 (add-hook 'org-capture-mode-hook 'cb:maybe-evil-insert-state)
-#+end_src
-** Enter insert state for popup notes
-:LOGBOOK:
-:END:
-#+begin_src emacs-lisp
+
 (hook-fn 'org-mode-hook
   (when (equal (buffer-name) "*Org Note*")
     (cb:maybe-evil-insert-state)))
-#+end_src
-** Use evil key bindings in agenda
-#+begin_src emacs-lisp
+
 (after 'org-agenda
   (bind-keys
     :map org-agenda-mode-map
@@ -1497,9 +1198,7 @@ blocks and encrypted regions.
     "h" 'evil-backward-char
     "C-f" 'evil-scroll-page-down
     "C-b" 'evil-scroll-page-up))
-#+end_src
-** Advise header insertion commands to enter evil insert state
-#+begin_src emacs-lisp
+
 (defadvice org-insert-heading (after insert-state activate)
   (when (called-interactively-p nil)
     (cb:maybe-evil-insert-state)))
@@ -1515,9 +1214,7 @@ blocks and encrypted regions.
 (defadvice org-insert-todo-heading-respect-content (after insert-state activate)
   (when (called-interactively-p nil)
     (cb:maybe-evil-insert-state)))
-#+end_src
-** Adapt outline fold commands for Evil
-#+begin_src emacs-lisp
+
 (defadvice org-toggle-heading (after goto-line-end activate)
   "Prevent point from being moved to the line beginning."
   (when (s-matches? (rx bol (+ "*") (* space) eol) (current-line))
@@ -1544,9 +1241,7 @@ blocks and encrypted regions.
   (kbd "SPC") 'org-cycle
   (kbd "z m") 'cborg-evil-fold
   (kbd "z r") 'cborg-evil-reveal)
-#+end_src
-** Advise org-return not to insert newlines unless we're in insertion state
-#+begin_src emacs-lisp
+
 (defadvice org-return (around newlines-only-in-insert-state activate)
   "Only insert newlines if we're in insert state."
   (noflet ((newline (&rest args)
@@ -1554,23 +1249,14 @@ blocks and encrypted regions.
                                (evil-insert-state-p))
                       (funcall this-fn args))))
       ad-do-it))
-#+end_src
-** END
-#+begin_src emacs-lisp
+
 )
-#+end_src
-* Growl
-Show growl notifications.
-#+begin_src emacs-lisp
+
 (defconst org-unicorn-png
   (f-join user-emacs-directory "assets" "org_unicorn.png"))
-#+end_src
-** CONDITIONAL
-#+begin_src emacs-lisp
+
 (when (equal system-type 'darwin)
-#+end_src
-** Advise appt to show Growl notifications for appointments
-#+begin_src emacs-lisp
+
 (defun cb-appt:growl (title mins)
   (growl (cond ((zerop mins) "Appointment (now)")
                ((= 1 mins)   "Appointment (1 min)")
@@ -1592,15 +1278,11 @@ Show growl notifications.
            (-applify 'cb-appt:growl)))
   ;; Play sound.
   (osx-play-system-sound "blow"))
-#+end_src
-** Show Growl notification for countdown timers
-#+begin_src emacs-lisp
+
 (hook-fn 'org-timer-start-hook (growl "Timer Started" "" org-unicorn-png))
 (hook-fn 'org-timer-done-hook (growl "Timer Finished" "" org-unicorn-png))
 (hook-fn 'org-timer-done-hook (osx-play-system-sound "glass"))
-#+end_src
-** Show Growl notifications when capturing links from a browser
-#+begin_src emacs-lisp
+
 (defadvice org-protocol-do-capture (after show-growl-notification activate)
   "Show Growl notification when capturing links."
   (let* ((parts (org-protocol-split-data (ad-get-arg 0) t org-protocol-data-separator))
@@ -1612,16 +1294,12 @@ Show growl notifications.
                    (match-string 1 url)))
          (title (or (cadr parts) "")))
     (growl "Link Stored" (or title url) org-unicorn-png)))
-#+end_src
-** Use system sounds for pomodoro notifications on OS X
-#+begin_src emacs-lisp
+
 (let ((snd (osx-find-system-sound "purr")))
   (setq org-pomodoro-sound snd
         org-pomodoro-short-break-sound snd
         org-pomodoro-long-break-sound snd))
-#+end_src
-** Show growl notifications for pomodoros
-#+begin_src emacs-lisp
+
 (defun cb-org:pomodoro-growl ()
   (growl "Pomodoro"
          (cl-case org-pomodoro-state
@@ -1645,24 +1323,14 @@ Show growl notifications.
 
 (add-hook 'org-pomodoro-short-break-finished-hook 'cb-org:pomodoro-growl-end-break)
 (add-hook 'org-pomodoro-short-break-finished-hook 'cb-org:pomodoro-growl-end-break)
-#+end_src
-** END
-#+begin_src emacs-lisp
+
 )
-#+end_src
-* Show the agenda after init
-#+begin_src emacs-lisp
+
 (when (or (daemonp) (display-graphic-p))
   (hook-fn 'after-init-hook
     (unless noninteractive
       (executor:org-agenda-fullscreen))))
-#+end_src
-* Auto-save notes file
-Run an idle timer to save the notes file.
 
-This has the nice side-effect that encrypted regions will be automatically
-re-encrypted after a period of inactivity.
-#+begin_src emacs-lisp
 (defvar cb-org:notes-save-idle-delay 60)
 
 (defun cb-org:save-notes ()
@@ -1677,33 +1345,22 @@ re-encrypted after a period of inactivity.
   (unless noninteractive
     (run-with-idle-timer cb-org:notes-save-idle-delay t 'cb-org:save-notes))
   "Timer that automatically saves the notes buffer on idle.")
-#+end_src
-* Enable abbrev-mode
-#+begin_src emacs-lisp
+
 (add-hook 'org-mode-hook 'abbrev-mode)
-#+end_src
-* Email capture
-Use =capture-email= to capture items from emails to org.
-#+begin_src emacs-lisp
+
 (require 'capture-mail)
-#+end_src
-** Set maildir paths
-#+begin_src emacs-lisp
+
 (let ((account-dir (--first
                     (not (s-starts-with? "." (f-filename it)))
                     (f-directories user-mail-directory))))
   (setq cm-archived-messages-dir (f-join account-dir "org" "cur")
         cm-capture-messages-dir  (f-join account-dir "org" "new")))
-#+end_src
-** Define growl helper fn
-#+begin_src emacs-lisp
+
 (cl-defun cm--growl (kind desc)
   (growl (format "%s Captured" (s-capitalize kind))
          (s-truncate 40 desc)
          (f-join user-emacs-directory "assets" "org_unicorn.png")))
-#+end_src
-** Define helper fn to capture with org-mode
-#+begin_src emacs-lisp
+
 (cl-defun cm--org-capture (str template-name &optional tags)
   "Capture STR with org-mode.
 TEMPLATE-NAME is a string matching the name of a capture
@@ -1722,9 +1379,7 @@ template."
             ;; Insert item.
             (insert str)
             (org-set-tags-to tags)))))))
-#+end_src
-** Default parser creates a note
-#+begin_src emacs-lisp
+
 (setq cm-default-parser
       (list :type 'note
             :predicate '-true-fn
@@ -1733,12 +1388,7 @@ template."
             (lambda (str)
               (cm--org-capture str "note")
               (cm--growl "Note" str))))
-#+end_src
-** Capture links
-Emails containing a URL will be captured to the Links heading in the notes file.
-Use another Emacs process to fetch the title for webpages.
 
-#+begin_src emacs-lisp
 (defun cm--find-uri-in-body (alist)
   "Extract the first URI from the body in ALIST. Performs loose matching."
   (-when-let (str (cm-value 'body alist))
@@ -1798,16 +1448,7 @@ Use another Emacs process to fetch the title for webpages.
      (lambda+ ((&key uri title str))
        (cm--org-capture str "link")
        (cm--growl "Link" (or title uri))))))
-#+end_src
-** Capture to diary
-Dairy entries must have /diary/ as the subject, and take the form
-#+begin_example
-HEADLINE
-DATE
-NOTES*
-#+end_example
 
-#+begin_src emacs-lisp
 (cm-declare-message-parser 'diary
   :predicate (~ cm-matches? (rx bol "diary") 'subject)
   :parser (lambda (alist)
@@ -1821,19 +1462,7 @@ NOTES*
   :handler (lambda (str)
              (cm--org-capture str "diary")
              (cm--growl "Appointment" str)))
-#+end_src
-** Capture tasks
-Tasks should have one TODO/MAYBE/NEXT as the subject
 
-#+begin_example
-HEADLINE
-[t TAGS]
-[s SCHEDULED-TIME]
-[d DEADLINE]
-NOTES
-#+end_example
-
-#+begin_src emacs-lisp
 (defun cm--parse-12-hour-time (str)
   (cl-destructuring-bind (&optional _ hour min ampm &rest rest_)
       (s-match (rx (group (** 1 2 digit))
@@ -1918,17 +1547,13 @@ NOTES
       (error "No template for kind: %s" kind)))
 
     (cm--growl "Task" str)))
-#+end_src
-** Run on timer
-#+begin_src emacs-lisp
+
 (unless noninteractive
   (hook-fn 'after-init-hook
     (defvar cm-capture-timer
       (run-with-timer 5 60 (lambda ()
                              (capture-mail cm-capture-messages-dir))))))
-#+end_src
-* Quick capture
-#+begin_src emacs-lisp
+
 (defun cb-org:quick-capture (type body)
   "Use the capture-mail functionality to capture something quickly.
 
@@ -1955,10 +1580,7 @@ BODY is the string to interpret."
 
 (add-to-list 'org-action-picker-options
              '("q" "Quick Capture" cb-org:quick-capture))
-#+end_src
-* Key bindings
-Define global key bindings for org commands.
-#+begin_src emacs-lisp
+
 (bind-keys
   :overriding? t
   "C-c a" 'org-agenda
@@ -1967,10 +1589,7 @@ Define global key bindings for org commands.
   "<f7>" 'cb-org:capture
   "<f8>" 'org-action-picker
   "<f9>" 'executor:org-agenda-fullscreen)
-#+end_src
 
-Define keys for org-mode.
-#+begin_src emacs-lisp
 (define-keys org-mode-map
   "C-c C-." 'org-time-stamp-inactive
   "C-c o" 'org-attach-open
@@ -1980,22 +1599,17 @@ Define keys for org-mode.
   "C-c C-j" (command (org-refile 'goto))
   ;; disable annoying comment toggle key
   "C-c ;" nil)
-#+end_src
-* org-plot
-#+begin_src emacs-lisp
+
 (when (executable-find "gnuplot")
   (cb:install-package 'gnuplot)
   (define-key org-mode-map (kbd "M-C-g") 'org-plot/gnuplot))
-#+end_src
-* Commands for working with latex
-#+begin_src emacs-lisp
+
 (defun org-latex-wrap ()
   (interactive)
   (let ((r (current-region)))
     (delete-region (region-beginning) (region-end))
     (insert (format "@@latex:%s@@" r))))
-#+end_src
-* Provide this file
-#+begin_src emacs-lisp
+
 (provide 'config-orgmode)
-#+end_src
+
+;;; config-orgmode.el ends here

@@ -26,6 +26,9 @@
 
 ;;; Code:
 
+(require 'utils-common)
+(require 'utils-ui)
+(require 'utils-commands)
 (require 'message)
 (require 'org)
 (require 'org-mime)
