@@ -906,7 +906,12 @@ Pad parens and other delimiters with spaces to emulate paredit's behaviour.
 ** parenface
 Adds a face for parentheses. Use to dim parens.
 #+begin_src emacs-lisp
-(cb:install-package 'parenface t)
+(cb:install-package 'parenface)
+;; Work around issue loading parenface.
+(require 'parenface
+         (f-join
+          (--first (s-matches? "parenface" it) (f-directories package-user-dir))
+          "parenface.el"))
 #+end_src
 ** eval-sexp-fu
 Adds a flash when running eval-expression.
