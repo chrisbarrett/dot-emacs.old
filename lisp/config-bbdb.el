@@ -30,31 +30,29 @@
 
 (cb:install-package 'bbdb)
 
-(setq bbdb-file (concat user-dropbox-directory ".bbdb"))
+(custom-set-variables
 
-(setq bbdb-use-popup t
-      bbdb-pop-up-window-size 0.5
-      bbdb-mua-popup-window-size 4
-      bddb-popup-target-lines 1)
+ '(osxb-import-with-timer (equal system-type 'darwin))
 
-(setq bbdb-offer-save 1
-      bbdb-always-add-address t)
-
-(setq bbdb/mail-auto-create-p 'bbdb-ignore-some-messages-hook)
-(setq bbdb-ignore-some-messages-alist
-      '(( "From" . "no.?reply\\|DAEMON\\|daemon\\|facebookmail\\|twitter")))
-
-(setq bbdb-complete-name-allow-cycling t
-      bbdb-use-alternate-names t
-      bbdb-elided-display t)
-
-(setq bbdb-electric t
-      bbdb-completion-type nil)
-
-(setq bbdb-dwim-net-address-allow-redundancy t
-      bbdb-quiet-about-name-mismatches 2
-      bbdb-canonicalize-redundant-nets-p t
-      bbbd-message-caching-enabled t)
+ '(bbdb-file (concat user-dropbox-directory ".bbdb"))
+ '(bbdb-use-popup t)
+ '(bbdb-pop-up-window-size 0.5)
+ '(bbdb-mua-popup-window-size 4)
+ '(bddb-popup-target-lines 1)
+ '(bbdb-offer-save 1)
+ '(bbdb-always-add-address t)
+ '(bbdb/mail-auto-create-p 'bbdb-ignore-some-messages-hook)
+ '(bbdb-ignore-some-messages-alist
+   '(("From" . "no.?reply\\|DAEMON\\|daemon\\|facebookmail\\|twitter")))
+ '(bbdb-complete-name-allow-cycling t)
+ '(bbdb-use-alternate-names t)
+ '(bbdb-elided-display t)
+ '(bbdb-electric t)
+ '(bbdb-completion-type nil)
+ '(bbdb-dwim-net-address-allow-redundancy t)
+ '(bbdb-quiet-about-name-mismatches 2)
+ '(bbdb-canonicalize-redundant-nets-p t)
+ '(bbbd-message-caching-enabled t))
 
 (add-hook 'gnus-startup-hook 'bbdb-insinuate-gnus)
 (add-hook 'message-mode-hook 'bbdb-insinuate-mail)
