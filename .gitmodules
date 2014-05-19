@@ -10,9 +10,6 @@
 [submodule "lib/clang-complete-async"]
     path = lib/clang-complete-async
     url = git://github.com/Golevka/emacs-clang-complete-async.git
-[submodule "lib/slime"]
-    path = lib/slime
-    url = git://github.com/nablaone/slime.git
 [submodule "lib/osx-bbdb"]
 	path = lib/osx-bbdb
 	url = git@github.com:chrisbarrett/osx-bbdb.git
@@ -40,9 +37,6 @@
 [submodule "lib/capture-mail"]
 	path = lib/capture-mail
 	url = git@github.com:chrisbarrett/capture-mail.git
-[submodule "lib/bison-mode"]
-	path = lib/bison-mode
-	url = git@github.com:chrisbarrett/bison-mode.git
 [submodule "lib/org-reveal"]
 	path = lib/org-reveal
 	url = https://github.com/yjwen/org-reveal.git
