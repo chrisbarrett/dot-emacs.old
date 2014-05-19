@@ -39,17 +39,18 @@
    c-eldoc
    clang-format))
 
-(add-hook 'c-mode-common-hook 'google-set-c-style)
-(add-hook 'c-mode-common-hook 'google-make-newline-indent)
-
 (when (executable-find "clang")
   (custom-set-variables
    '(cc-compilers-list (list "clang"))
    '(cc-default-compiler "clang")
    '(cc-default-compiler-options "-fno-color-diagnostics -g")))
 
+(after 'google-c-style
+  (add-hook 'c-mode-common-hook 'google-set-c-style)
+  (add-hook 'c-mode-common-hook 'google-make-newline-indent))
+
 (after 'cc-mode
-  (require 'google-c-style)
+  (require 'google-c-style nil t)
 
   (define-key c-mode-map (kbd "M-q")
     (if (executable-find "clang-format")
