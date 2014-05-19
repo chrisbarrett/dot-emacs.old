@@ -32,7 +32,7 @@
 (when (fboundp 'scroll-bar-mode)   (scroll-bar-mode -1))
 (when (fboundp 'tool-bar-mode)     (tool-bar-mode -1))
 (when (fboundp 'blink-cursor-mode) (blink-cursor-mode -1))
-(when (fboundp 'menu-bar-mode)     (menu-bar-mode (if (display-graphic-p) +1 -1)))
+(when (fboundp 'menu-bar-mode)     (menu-bar-mode -1))
 
 (setq gc-cons-threshold (* 1024 1024 20))
 
