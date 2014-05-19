@@ -232,8 +232,9 @@ template."
 (unless noninteractive
   (hook-fn 'after-init-hook
     (defvar cm-capture-timer
-      (run-with-timer 5 60 (lambda ()
-                             (capture-mail cm-capture-messages-dir))))))
+      (when (f-exists? cm-capture-messages-dir)
+        (run-with-timer 5 60 (lambda ()
+                               (capture-mail cm-capture-messages-dir)))))))
 
 (defun cb-org:quick-capture (type body)
   "Use the capture-mail functionality to capture something quickly.
