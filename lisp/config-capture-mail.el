@@ -31,6 +31,9 @@
 (require 'config-darwin)
 (require 'config-orgmode)
 
+(defvar cm-archived-messages-dir nil)
+(defvar cm-capture-messages-dir nil)
+
 (when (f-exists? user-mail-directory)
   (let ((account-dir (--first
                       (not (s-starts-with? "." (f-filename it)))
@@ -233,7 +236,8 @@ template."
 (unless noninteractive
   (hook-fn 'after-init-hook
     (defvar cm-capture-timer
-      (when (f-exists? cm-capture-messages-dir)
+      (when (and cm-capture-messages-dir
+                 (f-exists? cm-capture-messages-dir))
         (run-with-timer 5 60 (lambda ()
                                (capture-mail cm-capture-messages-dir)))))))
 
