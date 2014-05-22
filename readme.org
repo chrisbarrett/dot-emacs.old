@@ -3,9 +3,6 @@
 ** Description
 This is my personal Emacs configuration. It is obviously very personalised and
 you'd be crazy to use it as-is.
-
-The configuration is mostly contained in the org files at the repository root. At startup, Emacs will
-use =org-babel= to generate and load emacs lisp files from their contents.
 ** Installation
 Requires GNU Make, curl and Git.
 
