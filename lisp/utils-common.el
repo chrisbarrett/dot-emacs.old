@@ -188,7 +188,9 @@ in BODY.
                      (-partition-all-in-steps 2 2)
                      (--drop-while (keywordp (car it)))
                      (apply '-concat))))
-        (file (or byte-compile-current-file load-file-name)))
+        (file (or (when (boundp 'byte-compile-current-file)
+		    byte-compile-current-file)
+		  load-file-name)))
     `(progn
        (add-hook ,hook
                  (lambda ,arglist

@@ -31,11 +31,12 @@
 (require 'config-darwin)
 (require 'config-orgmode)
 
-(let ((account-dir (--first
-                    (not (s-starts-with? "." (f-filename it)))
-                    (f-directories user-mail-directory))))
-  (setq cm-archived-messages-dir (f-join account-dir "org" "cur")
-        cm-capture-messages-dir  (f-join account-dir "org" "new")))
+(when (f-exists? user-mail-directory)
+  (let ((account-dir (--first
+                      (not (s-starts-with? "." (f-filename it)))
+                      (f-directories user-mail-directory))))
+    (setq cm-archived-messages-dir (f-join account-dir "org" "cur")
+          cm-capture-messages-dir  (f-join account-dir "org" "new"))))
 
 (cl-defun cm--growl (kind desc)
   (growl (format "%s Captured" (s-capitalize kind))
