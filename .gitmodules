@@ -1,27 +1,27 @@
 [submodule "lib/emacs-refactor"]
     path = lib/emacs-refactor
-    url = git://github.com/chrisbarrett/emacs-refactor.git
+    url = https://github.com/chrisbarrett/emacs-refactor.git
 [submodule "lib/ido-speed-hack"]
     path = lib/ido-speed-hack
-    url = git://github.com/orfelyus/ido-speed-hack.git
+    url = https://github.com/orfelyus/ido-speed-hack.git
 [submodule "lib/info-lookmore"]
     path = lib/info-lookmore
-    url = git://github.com/emacsmirror/info-lookmore.git
+    url = https://github.com/emacsmirror/info-lookmore.git
 [submodule "lib/clang-complete-async"]
     path = lib/clang-complete-async
-    url = git://github.com/Golevka/emacs-clang-complete-async.git
+    url = https://github.com/Golevka/emacs-clang-complete-async.git
 [submodule "lib/osx-bbdb"]
 	path = lib/osx-bbdb
-	url = git@github.com:chrisbarrett/osx-bbdb.git
+	url = https://github.com/chrisbarrett/osx-bbdb.git
 [submodule "lib/whizzytex"]
 	path = lib/whizzytex
 	url = https://github.com/emacsmirror/whizzytex.git
 [submodule "lib/org-pomodoro"]
 	path = lib/org-pomodoro
-	url = git@github.com:chrisbarrett/org-pomodoro.git
+	url = https://github.com/chrisbarrett/org-pomodoro.git
 [submodule "lib/helm-dictionary"]
 	path = lib/helm-dictionary
-	url = git://github.com/chrisbarrett/helm-dictionary.git
+	url = https://github.com/chrisbarrett/helm-dictionary.git
 [submodule "lib/reveal.js"]
 	path = lib/reveal.js
 	url = https://github.com/hakimel/reveal.js.git
@@ -36,7 +36,7 @@
 	url = https://github.com/emacsmirror/proofgeneral.git
 [submodule "lib/capture-mail"]
 	path = lib/capture-mail
-	url = git@github.com:chrisbarrett/capture-mail.git
+	url = https://github.com/chrisbarrett/capture-mail.git
 [submodule "lib/org-reveal"]
 	path = lib/org-reveal
 	url = https://github.com/yjwen/org-reveal.git
