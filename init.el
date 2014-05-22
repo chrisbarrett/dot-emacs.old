@@ -47,6 +47,9 @@
 (require 'custom)
 (require 'personal-config nil t)
 
+(unless (ignore-errors (emacs-init-time))
+  (setq default-directory user-home-directory))
+
 (provide 'init)
 
 ;;; init.el ends here

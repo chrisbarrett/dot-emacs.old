@@ -149,9 +149,6 @@ The notification will have the given TITLE and MESSAGE."
       ;; Fall back to message.
       (message "%s. %s" title message))))
 
-(unless (ignore-errors (emacs-init-time))
-  (setq default-directory user-home-directory))
-
 (provide 'config-darwin)
 
 ;;; config-darwin.el ends here
