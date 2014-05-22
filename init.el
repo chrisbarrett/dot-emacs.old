@@ -3,7 +3,7 @@
 ;; Copyright (C) 2013, 2014 Chris Barrett
 
 ;; Author: Chris Barrett <chris.d.barrett@me.com>
-;; Version: 0.1
+;; Version: 0.2
 
 ;; This file is not part of GNU Emacs.
 
@@ -21,6 +21,10 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
+
+;; This file is automatically loaded by Emacs on startup in order to perform
+;; user customisation. Here, we initialise the Emacs package manager and load
+;; configuration files in "./lisp".
 
 ;;; Code:
 
