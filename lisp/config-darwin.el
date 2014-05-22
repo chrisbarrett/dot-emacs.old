@@ -32,31 +32,51 @@
 
 (autoload 'thing-at-point-url-at-point "thingatpt")
 
-(setq shell-command-switch "-lc")
-
-(cb:install-package 'exec-path-from-shell t)
-(exec-path-from-shell-initialize)
-
 (when (s-ends-with? "fish" (getenv "SHELL"))
-  (setq shell-file-name "/bin/bash"
-        explicit-shell-file-name shell-file-name)
-  (setenv "SHELL"  shell-file-name))
+  (custom-set-variables
+   '(shell-file-name "/bin/bash")
+   '(explicit-shell-file-name shell-file-name))
 
-(unless noninteractive
+  (setenv "SHELL" shell-file-name))
+
+(when (equal system-type 'darwin)
+
+  (cb:install-package 'exec-path-from-shell t)
+  (exec-path-from-shell-initialize)
+
+  (bind-key* "s-p" 'ps-print-with-faces-dwim)
+
   (after 'bbdb
-    (require 'osx-bbdb)))
+    (require 'osx-bbdb))
 
-(let ((terminfo (expand-file-name "~/.terminfo")))
-  (unless (file-exists-p terminfo)
-    (start-process
-     "tic" " tic" "tic"
-     "-o" terminfo
-     "/Applications/Emacs.app/Contents/Resources/etc/e/eterm-color.ti")))
+  (let ((terminfo (expand-file-name "~/.terminfo")))
+    (unless (file-exists-p terminfo)
+      (start-process
+       "tic" " tic" "tic"
+       "-o" terminfo
+       "/Applications/Emacs.app/Contents/Resources/etc/e/eterm-color.ti")))
 
-(setq insert-directory-program (or (executable-find "gls") "ls"))
+  (after 'evil
+    (evil-global-set-key 'normal (kbd "g o") 'mac-open-dwim)
+    (evil-global-set-key 'normal (kbd "g O") 'mac-reveal-in-finder))
 
-(setq starttls-gnutls-program (executable-find "gnutls-cli")
-      starttls-use-gnutls t)
+  (custom-set-variables
+   '(shell-command-switch "-lc")
+   '(insert-directory-program (or (executable-find "gls") "ls"))
+   '(starttls-gnutls-program (executable-find "gnutls-cli"))
+   '(starttls-use-gnutls t)))
+
+(when (and (equal system-type 'darwin) (not window-system))
+  (setq interprogram-cut-function   'cb:osx-copy
+        interprogram-paste-function 'cb:osx-paste))
+
+(defun ps-print-with-faces-dwim ()
+  "Perform a context-sensitive printing command."
+  (interactive)
+  (call-interactively
+   (if (region-active-p)
+       'ps-print-region-with-faces
+     'ps-print-buffer-with-faces)))
 
 (defun osx-find-system-sound (name)
   "Find a system alert matching NAME."
@@ -77,20 +97,6 @@
     (let ((proc (start-process "pbcopy" "*Messages*" "pbcopy")))
       (process-send-string proc text)
       (process-send-eof proc))))
-
-(unless window-system
-  (setq interprogram-cut-function   'cb:osx-copy
-        interprogram-paste-function 'cb:osx-paste))
-
-(defun ps-print-with-faces-dwim ()
-  "Perform a context-sensitive printing command."
-  (interactive)
-  (call-interactively
-   (if (region-active-p)
-       'ps-print-region-with-faces
-     'ps-print-buffer-with-faces)))
-
-(bind-key* "s-p" 'ps-print-with-faces-dwim)
 
 (defun mac-reveal-in-finder ()
   "Open the current directory in the Finder."
@@ -123,10 +129,6 @@ When used interactively, makes a guess at what to pass."
                    (buffer-file-name)))))
 
   (%-sh (format "open '%s'" open-arg)))
-
-(after 'evil
-  (evil-global-set-key 'normal (kbd "g o") 'mac-open-dwim)
-  (evil-global-set-key 'normal (kbd "g O") 'mac-reveal-in-finder))
 
 (cl-defun growl (title
                  message
