@@ -37,6 +37,7 @@
   :match "\\.py"
   :packages (python
              python-info
+             pyvenv
              virtualenvwrapper))
 
 
