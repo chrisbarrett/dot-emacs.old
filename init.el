@@ -39,10 +39,19 @@
 (require 'config-modeline)
 
 ;; Load all files in lisp dir.
-(mapc (lambda (f)
-        (let ((feature (intern (file-name-sans-extension (file-name-nondirectory f)))))
+(dolist (f (file-expand-wildcards (concat user-emacs-directory "lisp/*.el") t))
+  (let ((feature (intern (file-name-sans-extension (file-name-nondirectory f)))))
+    (with-demoted-errors "Init: %s"
+      (cond
+       ;; Ignore flycheck temporary files.
+       ((string-match-p "^flycheck_" (symbol-name feature)) nil)
+
+       ((equal feature 'config-darwin)
+        (when (equal system-type 'darwin)
           (require feature)))
-      (file-expand-wildcards (concat user-emacs-directory "lisp/*.el") t))
+
+       (t
+        (require feature))))))
 
 (require 'custom)
 (require 'personal-config nil t)
