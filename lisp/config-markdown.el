@@ -30,7 +30,8 @@
 
 (cb:declare-package-installer markdown
   :match (rx "." (or "md" "markdown") eol)
-  :packages (markdown-mode))
+  :packages (markdown-mode
+             markdown-toc))
 
 (add-to-list 'auto-mode-alist
              `(,(rx "." (or "md" "markdown") eol) . markdown-mode))
