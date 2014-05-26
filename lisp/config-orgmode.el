@@ -41,6 +41,7 @@
   "Captures the original value of the `org-default-notes-file'.")
 
 (custom-set-variables
+ '(org-default-notes-file (f-join org-directory "notes.org"))
  '(org-M-RET-may-split-line nil)
  '(org-attach-directory (f-join org-directory "data"))
  '(org-blank-before-new-entry nil)

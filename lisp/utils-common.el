@@ -433,8 +433,7 @@ This directory tree will be added to the load path if ADD-PATH is non-nil."
                                  emacs-major-version
                                  emacs-minor-version)))
 
-(setq org-directory (f-join user-home-directory "org")
-      org-default-notes-file (f-join org-directory "notes.org"))
+(setq org-directory (f-join user-home-directory "org"))
 
 (defvar ledger-file (f-join org-directory "accounts.ledger"))
 
