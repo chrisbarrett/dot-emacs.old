@@ -34,7 +34,7 @@
 
  '(osxb-import-with-timer (equal system-type 'darwin))
 
- '(bbdb-file (concat user-dropbox-directory ".bbdb"))
+ '(bbdb-file (f-join user-mobile-emacs-dir ".bbdb"))
  '(bbdb-use-popup t)
  '(bbdb-pop-up-window-size 0.5)
  '(bbdb-mua-popup-window-size 4)
