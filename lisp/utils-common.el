@@ -396,6 +396,13 @@ TO-N-LINES is the number of blank lines to insert afterwards."
 (defconst user-home-directory    (concat (getenv "HOME") "/"))
 (defconst user-dropbox-directory (concat user-home-directory "Dropbox/"))
 (defconst user-mail-directory    (f-join user-home-directory "Mail"))
+(defconst user-mobile-emacs-dir  (f-join user-dropbox-directory "emacs"))
+
+(if (f-exists? user-dropbox-directory)
+    (f-mkdir user-mobile-emacs-dir)
+  (setq user-mobile-emacs-dir user-home-directory))
+
+(add-to-list 'load-path user-mobile-emacs-dir)
 
 (defmacro define-path (sym path)
   "Define a subfolder of the `user-emacs-directory'.
