@@ -185,6 +185,8 @@ section in the modeline.")
       (setq output (concat "…/" output)))
     output))
 
+(autoload 'tramp-dissect-file-name "tramp")
+
 (cl-defun cb:propertize-file-directory
     (&optional (filepath (file-name-directory (buffer-file-name))))
   "Separate tramp info from the given filepath."
