@@ -34,7 +34,7 @@
              markdown-toc))
 
 (add-to-list 'auto-mode-alist
-             `(,(rx "." (or "md" "markdown") eol) . markdown-mode))
+             (cons (rx "." (or "md" "markdown") eol) 'markdown-mode))
 
 (after 'markdown-mode
   (put 'markdown-mode 'imenu-generic-expression
