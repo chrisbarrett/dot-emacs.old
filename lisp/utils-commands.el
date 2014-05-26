@@ -1,4 +1,4 @@
-;;; utils-commands.el --- Random interactive commands
+;;; utils-commands.el --- Random interactive commands  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2014 Chris Barrett
 
@@ -360,27 +360,66 @@ Changes the selected buffer."
      (t
       pass))))
 
+(defun combine-adjacent-setqs ()
+  "Combine calls to setq around point."
+  (interactive)
+  (sp-beginning-of-sexp)
+  (when (thing-at-point-looking-at "setq")
+    (sp-backward-up-sexp)
+
+    ;; Move to start of group.
+    (let ((prev (point)))
+      (while (thing-at-point-looking-at "(setq")
+        (setq prev (point))
+        (sp-backward-sexp))
+      (goto-char prev))
+
+    ;; Find number of consecutive setq forms.
+    (let ((count 0))
+      (save-excursion
+        (while (thing-at-point-looking-at "(setq")
+          (sp-next-sexp)
+          (cl-incf count)))
+
+      ;; Wrap group in another setq.
+      (sp-wrap-with-pair "(")
+      (insert "setq ")
+      (sp-forward-slurp-sexp (1- count))
+
+      ;; Kill interior setqs.
+      (--dotimes count
+        (sp-forward-symbol)
+        (sp-splice-sexp-killing-backward 1)
+        (sp-next-sexp 3)))))
+
 (defun rewrite-setq-as-custom-set-variables ()
   "Rewrite the `setq' at point to a usage of `custom-set-variables'."
   (interactive "*")
-  (cond
-   ((and (sp-beginning-of-sexp)
-         (thing-at-point-looking-at "setq"))
-    (cl-destructuring-bind (&key beg end &allow-other-keys)
-        (sp-get-enclosing-sexp)
-      (let* ((form (read (buffer-substring beg end)))
-             (updated
-              (pp-to-string
-               (cons 'custom-set-variables
-                     (->> (cdr form)
-                       (-partition-in-steps 2 2)
-                       (--map (cons 'quote (list it))))))))
-        (goto-char beg)
-        (delete-region beg end)
-        (insert updated))))
-   (t
-    (user-error
-     "Not at a setq form"))))
+  (cl-flet ((do-rewrite
+             ()
+             (combine-adjacent-setqs)
+             (forward-char 1)
+             (cl-destructuring-bind (&key beg end &allow-other-keys)
+                 (sp-get-enclosing-sexp)
+               (let* ((form (read (buffer-substring beg end)))
+                      (updated
+                       (pp-to-string
+                        (cons 'custom-set-variables
+                              (->> (cdr form)
+                                (-partition-in-steps 2 2)
+                                (--map (cons 'quote (list it))))))))
+                 (goto-char beg)
+                 (delete-region beg end)
+                 (insert updated)))))
+    (cond
+     ((thing-at-point-looking-at "(setq")
+      (forward-char 1)
+      (do-rewrite))
+     ((and (sp-beginning-of-sexp)
+           (thing-at-point-looking-at "setq"))
+      (do-rewrite))
+     (t
+      (user-error "Not at a setq form")))))
 
 (provide 'utils-commands)
 
