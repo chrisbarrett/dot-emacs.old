@@ -44,6 +44,8 @@ Also require the package when REQUIRE? is set."
 (cb:install-package 'diminish t)
 (cb:install-package 'bind-key t)
 
+(require 'dash)
+
 (eval-and-compile
   (defun cblib:quote-if-fn (fn)
     (if (symbolp fn) `',fn fn)))
