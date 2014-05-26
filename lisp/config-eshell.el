@@ -35,7 +35,11 @@
 
 (setenv "TERM" "ansi")
 
-(setq eshell-cmpl-ignore-case t)
+(custom-set-variables
+ '(eshell-cmpl-ignore-case t)
+ '(eshell-highlight-prompt nil)
+ '(eshell-prompt-regexp (rx bol (* space) (or "#" ":") space))
+ '(eshell-prompt-function 'cb-eshell:format-prompt))
 
 (defun cb:term-cycle (&optional arg)
   "Cycle through various terminal window states."
@@ -95,10 +99,6 @@
   '((t :inherit 'font-lock-comment-face))
   "Face for separators in the eshell prompt."
   :group 'cb-eshell)
-
-(setq eshell-highlight-prompt nil)
-
-(setq eshell-prompt-regexp (rx bol (* space) (or "#" ":") space))
 
 (defun cb-eshell:current-dir ()
   (let* ((cwd (f-short (eshell/pwd)))
@@ -208,8 +208,6 @@ Each alist has a string as the key and a "
                  'read-only t
                  'front-sticky 'read-only
                  'rear-nonsticky 'read-only))))
-
-(setq eshell-prompt-function 'cb-eshell:format-prompt)
 
 (defun cb-eshell:find-file-or-files (files)
   "Open FILES.
