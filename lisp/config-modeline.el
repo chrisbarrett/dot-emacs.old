@@ -27,6 +27,7 @@
 ;;; Code:
 
 (require 'config-theme)
+(require 'config-orgmode)
 
 (defface mode-line-tramp-separator
   '((((background dark))
