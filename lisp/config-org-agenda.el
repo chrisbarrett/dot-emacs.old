@@ -63,7 +63,7 @@
            ((org-agenda-tag-filter-preset
              '("-@work"))))
           ("w" "Agenda and work actions"
-           ((tags-todo "-someday-PeterBarrett-PeterRoberts/NEXT"
+           ((tags-todo "-someday/NEXT"
                        ((org-agenda-overriding-header "Next Actions")))
             (agenda ""
                     ((org-agenda-ndays 14)))
@@ -71,14 +71,8 @@
                   ((org-agenda-overriding-header "Incoming")))
             (todo "TODO_OUT|READY|ORGANISE_OUT"
                   ((org-agenda-overriding-header "Outgoing")))
-            (todo "CALLBACK|MESSAGE"
-                  ((org-agenda-overriding-header "Phone calls")))
             (tags-todo "-someday/WAITING"
-                       ((org-agenda-overriding-header "Waiting")))
-            (tags-todo "-someday+PeterBarrett"
-                       ((org-agenda-overriding-header "Peter Barrett")))
-            (tags-todo "-someday+PeterRoberts"
-                       ((org-agenda-overriding-header "Peter Roberts"))))
+                       ((org-agenda-overriding-header "Waiting"))))
            ((org-agenda-tag-filter-preset
              '("+@work"))
             (org-agenda-files
