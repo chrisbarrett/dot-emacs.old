@@ -264,6 +264,7 @@
     (byte-recompile-directory cb:lisp-dir 0 t)))
 
 (defalias 'qrr 'query-replace-regexp)
+(defalias 'qr 'query-replace)
 
 (defalias 'kb 'kill-buffer)
 (defalias 'bb 'bury-buffer)
