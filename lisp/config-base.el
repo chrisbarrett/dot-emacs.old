@@ -263,6 +263,24 @@
   (when (boundp 'cb:lisp-dir)
     (byte-recompile-directory cb:lisp-dir 0 t)))
 
+(defalias 'qrr 'query-replace-regexp)
+
+(defalias 'kb 'kill-buffer)
+(defalias 'bb 'bury-buffer)
+
+(defalias 'dfb 'delete-file-and-buffer)
+(defalias 'dbf 'delete-file-and-buffer)
+(defalias 'rfb 'rename-file-and-buffer)
+(defalias 'rbf 'rename-file-and-buffer)
+
+(defalias 'plp 'package-list-packages)
+
+(defalias 'hff 'hexl-find-file)
+(defalias 'hex 'hexl-mode)
+
+(defalias 'tsi 'text-scale-increase)
+(defalias 'tsd 'text-scale-decrease)
+
 (provide 'config-base)
 
 ;;; config-base.el ends here

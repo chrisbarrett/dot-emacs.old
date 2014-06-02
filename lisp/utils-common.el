@@ -377,24 +377,6 @@ TO-N-LINES is the number of blank lines to insert afterwards."
     ;; Open a user-specified number of blanks.
     (open-line to-n-lines)))
 
-(defalias 'qrr 'query-replace-regexp)
-
-(defalias 'kb 'kill-buffer)
-(defalias 'bb 'bury-buffer)
-
-(defalias 'dfb 'delete-file-and-buffer)
-(defalias 'dbf 'delete-file-and-buffer)
-(defalias 'rfb 'rename-file-and-buffer)
-(defalias 'rbf 'rename-file-and-buffer)
-
-(defalias 'plp 'package-list-packages)
-
-(defalias 'hff 'hexl-find-file)
-(defalias 'hex 'hexl-mode)
-
-(defalias 'tsi 'text-scale-increase)
-(defalias 'tsd 'text-scale-decrease)
-
 (defconst user-home-directory    (concat (getenv "HOME") "/"))
 (defconst user-dropbox-directory (concat user-home-directory "Dropbox/"))
 (defconst user-mail-directory    (f-join user-home-directory "Mail"))
