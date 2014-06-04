@@ -34,6 +34,9 @@
 (define-key flycheck-mode-map (kbd "M-N") 'flycheck-next-error)
 (define-key flycheck-mode-map (kbd "M-P") 'flycheck-previous-error)
 
+(cb:install-package 'flycheck-cask)
+(add-hook 'flycheck-mode-hook 'flycheck-cask-setup)
+
 (provide 'config-flycheck)
 
 ;;; config-flycheck.el ends here
