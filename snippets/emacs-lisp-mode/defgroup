@@ -5,4 +5,4 @@
 (defgroup `(file-name-sans-extension (file-name-nondirectory buffer-file-name))` nil
   "$0"
   :group '${1:languages}
-  :prefix "`(file-name-sans-extension (file-name-nondirectory buffer-file-name))`")
+  :prefix "`(file-name-sans-extension (file-name-nondirectory buffer-file-name))`-")
