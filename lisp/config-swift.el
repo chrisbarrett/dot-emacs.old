@@ -28,6 +28,7 @@
 
 (require 'utils-common)
 (require 'super-smart-ops)
+(require 'config-smartparens)
 
 (add-to-list 'load-path (f-join user-home-directory "Projects" "swift-mode"))
 (require 'swift-mode nil t)
@@ -55,6 +56,14 @@
   :custom
   '((":" . cb-swift:smart-colon)
     ("," . cb-swift:smart-comma)))
+
+
+;;; Smartparens
+
+
+(sp-with-modes '(swift-mode)
+  (sp-local-pair "{" "}" :post-handlers '(:add sp-generic-leading-space)))
+
 
 (provide 'config-swift)
 
