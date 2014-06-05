@@ -33,6 +33,10 @@
 (add-to-list 'load-path (f-join user-home-directory "Projects" "swift-mode"))
 (require 'swift-mode nil t)
 
+
+;;; Smart ops
+
+
 (defun cb-swift:smart-insert-op-no-leading-space (op)
   "Insert OP without any preceding padding."
   (smart-insert-op op)
