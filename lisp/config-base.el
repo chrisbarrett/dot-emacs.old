@@ -282,6 +282,8 @@
 (defalias 'tsi 'text-scale-increase)
 (defalias 'tsd 'text-scale-decrease)
 
+(defalias 'cal 'calendar)
+
 (provide 'config-base)
 
 ;;; config-base.el ends here
