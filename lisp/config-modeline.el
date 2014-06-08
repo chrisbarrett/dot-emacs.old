@@ -273,21 +273,6 @@ entry in `modeline-custom-description-functions'."
         evil-mode-line-tag
       ""))
 
-   ;; --------------------------------------------------------------------------
-   ;; Mail status.
-   (:eval
-    (if (true? cbm:mode-line-indicator)
-        (concat " " cbm:mode-line-indicator " ")
-      ""))
-
-   " "
-
-   ;; Show clock for window 1.
-   (:eval (if (equal 1 (length (window-list)))
-              (propertize (format-time-string "[%h %d, %H:%M] ")
-                          'face 'mode-line-minor-mode)
-            ""))
-
    ;; Pomodoro
    ;;
    (:eval
@@ -313,16 +298,6 @@ entry in `modeline-custom-description-functions'."
            (concat org-pomodoro-mode-line)))
      (t
       "")))
-
-   ;; Current org notes file
-   (:eval
-    (if (and (equal 1 (length (window-list)))
-             (true? org-init-notes-file)
-             (not (equal org-init-notes-file org-default-notes-file)))
-        (propertize
-         (concat " [" (f-filename (f-no-ext org-default-notes-file)) "] ")
-         'face 'modeline-org-notes-file-indicator)
-      ""))
 
    ;; --------------------------------------------------------------------------
    ;; File status.
