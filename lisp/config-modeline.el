@@ -139,20 +139,13 @@
   "Face for the warning when point is past column 80."
   :group 'modeline)
 
-(defface modeline-org-notes-file-indicator
+(defface modeline-org-at-work
   `((t (:foreground
         ,solarized-hl-magenta
         :inherit
         'mode-line-position)))
-  "Face for the indicator showing the name of the current org notes file."
+  "Face for the indicator showing the work state."
   :group 'modeline)
-
-(defvar modeline-mail-indicator nil)
-
-(defvar modeline-custom-description-functions nil
-  "A list of functions.
-The first function returning non-nil is used for the description
-section in the modeline.")
 
 (cl-defun cb:vc-state->letter (&optional (file (buffer-file-name)))
   "Return a single letter to represent the current version-control status."
@@ -164,12 +157,6 @@ section in the modeline.")
     ((removed)              (propertize "D" 'face '(:foreground "red")))
     ((ignored)              (propertize "-" 'face 'modeline-vc-unknown-face))
     (t                      (propertize "?" 'face 'modeline-vc-unknown-face))))
-
-(cl-defun cb:vc-file-uptodate? (&optional (file (buffer-file-name)))
-  "Non-nil if FILE is up-to-date."
-  (ignore-errors
-    (vc-state-refresh file 'git)
-    (equal 'up-to-date (vc-state file))))
 
 (cl-defun cb:shorten-directory (dir &optional (max-length 30))
   "Show up to MAX-LENGTH characters of a directory name DIR."
@@ -211,46 +198,10 @@ section in the modeline.")
        (face (cb:shorten-directory (or file filepath)) 'mode-line-directory)))))
 
 (defun cbmd:description ()
-  "Format the mode line description.
-This will normally be the path and buffer name, unless there is a suitable
-entry in `modeline-custom-description-functions'."
-  (or
-   (-when-let (s (-first 'funcall modeline-custom-description-functions))
-     (propertize (funcall s) 'face 'mode-line-filename))
-   (concat
-    (if (buffer-file-name) (cb:propertize-file-directory) "")
-    (propertize (buffer-name) 'face 'mode-line-filename))))
-
-(defvar cbm:mail-icon (create-image (f-join cb:assets-dir "letter.xpm")
-                                    'xpm nil :ascent 'center))
-
-(defun cbm:unread-mail-count ()
-  "Return the number of unread messages in all folders in your maildir."
-  (->> (f-directories user-mail-directory)
-    (-mapcat 'f-directories)
-    (-mapcat 'f-directories)
-    (-filter (~ s-ends-with? "new"))
-    (-remove (~ s-matches? (rx (or "low" "archive" "draft" "org"
-                                   "deleted" "trash" "sent"))))
-    (-map (C length f-files))
-    (-sum)))
-
-(defvar cbm:mode-line-indicator nil
-  "The entry to display in the modeline.")
-
-(defun cbm:make-indicator (n)
-  (when (cl-plusp n)
-    (concat
-     (propertize "@" 'display cbm:mail-icon)
-     (int-to-string n))))
-
-(defun cbm:update-unread-count ()
-  "Find the number of unread messages and update the modeline."
-  (when (f-exists? user-mail-directory)
-    (setq cbm:mode-line-indicator (cbm:make-indicator (cbm:unread-mail-count)))))
-
-(defvar cbm:unread-count-timer
-  (run-with-timer 0 10 'cbm:update-unread-count))
+  "Format the mode line description."
+  (concat
+   (if (buffer-file-name) (cb:propertize-file-directory) "")
+   (propertize (buffer-name) 'face 'mode-line-filename)))
 
 (setq-default
  mode-line-format
@@ -342,10 +293,6 @@ entry in `modeline-custom-description-functions'."
                       'face 'mode-line-minor-mode))
    (:propertize mode-line-process
                 face mode-line-process)
-   " "
-   (:eval (or (ignore-errors
-                (propertize modeline-mail-indicator 'face 'mode-line-emphasis))
-              ""))
    " "
    (global-mode-string global-mode-string)))
 
