@@ -72,22 +72,6 @@
 (after 'message
   (define-key message-mode-map (kbd "C-c C-a") 'mail-add-attachment-ido))
 
-(cb:install-package 'notmuch)
-
-(require 'notmuch-maildir-fcc)
-
-(after '(notmuch evil)
-  (define-keys notmuch-search-mode-map
-    "j" 'next-line
-    "k" 'previous-line
-    "C-f" 'evil-scroll-page-down
-    "C-b" 'evil-scroll-page-up)
-
-  (define-keys notmuch-show-mode-map
-    "C-f" 'evil-scroll-page-down
-    "C-b" 'evil-scroll-page-up)
-  (evil-add-hjkl-bindings notmuch-show-mode-map))
-
 (provide 'config-mail)
 
 ;;; config-mail.el ends here
