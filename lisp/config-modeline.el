@@ -224,6 +224,12 @@
         evil-mode-line-tag
       ""))
 
+   ;; Work state
+   (:eval
+    (if (true? cb-org:at-work?)
+        (propertize "[@work]" 'face 'modeline-org-at-work)
+      ""))
+
    ;; Pomodoro
    ;;
    (:eval
