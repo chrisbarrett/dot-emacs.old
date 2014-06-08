@@ -29,7 +29,10 @@
 (require 'utils-common)
 (require 'utils-ui)
 
-(setq message-kill-buffer-on-exit t)
+(custom-set-variables
+ '(message-kill-buffer-on-exit t)
+ '(message-send-mail-function 'async-smtpmail-send-it)
+ '(send-mail-function 'async-smtpmail-send-it))
 
 (defvar async-smtpmail-sent-hook nil)
 
@@ -55,9 +58,6 @@
      `(lambda (&rest _)
         (message "Delivering message to %s...done" ,to)
         (run-hooks 'async-smtpmail-sent-hook)))))
-
-(setq message-send-mail-function 'async-smtpmail-send-it
-      send-mail-function 'async-smtpmail-send-it)
 
 (when (equal system-type 'darwin)
   (hook-fn 'async-smtpmail-sent-hook
