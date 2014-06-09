@@ -33,9 +33,9 @@
 (cb:install-package 'ledger-mode)
 (add-to-list 'auto-mode-alist '("\\.ledger$" . ledger-mode))
 
-(setq ledger-post-account-alignment-column 2)
-
-(setq ledger-post-use-completion-engine :ido)
+(custom-set-variables
+ '(ledger-post-account-alignment-column 2)
+ '(ledger-post-use-completion-engine :ido))
 
 (after 'config-orgmode
   (add-to-list 'org-action-picker-options
