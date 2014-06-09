@@ -62,6 +62,10 @@
   (eldoc-mode +1)
   (diminish 'haskell-doc-mode))
 
+(after 'haskell-mode
+  (require 'company-ghc)
+  (add-to-list 'company-backends 'company-ghc))
+
 (defun cb-hs:file-name->module ()
   (-if-let (root (and (buffer-file-name) (projectile-project-p)))
 
