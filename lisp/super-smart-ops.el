@@ -1,4 +1,4 @@
-;;; super-smart-ops.el --- Like smart operator, but better
+;;; super-smart-ops.el --- Like smart operator, but better  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2014 Chris Barrett
 
@@ -139,13 +139,22 @@ Useful for setting up keymaps manually."
        ',fname)))
 
 (defun smart-op--add-smart-ops (ops custom)
+  "Apply custom operators in the current buffer.
+
+OPS are the smart operators for this mode.
+
+CUSTOM are custom operator implementations."
   (let ((custom-ops (-map 'car custom)))
     (setq-local smart-op-list (-union ops custom-ops))
     (--each ops
       (local-set-key (kbd it) (eval `(make-smart-op ,it))))
     (--each custom
       (cl-destructuring-bind (op . fn) it
-        (local-set-key (kbd op) fn)))))
+        ;; Decorate custom operators to run modification hooks.
+        (local-set-key (kbd op) (lambda ()
+                                  (interactive "*")
+                                  (smart-op--run-with-modification-hooks
+                                   (call-interactively fn))))))))
 
 (cl-defun declare-smart-ops (mode &key add rem custom)
   "Define the smart operators for the given mode.
