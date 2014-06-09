@@ -344,18 +344,6 @@ See URL `http://www.haskell.org/ghc/'."
      (t
       (smart-op-insert ":"))))
 
-  (defun cb-hs:space ()
-    "Insert a space with context-sensitive formatting."
-    (interactive)
-    (smart-op--run-with-modification-hooks
-     (cond
-      ((cb-hs:in-empty-braces?)
-       (just-one-space)
-       (save-excursion
-         (insert " ")))
-      (t
-       (haskell-mode-contextual-space)))))
-
   (defun cb-hs:del ()
     "Delete backwards with context-sensitive formatting."
     (interactive)
@@ -424,7 +412,6 @@ See URL `http://www.haskell.org/ghc/'."
       ("#" . cb-hs:smart-hash)
       (":" . cb-hs:smart-colon)))
 
-  (define-key haskell-mode-map (kbd "SPC") 'cb-hs:space)
   (define-key haskell-mode-map (kbd "DEL") 'cb-hs:del)
 
   (declare-smart-ops 'haskell-interactive-mode
@@ -454,7 +441,6 @@ See URL `http://www.haskell.org/ghc/'."
   (define-key shm-map (kbd "#") nil)
   (define-key shm-map (kbd "-") nil)
   (define-key shm-map (kbd "DEL") nil)
-  (define-key shm-map (kbd "SPC") nil)
   (define-key shm-map (kbd "<backtab>") nil)
   (define-key shm-map (kbd "TAB") nil)
   (define-key shm-map (kbd "M-r") nil)
