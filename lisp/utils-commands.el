@@ -143,23 +143,22 @@ Otherwise, use the value of said variable as argument to a funcall."
   "Perform a context-sensitive indentation action.
 With prefix argument ARG, justify text."
   (interactive "P")
-  (cond
-   ((region-active-p)
-    (indent-region (region-beginning) (region-end))
-    (message "Indented region."))
+  (let ((in-string? (nth 8 (syntax-ppss))))
+    (cond
+     ((region-active-p)
+      (indent-region (region-beginning) (region-end))
+      (message "Indented region."))
 
-   ((-contains? '(font-lock-comment-face
-                  font-lock-string-face
-                  font-lock-doc-face)
-                (face-at-point))
-    (if (apply 'derived-mode-p cb:lisp-modes)
-        (lisp-fill-paragraph arg)
-      (fill-paragraph arg))
-    (message "Filled paragraph."))
+     (in-string?
+      (if (apply 'derived-mode-p cb:lisp-modes)
+          (lisp-fill-paragraph arg)
+        (or (fill-comment-paragraph)
+            (fill-paragraph arg)))
+      (message "Filled paragraph."))
 
-   (t
-    (indent-buffer)
-    (message "Indented buffer."))))
+     (t
+      (indent-buffer)
+      (message "Indented buffer.")))))
 
 (define-key prog-mode-map (kbd "M-q") 'indent-dwim)
 
