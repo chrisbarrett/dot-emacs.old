@@ -35,18 +35,18 @@
   '("=" "<" ">" "%" "+" "-" "*" "/" "&" "|" "!" ":")
   "A list of strings to treat as operators.")
 
-(defun smart-op-in-string-or-comment? ()
+(defun smart-op--in-string-or-comment? ()
   "Non-nil if point is in a string or comment."
   (nth 8 (syntax-ppss)))
 
-(defun cb-op:prev-non-space-char ()
+(defun smart-op--prev-non-space-char ()
   "Return the previous non-whitespace character on this line, as a string."
   (save-excursion
     (when (search-backward-regexp (rx (not space))
                                   (line-beginning-position) t)
       (thing-at-point 'char))))
 
-(defun cb-op:delete-horizontal-space-non-readonly ()
+(defun smart-op--delete-horizontal-space-non-readonly ()
   "Delete horizontal space around point that is not read-only."
   (while (and (not (eobp))
               (s-matches? (rx space) (char-to-string (char-after)))
@@ -58,7 +58,7 @@
               (not (get-char-property (1- (point)) 'read-only)))
     (delete-char -1)))
 
-(defun cb-op:maybe-just-one-space-after-operator ()
+(defun smart-op--maybe-just-one-space-after-operator ()
   "Insert a trailing space unless:
 - the next char is an operator
 - we are in a parenthesised operator."
@@ -77,15 +77,15 @@
   (yas-with-field-restriction
 
     (cond
-     ((or (smart-op-in-string-or-comment?)
+     ((or (smart-op--in-string-or-comment?)
           ;; Looking at quotation mark?
           (-contains? '(?\" ?\') (char-after)))
       (insert op))
 
-     ((-contains? (cl-list* "(" smart-op-list) (cb-op:prev-non-space-char))
-      (cb-op:delete-horizontal-space-non-readonly)
+     ((-contains? (cl-list* "(" smart-op-list) (smart-op--prev-non-space-char))
+      (smart-op--delete-horizontal-space-non-readonly)
       (insert op)
-      (cb-op:maybe-just-one-space-after-operator))
+      (smart-op--maybe-just-one-space-after-operator))
 
      (t
       (unless (s-matches? (rx bol (* space) eol)
@@ -93,7 +93,7 @@
         (just-one-space))
 
       (insert op)
-      (cb-op:maybe-just-one-space-after-operator)))))
+      (smart-op--maybe-just-one-space-after-operator)))))
 
 (defmacro make-smart-op (str)
   "Return a function that will insert smart operator STR.
@@ -106,7 +106,7 @@ Useful for setting up keymaps manually."
          (smart-insert-op ,str))
        ',fname)))
 
-(defun cb-op:add-smart-ops (ops custom)
+(defun smart-op--add-smart-ops (ops custom)
   (let ((custom-ops (-map 'car custom)))
     (setq-local smart-op-list (-union ops custom-ops))
     (--each ops
@@ -140,16 +140,16 @@ Useful for setting up keymaps manually."
     ;; Set smart ops list for buffers that already exist.
     (--each (--filter-buffers (derived-mode-p mode))
       (with-current-buffer it
-        (cb-op:add-smart-ops ops custom)))
+        (smart-op--add-smart-ops ops custom)))
     ;; Set smart ops in mode's hook.
     (add-hook hook `(lambda ()
-                      (cb-op:add-smart-ops ',ops ',custom)))
+                      (smart-op--add-smart-ops ',ops ',custom)))
 
     (list :mode mode :ops ops)))
 
-(defun cb-op:delete-last-smart-op ()
+(defun smart-op--delete-last-smart-op ()
   "Delete the last smart-operator that was inserted."
-  (unless (or (derived-mode-p 'text-mode) (smart-op-in-string-or-comment?))
+  (unless (or (derived-mode-p 'text-mode) (smart-op--in-string-or-comment?))
     (save-restriction
       (narrow-to-region (line-beginning-position) (point))
 
@@ -164,12 +164,12 @@ Useful for setting up keymaps manually."
             (delete-char -1)))
 
         ;; Delete preceding spaces.
-        (cb-op:delete-horizontal-space-non-readonly)
+        (smart-op--delete-horizontal-space-non-readonly)
         t))))
 
 (defadvice sp-backward-delete-char (around delete-smart-op activate)
   "Delete the smart operator that was just inserted, including padding."
-  (or (cb-op:delete-last-smart-op) ad-do-it))
+  (or (smart-op--delete-last-smart-op) ad-do-it))
 
 (defadvice smart-insert-op (around restrict-to-insert-state activate)
   "If evil mode is active, only insert in insert state."
