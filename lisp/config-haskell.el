@@ -347,37 +347,40 @@ See URL `http://www.haskell.org/ghc/'."
   (defun cb-hs:space ()
     "Insert a space with context-sensitive formatting."
     (interactive)
-    (cond
-     ((cb-hs:in-empty-braces?)
-      (just-one-space)
-      (save-excursion
-        (insert " ")))
-     (t
-      (haskell-mode-contextual-space))))
+    (smart-op--run-with-modification-hooks
+     (cond
+      ((cb-hs:in-empty-braces?)
+       (just-one-space)
+       (save-excursion
+         (insert " ")))
+      (t
+       (haskell-mode-contextual-space)))))
 
   (defun cb-hs:del ()
     "Delete backwards with context-sensitive formatting."
     (interactive)
-    (cond
-     ((and (cb-hs:in-empty-braces?)
-           (thing-at-point-looking-at (rx (+ space))))
-      (delete-horizontal-space))
-     (t
-      (or (cb-op:delete-last-smart-op)
-          (call-interactively 'sp-backward-delete-char)))))
+    (smart-op--run-with-modification-hooks
+     (cond
+      ((and (cb-hs:in-empty-braces?)
+            (thing-at-point-looking-at (rx (+ space))))
+       (delete-horizontal-space))
+      (t
+       (or (cb-op:delete-last-smart-op)
+           (call-interactively 'sp-backward-delete-char))))))
 
   (defun cb-hs:smart-comma ()
     "Insert a comma, with context-sensitive formatting."
     (interactive)
-    (cond
-     ((ignore-errors (s-matches? "ExportSpec" (elt (shm-current-node) 0)))
-      (delete-horizontal-space)
-      (insert ",")
-      (hi2-indent-line)
-      (just-one-space))
+    (smart-op--run-with-modification-hooks
+     (cond
+      ((ignore-errors (s-matches? "ExportSpec" (elt (shm-current-node) 0)))
+       (delete-horizontal-space)
+       (insert ",")
+       (hi2-indent-line)
+       (just-one-space))
 
-     (t
-      (insert ","))))
+      (t
+       (insert ",")))))
 
   (defun cb-hs:ghci-line-beginning-position ()
     "Narrow to the current line, excluding the ghci prompt."
@@ -842,6 +845,25 @@ Meant for `eldoc-documentation-function'."
     (setq-local eldoc-documentation-function 'cb:haskell-doc-current-info))
 
   )
+
+;;; SHM smart op integration
+
+(after 'shm
+
+  (defun cb-hs:shm-handle-deletions (n)
+    (save-excursion
+      (shm-appropriate-adjustment-point 'backward)
+      (shm-adjust-dependents (point) (- n)))
+    (shm/init t))
+
+  (defun cb-hs:shm-handle-insertions (n)
+    (save-excursion
+      (shm-appropriate-adjustment-point 'forward)
+      (shm-adjust-dependents (point) n))
+    (shm/init t))
+
+  (add-hook 'smart-op-text-inserted-functions 'cb-hs:shm-handle-insertions)
+  (add-hook 'smart-op-text-removed-functions 'cb-hs:shm-handle-deletions))
 
 (provide 'config-haskell)
 
