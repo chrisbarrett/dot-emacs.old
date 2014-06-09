@@ -848,8 +848,9 @@ Meant for `eldoc-documentation-function'."
       (shm-adjust-dependents (point) n))
     (shm/init t))
 
-  (add-hook 'smart-op-text-inserted-functions 'cb-hs:shm-handle-insertions)
-  (add-hook 'smart-op-text-removed-functions 'cb-hs:shm-handle-deletions))
+  (hook-fn 'haskell-mode-hook
+    (add-hook 'smart-op-text-inserted-functions 'cb-hs:shm-handle-insertions nil t)
+    (add-hook 'smart-op-text-removed-functions 'cb-hs:shm-handle-deletions nil t)))
 
 (provide 'config-haskell)
 
