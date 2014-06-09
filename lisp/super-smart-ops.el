@@ -35,17 +35,9 @@
   '("=" "<" ">" "%" "+" "-" "*" "/" "&" "|" "!" ":")
   "A list of strings to treat as operators.")
 
-(defun in-string? ()
-  "Non-nil if point is inside a string according to font locking."
-  (-contains? '(font-lock-string-face
-                font-lock-doc-face
-                font-lock-doc-string-face)
-              (face-at-point)))
-
-(defun in-comment? ()
-  "Non-nil if point is inside a comment according to font locking."
-  (ignore-errors
-    (equal 'font-lock-comment-face (face-at-point))))
+(defun smart-op-in-string-or-comment? ()
+  "Non-nil if point is in a string or comment."
+  (nth 8 (syntax-ppss)))
 
 (defun cb-op:prev-non-space-char ()
   "Return the previous non-whitespace character on this line, as a string."
@@ -85,7 +77,7 @@
   (yas-with-field-restriction
 
     (cond
-     ((or (in-string?) (in-comment?)
+     ((or (smart-op-in-string-or-comment?)
           ;; Looking at quotation mark?
           (-contains? '(?\" ?\') (char-after)))
       (insert op))
@@ -157,7 +149,7 @@ Useful for setting up keymaps manually."
 
 (defun cb-op:delete-last-smart-op ()
   "Delete the last smart-operator that was inserted."
-  (unless (or (derived-mode-p 'text-mode) (in-string?) (in-comment?))
+  (unless (or (derived-mode-p 'text-mode) (smart-op-in-string-or-comment?))
     (save-restriction
       (narrow-to-region (line-beginning-position) (point))
 
