@@ -31,6 +31,14 @@
 (require 'config-yasnippet)
 (require 'config-evil)
 
+(defvar smart-op-text-inserted-functions nil
+  "Abnormal hook functions called whenever text is inserted by smart operators.
+Each function takes the number of characters inserted as an argument.")
+
+(defvar smart-op-text-removed-functions nil
+  "Abnormal hook functions called whenever text is removed by smart operators.
+Each function takes the number of characters removed as an argument.")
+
 (defvar-local smart-op-list
   '("=" "<" ">" "%" "+" "-" "*" "/" "&" "|" "!" ":")
   "A list of strings to treat as operators.")
@@ -68,42 +76,66 @@
                (eval `(rx "(" (+ (or ,@smart-op-list)) ")"))))
     (just-one-space)))
 
-(defun smart-insert-op (op)
+(defmacro smart-op--run-with-modification-hooks (&rest body)
+  "Execute BODY forms, then call hooks to notify of insertions and deletions.
+
+After BODY is run, call `smart-op-text-inserted-functions' if the
+buffer has grown in length.  If the overall buffer length is
+shorter, call `smart-op-text-removed-functions'."
+  (let ((size-before (cl-gensym))
+        (size-after  (cl-gensym))
+        (result      (cl-gensym))
+        (difference  (cl-gensym)))
+    `(let* ((,size-before (buffer-size))
+            (,result      (progn ,@body))
+            (,size-after  (buffer-size))
+            (,difference (- ,size-after ,size-before)))
+       (cond
+        ((zerop ,difference))
+        ((cl-plusp ,difference)
+         (run-hook-with-args 'smart-op-text-inserted-functions ,difference))
+        ((cl-minusp ,difference)
+         (run-hook-with-args 'smart-op-text-removed-functions (abs ,difference))))
+
+       ,result)))
+
+(defun smart-op-insert (op)
   "Insert a smart operator OP, unless we're in a string or comment."
 
-  ;; Narrow to the current active snippet field if yasnippet is active. This
-  ;; prevents errors when attempting to delete whitespace outside the current
-  ;; field.
-  (yas-with-field-restriction
+  (smart-op--run-with-modification-hooks
+   ;; Narrow to the current active snippet field if yasnippet is active. This
+   ;; prevents errors when attempting to delete whitespace outside the current
+   ;; field.
+   (yas-with-field-restriction
 
-    (cond
-     ((or (smart-op--in-string-or-comment?)
-          ;; Looking at quotation mark?
-          (-contains? '(?\" ?\') (char-after)))
-      (insert op))
+     (cond
+      ((or (smart-op--in-string-or-comment?)
+           ;; Looking at quotation mark?
+           (-contains? '(?\" ?\') (char-after)))
+       (insert op))
 
-     ((-contains? (cl-list* "(" smart-op-list) (smart-op--prev-non-space-char))
-      (smart-op--delete-horizontal-space-non-readonly)
-      (insert op)
-      (smart-op--maybe-just-one-space-after-operator))
+      ((-contains? (cl-list* "(" smart-op-list) (smart-op--prev-non-space-char))
+       (smart-op--delete-horizontal-space-non-readonly)
+       (insert op)
+       (smart-op--maybe-just-one-space-after-operator))
 
-     (t
-      (unless (s-matches? (rx bol (* space) eol)
-                          (buffer-substring (line-beginning-position) (point)))
-        (just-one-space))
+      (t
+       (unless (s-matches? (rx bol (* space) eol)
+                           (buffer-substring (line-beginning-position) (point)))
+         (just-one-space))
 
-      (insert op)
-      (smart-op--maybe-just-one-space-after-operator)))))
+       (insert op)
+       (smart-op--maybe-just-one-space-after-operator))))))
 
 (defmacro make-smart-op (str)
   "Return a function that will insert smart operator STR.
 Useful for setting up keymaps manually."
-  (let ((fname (intern (concat "smart-insert-op/" str))))
+  (let ((fname (intern (concat "smart-op-insert/" str))))
     `(progn
        (defun ,fname ()
          "Auto-generated command.  Inserts a smart operator."
          (interactive "*")
-         (smart-insert-op ,str))
+         (smart-op-insert ,str))
        ',fname)))
 
 (defun smart-op--add-smart-ops (ops custom)
@@ -147,31 +179,33 @@ Useful for setting up keymaps manually."
 
     (list :mode mode :ops ops)))
 
-(defun smart-op--delete-last-smart-op ()
+(defun smart-op-delete-last-smart-op ()
   "Delete the last smart-operator that was inserted."
   (unless (or (derived-mode-p 'text-mode) (smart-op--in-string-or-comment?))
-    (save-restriction
-      (narrow-to-region (line-beginning-position) (point))
+    (smart-op--run-with-modification-hooks
+     (save-restriction
+       (narrow-to-region (line-beginning-position) (point))
 
-      (when (s-matches? (concat (regexp-opt smart-op-list) " *$")
-                        (buffer-substring (line-beginning-position) (point)))
-        ;; Delete op
-        (let ((op-pos
-               (save-excursion
-                 (search-backward-regexp (regexp-opt smart-op-list)))))
-          (while (and (/= (point) op-pos)
-                      (not (get-char-property (point) 'read-only)))
-            (delete-char -1)))
+       (when (s-matches? (concat (regexp-opt smart-op-list) " *$")
+                         (buffer-substring (line-beginning-position) (point)))
+         ;; Delete op
+         (let ((op-pos
+                (save-excursion
+                  (search-backward-regexp (regexp-opt smart-op-list)))))
+           (while (and (/= (point) op-pos)
+                       (not (get-char-property (point) 'read-only)))
+             (delete-char -1)))
 
-        ;; Delete preceding spaces.
-        (smart-op--delete-horizontal-space-non-readonly)
-        t))))
+         ;; Delete preceding spaces.
+         (smart-op--delete-horizontal-space-non-readonly)
+         t)))))
 
 (defadvice sp-backward-delete-char (around delete-smart-op activate)
   "Delete the smart operator that was just inserted, including padding."
-  (or (smart-op--delete-last-smart-op) ad-do-it))
+  (smart-op--run-with-modification-hooks
+   (or (smart-op-delete-last-smart-op) ad-do-it)))
 
-(defadvice smart-insert-op (around restrict-to-insert-state activate)
+(defadvice smart-op-insert (around restrict-to-insert-state activate)
   "If evil mode is active, only insert in insert state."
   (cond
    ((and (true? evil-mode) (evil-insert-state-p))
@@ -179,7 +213,6 @@ Useful for setting up keymaps manually."
    ((true? evil-mode))
    (t
     ad-do-it)))
-
 
 (provide 'super-smart-ops)
 

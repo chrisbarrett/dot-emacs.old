@@ -55,12 +55,12 @@
 
 (defun cbscala:equals ()
   (interactive)
-  (smart-insert-op "=")
+  (smart-op-insert "=")
   (just-one-space))
 
 (defun cbscala:colon ()
   (interactive)
-  (smart-insert-op ":")
+  (smart-op-insert ":")
   (just-one-space))
 
 (defmacro define-scala-variance-op-command (sym op)
@@ -80,7 +80,7 @@ Pad in normal expressions. Do not insert padding in variance annotations."
        (insert ,op))
       ;; Otherwise leading and trailing padding.
       (t
-       (smart-insert-op ,op)))))
+       (smart-op-insert ,op)))))
 
 (define-scala-variance-op-command cbscala:plus "+")
 (define-scala-variance-op-command cbscala:minus "-")

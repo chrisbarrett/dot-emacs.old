@@ -76,11 +76,11 @@
     (interactive)
     (cond
      ((and (char-before) (equal (char-to-string (char-before)) " "))
-      (smart-insert-op ":"))
+      (smart-op-insert ":"))
      ((and (char-after) (equal (char-to-string (char-after)) ")"))
       (insert ":"))
      (t
-      (smart-insert-op ":"))))
+      (smart-op-insert ":"))))
 
   (defun cbidris:smart-comma ()
     (interactive)
@@ -110,7 +110,7 @@
         (message "Inserting idiom brackets"))
 
        (t
-        (smart-insert-op "|")))))
+        (smart-op-insert "|")))))
 
 
   (defun cbidris:smart-dot ()
@@ -125,7 +125,7 @@
        ((thing-at-point-looking-at (rx (or "(" "{" "[") (* space)))
         (insert "."))
        (t
-        (smart-insert-op ".")))))
+        (smart-op-insert ".")))))
 
   (defun cbidris:smart-question-mark ()
     "Insert a ? char as an operator, unless point is after an = sign."
@@ -135,7 +135,7 @@
       (just-one-space)
       (insert "?"))
      (t
-      (smart-insert-op "?"))))
+      (smart-op-insert "?"))))
 
   (--each cb:idris-modes
     (declare-smart-ops it

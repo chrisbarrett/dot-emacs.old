@@ -281,7 +281,7 @@ See URL `http://www.haskell.org/ghc/'."
       (just-one-space)
       (insert "|"))
      (t
-      (smart-insert-op "|"))))
+      (smart-op-insert "|"))))
 
   (defun cb-hs:looking-at-module-or-constructor? ()
     (-when-let (sym (thing-at-point 'symbol))
@@ -307,7 +307,7 @@ See URL `http://www.haskell.org/ghc/'."
       (insert "."))
 
      (t
-      (smart-insert-op "."))))
+      (smart-op-insert "."))))
 
   (defun cb-hs:smart-hash ()
     "Insert a hash character, with special formatting behaviour for pragmas."
@@ -322,7 +322,7 @@ See URL `http://www.haskell.org/ghc/'."
         (insert "# ")
         (save-excursion (insert " #")))
        (t
-        (smart-insert-op "#")))))
+        (smart-op-insert "#")))))
 
   (defun cb-hs:smart-colon ()
     "Insert a colon, with context-sensitive formatting."
@@ -342,7 +342,7 @@ See URL `http://www.haskell.org/ghc/'."
       (insert ":"))
 
      (t
-      (smart-insert-op ":"))))
+      (smart-op-insert ":"))))
 
   (defun cb-hs:space ()
     "Insert a space with context-sensitive formatting."
@@ -399,7 +399,7 @@ See URL `http://www.haskell.org/ghc/'."
                         (line-end-position))
       (if (s-blank? (buffer-substring (line-beginning-position) (point)))
           (insert ":")
-        (smart-insert-op ":"))))
+        (smart-op-insert ":"))))
 
   (defun cb-hs:ghci-smart-comma ()
     "Insert a comma with padding."
