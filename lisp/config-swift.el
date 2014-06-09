@@ -30,9 +30,9 @@
 (require 'super-smart-ops)
 (require 'config-smartparens)
 
-(add-to-list 'load-path (f-join user-home-directory "Projects" "swift-mode"))
-(require 'swift-mode nil t)
-
+;; Use development version sources when available, otherwise install from MELPA.
+(or (require 'swift-mode (f-join user-home-directory "Projects" "swift-mode") t)
+    (cb:install-package 'swift-mode))
 
 ;;; Smart ops
 
