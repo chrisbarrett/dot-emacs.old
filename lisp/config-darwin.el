@@ -130,9 +130,14 @@ When used interactively, makes a guess at what to pass."
 
   (%-sh (format "open '%s'" open-arg)))
 
+(defvar cb:growl-default-icon
+  (-first 'f-exists?
+          '("/Applications/Emacs.app/Contents/Resources/Emacs.icns"
+            "~/Applications/Emacs.app/Contents/Resources/Emacs.icns")))
+
 (cl-defun growl (title
                  message
-                 &optional (icon "/Applications/Emacs.app/Contents/Resources/Emacs.icns"))
+                 &optional (icon cb:growl-default-icon))
   "Display a growl notification.
 Fall back to `message' if growlnotify is not installed.
 The notification will have the given TITLE and MESSAGE."
