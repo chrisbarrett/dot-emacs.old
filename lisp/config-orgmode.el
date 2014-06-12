@@ -288,7 +288,7 @@ This will set which file org-capture will capture to."
 (defvar org-work-file (f-join org-directory "work.org")
   "Defines the path to file for work-related todos, etc.")
 
-(defvar cb-org:work-persistence-file (f-join cb:tmp-dir ".org-at-work")
+(defvar cb-org:work-persistence-file (f-join user-mobile-emacs-dir ".org-at-work")
   "File to create that saves work state between sessions.")
 
 (defvar cb-org:at-work? nil "Non-nil if currently 'at work'.")
