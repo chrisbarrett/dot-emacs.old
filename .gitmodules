@@ -46,3 +46,6 @@
 [submodule "lib/emacs-deferred"]
 	path = lib/emacs-deferred
 	url = https://github.com/kiwanami/emacs-deferred.git
+[submodule "lib/super-smart-ops"]
+	path = lib/super-smart-ops
+	url = git://github.com/chrisbarrett/super-smart-ops.git
