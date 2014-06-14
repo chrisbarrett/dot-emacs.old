@@ -143,7 +143,7 @@
     (if (or (cb-c:looking-at-flow-control-header?)
             (cb-c:looking-at-struct-keyword?))
         (insert "=")
-      (smart-op-insert "=")))
+      (super-smart-ops-insert "=")))
 
   (defun c-insert-smart-star ()
     "Insert a * with padding in multiplication contexts."
@@ -156,7 +156,7 @@
      ((thing-at-point-looking-at (rx (any "(" "{" "[") (* space)))
       (insert "*"))
      ((thing-at-point-looking-at (rx (any digit "*") (* space)))
-      (smart-op-insert "*"))
+      (super-smart-ops-insert "*"))
      (t
       (just-one-space)
       (insert "*"))))
@@ -169,7 +169,7 @@
       (if (thing-at-point-looking-at
            (rx (or "return" "," "(" "[" "(" ";" "=") (* space)))
           (insert "-")
-        (smart-op-insert "-"))
+        (super-smart-ops-insert "-"))
       ;; Collapse whitespace for decrement operator.
       (cb-c:maybe-remove-spaces-after-insertion
        (rx "-" (* space) "-" (* space))
@@ -181,7 +181,7 @@
 If the insertion creates an right arrow (->), remove surrounding whitespace.
 If the insertion creates a <>, move the cursor inside."
     (interactive)
-    (smart-op-insert ">")
+    (super-smart-ops-insert ">")
     (cb-c:maybe-remove-spaces-after-insertion
      (rx (or "-" "<") (* space) ">" (* space))
      (rx (not (any space "<" "-" ">"))))
@@ -192,13 +192,13 @@ If the insertion creates a <>, move the cursor inside."
     "Insert a + symbol with formatting.
 Remove horizontal whitespace if the insertion results in a ++."
     (interactive)
-    (smart-op-insert "+")
+    (super-smart-ops-insert "+")
     (cb-c:maybe-remove-spaces-after-insertion
      (rx "+" (* space) "+" (* space))
      (rx (not (any space "+"))))
     (cb-c:just-one-space-after-semicolon))
 
-  (declare-smart-ops 'c-mode
+  (super-smart-ops-configure-for-mode 'c-mode
     :add '("?")
     :custom
     '(("," . cb:comma-then-space)

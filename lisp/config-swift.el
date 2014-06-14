@@ -37,9 +37,9 @@
 ;;; Smart ops
 
 
-(defun cb-swift:smart-op-insert-no-leading-space (op)
+(defun cb-swift:insert-op-no-leading-space (op)
   "Insert OP without any preceding padding."
-  (smart-op-insert op)
+  (super-smart-ops-insert op)
   (save-excursion
     (search-backward op)
     (unless (s-matches? (rx bol (* space) eol)
@@ -49,14 +49,14 @@
 (defun cb-swift:smart-colon ()
   "Insert a colon with a trailing space."
   (interactive "*")
-  (cb-swift:smart-op-insert-no-leading-space ":"))
+  (cb-swift:insert-op-no-leading-space ":"))
 
 (defun cb-swift:smart-comma ()
   "Insert a comma with a trailing space."
   (interactive "*")
-  (cb-swift:smart-op-insert-no-leading-space ","))
+  (cb-swift:insert-op-no-leading-space ","))
 
-(declare-smart-ops 'swift-mode
+(super-smart-ops-configure-for-mode 'swift-mode
   :custom
   '((":" . cb-swift:smart-colon)
     ("," . cb-swift:smart-comma)))

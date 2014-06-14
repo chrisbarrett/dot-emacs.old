@@ -33,7 +33,7 @@
   :match (rx ".rs" eol)
   :packages (rust-mode))
 
-(declare-smart-ops 'rust-mode
+(super-smart-ops-configure-for-mode 'rust-mode
   :rem '("!" "~" "&"))
 
 (defun cbrs:insert-type-brackets ()

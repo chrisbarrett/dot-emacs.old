@@ -51,7 +51,7 @@
 (after 'sclang
   (define-key sclang-mode-map (kbd ".") nil))
 
-(declare-smart-ops 'sclang-mode :rem '("|"))
+(super-smart-ops-configure-for-mode 'sclang-mode :rem '("|"))
 
 
 (provide 'config-sclang)

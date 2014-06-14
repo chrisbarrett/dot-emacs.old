@@ -281,7 +281,7 @@ See URL `http://www.haskell.org/ghc/'."
       (just-one-space)
       (insert "|"))
      (t
-      (smart-op-insert "|"))))
+      (super-smart-ops-insert "|"))))
 
   (defun cb-hs:looking-at-module-or-constructor? ()
     (-when-let (sym (thing-at-point 'symbol))
@@ -307,7 +307,7 @@ See URL `http://www.haskell.org/ghc/'."
       (insert "."))
 
      (t
-      (smart-op-insert "."))))
+      (super-smart-ops-insert "."))))
 
   (defun cb-hs:smart-hash ()
     "Insert a hash character, with special formatting behaviour for pragmas."
@@ -322,7 +322,7 @@ See URL `http://www.haskell.org/ghc/'."
         (insert "# ")
         (save-excursion (insert " #")))
        (t
-        (smart-op-insert "#")))))
+        (super-smart-ops-insert "#")))))
 
   (defun cb-hs:smart-colon ()
     "Insert a colon, with context-sensitive formatting."
@@ -342,12 +342,12 @@ See URL `http://www.haskell.org/ghc/'."
       (insert ":"))
 
      (t
-      (smart-op-insert ":"))))
+      (super-smart-ops-insert ":"))))
 
   (defun cb-hs:del ()
     "Delete backwards with context-sensitive formatting."
     (interactive)
-    (smart-op--run-with-modification-hooks
+    (super-smart-ops--run-with-modification-hooks
      (cond
       ((and (cb-hs:in-empty-braces?)
             (thing-at-point-looking-at (rx (+ space))))
@@ -359,7 +359,7 @@ See URL `http://www.haskell.org/ghc/'."
   (defun cb-hs:smart-comma ()
     "Insert a comma, with context-sensitive formatting."
     (interactive)
-    (smart-op--run-with-modification-hooks
+    (super-smart-ops--run-with-modification-hooks
      (cond
       ((ignore-errors (s-matches? "ExportSpec" (elt (shm-current-node) 0)))
        (delete-horizontal-space)
@@ -390,7 +390,7 @@ See URL `http://www.haskell.org/ghc/'."
                         (line-end-position))
       (if (s-blank? (buffer-substring (line-beginning-position) (point)))
           (insert ":")
-        (smart-op-insert ":"))))
+        (super-smart-ops-insert ":"))))
 
   (defun cb-hs:ghci-smart-comma ()
     "Insert a comma with padding."
@@ -403,7 +403,7 @@ See URL `http://www.haskell.org/ghc/'."
 
       (insert ", ")))
 
-  (declare-smart-ops 'haskell-mode
+  (super-smart-ops-configure-for-mode 'haskell-mode
     :add '("$" "=")
     :custom
     '(("." . cb-hs:smart-dot)
@@ -414,7 +414,7 @@ See URL `http://www.haskell.org/ghc/'."
 
   (define-key haskell-mode-map (kbd "DEL") 'cb-hs:del)
 
-  (declare-smart-ops 'haskell-interactive-mode
+  (super-smart-ops-configure-for-mode 'haskell-interactive-mode
     :add '("$" "=")
     :custom
     '(("." . cb-hs:smart-dot)
@@ -849,8 +849,8 @@ Meant for `eldoc-documentation-function'."
     (shm/init t))
 
   (hook-fn 'haskell-mode-hook
-    (add-hook 'smart-op-text-inserted-functions 'cb-hs:shm-handle-insertions nil t)
-    (add-hook 'smart-op-text-removed-functions 'cb-hs:shm-handle-deletions nil t)))
+    (add-hook 'super-smart-ops-text-inserted-functions 'cb-hs:shm-handle-insertions nil t)
+    (add-hook 'super-smart-ops-text-removed-functions 'cb-hs:shm-handle-deletions nil t)))
 
 (provide 'config-haskell)
 

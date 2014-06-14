@@ -145,7 +145,7 @@
         ":" "<" "=" ">" "?" "@" "^" "|" "~"))
 
 (--each '(tuareg-mode utop-mode)
-  (put it 'smart-op-list cb-ocaml:smart-operator-list))
+  (put it 'super-smart-ops-list cb-ocaml:smart-operator-list))
 
 (defun cb-ocaml:smart-dot ()
   "Smart period for OCaml."
@@ -171,7 +171,7 @@
     (delete-horizontal-space 'back)
     (insert ":"))
    (t
-    (smart-op-insert ":"))))
+    (super-smart-ops-insert ":"))))
 
 (defun cb-ocaml:smart-asterisk ()
   "Smart asterisk for OCaml."
@@ -191,7 +191,7 @@
       (just-one-space 2)
       (forward-char -1))
      (t
-      (cb-ocaml:smart-op-inserterator "*")))))
+      (super-smart-ops-insert "*")))))
 
 (defun cb-ocaml:smart-semicolon ()
   "Smart semicolon for OCaml."
@@ -202,12 +202,6 @@
     (unless (thing-at-point-looking-at ";;")
       (just-one-space))))
 
-(defun cb-ocaml:smart-op-insert (op)
-  "Perform a smart insertion of operator OP, unless inside parens."
-  (if (thing-at-point-looking-at (rx "("))
-      (insert op)
-    (smart-op-insert op)))
-
 (defun cb-ocaml:smart-pipe ()
   "Insert either the pipe chars in an array literal or a smart pipe."
   (interactive)
@@ -216,7 +210,7 @@
          (save-excursion
            (insert "|")))
         (t
-         (cb-ocaml:smart-op-insert "|"))))
+         (super-smart-ops-insert "|"))))
 
 (defmacro cb-ocaml:define-smart-op-as-annotation (symbol op)
   "Define a command for inserting a smart operator.
@@ -225,7 +219,7 @@ where they should not be padded."
   `(defun ,symbol ()
      "Auto-generated smart operator command for OCaml."
      (interactive)
-     (cb-ocaml:smart-op-insert ,op)
+     (super-smart-ops-insert ,op)
      (when (thing-at-point-looking-at (rx space))
        (delete-horizontal-space 'back))))
 
@@ -236,7 +230,7 @@ where they should not be padded."
   "Set smart operators for OCaml."
   (--each cb-ocaml:smart-operator-list
     (define-key keymap (kbd it)
-      (eval `(command (cb-ocaml:smart-op-insert ,it)))))
+      (eval `(command (super-smart-ops-insert ,it)))))
 
   (define-key keymap (kbd "!") nil)
   (define-key keymap (kbd "*") 'cb-ocaml:smart-asterisk)

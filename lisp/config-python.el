@@ -111,7 +111,7 @@
     (interactive)
     (if (s-matches? (rx (* space) "def" space) (current-line))
         (insert "=")
-      (smart-op-insert "=")))
+      (super-smart-ops-insert "=")))
 
   (defun cb-py:smart-asterisk ()
     "Insert an asterisk with padding unless we're in an arglist."
@@ -127,7 +127,7 @@
         (delete-horizontal-space))
       (insert "*"))
      (t
-      (smart-op-insert "*"))))
+      (super-smart-ops-insert "*"))))
 
   (defun cb-py:smart-comma ()
     "Insert a comma with padding."
@@ -142,7 +142,7 @@
     (just-one-space))
 
   (--each '(python-mode inferior-python-mode)
-    (declare-smart-ops it
+    (super-smart-ops-configure-for-mode it
       :add '("?" "$")
       :custom
       '(("," . cb-py:smart-comma)

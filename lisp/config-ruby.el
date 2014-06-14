@@ -222,7 +222,7 @@ If this is the trailing colon for a hash key, insert padding."
       (just-one-space)))
 
   (--each cb:ruby-modes
-    (declare-smart-ops it
+    (super-smart-ops-configure-for-mode it
       :add '("~")
       :custom
       '(("," . (command (insert ",") (just-one-space)))

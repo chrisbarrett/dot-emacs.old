@@ -73,12 +73,6 @@
 
 (put 'coq-mode 'smart-operator-alist cb-coq:smart-operator-list)
 
-(defun cb-coq:smart-op-inserterator (op)
-  "Perform a smart insertion of operator OP, unless inside parens."
-  (if (thing-at-point-looking-at (rx "("))
-      (insert op)
-    (smart-op-insert op)))
-
 (defun cb-coq:smart-pipe ()
   "Insert either the pipe chars in an array literal or a smart pipe."
   (interactive)
@@ -87,13 +81,12 @@
          (save-excursion
            (insert "|")))
         (t
-         (cb-coq:smart-op-insert "|"))))
+         (cb-coq:super-smart-ops-insert "|"))))
 
 (defun cb-coq:set-keys ()
   "Set smart operators for Coq."
   (--each cb-coq:smart-operator-list
-    (define-key coq-mode-map (kbd it)
-      (eval `(command (cb-ocaml:smart-op-insert ,it)))))
+    (define-key coq-mode-map (kbd it) (super-smart-ops-make-smart-op it)))
 
   (define-key coq-mode-map (kbd "!") nil)
   (define-key coq-mode-map (kbd ".") nil)

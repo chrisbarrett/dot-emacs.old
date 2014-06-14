@@ -31,7 +31,7 @@
 
 (put 'asm-mode 'tab-width 8)
 
-(declare-smart-ops 'asm-mode
+(super-smart-ops-configure-for-mode 'asm-mode
   :rem '("%" "-" "."))
 
 (defun cb:asm-toggling-tab ()
