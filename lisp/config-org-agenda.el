@@ -30,7 +30,6 @@
 (require 'org-agenda)
 
 (custom-set-variables
- '(org-agenda-auto-exclude-function 'cb-org:agenda-auto-exclude)
  '(org-agenda-auto-exclude-function 'cb-org:exclude-tasks-on-hold)
  '(org-agenda-diary-file (f-join org-directory "diary.org"))
  '(org-agenda-hide-tags-regexp (rx (or "noexport" "someday")))
@@ -198,12 +197,6 @@ See `cb-org:show-agenda-idle-delay'.")
   "Hide drills."
   (when (equal "drill" tag)
     (concat "-" tag)))
-
-(defun cb-org:apply-auto-exclude ()
-  (org-agenda-filter-by-tag nil ?\r t))
-
-(add-hook 'org-agenda-mode-hook 'cb-org:apply-auto-exclude)
-
 
 (when (or (daemonp) (display-graphic-p))
   (hook-fn 'after-init-hook
