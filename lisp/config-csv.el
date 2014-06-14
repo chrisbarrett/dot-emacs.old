@@ -28,6 +28,7 @@
 
 (require 'utils-common)
 
+(autoload 'csv-mode (f-join cb:lib-dir "csv-mode") "" t)
 (add-to-list 'auto-mode-alist '("\\.csv$" . csv-mode))
 
 (custom-set-variables
@@ -48,8 +49,8 @@
 (defun cb-csv:toggle-field-alignment ()
   "Toggle field alignment in the current CSV buffer."
   (interactive)
-  (call-interactively
-   (if cb-csv:aligned? 'csv-unalign-fields 'csv-align-fields)))
+  (funcall (if cb-csv:aligned? 'csv-unalign-fields 'csv-align-fields)
+           t nil nil))
 
 (after 'csv-mode
   (define-key csv-mode-map (kbd "C-c C-t") 'cb-csv:toggle-field-alignment))
