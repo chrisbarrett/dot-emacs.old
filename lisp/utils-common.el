@@ -318,29 +318,33 @@ to a matching file.
 
 PACKAGES is a list of packages that will be installed."
   (declare (indent 1))
-  (let ((sym (intern (format "cb:install-%s-packages" group)))
-        (n-pkgs (length packages)))
+  (let ((sym (intern (format "cb:install-%s-packages" group))))
     `(progn
        (defun ,sym ()
          (interactive)
 
-         ;; Prompt the user for confirmation.
-         (when (and (called-interactively-p nil)
-                    (not
-                     (y-or-n-p
-                      ,(format "%s package%s will be installed (%s). Continue? "
-                               n-pkgs
-                               (if (= 1 n-pkgs) "" "s")
-                               (s-join ", " (-map 'symbol-name packages))))))
-           (user-error "Aborted"))
+         (let* ((to-install (-remove 'package-installed-p ',packages))
+                (n-pkgs (length to-install))
+                (prompt (format "%s package%s will be installed (%s). Continue? "
+                                n-pkgs
+                                (if (= 1 n-pkgs) "" "s")
+                                (s-join ", " (-map 'symbol-name to-install)))))
+           (unless to-install
+             (user-error "All packages are already installed"))
 
-         (save-window-excursion
-           (--each ',packages
-             (unless (package-installed-p it)
+           ;; Prompt the user for confirmation.
+           (when (and (called-interactively-p nil)
+                      (not (y-or-n-p prompt)))
+             (user-error "Aborted"))
+
+           (save-window-excursion
+             (--each to-install
                (with-demoted-errors "Warning: %s"
-                 (package-install it)))
-             (ignore-errors
-               (require it nil t)))))
+                 (package-install it))
+               (ignore-errors
+                 (require it nil t)))
+
+             (message "Finished"))))
 
        ;; Install automatically on hooks when buffer or file name is a match.
        (hook-fns '(find-file-hook after-change-major-mode-hook)
