@@ -1,39 +1,35 @@
 src        = $(CURDIR)/src
-backups    = $(CURDIR)/backups
 lib        = $(CURDIR)/lib
 etc        = $(CURDIR)/etc
 lisp       = $(CURDIR)/lisp
 bin        = $(CURDIR)/bin
 tmp        = $(CURDIR)/tmp
 modules    = $(CURDIR)/.git/modules
-emacs      = emacs
-emacs_src  = $(src)/emacs-$(emacs_version)
 
-emacs_exec    = $(emacs) --batch -nw -l init.el -f
+emacs        ?= emacs
+emacs_flags   = --batch -nw
 emacs_version = $(shell $(emacs) -Q --batch --exec \
 	  '(princ (format "%s.%s" emacs-major-version emacs-minor-version))')
+emacs_src  = $(src)/emacs-$(emacs_version)
 
 # ----------------------------------------------------------------------------
 
-.PHONY: default
-default : $(modules) tags $(emacs_src)
+.PHONY: default langs tags \
+	clean clean-elc clean-backups clean-flycheck clean-tmp \
+	python jedi elpy pylint \
+	supercollider \
+	ruby rubocop growl \
+	clang haskell
 
-.PHONY: all
-all : $(modules) $(emacs_src) tags \
-	  ruby supercollider python clang haskell \
+default : $(modules) $(emacs_src) tags
 
-.PHONY: src
-src : $(emacs_src)
+langs : ruby supercollider python clang haskell
 
-.PHONY: tags
 tags :
-	$(emacs_exec) 'build-ctags'
+	$(emacs) $(emacs_flags) -l package -l init.el -f build-ctags
 
-# Directories
-
-$(etc) :; mkdir $(etc)
-$(src) :; mkdir $(src)
-$(tmp) :; mkdir $(tmp)
+$(etc) $(src) $(tmp) :
+	mkdir $@
 
 $(modules) :
 	git submodule update --init
@@ -41,32 +37,27 @@ $(modules) :
 # ----------------------------------------------------------------------------
 # Cleaning
 
-# Perform all cleaning tasks.
-.PHONY: clean
+# Perform langs cleaning tasks.
 clean : clean-elc clean-backups clean-flycheck clean-tmp
 
 # Remove compiled elisp files.
-.PHONY: clean-elc
 clean-elc :
 	rm -f *.elc
 	rm -f $(lisp)/*.elc
 	rm -f $(lib)/*.elc
 
 # Remove backup files.
-.PHONY: clean-backups
 clean-backups :
 	rm -f ./*~
 	rm -f $(lisp)/*~
 	rm -f $(lib)/*~
 
 # Remove temporary flycheck files.
-.PHONY: clean-flycheck
 clean-flycheck :
 	rm -f flycheck-*
 	rm -f $(lisp)/flycheck-*
 	rm -f $(lib)/flycheck-*
 
-.PHONY: clean-tmp
 clean-tmp :
 	rm -rf $(tmp)/*
 
@@ -89,18 +80,14 @@ $(emacs_src) :| $(emacs_gz)
 
 pymacs = $(lib)/Pymacs/pymacs.el
 
-.PHONY: python
 python : jedi elpy pylint $(pymacs)
 
-.PHONY: jedi
 jedi :
 	pip install virtualenv epc argparse jedi
 
-.PHONY: elpy
 elpy :
 	pip install elpy rope pyflakes pep8
 
-.PHONY: pylint
 pylint :
 	pip install pylint
 
@@ -120,7 +107,6 @@ sc_src         = ~/src/SuperCollider
 $(sc_ext)       :; mkdir -p $(sc_ext)
 $(sc_src)       :; git clone $(sc_github) $(sc_src)
 
-.PHONY: supercollider
 supercollider   :| $(sc_src) $(sc_ext)
 	cp -r $(sc_src)/editors/scel/sc/* $(sc_ext)
 
@@ -132,14 +118,11 @@ rsense     = $(bin)/rsense-$(rsense_version)/bin/rsense
 rsense_url = http://cx4a.org/pub/rsense/rsense-$(rsense_version).tar.bz2
 rsense_bz  = $(bin)/rsense-$(rsense_version).tar.bz2
 
-.PHONY: ruby
 ruby : $(rsense) rubocop growl
 
-.PHONY: rubocop
 rubocop :
 	gem install rubocop
 
-.PHONY: growl
 growl :
 	[[ `uname` == 'Darwin' ]] && gem install ruby_gntp
 
@@ -152,15 +135,11 @@ $(rsense) :| $(rsense_bz)
 	tar xvjf $(rsense_bz) --directory=$(bin)
 	chmod a+x $(rsense)
 
-# ----------------------------------------------------------------------------
-
-.PHONY: clang
 clang :
 	cd lib/clang-complete-async && make
 
 # ----------------------------------------------------------------------------
+# Haskell
 
-.PHONY: haskell
 haskell :
-	cabal install happy alex ghci-ng ghc-mod \
-		stylish-haskell structured-haskell-mode
+	cabal install hs-lint ghc-mod stylish-haskell structured-haskell-mode
