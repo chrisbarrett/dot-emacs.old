@@ -296,14 +296,9 @@ TEXT is the content of the docstring."
   (when (called-interactively-p nil)
     (message "Buffer evaluated.")))
 
-(defun cbel:after-save ()
-  (check-parens)
-  (unless no-byte-compile
-    (byte-compile-file (buffer-file-name))))
-
 (hook-fn 'emacs-lisp-mode-hook
   (when (cb:special-elisp-buffer?) (setq-local no-byte-compile t))
-  (add-hook 'after-save-hook 'cbel:after-save nil t))
+  (add-hook 'after-save-hook 'check-parens nil t))
 
 (dash-enable-font-lock)
 
