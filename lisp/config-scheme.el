@@ -45,7 +45,7 @@
 (after 'scheme
   (cb:install-package 'geiser))
 
-(after 'geiser
+(after 'geiser-mode
   (defun geiser-eval-buffer (&optional and-go raw nomsg)
     "Eval the current buffer in the Geiser REPL.
 
