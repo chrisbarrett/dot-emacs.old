@@ -330,7 +330,8 @@ PACKAGES is a list of packages that will be installed."
                                 (if (= 1 n-pkgs) "" "s")
                                 (s-join ", " (-map 'symbol-name to-install)))))
            (unless to-install
-             (user-error "All packages are already installed"))
+             (when (called-interactively-p nil)
+               (user-error "All packages are already installed")))
 
            ;; Prompt the user for confirmation.
            (when (and (called-interactively-p nil)
