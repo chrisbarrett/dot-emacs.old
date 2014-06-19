@@ -49,6 +49,8 @@
 
 (add-hook 'find-file-hook 'cb-projectile:set-compilation-dir)
 
+(define-key projectile-mode-map (kbd "C-c SPC") 'helm-projectile)
+
 (provide 'config-projectile)
 
 ;;; config-projectile.el ends here
