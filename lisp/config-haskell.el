@@ -36,6 +36,7 @@
   :packages (haskell-mode
              flycheck-haskell
              ghc
+             company-ghc
              hi2
              shm))
 
@@ -51,6 +52,8 @@
  '(haskell-program-name "ghci")
  '(haskell-process-type 'cabal-repl)
  '(haskell-interactive-prompt "\nλ> ")
+ '(company-ghc-show-info t)
+ '(company-ghc-show-module t)
  )
 
 (hook-fn 'cb:haskell-modes-hook
