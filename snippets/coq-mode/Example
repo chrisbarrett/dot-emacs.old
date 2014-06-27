@@ -1,0 +1,9 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: Example
+# key: ex
+# condition: (cbyas:bol?)
+# expand-env: ((yas-indent-line 'fixed))
+# --
+Example ${1:name}:
+  $0
+  .
