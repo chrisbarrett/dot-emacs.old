@@ -251,6 +251,8 @@
 (bind-key "C-x f" 'rotate-frame)
 (bind-key "s-r"   'rotate-frame)
 
+(bind-key "C-c \\"  'indent-to-column)
+
 (cb:declare-package-installer muttrc
   :match "muttrc"
   :packages (muttrc-mode))
