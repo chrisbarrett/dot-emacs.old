@@ -251,7 +251,19 @@
 (bind-key "C-x f" 'rotate-frame)
 (bind-key "s-r"   'rotate-frame)
 
-(bind-key "C-c \\"  'indent-to-column)
+(defvar-local cb:last-indent-to-column nil)
+
+(defun cb:indent-to-column (column)
+  "Indent from point to COLUMN is reached.
+Can indent backwards if there is only whitespace."
+  (interactive
+   (list (read-number "Indent to column: " cb:last-indent-to-column)))
+
+  (setq cb:last-indent-to-column column)
+  (delete-horizontal-space)
+  (indent-to-column column))
+
+(bind-key "C-c \\"  'cb:indent-to-column)
 
 (cb:declare-package-installer muttrc
   :match "muttrc"
