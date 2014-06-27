@@ -1,6 +1,7 @@
 # key: f
 # name: Fixpoint
 # condition: (cbyas:bol?)
+# expand-env: ((yas-indent-line 'fixed))
 # --
-Fixpoint ${1:def} : ${2:type} :=
+Fixpoint ${1:fname} ${2:params} : ${3:T} :=
   $0.

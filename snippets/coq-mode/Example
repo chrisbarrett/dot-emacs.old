@@ -2,8 +2,6 @@
 # name: Example
 # key: ex
 # condition: (cbyas:bol?)
-# expand-env: ((yas-indent-line 'fixed))
 # --
-Example ${1:name}:
-  $0
-  .
+Example ${1:name}: $0.
+Proof. reflexivity. Qed.

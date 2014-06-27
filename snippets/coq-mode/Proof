@@ -1,0 +1,6 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: Proof
+# key: p
+# binding: direct-keybinding
+# --
+Proof. ${1:simpl}. ${2:reflexivity}. Qed.$0
