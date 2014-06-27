@@ -253,15 +253,21 @@
 
 (defvar-local cb:last-indent-to-column nil)
 
-(defun cb:indent-to-column (column)
-  "Indent from point to COLUMN is reached.
-Can indent backwards if there is only whitespace."
-  (interactive
-   (list (read-number "Indent to column: " cb:last-indent-to-column)))
+(defun cb:indent-to-column (arg)
+  "Indent point to a certain column.
 
-  (setq cb:last-indent-to-column column)
-  (delete-horizontal-space)
-  (indent-to-column column))
+The first time it is run, prompt for a column. Indent to that
+column on subsequent invocations. Prompting can be forced by
+suppling a prefix ARG.
+
+Can indent backwards if there is only whitespace."
+  (interactive "*P")
+  (let ((col (if (or arg (not cb:last-indent-to-column))
+                 (read-number "Indent to column: " cb:last-indent-to-column)
+               cb:last-indent-to-column)))
+    (setq cb:last-indent-to-column col)
+    (delete-horizontal-space)
+    (indent-to-column col)))
 
 (bind-key "C-c \\"  'cb:indent-to-column)
 
