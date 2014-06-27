@@ -271,7 +271,7 @@ Can indent backwards if there is only whitespace."
     (indent-to-column cb:last-indent-to-column)
     (message "Indented to column %s" (current-column)))))
 
-(bind-key "C-c \\"  'cb:indent-to-column)
+(bind-key "M-C" 'cb:indent-to-column)
 
 (cb:declare-package-installer muttrc
   :match "muttrc"
