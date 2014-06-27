@@ -176,7 +176,9 @@
   (when (true? evil-mode)
     (evil-insert-state)))
 
-(after 'coq (define-key coq-mode-map   (kbd "M-RET") 'cb-coq:meta-ret))
+(after 'coq
+  (define-key coq-mode-map (kbd "M-RET")   'cb-coq:meta-ret)
+  (define-key coq-mode-map (kbd "C-c C-m") 'coq-insert-match))
 
 (sp-with-modes '(coq-mode)
   (sp-local-pair "\"" "\"" :post-handlers '(:add sp-ocaml-just-one-space))
