@@ -153,6 +153,10 @@
     (set-face-background 'shm-current-face  "#e9f2c5")
     (set-face-background 'shm-quarantine-face  "#fee8e5"))
 
+  (after 'proof-faces
+    (set-face-background 'proof-locked-face  "#e9f2c5")
+    (set-face-background 'proof-error-face  "#fee8e5"))
+
   (after 'helm
     (set-face-background  'helm-selection "white")
     (set-face-foreground  'helm-selection "black"))
@@ -181,6 +185,10 @@
   (after 'shm
     (set-face-background 'shm-current-face "#01304b")
     (set-face-background 'shm-quarantine-face "#51202b"))
+
+  (after 'proof-faces
+    (set-face-background 'proof-locked-face "#01304b")
+    (set-face-background 'proof-error-face "#51202b"))
 
   (after 'org
     (set-face-background 'org-block-end-line "#11303b")

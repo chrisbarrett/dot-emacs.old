@@ -31,6 +31,7 @@
 (require 'config-smartparens)
 
 (require 'proof-site (f-join cb:lib-dir "proofgeneral" "generic" "proof-site"))
+(add-to-list 'Info-directory-list (f-join cb:lib-dir "proofgeneral" "doc"))
 
 (after 'proof-script
   (define-derived-mode proof-mode prog-mode
@@ -186,11 +187,6 @@
 
 (after 'proof-script
   (define-key proof-mode-map (kbd "C-<return>") nil))
-
-(after 'proof-faces
-  (add-to-list 'face-remapping-alist '(proof-locked-face . hl-line))
-  (add-to-list 'face-remapping-alist '(proof-error-face . error)))
-
 
 (provide 'config-coq)
 
