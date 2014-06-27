@@ -154,7 +154,7 @@
     (set-face-background 'shm-quarantine-face  "#fee8e5"))
 
   (after 'proof-faces
-    (set-face-background 'proof-locked-face  "#e9f2c5")
+    (set-face-background 'proof-locked-face nil)
     (set-face-background 'proof-error-face  "#fee8e5"))
 
   (after 'helm
@@ -187,7 +187,7 @@
     (set-face-background 'shm-quarantine-face "#51202b"))
 
   (after 'proof-faces
-    (set-face-background 'proof-locked-face "#01304b")
+    (set-face-background 'proof-locked-face nil)
     (set-face-background 'proof-error-face "#51202b"))
 
   (after 'org
