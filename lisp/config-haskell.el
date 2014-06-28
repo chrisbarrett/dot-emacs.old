@@ -30,6 +30,7 @@
 (require 'config-flycheck)
 (require 'config-smartparens)
 (require 'super-smart-ops)
+(require 'config-insertion)
 
 (cb:declare-package-installer haskell
   :match (rx "." (or "hs" "gs" "hi" "pghci" "cabal" "hsc" "hcr"))
@@ -530,115 +531,6 @@ See URL `http://www.haskell.org/ghc/'."
   (define-key haskell-cabal-mode-map (kbd "C-c C-c") 'haskell-process-cabal-build)
   (define-key haskell-cabal-mode-map (kbd "C-c c") 'haskell-process-cabal)
 
-  (defvar cb-hs:language-pragmas
-    (s-split "\n" (%-string "ghc --supported-languages"))
-    "List the language pragmas available in GHC.")
-
-  (defun cb-hs:language-pragmas-in-file ()
-    "List the language pragmas set in the current file."
-    (--filter (s-matches? it (buffer-string))
-              cb-hs:language-pragmas))
-
-  (defun cb-hs:available-language-pragmas ()
-    "List the language pragmas that have not been set in the current file."
-    (-difference cb-hs:language-pragmas (cb-hs:language-pragmas-in-file)))
-
-  (defun cb-hs:insert-language-pragma (pragma)
-    "Read a language pragma to be inserted at the start of this file."
-    (interactive (list (ido-completing-read "Pragma: "
-                                            (cb-hs:available-language-pragmas)
-                                            nil t)))
-    (let ((s (format "{-# LANGUAGE %s #-}\n" pragma)))
-      (save-excursion
-        (goto-char (point-min))
-        (insert s))))
-
-  (defun cb-hs:parse-module (str)
-    (with-temp-buffer
-      (insert str)
-      (goto-char (point-min))
-      (when (search-forward-regexp (rx bol "exposed-modules: ") nil t)
-        (let (start end)
-          (setq start (point))
-          (setq end (if (search-forward ":" nil t)
-                        (progn (beginning-of-line) (point))
-                      (point-max)))
-          (s-split " " (buffer-substring-no-properties start end) t)))))
-
-  (defun cb-hs:haskell-modules ()
-    "Get a list of all Haskell modules known to the current project or GHC."
-    (if (haskell-session-maybe)
-        (haskell-session-all-modules)
-      (->> (%-string "ghc-pkg" "dump")
-        (s-split "---")
-        (-mapcat 'cb-hs:parse-module)
-        (-map 's-trim))))
-
-  (defun cb-hs:do-insert-at-imports (str)
-    "Prepend STR to this buffer's list of imported modules."
-    (save-excursion
-      (goto-char (point-min))
-
-      (cond
-       ;; Move directly to import statements.
-       ((search-forward-regexp (rx bol "import") nil t))
-
-       ;; Move past module declaration.
-       ((search-forward "module" nil t)
-        (search-forward "where")
-        (forward-line)
-        (beginning-of-line)
-        (while (and (s-blank? (current-line))
-                    (not (eobp)))
-          (forward-line)))
-
-       ;; Otherwise insert on first blank line.
-       (t
-        (until (or (eobp) (s-blank? (current-line)))
-          (forward-line))))
-
-      ;; Insert import statement.
-      (beginning-of-line)
-      (open-line 1)
-      (insert str)))
-
-  (defun cb-hs:module->qualified-name (module)
-    "Make a reasonable name for MODULE for use in a qualified import."
-    (s-word-initials (-last-item (s-split (rx ".") module))))
-
-  (defun cb-hs:insert-qualified-import (module name)
-    "Interactively insert a qualified Haskell import statement for MODULE."
-    (interactive
-     (let ((m (s-trim (ido-completing-read "Module: " (cb-hs:haskell-modules)
-                                           nil t))))
-       (list m (s-trim (read-string "As: " (cb-hs:module->qualified-name m)
-                                    t)))))
-
-    (if (s-matches? (rx-to-string `(and "import" (+ space) "qualified" (+ space)
-                                        ,module (or space eol)))
-                    (buffer-string))
-        (when (called-interactively-p nil)
-          (message "Module '%s' is already imported" module))
-
-      (cb-hs:do-insert-at-imports (format "import qualified %s as %s" module name))))
-
-  (defun cb-hs:insert-import (module)
-    "Interactively insert a Haskell import statement for MODULE."
-    (interactive (list (ido-completing-read "Module: " (cb-hs:haskell-modules)
-                                            nil t)))
-
-    (if (s-matches? (rx-to-string `(and "import" (+ space) ,module (or space eol)))
-                    (buffer-string))
-        (when (called-interactively-p nil)
-          (message "Module '%s' is already imported" module))
-
-      (cb-hs:do-insert-at-imports (format "import %s" module))))
-
-  (-each '(("i" "Haskell Import" cb-hs:insert-import :modes haskell-mode)
-           ("q" "Haskell Qualified Import" cb-hs:insert-qualified-import :modes haskell-mode)
-           ("l" "Haskell Language Extension" cb-hs:insert-language-pragma :modes haskell-mode))
-    (~ add-to-list 'insertion-picker-options))
-
   (defun cb-hs:newline-and-insert-at-col (col str)
     "Insert STR on a new line at COL."
     (goto-char (line-end-position))
@@ -854,6 +746,220 @@ Meant for `eldoc-documentation-function'."
   (hook-fn 'haskell-mode-hook
     (add-hook 'super-smart-ops-text-inserted-functions 'cb-hs:shm-handle-insertions nil t)
     (add-hook 'super-smart-ops-text-removed-functions 'cb-hs:shm-handle-deletions nil t)))
+
+;;; Insertion commands
+
+(defvar cb-hs:ghc-options
+  '("-fcase-merge"
+    "-fcse"
+    "-fdefer-type-errors"
+    "-fglasgow-exts"
+    "-fhelpful-errors"
+    "-firrefutable-tuples"
+    "-fno-defer-type-errors"
+    "-fno-glasgow-exts"
+    "-fno-helpful-errors"
+    "-fno-implicit-import-qualified"
+    "-fno-irrefutable-tuples"
+    "-fno-print-bind-contents"
+    "-fno-warn-auto-orphans"
+    "-fno-warn-deprecated-flags"
+    "-fno-warn-duplicate-exports"
+    "-fno-warn-hi-shadowing"
+    "-fno-warn-identities"
+    "-fno-warn-implicit-prelude"
+    "-fno-warn-incomplete-patterns"
+    "-fno-warn-incomplete-record-updates"
+    "-fno-warn-incomplete-uni-patterns"
+    "-fno-warn-lazy-unlifted-bindings"
+    "-fno-warn-missing-fields"
+    "-fno-warn-missing-local-sigs"
+    "-fno-warn-missing-methods"
+    "-fno-warn-missing-signatures"
+    "-fno-warn-monomorphism-restriction"
+    "-fno-warn-name-shadowing"
+    "-fno-warn-overlapping-patterns"
+    "-fno-warn-safe"
+    "-fno-warn-tabs"
+    "-fno-warn-type-defaults"
+    "-fno-warn-unrecognised-pragmas"
+    "-fno-warn-unsafe"
+    "-fno-warn-unused-binds"
+    "-fno-warn-unused-do-bind"
+    "-fno-warn-unused-imports"
+    "-fno-warn-unused-matches"
+    "-fno-warn-wrong-do-bind"
+    "-fnowarn-missing-import-lists"
+    "-fwarn-amp"
+    "-fwarn-deprecated-flags"
+    "-fwarn-duplicate-constraints"
+    "-fwarn-duplicate-exports"
+    "-fwarn-hi-shadowing"
+    "-fwarn-identities"
+    "-fwarn-implicit-prelude"
+    "-fwarn-incomplete-patterns"
+    "-fwarn-incomplete-record-updates"
+    "-fwarn-incomplete-uni-patterns"
+    "-fwarn-lazy-unlifted-bindings"
+    "-fwarn-missing-fields"
+    "-fwarn-missing-import-lists"
+    "-fwarn-missing-local-sigs"
+    "-fwarn-missing-methods"
+    "-fwarn-missing-signatures"
+    "-fwarn-monomorphism-restriction"
+    "-fwarn-name-shadowing"
+    "-fwarn-orphans"
+    "-fwarn-overlapping-patterns"
+    "-fwarn-safe"
+    "-fwarn-tabs"
+    "-fwarn-type-defaults"
+    "-fwarn-typed-holes"
+    "-fwarn-unrecognised-pragmas"
+    "-fwarn-unsafe"
+    "-fwarn-unused-binds"
+    "-fwarn-unused-do-bind"
+    "-fwarn-unused-imports"
+    "-fwarn-unused-matches"
+    "-fwarn-warnings-deprecations"
+    "-fwarn-wrong-do-bind"))
+
+(defconst cb-hs:ghc-opts-regex (rx "{-#" (+ space) "OPTIONS_GHC" (+ space)
+                                   (group (*? nonl))
+                                   (+ space) "#-}"))
+
+(defun cb-hs:get-ghc-options-in-file ()
+  (->> (buffer-string)
+    substring-no-properties
+    (s-match-strings-all cb-hs:ghc-opts-regex)
+    (-map 'cdr)
+    (-flatten)
+    (--mapcat (s-split (rx (* space) "," (* space)) it))))
+
+(defun cb-hs:insert-ghc-option (opt)
+  "Insert OPT into the GHC options list for the current file."
+  (interactive (list (ido-completing-read "GHC Option: " cb-hs:ghc-options nil t)))
+  (save-excursion
+    (let* ((cur (cb-hs:get-ghc-options-in-file))
+           (opts (s-join ", " (-sort 'string-lessp (-union (list opt) cur)))))
+
+      (goto-char (point-min))
+      (while (search-forward-regexp cb-hs:ghc-opts-regex nil t)
+        (replace-match ""))
+
+      (goto-char (point-min))
+      (insert (format "{-# OPTIONS_GHC %s #-}" opts))
+      (when (s-matches? (rx (+ nonl)) (buffer-substring (point) (line-end-position)))
+        (newline)))))
+
+(defvar cb-hs:language-pragmas
+  (s-split "\n" (%-string "ghc --supported-languages"))
+  "List the language pragmas available in GHC.")
+
+(defun cb-hs:language-pragmas-in-file ()
+  "List the language pragmas set in the current file."
+  (--filter (s-matches? it (buffer-string))
+            cb-hs:language-pragmas))
+
+(defun cb-hs:available-language-pragmas ()
+  "List the language pragmas that have not been set in the current file."
+  (-difference cb-hs:language-pragmas (cb-hs:language-pragmas-in-file)))
+
+(defun cb-hs:insert-language-pragma (pragma)
+  "Read a language pragma to be inserted at the start of this file."
+  (interactive (list (ido-completing-read "Pragma: "
+                                          (cb-hs:available-language-pragmas)
+                                          nil t)))
+  (let ((s (format "{-# LANGUAGE %s #-}\n" pragma)))
+    (save-excursion
+      (goto-char (point-min))
+      (insert s))))
+
+(defun cb-hs:parse-module (str)
+  (with-temp-buffer
+    (insert str)
+    (goto-char (point-min))
+    (when (search-forward-regexp (rx bol "exposed-modules: ") nil t)
+      (let (start end)
+        (setq start (point))
+        (setq end (if (search-forward ":" nil t)
+                      (progn (beginning-of-line) (point))
+                    (point-max)))
+        (s-split " " (buffer-substring-no-properties start end) t)))))
+
+(defun cb-hs:haskell-modules ()
+  "Get a list of all Haskell modules known to the current project or GHC."
+  (if (haskell-session-maybe)
+      (haskell-session-all-modules)
+    (->> (%-string "ghc-pkg" "dump")
+      (s-split "---")
+      (-mapcat 'cb-hs:parse-module)
+      (-map 's-trim))))
+
+(defun cb-hs:do-insert-at-imports (str)
+  "Prepend STR to this buffer's list of imported modules."
+  (save-excursion
+    (goto-char (point-min))
+
+    (cond
+     ;; Move directly to import statements.
+     ((search-forward-regexp (rx bol "import") nil t))
+
+     ;; Move past module declaration.
+     ((search-forward "module" nil t)
+      (search-forward "where")
+      (forward-line)
+      (beginning-of-line)
+      (while (and (s-blank? (current-line))
+                  (not (eobp)))
+        (forward-line)))
+
+     ;; Otherwise insert on first blank line.
+     (t
+      (until (or (eobp) (s-blank? (current-line)))
+        (forward-line))))
+
+    ;; Insert import statement.
+    (beginning-of-line)
+    (open-line 1)
+    (insert str)))
+
+(defun cb-hs:module->qualified-name (module)
+  "Make a reasonable name for MODULE for use in a qualified import."
+  (s-word-initials (-last-item (s-split (rx ".") module))))
+
+(defun cb-hs:insert-qualified-import (module name)
+  "Interactively insert a qualified Haskell import statement for MODULE."
+  (interactive
+   (let ((m (s-trim (ido-completing-read "Module: " (cb-hs:haskell-modules)
+                                         nil t))))
+     (list m (s-trim (read-string "As: " (cb-hs:module->qualified-name m)
+                                  t)))))
+
+  (if (s-matches? (rx-to-string `(and "import" (+ space) "qualified" (+ space)
+                                      ,module (or space eol)))
+                  (buffer-string))
+      (when (called-interactively-p nil)
+        (message "Module '%s' is already imported" module))
+
+    (cb-hs:do-insert-at-imports (format "import qualified %s as %s" module name))))
+
+(defun cb-hs:insert-import (module)
+  "Interactively insert a Haskell import statement for MODULE."
+  (interactive (list (ido-completing-read "Module: " (cb-hs:haskell-modules)
+                                          nil t)))
+
+  (if (s-matches? (rx-to-string `(and "import" (+ space) ,module (or space eol)))
+                  (buffer-string))
+      (when (called-interactively-p nil)
+        (message "Module '%s' is already imported" module))
+
+    (cb-hs:do-insert-at-imports (format "import %s" module))))
+
+(-each '(("i" "Haskell Import" cb-hs:insert-import :modes haskell-mode)
+         ("q" "Haskell Qualified Import" cb-hs:insert-qualified-import :modes haskell-mode)
+         ("l" "Haskell Language Extension" cb-hs:insert-language-pragma :modes haskell-mode)
+         ("o" "GHC Option" cb-hs:insert-ghc-option :modes haskell-mode))
+  (~ add-to-list 'insertion-picker-options))
 
 (provide 'config-haskell)
 
