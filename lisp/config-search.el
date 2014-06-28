@@ -109,8 +109,8 @@ PRED is a predicate to determine whether search method is currently available.
  :command
  (lambda (q)
    (browse-url
-    (concat "https://duckduckgo.com/?q="
-            (url-hexify-string (cbs-read "Duck Duck Go" q))))))
+    (concat "https://www.google.com/search?q="
+            (url-hexify-string (cbs-read "Google Web" q))))))
 
 (cbs-define-search-method
  :name "Image Search"
