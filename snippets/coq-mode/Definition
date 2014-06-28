@@ -1,6 +1,7 @@
 # key: d
 # name: Definition
 # condition: (cbyas:bol?)
+# expand-env: ((yas-indent-line 'fixed))
 # --
-Definition ${1:def} ${2:: ${3:type} }:=
+Definition ${1:fname} ${2:params} : ${3:T} :=
   $0.

@@ -31,6 +31,7 @@
 (require 'config-smartparens)
 
 (require 'proof-site (f-join cb:lib-dir "proofgeneral" "generic" "proof-site"))
+(add-to-list 'Info-directory-list (f-join cb:lib-dir "proofgeneral" "doc"))
 
 (after 'proof-script
   (define-derived-mode proof-mode prog-mode
@@ -175,7 +176,9 @@
   (when (true? evil-mode)
     (evil-insert-state)))
 
-(after 'coq (define-key coq-mode-map   (kbd "M-RET") 'cb-coq:meta-ret))
+(after 'coq
+  (define-key coq-mode-map (kbd "M-RET")   'cb-coq:meta-ret)
+  (define-key coq-mode-map (kbd "C-c C-m") 'coq-insert-match))
 
 (sp-with-modes '(coq-mode)
   (sp-local-pair "\"" "\"" :post-handlers '(:add sp-ocaml-just-one-space))
@@ -186,11 +189,6 @@
 
 (after 'proof-script
   (define-key proof-mode-map (kbd "C-<return>") nil))
-
-(after 'proof-faces
-  (add-to-list 'face-remapping-alist '(proof-locked-face . hl-line))
-  (add-to-list 'face-remapping-alist '(proof-error-face . error)))
-
 
 (provide 'config-coq)
 

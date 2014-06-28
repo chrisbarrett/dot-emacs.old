@@ -251,6 +251,28 @@
 (bind-key "C-x f" 'rotate-frame)
 (bind-key "s-r"   'rotate-frame)
 
+(defvar-local cb:last-indent-to-column nil)
+
+(defun cb:indent-to-column (arg)
+  "Indent point to a certain column.
+
+The first time it is run, or when called with prefix ARG, sets
+the goal column. Subsequest invocations will indent to that column.
+
+Can indent backwards if there is only whitespace."
+  (interactive "*P")
+  (cond
+   ((or arg (not cb:last-indent-to-column))
+    (setq cb:last-indent-to-column (current-column))
+    (message "Set goal column to %s" (current-column)))
+
+   (t
+    (delete-horizontal-space)
+    (indent-to-column cb:last-indent-to-column)
+    (message "Indented to column %s" (current-column)))))
+
+(bind-key "M-C" 'cb:indent-to-column)
+
 (cb:declare-package-installer muttrc
   :match "muttrc"
   :packages (muttrc-mode))
