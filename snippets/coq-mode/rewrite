@@ -1,0 +1,7 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: rewrite
+# key: rw
+# binding: direct-keybinding
+# condition: (cbyas:bol?)
+# --
+rewrite -> $0.

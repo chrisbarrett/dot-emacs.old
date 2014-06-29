@@ -2,5 +2,4 @@
 # name: Inductive
 # condition: (cbyas:bol?)
 # --
-Inductive ${1:name} : ${2:Set} := $0
-.
+Inductive ${1:name}${2: : Type} := $0.

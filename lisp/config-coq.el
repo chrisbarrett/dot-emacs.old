@@ -190,6 +190,12 @@
 (after 'proof-script
   (define-key proof-mode-map (kbd "C-<return>") nil))
 
+(defun cb-coq:get-vars-for-intros (text)
+  "Get the variable names for an initial intros clause.
+TEXT is proof variables in the snippet."
+  (let ((match (s-match (rx (* "(")(group (+ nonl)) ":") text)))
+    (s-trim (or (cadr match) "terms"))))
+
 (provide 'config-coq)
 
 ;;; config-coq.el ends here

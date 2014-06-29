@@ -1,0 +1,7 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: destruct
+# key: ds
+# binding: direct-keybinding
+# condition: (cbyas:bol?)
+# --
+destruct ${1:x}.

@@ -1,6 +1,0 @@
-# -*- mode: snippet -*-
-# name: match
-# key: m
-# --
-match $0 with
-end
