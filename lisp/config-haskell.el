@@ -68,7 +68,7 @@
 
 (after 'haskell-mode
   (require 'company-ghc)
-  (add-to-list 'company-backends 'company-ghc))
+  (add-to-list 'company-backends '(company-ghc :with company-dabbrev)))
 
 (defun cb-hs:file-name->module ()
   (-if-let (root (and (buffer-file-name) (projectile-project-p)))
