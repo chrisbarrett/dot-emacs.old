@@ -196,6 +196,9 @@ TEXT is proof variables in the snippet."
   (let ((match (s-match (rx (* "(")(group (+ nonl)) ":") text)))
     (s-trim (or (cadr match) "terms"))))
 
+(hook-fn 'coq-mode-hook
+  (setq-local compile-command (concat "coqc " (buffer-name))))
+
 (provide 'config-coq)
 
 ;;; config-coq.el ends here
