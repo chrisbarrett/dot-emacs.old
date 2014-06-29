@@ -155,7 +155,8 @@
 
   (after 'proof-faces
     (set-face-background 'proof-locked-face nil)
-    (set-face-background 'proof-error-face  "#fee8e5"))
+    (set-face-background 'proof-error-face  "#fee8e5")
+    (set-face-background 'proof-eager-annotation-face "darkgoldenrod"))
 
   (after 'coq-db
     (set-face-background 'coq-cheat-face "#fee8e5"))
@@ -191,7 +192,8 @@
 
   (after 'proof-faces
     (set-face-background 'proof-locked-face nil)
-    (set-face-background 'proof-error-face "#51202b"))
+    (set-face-background 'proof-error-face "#51202b")
+    (set-face-background 'proof-eager-annotation-face "#073642"))
 
   (after 'coq-db
     (set-face-background 'coq-cheat-face "#51202b"))
