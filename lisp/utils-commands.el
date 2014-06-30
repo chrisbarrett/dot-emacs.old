@@ -199,38 +199,6 @@ With prefix argument ARG, justify text."
 
 (defalias 'rename-file-and-buffer 'rename-buffer-and-file)
 
-(cl-defun sudo-edit (&optional (file (buffer-file-name)))
-  "Edit FILE with sudo if permissions require it."
-  (interactive)
-  (when file
-    (cond
-     ((f-dir? file)
-      (error "%s is a directory" file))
-
-     ((file-writable-p file)
-      (error "%s: sudo editing not needed" file))
-
-     ;; Prompt user whether to escalate. Ensure the tramp connection is cleaned
-     ;; up afterwards.
-     ((and (yes-or-no-p "Edit file with sudo?  ")
-           (find-alternate-file (concat "/sudo:root@localhost:" file)))
-      (add-hook 'kill-buffer-hook 'tramp-cleanup-this-connection nil t)))))
-
-(defun maybe-sudo-edit ()
-  "Attempt to sudo-edit if the current file is not writeable."
-  (let ((dir (file-name-directory (buffer-file-name))))
-    (when (or (and (not (file-writable-p (buffer-file-name)))
-                   (file-exists-p (buffer-file-name)))
-
-              (and dir
-                   (file-exists-p dir)
-                   (not (file-writable-p dir))))
-      (sudo-edit))))
-
-(add-hook 'find-file-hook 'maybe-sudo-edit)
-
-(bind-key* "C-x e" 'sudo-edit)
-
 (define-key prog-mode-map (kbd "M-q") 'indent-dwim)
 
 (defvar cb:kill-buffer-ignored-list

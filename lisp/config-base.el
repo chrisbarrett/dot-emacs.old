@@ -141,11 +141,6 @@
    (delete-file savehist-file)
    (savehist-mode +1)))
 
-(hook-fn 'kill-emacs-hook
-  (ignore-errors
-    (when (fboundp 'tramp-cleanup-all-buffers)
-      (tramp-cleanup-all-buffers))))
-
 (setq locale-coding-system   'utf-8)
 (set-terminal-coding-system  'utf-8)
 (set-keyboard-coding-system  'utf-8)
