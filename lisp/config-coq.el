@@ -33,6 +33,8 @@
 (require 'proof-site (f-join cb:lib-dir "proofgeneral" "generic" "proof-site"))
 (add-to-list 'Info-directory-list (f-join cb:lib-dir "proofgeneral" "doc"))
 
+;;; Redefine `proof-mode' to derive from `prog-mode'.
+
 (after 'proof-script
   (define-derived-mode proof-mode prog-mode
     proof-general-name
