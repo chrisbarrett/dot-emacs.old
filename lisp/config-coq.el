@@ -66,7 +66,9 @@
     (add-hook 'proof-activate-scripting-hook 'proof-cd-sync nil t)))
 
 (custom-set-variables
- '(proof-splash-enable nil))
+ '(proof-splash-enable nil)
+ '(proof-electric-terminator-enable t)
+ '(coq-compile-before-require t))
 
 (defvar cb-coq:smart-operator-list
   '("!" "$" "%" "&" "*" "+" "-" "." "/" ":" "<" "=" ">" "?" "@" "^" "|" "~")
