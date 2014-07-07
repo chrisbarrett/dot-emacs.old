@@ -80,23 +80,20 @@
 (defvar-local indirect-mode-name nil
   "Mode to set for indirect buffers.")
 
-(defun indirect-region (start end)
-  "Edit the current region from START to END in another buffer.
-If the buffer-local variable `indirect-mode-name' is not set, prompt
-for mode name to choose for the indirect buffer interactively.
-Otherwise, use the value of said variable as argument to a funcall."
-  (interactive "r")
-  (let ((buffer-name (generate-new-buffer-name "*indirect*"))
-        (mode
-         (if (not indirect-mode-name)
-             (setq indirect-mode-name
-                   (intern
-                    (completing-read
-                     "Mode: "
-                     (--map (list (symbol-name it))
-                            (apropos-internal "-mode$" 'commandp))
-                     nil t)))
-           indirect-mode-name)))
+(defun indirect-region (start end mode)
+  "Edit the current region in another buffer.
+Edit from START to END using MODE."
+  (interactive
+   (list (region-beginning)
+         (region-end)
+         (intern (completing-read
+                  "Mode: "
+                  (--map (list (symbol-name it))
+                         (apropos-internal "-mode$" 'commandp))
+                  nil t indirect-mode-name))))
+
+  (setq indirect-mode-name (symbol-name mode))
+  (let ((buffer-name (generate-new-buffer-name "*indirect*")))
     (pop-to-buffer (make-indirect-buffer (current-buffer) buffer-name))
     (funcall mode)
     (narrow-to-region start end)
