@@ -57,18 +57,6 @@
 
 (bind-key* "C-c v" 'viewing-picker)
 
-(define-command-picker help-picker
-  :title "*Help Commands*"
-  :options
-  '(("m" "Messages" view-echo-area-messages)
-    ("f" "Find Function" find-function)
-    ("l" "Find Library" find-library)
-    ("v" "Find Variable" find-variable)
-    ("a" "Apropos" apropos)
-    ("A" "Apropos (value)" apropos-value)))
-
-(bind-key "C-h e" 'help-picker)
-
 (define-command-picker narrowing-picker
   :title "*Narrowing*"
   :options

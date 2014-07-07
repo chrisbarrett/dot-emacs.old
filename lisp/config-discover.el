@@ -26,6 +26,8 @@
 
 ;;; Code:
 
+(require 'utils-common)
+
 (cb:install-package 'discover t)
 (global-discover-mode +1)
 
@@ -50,8 +52,10 @@
                   (format "%s: " source-name))))
     (read-string prompt nil t default)))
 
+;;; Search menu
 
 (discover-add-context-menu
+ :bind "M-s"
  :context-menu
  `(cb-search
    (description "Search commands")
@@ -99,7 +103,92 @@
                :buffer "*Helm man woman*"
                :input q)))))))
 
-(bind-key* "M-s" 'makey-key-mode-popup-cb-search)
+;;; Help menu
+
+(discover-add-context-menu
+ :context-menu
+ `(cb-help-locate
+   (description "Goto definitions")
+   (actions
+    ("Find"
+     ("f" "Function" find-function)
+     ("F" "Face" find-face)
+     ("l" "Library" find-library)
+     ("v" "Variable" find-variable)))))
+
+(discover-add-context-menu
+ :context-menu
+ '(cb-help-emacs
+   (description "Emacs information")
+   (actions
+    ("About"
+     ("a" "About Emacs"        about-emacs)
+     ("c" "Copying"            describe-copying)
+     ("f" "FAQ"                view-emacs-FAQ)
+     ("g" "GNU project"        describe-gnu-project))
+    ("Documentation"
+     ("d" "Debugging"          view-emacs-debugging)
+     ("e" "External packages"  view-external-packages)
+     ("m" "Emacs manual"       info-emacs-manual)
+     ("n" "News"               view-emacs-news)))))
+
+(discover-add-context-menu
+ :context-menu
+ '(cb-help-describe
+   (description "Describe Emacs features")
+   (actions
+    ("Describe"
+     ("b" "Key bindings"     describe-bindings)
+     ("c" "Coding system"    describe-coding-system)
+     ("i" "Input method"     describe-input-method)
+     ("k" "Key"              describe-key)
+     ("l" "Language"         describe-language-environment)
+     ("s" "Syntax"           describe-syntax)
+     ("t" "Theme"            describe-theme))
+    ("Lisp"
+     ("f" "Function"         describe-function)
+     ("v" "Variable"         describe-variable)
+     ("F" "Face"             describe-face)
+     ("p" "Package"          describe-package)))))
+
+(discover-add-context-menu
+ :context-menu
+ '(cb-help-info
+   (description "Info")
+   (actions
+    ("Info"
+     ("i" "Info contents"  info)
+     ("f" "Find command"   Info-goto-emacs-command-node)
+     ("k" "Find key"       Info-goto-emacs-key-command-node)
+     ("s" "Lookup symbol"  info-lookup-symbol)))))
+
+(discover-add-context-menu
+ :bind "C-h"
+ :context-menu
+ '(cb-help
+   (description "Emacs help commands")
+   (actions
+    ("Emacs"
+     ("C-h" "Emacs manual"   info-emacs-manual)
+     ("t"   "Emacs Tutorial" help-with-tutorial)
+     ("?"    "Emacs info..." makey-key-mode-popup-cb-help-emacs))
+    ("Describe"
+     ("f" "Function"         describe-function)
+     ("v" "Variable"         describe-variable)
+     ("F" "Face"             describe-face)
+     ("p" "Package"          describe-package))
+    ("Lisp"
+     ("e" "Locate..."        makey-key-mode-popup-cb-help-locate))
+    ("Documentation"
+     ("C-i" "Info contents"  info)
+     ("i" "Info..."          makey-key-mode-popup-cb-help-info)
+     ("d" "Describe..."      makey-key-mode-popup-cb-help-describe))
+    ("Apropos"
+     ("a" "Command"          apropos-command)
+     ("D" "Documentation"    apropos-documentation))
+    ("Environment"
+     ("m" "Messages"         view-echo-area-messages)
+     ("l" "Lossage"          view-lossage)))))
 
 (provide 'config-discover)
 
