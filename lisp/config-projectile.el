@@ -37,8 +37,7 @@
 (cb:install-package 'ack-and-a-half t)
 (projectile-global-mode +1)
 
-(after 'projectile (diminish 'projectile-mode))
-
+(diminish 'projectile-mode)
 
 (autoload 'projectile-project-root "projectile")
 (autoload 'projectile-project-p "projectile")
@@ -49,12 +48,23 @@
 
 (add-hook 'find-file-hook 'cb-projectile:set-compilation-dir)
 
-(define-key projectile-mode-map (kbd "C-c SPC") 'helm-projectile)
+(defun cb-projectile:eshell-project ()
+  "Open an eshell buffer in the current project."
+  (interactive)
+  (let ((default-directory (projectile-project-root))
+        (eshell-buffer-name (projectile-project-name)))
+    (cb:term-cycle)))
+
+;;; Key bindings
+
+(define-key projectile-mode-map (kbd "C-c C-SPC") 'helm-projectile)
 
 (bind-key* "s-f" 'projectile-find-file)
 (bind-key* "s-d" 'projectile-find-dir)
 (bind-key* "s-l" 'projectile-switch-project)
 (bind-key* "s-a" 'projectile-ack)
+(bind-key* "s-t" 'cb-projectile:eshell-project)
+
 
 (provide 'config-projectile)
 
