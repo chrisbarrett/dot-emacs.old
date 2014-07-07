@@ -286,8 +286,6 @@ Changes the selected buffer."
         (set-window-start w2 s1)
         (setq i (1+ i))))))
 
-(bind-key* "s-f" 'cb:rotate-buffers)
-
 (defun move-line-up ()
   "Move the current line up."
   (interactive)
@@ -311,6 +309,7 @@ Changes the selected buffer."
 
 (bind-key* "C-<up>" 'move-line-up)
 (bind-key* "C-<down>" 'move-line-down)
+
 
 (defun generate-password (length)
   "Generate a password with a given LENGTH."
