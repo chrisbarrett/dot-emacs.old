@@ -1,6 +1,7 @@
-# -*- mode: snippet -*-
+# -*- mode: snippet; require-final-newline: nil -*-
 # name: Check
-# key: c
+# key: ch
+# binding: direct-keybinding
 # condition: (cbyas:bol?)
 # --
 Check $0.
