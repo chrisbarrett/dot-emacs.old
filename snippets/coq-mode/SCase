@@ -1,0 +1,9 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: SCase
+# key: sc
+# binding: direct-keybinding
+# condition: (cbyas:bol?)
+# expand-env: ((yas-indent-line (quote fixed)))
+# --
+SCase "$1".
+  $0

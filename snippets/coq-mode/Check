@@ -1,6 +1,5 @@
-# -*- mode: snippet -*-
+# key: ch
 # name: Check
-# key: c
 # condition: (cbyas:bol?)
 # --
 Check $0.
