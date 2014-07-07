@@ -51,6 +51,11 @@
 
 (define-key projectile-mode-map (kbd "C-c SPC") 'helm-projectile)
 
+(bind-key* "s-f" 'projectile-find-file)
+(bind-key* "s-d" 'projectile-find-dir)
+(bind-key* "s-l" 'projectile-switch-project)
+(bind-key* "s-a" 'projectile-ack)
+
 (provide 'config-projectile)
 
 ;;; config-projectile.el ends here
