@@ -28,7 +28,6 @@
 
 (require 'utils-common)
 (require 'config-modegroups)
-(require 'config-search)
 
 (add-to-list 'auto-mode-alist '("Cask$" . emacs-lisp-mode))
 (add-to-list 'auto-mode-alist '("Carton" . emacs-lisp-mode))
@@ -64,16 +63,6 @@
 
 (sp-local-pair (-difference cb:lisp-modes cb:elisp-modes)
                "`" "`" :when '(sp-in-string-p))
-
-(cbs-define-search-method
- :name "Apropos"
- :key "a"
- :command
- (lambda (_)
-   (call-interactively 'helm-apropos))
- :when
- (lambda ()
-   (apply 'derived-mode-p cb:elisp-modes)))
 
 (defun cbel:find-identifier-prefix ()
   "Find the commonest identifier prefix in use in this buffer."

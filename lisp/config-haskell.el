@@ -497,16 +497,6 @@ See URL `http://www.haskell.org/ghc/'."
                    ;; Forward-sexp function
                    cb-hs:forward-fold)))
 
-  (cbs-define-search-method
-   :name "hoogle"
-   :key "h"
-   :command
-   (lambda (_)
-     (call-interactively 'hoogle))
-   :when
-   (lambda ()
-     (derived-mode-p 'haskell-mode 'haskell-interactive-mode)))
-
   (font-lock-add-keywords
    'haskell-mode
    `(("\\s ?(?\\(\\\\\\)\\s *\\(\\w\\|_\\|(.*)\\).*?\\s *->"

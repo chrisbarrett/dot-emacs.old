@@ -32,6 +32,75 @@
 (after 'evil
   (evil-set-initial-state 'makey-key-mode 'emacs))
 
+(defmacro search:fn-with-thing-at-point (binding &rest body)
+  "Bind BINDING to the symbol at point around BODY forms."
+  (declare (indent 1))
+  `(lambda ()
+     (interactive)
+     (let ((,binding
+            (let ((s (or (current-region) (thing-at-point 'symbol))))
+              (when s
+                (substring-no-properties s)))))
+       ,@body)))
+
+(defun search:read-string (source-name &optional default)
+  "Read a query for SOURCE-NAME with an optional DEFAULT."
+  (let ((prompt (if default
+                    (format "%s (default: %s): " source-name default)
+                  (format "%s: " source-name))))
+    (read-string prompt nil t default)))
+
+
+(discover-add-context-menu
+ :context-menu
+ `(cb-search
+   (description "Search commands")
+   (actions
+
+    ("Dictionary"
+     ("d" "Dictionary"
+      ,(search:fn-with-thing-at-point q
+         (dictionary-search (search:read-string "Dictionary" q)))))
+
+    ("Org"
+     ("o" "Org files" org-search-view))
+
+    ("Internet"
+     ("g" "Google Web"
+      ,(search:fn-with-thing-at-point q
+         (browse-url
+          (concat "https://www.google.com/search?q="
+                  (url-hexify-string (search:read-string "Google Web" q))))))
+
+     ("i" "Google Images"
+      ,(search:fn-with-thing-at-point q
+         (browse-url
+          (concat "https://www.google.co.nz/search?tbm=isch&q="
+                  (url-hexify-string (search:read-string "Google Images" q))))))
+
+     ("y" "YouTube"
+      ,(search:fn-with-thing-at-point q
+         (browse-url
+          (concat "http://www.youtube.com/results?search_query="
+                  (url-hexify-string (search:read-string "YouTube" q))))))
+
+     ("w" "Wikipedia"
+      ,(search:fn-with-thing-at-point q
+         (browse-url
+          (concat "http://en.wikipedia.org/w/index.php?search="
+                  (url-hexify-string (search:read-string "Wikipedia" q)))))))
+
+    ("System"
+     ("i" "info" helm-info-at-point)
+     ("m" "manpages"
+      ,(search:fn-with-thing-at-point q
+         (require 'helm-man)
+         (helm :sources 'helm-source-man-pages
+               :buffer "*Helm man woman*"
+               :input q)))))))
+
+(bind-key* "M-s" 'makey-key-mode-popup-cb-search)
+
 (provide 'config-discover)
 
 ;;; config-discover.el ends here
