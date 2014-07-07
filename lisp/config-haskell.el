@@ -597,7 +597,7 @@ See URL `http://www.haskell.org/ghc/'."
     (cond
 
      ;; Insert new case below the current type decl.
-     ((s-matches? (rx bol (* space) "data") (current-line))
+     ((s-matches? (rx bol (* space) "data" (+ space)) (current-line))
       (goto-char (line-end-position))
       (newline)
       (insert "| ")
