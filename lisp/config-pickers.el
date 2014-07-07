@@ -69,10 +69,6 @@
 
 (bind-key "C-h e" 'help-picker)
 
-(put 'narrow-to-defun  'disabled nil)
-(put 'narrow-to-page   'disabled nil)
-(put 'narrow-to-region 'disabled nil)
-
 (define-command-picker narrowing-picker
   :title "*Narrowing*"
   :options
