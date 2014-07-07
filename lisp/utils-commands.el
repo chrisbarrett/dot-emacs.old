@@ -31,11 +31,29 @@
 (require 'utils-shell)
 (require 'config-modegroups)
 
+;;; Autoloads
+
 (autoload 'org-move-item-down "org-list")
-(autoload 'sp-beginning-of-sexp "smartparens")
 (autoload 'org-move-item-up "org-list")
+(autoload 'sp-beginning-of-sexp "smartparens")
 (autoload 'sp-get-enclosing-sexp "smartparens")
 (autoload 'thing-at-point-looking-at "thingatpt")
+
+;;; Exiting Emacs
+
+(defun cb:exit-emacs ()
+  (interactive)
+  (when (yes-or-no-p "Kill Emacs? ")
+    (save-buffers-kill-emacs)))
+
+(defun cb:exit-emacs-dwim ()
+  (interactive)
+  (when (yes-or-no-p "Kill Emacs? ")
+    (if (daemonp)
+        (server-save-buffers-kill-terminal nil)
+      (save-buffers-kill-emacs))))
+
+;;; Evil compatibility
 
 (defun cb:maybe-evil-insert-state ()
   "Only enter insert state if evil-mode is active."
@@ -57,6 +75,8 @@
   (goto-char (point-max))
   (cb:maybe-evil-insert-state))
 
+;;; Create indirect buffer from region.
+
 (defvar-local indirect-mode-name nil
   "Mode to set for indirect buffers.")
 
@@ -73,9 +93,8 @@ Otherwise, use the value of said variable as argument to a funcall."
                    (intern
                     (completing-read
                      "Mode: "
-                     (mapcar (lambda (e)
-                               (list (symbol-name e)))
-                             (apropos-internal "-mode$" 'commandp))
+                     (--map (list (symbol-name it))
+                            (apropos-internal "-mode$" 'commandp))
                      nil t)))
            indirect-mode-name)))
     (pop-to-buffer (make-indirect-buffer (current-buffer) buffer-name))
@@ -84,50 +103,7 @@ Otherwise, use the value of said variable as argument to a funcall."
     (goto-char (point-min))
     (shrink-window-if-larger-than-buffer)))
 
-(bind-key "C-c C" 'indirect-region)
-
-(defun cb:clear-scrollback ()
-  "Erase all but the last line of the current buffer."
-  (interactive)
-  (let ((inhibit-read-only t)
-        (last-line (save-excursion
-                     (goto-char (point-max))
-                     (forward-line -1)
-                     (line-end-position))))
-    (delete-region (point-min) last-line)
-    (goto-char (point-max))))
-
-(hook-fn 'cb:prompt-modes-hook
-  (local-set-key (kbd "C-a") 'move-beginning-of-line)
-  (local-set-key (kbd "C-e") 'move-end-of-line)
-  (local-set-key (kbd "C-l") 'cb:clear-scrollback)
-  (local-set-key (kbd "M->") 'cb:append-buffer)
-  (cb:append-buffer))
-
-(defun cb:exit-emacs ()
-  (interactive)
-  (when (yes-or-no-p "Kill Emacs? ")
-    (save-buffers-kill-emacs)))
-
-(defun cb:exit-emacs-dwim ()
-  (interactive)
-  (when (yes-or-no-p "Kill Emacs? ")
-    (if (daemonp)
-        (server-save-buffers-kill-terminal nil)
-      (save-buffers-kill-emacs))))
-
-(bind-key* "C-x C-c" (command (message "Type <C-c k k> to exit Emacs")))
-(bind-key* "C-c k k" 'cb:exit-emacs-dwim)
-(bind-key* "C-c k e" 'cb:exit-emacs)
-
-(defun outdent ()
-  "Remove indentation on the current line."
-  (interactive "*")
-  (save-excursion
-    (goto-char (line-beginning-position))
-    (delete-horizontal-space)))
-
-(global-set-key (kbd "<backtab>") 'outdent)
+;;; Indentation
 
 (defun indent-buffer ()
   "Indent the whole buffer."
@@ -160,13 +136,14 @@ With prefix argument ARG, justify text."
       (indent-buffer)
       (message "Indented buffer.")))))
 
-(define-key prog-mode-map (kbd "M-q") 'indent-dwim)
+(defun outdent ()
+  "Remove indentation on the current line."
+  (interactive "*")
+  (save-excursion
+    (goto-char (line-beginning-position))
+    (delete-horizontal-space)))
 
-(defun cb:comma-then-space ()
-  (interactive)
-  (atomic-change-group
-    (insert-char ?\,)
-    (just-one-space)))
+;;; Buffer management.
 
 (defun delete-buffer-and-file ()
   "Delete a file and its associated buffer."
@@ -199,8 +176,6 @@ With prefix argument ARG, justify text."
 
 (defalias 'rename-file-and-buffer 'rename-buffer-and-file)
 
-(define-key prog-mode-map (kbd "M-q") 'indent-dwim)
-
 (defvar cb:kill-buffer-ignored-list
   '("*scratch*" "*Messages*" "*Group*"
     "*shell*" "*eshell*" "*ansi-term*"
@@ -214,8 +189,6 @@ If this buffer is a member of `cb:kill-buffer-ignored-list, bury it rather than 
       (bury-buffer)
     (kill-buffer (current-buffer))))
 
-(bind-key* "C-x <backspace>" 'kill-current-buffer)
-
 (defun clean-buffers ()
   "Close all buffers not in the ignore list."
   (interactive)
@@ -224,25 +197,6 @@ If this buffer is a member of `cb:kill-buffer-ignored-list, bury it rather than 
           (not (or (-contains? cb:kill-buffer-ignored-list (buffer-name it))
                    (get-buffer-process it))))
     'kill-buffer))
-
-(bind-key* "C-c k b"  'clean-buffers)
-
-(defun cb:find-autoloads (buffer)
-  (->> (with-current-buffer buffer
-         (buffer-substring-no-properties (point-min) (point-max)))
-    (s-match-strings-all (rx ";;;###autoload" "\n"
-                             (* space) "("(+ (not space)) (+ space) (? "'")
-                             (group (+ (not space)))))
-    (-map 'cadr)))
-
-(cl-defun show-autoloads (&optional (buffer (current-buffer)))
-  "Find the autoloaded definitions in BUFFER"
-  (interactive)
-  (-if-let (results (-map (~ s-append "\n") (cb:find-autoloads buffer)))
-      (with-output-to-temp-buffer "*autoloads*"
-        (-each results 'princ))
-
-    (error "No autoloads found in current buffer")))
 
 (defun expose-buffers-by-mode (&optional mode arg)
   "Show all buffers with major mode MODE.
@@ -286,48 +240,29 @@ Changes the selected buffer."
         (set-window-start w2 s1)
         (setq i (1+ i))))))
 
-(defun move-line-up ()
-  "Move the current line up."
+;;; Display autoloaded functions in buffer.
+
+(defun cb:find-autoloads (buffer)
+  (->> (with-current-buffer buffer
+         (buffer-substring-no-properties (point-min) (point-max)))
+    (s-match-strings-all (rx ";;;###autoload" "\n"
+                             (* space) "("(+ (not space)) (+ space) (? "'")
+                             (group (+ (not space)))))
+    (-map 'cadr)))
+
+(cl-defun show-autoloads (&optional (buffer (current-buffer)))
+  "Find the autoloaded definitions in BUFFER"
   (interactive)
-  (if (derived-mode-p 'org-mode)
-      (org-move-item-up)
+  (-if-let (results (-map (~ s-append "\n") (cb:find-autoloads buffer)))
+      (with-output-to-temp-buffer "*autoloads*"
+        (-each results 'princ))
 
-    (transpose-lines 1)
-    (forward-line -2)
-    (indent-according-to-mode)))
+    (error "No autoloads found in current buffer")))
 
-(defun move-line-down ()
-  "Move the current line up."
-  (interactive)
-  (if (derived-mode-p 'org-mode)
-      (org-move-item-down)
-
-    (forward-line 1)
-    (transpose-lines 1)
-    (forward-line -1)
-    (indent-according-to-mode)))
-
-(bind-key* "C-<up>" 'move-line-up)
-(bind-key* "C-<down>" 'move-line-down)
-
-
-(defun generate-password (length)
-  "Generate a password with a given LENGTH."
-  (interactive (list (read-number "Password length: " 32)))
-  (let ((pass
-         (--> (%-string "openssl" "rand" "-base64" (number-to-string length))
-           ;; The encoding process will pad with '=' characters to reach a
-           ;; length divisible by 4 bytes. Drop this padding.
-           (substring it 0 length))))
-    (cond
-     ((called-interactively-p 'any)
-      (kill-new pass)
-      (message "Password copied to kill ring."))
-     (t
-      pass))))
+;;; Rewrite `setq' as `defcustom'.
 
 (defun combine-adjacent-setqs ()
-  "Combine calls to setq around point."
+  "Combine usages of setq around point."
   (interactive)
   (sp-beginning-of-sexp)
   (when (thing-at-point-looking-at "setq")
@@ -386,6 +321,64 @@ Changes the selected buffer."
       (do-rewrite))
      (t
       (user-error "Not at a setq form")))))
+
+;;; Misc interactive commands
+
+(defun move-line-up ()
+  "Move the current line up."
+  (interactive)
+  (if (derived-mode-p 'org-mode)
+      (org-move-item-up)
+
+    (transpose-lines 1)
+    (forward-line -2)
+    (indent-according-to-mode)))
+
+(defun move-line-down ()
+  "Move the current line up."
+  (interactive)
+  (if (derived-mode-p 'org-mode)
+      (org-move-item-down)
+
+    (forward-line 1)
+    (transpose-lines 1)
+    (forward-line -1)
+    (indent-according-to-mode)))
+
+(defun generate-password (length)
+  "Generate a password with a given LENGTH."
+  (interactive (list (read-number "Password length: " 32)))
+  (let ((pass
+         (--> (%-string "openssl" "rand" "-base64" (number-to-string length))
+           ;; The encoding process will pad with '=' characters to reach a
+           ;; length divisible by 4 bytes. Drop this padding.
+           (substring it 0 length))))
+    (cond
+     ((called-interactively-p 'any)
+      (kill-new pass)
+      (message "Password copied to kill ring."))
+     (t
+      pass))))
+
+(defun cb:comma-then-space ()
+  (interactive)
+  (atomic-change-group
+    (insert-char ?\,)
+    (just-one-space)))
+
+;;; Key bindings
+
+(define-key prog-mode-map (kbd "M-q") 'indent-dwim)
+(global-set-key (kbd "<backtab>") 'outdent)
+
+(bind-key  "C-c C"            'indirect-region)
+(bind-key* "C-<down>"         'move-line-down)
+(bind-key* "C-<up>"           'move-line-up)
+(bind-key* "C-c k b"          'clean-buffers)
+(bind-key* "C-c k e"          'cb:exit-emacs)
+(bind-key* "C-c k k"          'cb:exit-emacs-dwim)
+(bind-key* "C-x <backspace>"  'kill-current-buffer)
+(bind-key* "C-x C-c" (command (message "Type <C-c k k> to exit Emacs")))
 
 (provide 'utils-commands)
 
