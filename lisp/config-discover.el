@@ -173,10 +173,11 @@
      ("t"   "Emacs Tutorial" help-with-tutorial)
      ("?"    "Emacs info..." makey-key-mode-popup-cb-help-emacs))
     ("Describe"
-     ("f" "Function"         describe-function)
-     ("v" "Variable"         describe-variable)
      ("F" "Face"             describe-face)
-     ("p" "Package"          describe-package))
+     ("f" "Function"         describe-function)
+     ("k" "Key"              describe-key)
+     ("p" "Package"          describe-package)
+     ("v" "Variable"         describe-variable))
     ("Lisp"
      ("e" "Locate..."        makey-key-mode-popup-cb-help-locate))
     ("Documentation"
@@ -189,6 +190,49 @@
     ("Environment"
      ("m" "Messages"         view-echo-area-messages)
      ("l" "Lossage"          view-lossage)))))
+
+;;; Sorting
+
+(discover-add-context-menu
+ :context-menu
+ '(cb-sort
+   (description "Sorting commands")
+   (actions
+    ("Sort"
+     ("a" "Alpha" sort-lines)
+     ("A" "Alpha (reverse)" (lambda () (sort-lines t (region-beginning) (region-end))))
+     ("r" "Reverse" reverse-region)))))
+
+(defun cb:sort-dispatch ()
+  "Open the appropriate sorting picker for the current mode."
+  (interactive)
+  (cond
+   ((derived-mode-p 'org-mode)
+    (call-interactively 'org-sort))
+   ((region-active-p)
+    (call-interactively 'makey-key-mode-popup-cb-sort))
+   (t
+    (user-error "Sort commands require a region to be active"))))
+
+(bind-key* "C-c ^" 'cb:sort-dispatch)
+
+;;; Yasnippet
+
+(discover-add-context-menu
+ :bind "C-c y"
+ :context-menu
+ '(cb-yasnippet
+   (describe "Yasnippet commands")
+   (actions
+    ("Create and edit"
+     ("e" "Expand" yas-expand)
+     ("f" "Visit File" yas-visit-snippet-file)
+     ("i" "Insert" yas-insert-snippet)
+     ("n" "New" yas-new-snippet))
+    ("Snippet management"
+     ("r" "Reload All" cbyas:reload-all)
+     ("q" "Exit Snippets" yas-exit-all-snippets)
+     ("t" "Show Tables" yas-describe-tables)))))
 
 (provide 'config-discover)
 
