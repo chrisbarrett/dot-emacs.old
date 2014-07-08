@@ -59,7 +59,7 @@
 
 ;;; Key bindings
 
-; Disable default keys so the discover.el interface will be displayed instead.
+;; Disable default keys so the discover.el interface will be displayed instead.
 (define-key projectile-mode-map projectile-keymap-prefix nil)
 (define-key projectile-mode-map (kbd "C-c C-SPC") 'helm-projectile)
 
