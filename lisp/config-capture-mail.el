@@ -241,34 +241,6 @@ template."
         (run-with-timer 5 60 (lambda ()
                                (capture-mail cm-capture-messages-dir)))))))
 
-(defun cb-org:quick-capture (type body)
-  "Use the capture-mail functionality to capture something quickly.
-
-TYPE is the type of item.  It is ordinarily the subject for emails.
-
-BODY is the string to interpret."
-  (interactive "s[Quick Capture] Type: \ns[Quick Capture] String: ")
-  (cl-loop
-   with parsers = (-concat cm--parsers (list cm-default-parser))
-   with alist = `((subject . ,type)
-                  (body . ,body)
-                  (date . (format-time-string "%FT%T%z"))
-                  )
-   for p in parsers do
-   (cl-destructuring-bind (&key type predicate parser handler) p
-     (when (funcall predicate alist)
-       (-when-let
-           (parsed-val
-            (condition-case-unless-debug _
-                (funcall parser alist)
-              (error
-               (display-warning 'capture-mail "Failed to parse input."))))
-         (cl-return (cons type (funcall handler parsed-val))))))))
-
-(add-to-list 'org-action-picker-options
-             '("q" "Quick Capture" cb-org:quick-capture))
-
-
 (provide 'config-capture-mail)
 
 ;;; config-capture-mail.el ends here

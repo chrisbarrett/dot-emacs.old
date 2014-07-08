@@ -54,10 +54,6 @@
    (derived-mode-p 'org-mode)
    (s-matches? ":drill:" (buffer-string))))
 
-(add-to-list 'org-action-picker-options
-             '("r" "Org Drill" (lambda () (org-drill 'agenda))))
-
-
 (provide 'config-org-drill)
 
 ;;; config-org-drill.el ends here

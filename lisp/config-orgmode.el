@@ -135,30 +135,6 @@ This will set which file org-capture will capture to."
   (interactive)
   (find-file org-default-notes-file))
 
-(defun cb-org:capture ()
-  "Adapt `org-capture' to my own selection widget."
-  (interactive)
-  (let ((k (car (read-option "*Org Capture*" 'car 'cadr
-                             org-capture-templates))))
-    (org-capture nil k)))
-
-(define-command-picker org-action-picker
-  :title "*Org Commands*"
-  :options
-  `(("a" "Agenda" org-agenda)
-    ("b" "Buffers" org-iswitchb)
-    ("c" "Follow Clock" org-clock-goto)
-    ("d" "Go to Diary" cb-org:find-diary)
-    ("f" "Set Notes File" cb-org:set-notes-file)
-    ("g" "Go to Subtree" ,(command (org-refile 'goto)))
-    ("k" "Capture" cb-org:capture)
-    ("l" "Store Link" org-store-link)
-    ("n" "Go to Notes" cb-org:find-notes)
-    ("s" "Search" executor:org-search-view)
-    ("t" "Todo List" executor:org-show-todo-list)
-    ("v" "View Tags (todos)" executor:org-tags-view-todos-fullscreen)
-    ("V" "View Tags (all)" executor:org-tags-view-all-fullscreen)))
-
 (defadvice org-add-log-note (before exit-minibuffer activate)
   "If the minibuffer is active, exit before prompting for a note."
   (when (minibufferp (window-buffer (selected-window)))
@@ -611,9 +587,6 @@ Do not change habits, scheduled items or repeating todos."
   :overriding? t
   "C-c a" 'org-agenda
   "C-c l" 'org-store-link
-  "<f6>" 'cb-org:quick-capture
-  "<f7>" 'cb-org:capture
-  "<f8>" 'org-action-picker
   "<f9>" 'executor:org-agenda-fullscreen)
 
 (define-keys org-mode-map

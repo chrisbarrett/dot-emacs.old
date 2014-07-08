@@ -1,4 +1,4 @@
-;;; config-discover.el --- Configuration for discover.el
+;;; config-discover.el --- Configuration for discover.el  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2014 Chris Barrett
 
@@ -303,6 +303,48 @@
 
     ("Other"
      ("o" "Other window..."                makey-key-mode-popup-cb-projectile-other-window)))))
+
+;;; Org
+
+(discover-add-context-menu
+ :bind "<f7>"
+ :context-menu
+ `(cb-org-capture
+   (description "Org capture commands")
+   (actions
+    ("Capture"
+     ,@(--map (cl-destructuring-bind (key desc &rest _) it
+                (list key desc (command (org-capture nil key))))
+              org-capture-templates)))))
+
+(discover-add-context-menu
+ :bind "C-c o"
+ :context-menu
+ `(cb-org
+   (description "Orgmode commands")
+   (actions
+
+    ("Navigation"
+     ("$" "Go to ledger"      ,(command (find-file ledger-file)))
+     ("a" "Agenda"            org-agenda)
+     ("b" "Buffers"           org-iswitchb)
+     ("c" "Follow Clock"      org-clock-goto)
+     ("d" "Go to Diary"       cb-org:find-diary)
+     ("g" "Go to Subtree"     ,(command (org-refile 'goto)))
+     ("n" "Go to Notes"       cb-org:find-notes))
+
+    ("Capture"
+     ("k" "Capture"           makey-key-mode-popup-cb-org-capture)
+     ("l" "Store Link"        org-store-link))
+
+    ("Todo & Tag"
+     ("t" "Todo List"         executor:org-show-todo-list)
+     ("v" "View Tags (todos)" executor:org-tags-view-todos-fullscreen)
+     ("V" "View Tags (all)"   executor:org-tags-view-all-fullscreen))
+
+    ("Drill"
+     ("r" "Org Drill" ,(command (org-drill 'agenda)))))))
+
 
 (provide 'config-discover)
 
