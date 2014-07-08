@@ -234,6 +234,75 @@
      ("q" "Exit Snippets" yas-exit-all-snippets)
      ("t" "Show Tables" yas-describe-tables)))))
 
+;;; Projectile
+
+(discover-add-context-menu
+ :context-menu
+ '(cb-projectile-other-window
+   (describe "Project management and navigation (other window)")
+   (actions
+    ("File"
+     ("f" "Find file"       projectile-find-file-other-window))
+    ("Directory"
+     ("d" "Find dir"        projectile-find-dir-other-window))
+    ("Test"
+     ("t" "Switch to/from"  projectile-find-implementation-or-test-other-window))
+    ("Buffer"
+     ("b" "Switch"          projectile-switch-to-buffer-other-window)
+     ("s" "Display"         projectile-display-buffer)))))
+
+(discover-add-context-menu
+ :bind "C-c p"
+ :context-menu
+ '(cb-projectile
+   (describe "Project management and navigation")
+   (actions
+    ("Shell"
+     ("!" "Shell command"                  projectile-run-shell-command-in-root)
+     ("&" "Shell command (async)"          projectile-run-async-shell-command-in-root))
+
+    ("Search & Replace"
+     ("a" "Ack"                            projectile-ack)
+     ("c" "Occur"                          projectile-multi-occur)
+     ("r" "Replace"                        projectile-replace))
+
+    ("File"
+     ("f" "Find file"                      projectile-find-file)
+     ("F" "Find in projects"               projectile-find-file-in-known-projects)
+     ("e" "Recent"                         projectile-recentf)
+     ("l" "Find in dir"                    projectile-find-file-in-directory))
+
+    ("Directory"
+     ("d" "Find dir"                       projectile-find-dir)
+     ("D" "Dired"                          projectile-dired))
+
+    ("Tags"
+     ("j" "Find"                           projectile-find-tag)
+     ("R" "Rebuild"                        projectile-regenerate-tags))
+
+    ("Test"
+     ("t" "Switch to/from"                 projectile-toggle-between-implementation-and-test)
+     ("T" "Find test"                      projectile-find-test-file)
+     ("p" "Run tests"                      projectile-test-project))
+
+    ("Project"
+     ("s" "Switch"                         projectile-switch-project)
+     ("S" "Save"                           projectile-save-project-buffers)
+     ("v" "VC"                             projectile-vc))
+
+    ("Buffer"
+     ("b" "Switch"                         projectile-switch-to-buffer)
+     ("i" "IBuffer"                        projectile-ibuffer)
+     ("k" "Kill buffers"                   projectile-kill-buffers)
+     ("x" "Most recent"                    projectile-project-buffers-other-buffer))
+
+    ("Cache"
+     ("i" "Invalidate"                     projectile-invalidate-cache)
+     ("z" "File"                           projectile-cache-current-file))
+
+    ("Other"
+     ("o" "Other window..."                makey-key-mode-popup-cb-projectile-other-window)))))
+
 (provide 'config-discover)
 
 ;;; config-discover.el ends here

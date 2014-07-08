@@ -55,8 +55,12 @@
         (eshell-buffer-name (projectile-project-name)))
     (cb:term-cycle)))
 
+(setq projectile-switch-project-action 'cb-projectile:eshell-project)
+
 ;;; Key bindings
 
+; Disable default keys so the discover.el interface will be displayed instead.
+(define-key projectile-mode-map projectile-keymap-prefix nil)
 (define-key projectile-mode-map (kbd "C-c C-SPC") 'helm-projectile)
 
 (bind-key* "s-f" 'projectile-find-file)
