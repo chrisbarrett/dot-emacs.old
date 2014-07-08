@@ -98,8 +98,6 @@ DEFS are comprised of alternating string-symbol pairs."
 (define-keys evil-normal-state-map
   "TAB" 'indent-according-to-mode
   "<backtab>" 'outdent
-  ;"M-z" 'evil-emacs-state
-  "C-z" 'evil-undefine
   "SPC" 'evil-toggle-fold
   "K"   'cbevil:get-documentation
   "u"   'undo-tree-undo
@@ -338,6 +336,15 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
   "<"   'org-metaleft ; out-dent
   ">"   'org-metaright ; indent
   )
+
+;;; Ledger
+
+(evil-define-key 'normal ledger-report-mode-map
+  "e" 'ledger-report-edit
+  "q" 'ledger-report-kill
+  "r" 'ledger-report-redo
+  "R" 'ledger-report-reverse-lines
+  "s" 'ledger-report-save)
 
 ;;; Misc
 
