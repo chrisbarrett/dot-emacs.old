@@ -34,7 +34,7 @@
 (cb:declare-package-installer c-languages
   :match (rx "." (or "c" "cc" "cpp" "h" "hh" "hpp" "m") eol)
   :packages
-  (ac-c-headers
+  (company-c-headers
    google-c-style
    c-eldoc
    clang-format))
