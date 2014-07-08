@@ -55,7 +55,8 @@
         (eshell-buffer-name (projectile-project-name)))
     (cb:term-cycle)))
 
-(setq projectile-switch-project-action 'cb-projectile:eshell-project)
+(setq projectile-switch-project-action
+      (lambda () (call-interactively 'magit-status)))
 
 ;;; Key bindings
 
