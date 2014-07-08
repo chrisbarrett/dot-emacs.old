@@ -29,34 +29,68 @@
 (require 'utils-common)
 
 (cb:install-package 'evil t)
+(cb:install-package 'evil-numbers t)
+(cb:install-package 'evil-surround t)
+(evil-mode +1)
+(global-evil-surround-mode +1)
 
-(--each '(evil-normal-state-map
-          evil-visual-state-map
-          minibuffer-local-map
-          minibuffer-local-ns-map
-          minibuffer-local-completion-map
-          minibuffer-local-must-match-map
-          minibuffer-local-isearch-map)
-  (define-key (eval it) [escape] 'keyboard-quit))
+;;; Autoloads
 
-(setq evil-want-visual-char-semi-exclusive t
-      evil-toggle-key (kbd "M-z")
-      evil-default-cursor t)
-(setq-default evil-shift-width 2)
-(setq-default evil-symbol-word-search 'symbol)
+(autoload 'ispell-add-to-dict "cb-spelling")
+(autoload 'ispell-add-per-file-word-list "ispell")
+
+;;; Variables
+
+(custom-set-variables
+ '(evil-want-visual-char-semi-exclusive t)
+ '(evil-default-cursor t)
+ '(evil-shift-width 2)
+ '(evil-symbol-word-search 'symbol))
+
+;;; Set initial states
+
+(evil-set-initial-state 'message-mode      'insert)
+(evil-set-initial-state 'magit-commit-mode 'insert)
+(evil-set-initial-state 'eshell-mode       'insert)
+
+;;; HJKL bindings
+
+(evil-add-hjkl-bindings tar-mode-map)
+(evil-add-hjkl-bindings occur-mode-map)
+(evil-add-hjkl-bindings archive-mode-map)
+(evil-add-hjkl-bindings package-menu-mode-map)
+
+(evil-add-hjkl-bindings magit-log-mode-map 'emacs)
+(evil-add-hjkl-bindings magit-commit-mode-map 'emacs)
+
+(evil-add-hjkl-bindings magit-branch-manager-mode-map 'emacs
+  "K" 'magit-discard-item
+  "L" 'magit-key-mode-popup-logging)
+
+(evil-add-hjkl-bindings magit-status-mode-map 'emacs
+  "K" 'magit-discard-item
+  "l" 'magit-key-mode-popup-logging
+  "h" 'magit-toggle-diff-refine-hunk)
+
+;;; Configure evil-numbers
+
+(define-key evil-normal-state-map (kbd "C-A")   'evil-numbers/inc-at-pt)
+(define-key evil-normal-state-map (kbd "C-S-A") 'evil-numbers/dec-at-pt)
+
+;;; Configure general key bindings
 
 (defmacro evil-global-set-keys (state &rest defs)
-  "Variadic version of `evil-global-set-key'
-Creates STATE bindings for DEFS. DEFS are comprised of alternating string-symbol pairs."
+  "Variadic version of `evil-global-set-key'.
+Creates STATE bindings for DEFS.
+DEFS are comprised of alternating string-symbol pairs."
   (declare (indent 1))
   `(after 'evil
      ,@(-map (lambda+ ((key fn))
                `(evil-global-set-key ,state (kbd ,key) ,fn))
              (-partition-all 2 defs))))
 
-(evil-mode +1)
-
 (defun evil-undefine ()
+  "Call the underlying command as if evil mode were not active."
   (interactive)
   (let (evil-mode-map-alist)
     (call-interactively (key-binding (this-command-keys)))))
@@ -64,7 +98,7 @@ Creates STATE bindings for DEFS. DEFS are comprised of alternating string-symbol
 (define-keys evil-normal-state-map
   "TAB" 'indent-according-to-mode
   "<backtab>" 'outdent
-  "M-z" 'evil-emacs-state
+  ;"M-z" 'evil-emacs-state
   "C-z" 'evil-undefine
   "SPC" 'evil-toggle-fold
   "K"   'cbevil:get-documentation
@@ -75,8 +109,7 @@ Creates STATE bindings for DEFS. DEFS are comprised of alternating string-symbol
 (define-key evil-emacs-state-map  (kbd "M-z") 'evil-normal-state)
 (define-key evil-visual-state-map (kbd "C-z") 'evil-undefine)
 
-(autoload 'ispell-add-to-dict "cb-spelling")
-(autoload 'ispell-add-per-file-word-list "ispell")
+;;; Spelling commands
 
 (defun evil-mark-word-as-good (word)
   "Add WORD at point to the Ispell dictionary."
@@ -174,6 +207,8 @@ errors forward of POS."
   "z =" 'evil-correct-word
   "z u" 'flyspell-auto-correct-word)
 
+;;; Documentation search
+
 (autoload 'Man-getpage-in-background "man")
 (autoload 'woman-file-name-all-completions "woman")
 
@@ -230,6 +265,8 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
     (error
      (user-error "No documentation available"))))
 
+;;; Make window management work for all modes
+
 (define-prefix-command 'cb:evil-window-emu)
 (global-set-key (kbd "C-w") 'cb:evil-window-emu)
 (bind-keys
@@ -245,15 +282,7 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
   "C-w o" 'delete-other-windows
   "C-w c" 'delete-window)
 
-(evil-add-hjkl-bindings tar-mode-map)
-(evil-add-hjkl-bindings occur-mode-map)
-(evil-add-hjkl-bindings archive-mode-map)
-(evil-add-hjkl-bindings package-menu-mode-map)
-
-(after 'man
-  (evil-define-key 'normal Man-mode-map (kbd "q") 'Man-kill))
-
-(add-hook 'message-mode-hook 'cb:maybe-evil-append-line)
+;;; Undo-tree
 
 (after 'undo-tree
   ;; Ensure undo-tree commands are remapped. The referenced keymap in
@@ -266,9 +295,9 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
 
 (evil-global-set-key 'insert (kbd "S-TAB") 'tab-to-tab-stop)
 
-(cb:install-package 'surround t)
+;;; Configure evil-surround.
 
-(setq-default surround-pairs-alist
+(setq-default evil-surround-pairs-alist
               '((?\( . ("(" . ")"))
                 (?\[ . ("[" . "]"))
                 (?\{ . ("{" . "}"))
@@ -286,19 +315,34 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
                 (?f . surround-function)))
 
 (hook-fn 'cb:elisp-modes-hook
-  (make-local-variable 'surround-pairs-alist)
-  (push '(?\` . ("`" . "'")) surround-pairs-alist))
+  (make-local-variable 'evil-surround-pairs-alist)
+  (push '(?\` . ("`" . "'")) evil-surround-pairs-alist))
 
-(global-surround-mode +1)
+;;; Org
 
-(cb:install-package 'evil-numbers t)
+(evil-declare-key 'normal org-mode-map
+  "gk"  'outline-up-heading
+  "gj"  'outline-next-visible-heading
+  "H"   'org-beginning-of-line ; smarter behaviour on headlines etc.
+  "L"   'org-end-of-line ; smarter behaviour on headlines etc.
+  "t"   'org-todo ; mark a TODO item as DONE
+  ",c"  'org-cycle
+  ",e"  'org-export-dispatch
+  ",n"  'outline-next-visible-heading
+  ",p"  'outline-previous-visible-heading
+  ",t"  'org-set-tags-command
+  ",u"  'outline-up-heading
+  "$"   'org-end-of-line ; smarter behaviour on headlines etc.
+  "^"   'org-beginning-of-line ; ditto
+  "-"   'org-ctrl-c-minus ; change bullet style
+  "<"   'org-metaleft ; out-dent
+  ">"   'org-metaright ; indent
+  )
 
-(define-keys evil-normal-state-map
-  "C--" 'evil-numbers/dec-at-pt
-  "C-+" 'evil-numbers/inc-at-pt)
+;;; Misc
 
-;(cb:install-package 'evil-exchange t)
-;(evil-exchange-install)
+(after 'man
+  (evil-define-key 'normal Man-mode-map (kbd "q") 'Man-kill))
 
 (provide 'config-evil)
 
