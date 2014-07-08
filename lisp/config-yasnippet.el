@@ -58,19 +58,6 @@
   (yas-recompile-all)
   (yas-reload-all))
 
-(define-command-picker yasnippet-picker
-  :title "*Yasnippet Commands*"
-  :options
-  '(("e" "Expand" yas-expand)
-    ("f" "Visit File" yas-visit-snippet-file)
-    ("i" "Insert" yas-insert-snippet)
-    ("n" "New" yas-new-snippet)
-    ("r" "Reload All" cbyas:reload-all)
-    ("q" "Exit Snippets" yas-exit-all-snippets)
-    ("t" "Show Tables" yas-describe-tables)))
-
-(bind-key* "C-c y" 'yasnippet-picker)
-
 (defun cbyas:line-matches-up-to-point? (rx)
   "Non-nil if the current line matches RX up to the start of the current word."
   (let ((pt (save-restriction
