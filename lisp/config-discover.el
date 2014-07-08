@@ -297,7 +297,7 @@
      ("x" "Most recent"                    projectile-project-buffers-other-buffer))
 
     ("Cache"
-     ("i" "Invalidate"                     projectile-invalidate-cache)
+     ("I" "Invalidate"                     projectile-invalidate-cache)
      ("z" "File"                           projectile-cache-current-file))
 
     ("Other"
