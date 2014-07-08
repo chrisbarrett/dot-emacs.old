@@ -189,20 +189,6 @@ The document will be created at DESTINATION."
 
   (message "Scanning...Done"))
 
-(define-command-picker printer-scanner-picker
-  :title
-  "*Print/Scan*"
-  :options
-  '(("p" "Print Buffer" print-buffer)
-    ("r" "Print Region" print-region)
-    ("s" "Scan (flatbed)" scan)
-    ("m" "Scan Multiple & Combine (flatbed)" scan-then-combine)
-    ("u" "Scan (document feeder)" scan-batch-to-file)
-    ("a" "Scan and Attach (org)" org-attach-from-scanner
-     :when (lambda () (derived-mode-p 'org-mode)))))
-
-(bind-key* "<f10>" 'printer-scanner-picker)
-
 (provide 'config-scanner)
 
 ;;; config-scanner.el ends here

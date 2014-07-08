@@ -345,6 +345,23 @@
     ("Drill"
      ("r" "Org Drill" ,(command (org-drill 'agenda)))))))
 
+;;; Scanning
+
+(discover-add-context-menu
+ :bind "<f10>"
+ :context-menu
+ '(cb-scan
+   (description "Printer and scanner commands")
+   (actions
+    ("Printing"
+     ("p" "Print Buffer" print-buffer)
+     ("r" "Print Region" print-region))
+
+    ("Scanning"
+     ("s" "Scan (flatbed)" scan)
+     ("m" "Scan Multiple & Combine (flatbed)" scan-then-combine)
+     ("u" "Scan (document feeder)" scan-batch-to-file)
+     ("a" "Scan and Attach (org)" org-attach-from-scanner)))))
 
 (provide 'config-discover)
 
