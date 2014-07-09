@@ -144,6 +144,7 @@
      ("i" "Input method"     describe-input-method)
      ("k" "Key"              describe-key)
      ("l" "Language"         describe-language-environment)
+     ("m" "Mode"             describe-mode)
      ("s" "Syntax"           describe-syntax)
      ("t" "Theme"            describe-theme))
     ("Lisp"
