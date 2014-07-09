@@ -250,6 +250,8 @@ See URL `http://www.haskell.org/ghc/'."
 
 
   (define-key haskell-interactive-mode-map (kbd "C-c C-z") 'cb:switch-to-haskell)
+  (define-key haskell-interactive-mode-map ghc-hoogle-key 'haskell-hoogle)
+
   (define-key haskell-mode-map (kbd "C-c C-z") 'haskell-interactive-switch)
 
   (defadvice haskell-mode-after-save-handler (around ignore-warnings activate)
