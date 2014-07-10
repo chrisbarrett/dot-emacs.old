@@ -350,7 +350,8 @@ PACKAGES is a list of packages that will be installed."
        ;; Install automatically on hooks when buffer or file name is a match.
        (hook-fns '(find-file-hook after-change-major-mode-hook)
          (when (s-matches? ,match (buffer-name))
-           (funcall ',sym))))))
+           (funcall ',sym)))
+       ',sym)))
 
 (defun current-region (&optional no-properties)
   "Return the current active region, or nil if there is no region active.
