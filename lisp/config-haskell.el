@@ -506,6 +506,17 @@ See URL `http://www.haskell.org/ghc/'."
                                 ,(string-to-char "λ") 'decompose-region)
                 nil)))))
 
+  (defun cb-hs:format-dwim ()
+    "Either refill the current comment or string, or prettify the buffer."
+    (interactive "*")
+    (let ((in-string-or-comment? (nth 8 (syntax-ppss))))
+      (cond (in-string-or-comment?
+             (fill-paragraph)
+             (message "Filled paragraph."))
+            (t
+             (haskell-mode-stylish-buffer)
+             (message "Reformatted buffer.")))))
+
   (define-key haskell-mode-map (kbd "C-,")     'haskell-move-nested-left)
   (define-key haskell-mode-map (kbd "C-.")     'haskell-move-nested-right)
   (define-key haskell-mode-map (kbd "C-c c")   'haskell-process-cabal)
@@ -516,7 +527,7 @@ See URL `http://www.haskell.org/ghc/'."
   (define-key haskell-mode-map (kbd "C-c C-i") 'haskell-process-do-info)
   (define-key haskell-mode-map (kbd "C-c C-c") 'haskell-process-cabal-build)
   (define-key haskell-mode-map (kbd "C-c C-k") 'haskell-interactive-mode-clear)
-  (define-key haskell-mode-map (kbd "M-q")     'haskell-mode-stylish-buffer)
+  (define-key haskell-mode-map (kbd "M-q")     'cb-hs:format-dwim)
 
   (define-key haskell-cabal-mode-map (kbd "C-`") 'haskell-interactive-bring)
   (define-key haskell-cabal-mode-map (kbd "C-c C-k") 'haskell-interactive-mode-clear)
