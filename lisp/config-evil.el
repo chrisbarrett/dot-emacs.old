@@ -52,6 +52,7 @@
 (evil-set-initial-state 'message-mode      'insert)
 (evil-set-initial-state 'magit-commit-mode 'insert)
 (evil-set-initial-state 'eshell-mode       'insert)
+(evil-set-initial-state 'haskell-error-mode 'emacs)
 
 ;;; HJKL bindings
 
