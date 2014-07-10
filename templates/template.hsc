@@ -2,6 +2,8 @@
 module %((cb-hs:file-name->module)%) where
 
 import           Foreign.C
+import           Foreign.Marshal.Utils
+import           Foreign.Ptr
 import           Foreign.Storable
 
 
