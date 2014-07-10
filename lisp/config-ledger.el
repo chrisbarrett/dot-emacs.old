@@ -30,12 +30,15 @@
 (require 'utils-ui)
 (require 'config-theme)
 
-(cb:install-package 'ledger-mode)
+(cb:declare-package-installer ledger
+  :match "\\.ledger$"
+  :packages (ledger-mode flycheck-ledger))
+
+(add-to-list 'auto-mode-alist (cons "\\.ledger$" 'ledger-mode))
 
 (after '(ledger-mode flycheck)
-  (cb:install-package 'flycheck-ledger t))
-
-(add-to-list 'auto-mode-alist '("\\.ledger$" . ledger-mode))
+  (add-to-list 'flycheck-checkers 'ledger)
+  (require 'flycheck-ledger))
 
 (custom-set-variables
  '(ledger-post-account-alignment-column 2)
