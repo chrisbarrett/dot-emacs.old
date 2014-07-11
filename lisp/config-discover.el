@@ -55,6 +55,7 @@
 ;;; Search menu
 
 (discover-add-context-menu
+ :bind "C-c s"
  :context-menu
  `(cb-search
    (description "Search commands")
@@ -101,8 +102,6 @@
          (helm :sources 'helm-source-man-pages
                :buffer "*Helm man woman*"
                :input q)))))))
-
-(bind-key* "M-s" 'makey-key-mode-popup-cb-search)
 
 ;;; Help menu
 
