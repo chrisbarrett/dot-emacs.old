@@ -1,17 +1,9 @@
-{-# LANGUAGE CPP #-}
+#include <bindings.dsl.h>
+
 module %((cb-hs:file-name->module)%) where
+#strict_import
 
-import           Foreign.C
-import           Foreign.Marshal.Utils
-import           Foreign.Ptr
-import           Foreign.Storable
-
-
--- * Public interface
-
-%@
-
--- * FFI
+$0
 
 -- Local Variables:
 -- compile-command: "hsc2hs %b"
