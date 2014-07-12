@@ -93,7 +93,7 @@
     ("d" "Done" iedit-done)))
 
 (after 'iedit
-  (bind-key "M-r" 'iedit-picker iedit-mode-keymap))
+  (bind-key "C-c r" 'iedit-picker iedit-mode-keymap))
 
 
 (provide 'config-iedit)
