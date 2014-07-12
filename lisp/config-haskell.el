@@ -55,6 +55,7 @@
  '(haskell-interactive-prompt "\nλ> ")
  '(company-ghc-show-info t)
  '(company-ghc-show-module t)
+ '(shm-auto-insert-skeletons nil)
  )
 
 (hook-fn 'cb:haskell-modes-hook
