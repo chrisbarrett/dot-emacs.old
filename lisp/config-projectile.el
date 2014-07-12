@@ -58,6 +58,9 @@
 (setq projectile-switch-project-action
       (lambda () (call-interactively 'magit-status)))
 
+;; Ignore /usr/local, which is initialised with a git repo by homebrew on OS X.
+(setq projectile-ignored-projects "/usr/local/")
+
 (defun projectile-delete-project (dir)
   "Delete the given project and remove it from the index."
   (interactive (list (projectile-completing-read "Remove from known projects: "
