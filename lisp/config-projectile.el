@@ -69,7 +69,7 @@
   (add-to-list 'projectile-globally-ignored-directories d))
 
 ;; Ignore /usr/local, which is initialised with a git repo by homebrew on OS X.
-(setq projectile-ignored-projects "/usr/local/")
+(setq projectile-ignored-projects '("/usr/local/"))
 
 (defun projectile-delete-project (dir)
   "Delete the given project and remove it from the index."
