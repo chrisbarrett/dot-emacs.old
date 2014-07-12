@@ -347,6 +347,18 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
   "R" 'ledger-report-reverse-lines
   "s" 'ledger-report-save)
 
+;;; Haskell
+
+(evil-define-key 'normal haskell-mode-map "M-." 'haskell-mode-tag-find)
+
+(defun cb-hs:join-line ()
+  (interactive)
+  (forward-line 1)
+  (goto-char (line-beginning-position))
+  (call-interactively 'shm/delete-indentation))
+
+(evil-define-key 'normal shm-map "J" 'cb-hs:join-line)
+
 ;;; Misc
 
 (after 'man
