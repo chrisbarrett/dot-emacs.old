@@ -58,6 +58,16 @@
 (setq projectile-switch-project-action
       (lambda () (call-interactively 'magit-status)))
 
+;; Ignored directories.
+(dolist (d '(
+             ;; Haskell
+             "dist"
+             ".cabal-sandbox"
+             ;; Elisp
+             ".cask"
+             ))
+  (add-to-list 'projectile-globally-ignored-directories d))
+
 ;; Ignore /usr/local, which is initialised with a git repo by homebrew on OS X.
 (setq projectile-ignored-projects "/usr/local/")
 
