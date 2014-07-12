@@ -58,6 +58,17 @@
 (setq projectile-switch-project-action
       (lambda () (call-interactively 'magit-status)))
 
+(defun projectile-delete-project (dir)
+  "Delete the given project and remove it from the index."
+  (interactive (list (projectile-completing-read "Remove from known projects: "
+                                                 projectile-known-projects)))
+  (cond ((y-or-n-p "Project will be moved to trash.  Continue?")
+         (ignore-errors (move-file-to-trash dir))
+         (projectile-remove-known-project dir)
+         (message "Project deleted and removed from cache."))
+        (t
+         (user-error "Aborted"))))
+
 ;;; Key bindings
 
 ;; Disable default keys so the discover.el interface will be displayed instead.

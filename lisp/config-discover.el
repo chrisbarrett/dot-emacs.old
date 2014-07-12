@@ -302,7 +302,8 @@
      ("z" "File"                           projectile-cache-current-file))
 
     ("Other"
-     ("o" "Other window..."                makey-key-mode-popup-cb-projectile-other-window)))))
+     ("o" "Other window..."                makey-key-mode-popup-cb-projectile-other-window)
+     ("<backspace>" "Delete a project"     projectile-delete-project)))))
 
 ;;; Org
 

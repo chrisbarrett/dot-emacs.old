@@ -40,6 +40,8 @@
   (setenv "SHELL" shell-file-name))
 
 (when (equal system-type 'darwin)
+  (custom-set-variables
+   '(trash-directory "~/.Trash/"))
 
   (cb:install-package 'exec-path-from-shell t)
   (exec-path-from-shell-initialize)
