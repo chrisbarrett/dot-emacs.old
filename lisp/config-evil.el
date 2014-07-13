@@ -359,6 +359,21 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
 
 (evil-define-key 'normal shm-map "J" 'cb-hs:join-line)
 
+;;; Spray
+
+(evil-set-initial-state 'spray-mode 'emacs)
+
+(defun cbevil:set-spray-mode-state ()
+  "Set correct evil state for spray mode."
+  (cond ((true? spray-mode)
+         (evil-mode -1)
+         )
+        (t
+         (evil-mode +1)
+         (evil-normal-state))))
+
+(add-hook 'spray-mode-hook 'cbevil:set-spray-mode-state)
+
 ;;; Misc
 
 (after 'man
