@@ -128,6 +128,7 @@ PARAGRAPH-LENGTH is one of short, medium, long or verylong."
   '(("F" "File" insert-file)
     ("L" "Lorem Ipsum" insert-lorem-ipsum)
     ("T" "Timestamp" insert-timestamp)
+    ("u" "Unicode Char" insert-char)
     ("U" "UUID" insert-uuid)
     ("V" "File Local Var" add-file-local-variable)
     ("P" "File Local Var (prop line)" add-file-local-variable-prop-line)))
