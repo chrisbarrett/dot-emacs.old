@@ -38,28 +38,19 @@
   :match (rx "." (or "hs" "gs" "hi" "pghci" "cabal" "hsc" "hcr"))
   :packages (haskell-mode
              flycheck-haskell
-             ghc
              company-ghc
              hi2
              shm))
 
 (after 'haskell-mode
-  (require 'ghc)
   (require 'hi2)
   (require 'shm)
   (require 'shm-case-split)
   (require 'haskell-interactive-mode)
-  (require 'ghc-comp)
   (require 'w3m-haddock)
   (require 'company-ghc)
 
   (add-to-list 'company-backends '(company-ghc :with company-dabbrev))
-
-  ;; FIX: There is an issue preventing ghc-comp from being correctly loaded.
-  ;; Load this feature manually.
-  ;; (load (->> (-first (~ s-matches? "/ghc") load-path)
-  ;;         f-files
-  ;;         (-first (~ s-matches? "ghc-comp"))))
 
   (add-hook 'w3m-display-hook 'w3m-haddock-display)
   )
@@ -80,8 +71,6 @@
  )
 
 (add-to-list 'completion-ignored-extensions ".hi")
-
-(add-hook 'flycheck-mode-hook 'flycheck-haskell-setup)
 (add-hook 'haskell-mode-hook 'structured-haskell-mode)
 (add-hook 'haskell-mode-hook 'hi2-mode)
 
@@ -92,27 +81,6 @@
 
 (hook-fn 'cb:haskell-modes-hook
   (whitespace-mode -1))
-
-;;; Use custom initialisation for ghc-mod to control how key bindings are set.
-
-(defun cb:in-cabal-project? ()
-  "Find the root of the current cabal project."
-  (when (and (buffer-file-name) default-directory)
-    (f-traverse-upwards
-     (lambda (d)
-       (--any? (equal "cabal" (f-ext it)) (f-files d)))
-     default-directory)))
-
-(defun cb:ghc-init ()
-  "Run `ghc-init' without setting any key bindings or running checks."
-  (noflet ((define-key (&rest _))
-           (ghc-check-syntax (&rest _))
-           (ghc-comp-init (&rest _)
-                          (when (cb:in-cabal-project?)
-                            (funcall this-fn))))
-    (ghc-init)))
-
-(add-hook 'haskell-mode-hook 'cb:ghc-init)
 
 ;;; Define a ghci command.
 
@@ -850,6 +818,7 @@ See URL `http://www.haskell.org/ghc/'."
   (define-key haskell-mode-map (kbd "C-c C-d")             'haskell-w3m-open-haddock)
   (define-key haskell-mode-map (kbd "C-c C-l")             'haskell-process-load-file)
   (define-key haskell-mode-map (kbd "C-c C-f")             'haskell-cabal-visit-file)
+  (define-key haskell-mode-map (kbd "C-c C-h")             'haskell-hoogle)
   (define-key haskell-mode-map (kbd "C-c C-t")             'haskell-process-do-type)
   (define-key haskell-mode-map (kbd "C-c C-i")             'haskell-process-do-info)
   (define-key haskell-mode-map (kbd "C-c C-c")             'haskell-process-cabal-build)
@@ -857,33 +826,16 @@ See URL `http://www.haskell.org/ghc/'."
   (define-key haskell-mode-map (kbd "M-q")                 'cb-hs:format-dwim)
   (define-key haskell-mode-map (kbd "M-RET")               'cb-hs:meta-ret)
   (define-key haskell-mode-map (kbd "DEL")                 'cb-hs:del)
-
   (define-key haskell-mode-map (kbd "C-c C-z")             'haskell-interactive-switch)
-  (define-key haskell-interactive-mode-map (kbd "C-c C-z") 'cb:switch-to-haskell)
-
   (define-key haskell-cabal-mode-map (kbd "C-`")           'haskell-interactive-bring)
   (define-key haskell-cabal-mode-map (kbd "C-c C-k")       'haskell-interactive-mode-clear)
   (define-key haskell-cabal-mode-map (kbd "C-c C-c")       'haskell-process-cabal-build)
   (define-key haskell-cabal-mode-map (kbd "C-c c")         'haskell-process-cabal)
   )
 
-(after 'ghc
-  (define-key haskell-mode-map ghc-completion-key  'ghc-complete)
-  (define-key haskell-mode-map ghc-document-key    'ghc-browse-document)
-  (define-key haskell-mode-map ghc-type-key        'ghc-show-type)
-  (define-key haskell-mode-map ghc-info-key        'ghc-show-info)
-  (define-key haskell-mode-map ghc-expand-key      'ghc-expand-th)
-  (define-key haskell-mode-map ghc-help-key        'ghc-flymake-display-errors)
-  (define-key haskell-mode-map ghc-insert-key      'ghc-insert-template)
-  (define-key haskell-mode-map ghc-sort-key        'ghc-sort-lines)
-  (define-key haskell-mode-map ghc-check-key       'ghc-save-buffer)
-  (define-key haskell-mode-map ghc-toggle-key      'ghc-flymake-toggle-command)
-  (define-key haskell-mode-map ghc-module-key      'ghc-insert-module)
-  (define-key haskell-mode-map ghc-hoogle-key      'haskell-hoogle)
-  (define-key haskell-mode-map ghc-shallower-key   'ghc-make-indent-shallower)
-  (define-key haskell-mode-map ghc-deeper-key      'ghc-make-indent-deeper)
-
-  (define-key haskell-interactive-mode-map ghc-hoogle-key 'haskell-hoogle)
+(after 'haskell-interactive-mode
+  (define-key haskell-interactive-mode-map (kbd "C-c C-z") 'cb:switch-to-haskell)
+  (define-key haskell-interactive-mode-map (kbd "C-c C-h") 'haskell-hoogle)
   )
 
 (after 'shm
@@ -901,6 +853,12 @@ See URL `http://www.haskell.org/ghc/'."
   (define-key shm-map (kbd "M-r") nil)
 
   )
+
+;;; Configure flycheck-haskell
+
+(after 'flycheck
+  (defvar flycheck-ghc-language-extensions nil)
+  (add-hook 'flycheck-mode-hook 'flycheck-haskell-setup))
 
 (provide 'config-haskell)
 
