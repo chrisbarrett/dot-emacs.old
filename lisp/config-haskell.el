@@ -654,7 +654,7 @@ See URL `http://www.haskell.org/ghc/'."
   (interactive (list (ido-completing-read "GHC Option: " cb-hs:ghc-options nil t)))
   (save-excursion
     (let* ((cur (cb-hs:get-ghc-options-in-file))
-           (opts (s-join ", " (-sort 'string-lessp (-union (list opt) cur)))))
+           (opts (s-join " " (-sort 'string-lessp (-union (list opt) cur)))))
 
       (goto-char (point-min))
       (while (search-forward-regexp cb-hs:ghc-opts-regex nil t)
