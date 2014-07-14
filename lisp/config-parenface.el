@@ -22,7 +22,7 @@
 
 ;;; Commentary:
 
-;; Configure parenface
+;; Dim parens in programming languages.
 
 ;;; Code:
 
@@ -35,6 +35,11 @@
          (f-join
           (--first (s-matches? "parenface" it) (f-directories package-user-dir))
           "parenface.el"))
+
+;;; Haskell
+
+(add-hook 'haskell-mode-hook 'paren-face-add-keyword)
+(add-hook 'inferior-haskell-mode-hook 'paren-face-add-keyword)
 
 (provide 'config-parenface)
 
