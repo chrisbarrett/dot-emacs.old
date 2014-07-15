@@ -349,7 +349,7 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
 
 ;;; Haskell
 
-(evil-define-key 'normal haskell-mode-map "M-." 'haskell-mode-tag-find)
+(evil-define-key 'normal haskell-mode-map (kbd "M-.") 'haskell-mode-tag-find)
 
 (defun cb-hs:join-line ()
   (interactive)
@@ -376,8 +376,7 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
 
 ;;; Misc
 
-(after 'man
-  (evil-define-key 'normal Man-mode-map (kbd "q") 'Man-kill))
+(evil-define-key 'normal Man-mode-map (kbd "q") 'Man-kill)
 
 (provide 'config-evil)
 
