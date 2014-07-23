@@ -50,9 +50,10 @@
 ;;; Set initial states
 
 (evil-set-initial-state 'message-mode      'insert)
-(evil-set-initial-state 'magit-commit-mode 'insert)
+(evil-set-initial-state 'magit-commit-mode 'normal)
 (evil-set-initial-state 'eshell-mode       'insert)
 (evil-set-initial-state 'haskell-error-mode 'emacs)
+(evil-set-initial-state 'doc-view-mode     'normal)
 
 ;;; HJKL bindings
 
@@ -60,18 +61,6 @@
 (evil-add-hjkl-bindings occur-mode-map)
 (evil-add-hjkl-bindings archive-mode-map)
 (evil-add-hjkl-bindings package-menu-mode-map)
-
-(evil-add-hjkl-bindings magit-log-mode-map 'emacs)
-(evil-add-hjkl-bindings magit-commit-mode-map 'emacs)
-
-(evil-add-hjkl-bindings magit-branch-manager-mode-map 'emacs
-  "K" 'magit-discard-item
-  "L" 'magit-key-mode-popup-logging)
-
-(evil-add-hjkl-bindings magit-status-mode-map 'emacs
-  "K" 'magit-discard-item
-  "l" 'magit-key-mode-popup-logging
-  "h" 'magit-toggle-diff-refine-hunk)
 
 ;;; Configure evil-numbers
 
@@ -373,6 +362,38 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
          (evil-normal-state))))
 
 (add-hook 'spray-mode-hook 'cbevil:set-spray-mode-state)
+
+;;; Docview
+
+(evil-define-key 'normal doc-view-mode-map
+  "j" 'doc-view-scroll-up-or-next-page
+  "k" 'doc-view-scroll-down-or-previous-page
+  "-" 'doc-view-shrink
+  "+" 'doc-view-enlarge)
+
+;;; TeX
+
+(evil-define-key 'normal TeX-mode-map
+  (kbd "z m") 'TeX-fold-buffer
+  (kbd "z r") 'TeX-fold-clearout-buffer
+  (kbd "SPC") 'TeX-fold-dwim)
+
+;;; Magit
+
+(evil-add-hjkl-bindings magit-log-mode-map 'emacs)
+(evil-add-hjkl-bindings magit-commit-mode-map 'emacs)
+
+(evil-add-hjkl-bindings magit-branch-manager-mode-map 'emacs
+  "K" 'magit-discard-item
+  "L" 'magit-key-mode-popup-logging)
+
+(evil-add-hjkl-bindings magit-status-mode-map 'emacs
+  "K" 'magit-discard-item
+  "l" 'magit-key-mode-popup-logging
+  "h" 'magit-toggle-diff-refine-hunk)
+
+(evil-define-key 'normal magit-commit-mode-map
+  "q" 'magit-mode-quit-window)
 
 ;;; Misc
 
