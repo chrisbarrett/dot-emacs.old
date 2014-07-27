@@ -41,68 +41,54 @@
  '(TeX-master nil)
  '(TeX-PDF-mode t))
 
-(after 'tex
+(add-hook 'latex-mode-hook 'turn-on-auto-fill)
+(add-hook 'latex-mode-hook (lambda () (abbrev-mode +1)))
+(add-hook 'latex-mode-hook 'latex-preview-pane-enable)
 
-  (add-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
-  (add-hook 'LaTeX-mode-hook (lambda () (abbrev-mode +1)))
+(add-to-list 'face-remapping-alist '(bad-face . flycheck-error))
 
-  (add-to-list 'face-remapping-alist '(bad-face . flycheck-error))
+(defadvice TeX-complete-symbol (after position-point activate)
+  "Position point inside braces."
+  (when (equal (char-before) ?\})
+    (forward-char -1)))
 
-  (latex-preview-pane-enable)
+;;; Whizzytex
 
-  (defadvice TeX-complete-symbol (after position-point activate)
-    "Position point inside braces."
-    (when (equal (char-before) ?\})
-      (forward-char -1)))
+(defvar whizzytex-sty-installation "/usr/local/share/whizzytex/latex/whizzytex.sty"
+  "Path to the whizzytex macro package.")
 
+(defvar whizzytex-src (f-join cb:lib-dir "whizzytex" "src")
+  "Path to the whizzytex sources.")
+
+(defvar whizzy-command-name (f-join whizzytex-src "whizzytex"))
+
+(defun cb-tex:enable-whizzytex ()
+  "Prompt the user to install the tex macros if they do not exist."
   (require 'whizzytex)
+  (unless (f-exists? whizzytex-sty-installation)
+    (when (y-or-n-p (format "Install whizzytex macros into %s? "
+                            (f-dirname whizzytex-sty-installation)))
+      ;; Make installation directory and copy package there.
+      (%-sudo (%-sh "mkdir -p" (f-dirname whizzytex-sty-installation)))
+      (%-sudo (%-sh "cp -f"
+                    (%-quote (f-join whizzytex-src "whizzytex.sty"))
+                    (%-quote whizzytex-sty-installation)))))
+  (whizzytex-mode +1))
 
-  (defvar whizzytex-sty-installation "/usr/local/share/whizzytex/latex/whizzytex.sty"
-    "Path to the whizzytex macro package.")
+(add-hook 'latex-mode-hook 'cb-tex:enable-whizzytex)
 
-  (defvar whizzytex-src (f-join cb:lib-dir "whizzytex" "src")
-    "Path to the whizzytex sources.")
+;;; Folding
 
-  (defvar whizzy-command-name (f-join whizzytex-src "whizzytex"))
+(autoload 'TeX-fold-mode "tex-fold")
+(add-hook 'tex-mode-hook 'TeX-fold-mode)
+(add-hook 'latex-mode-hook 'TeX-fold-mode)
 
-  (defun cbwh:install-tex-macros ()
-    "Prompt the user to install the tex macros if they do not exist."
-    (unless (f-exists? whizzytex-sty-installation)
-      (when (y-or-n-p (format "Install whizzytex macros into %s? "
-                              (f-dirname whizzytex-sty-installation)))
-        ;; Make installation directory and copy package there.
-        (%-sudo (%-sh "mkdir -p" (f-dirname whizzytex-sty-installation)))
-        (%-sudo (%-sh "cp -f"
-                      (%-quote (f-join whizzytex-src "whizzytex.sty"))
-                      (%-quote whizzytex-sty-installation))))))
-
-  (hook-fn 'tex-mode-hook
-    (cbwh:install-tex-macros)
-    (whizzytex-mode +1))
-
-  (TeX-global-PDF-mode +1)
-
-  (require 'preview)
-  (require 'latex)
-
-  (after 'flycheck
-    (bind-keys
-      :map TeX-mode-map
-      "M-P" 'flycheck-previous-error
-      "M-N" 'flycheck-next-error
-      "TAB" 'TeX-complete-symbol))
-
-  (autoload 'TeX-fold-mode "tex-fold")
-  (hook-fns '(tex-mode-hook latex-mode-hook)
-    (TeX-fold-mode +1))
-
-  (after '(evil tex)
-    (evil-define-key 'normal TeX-mode-map
-      (kbd "z m") 'TeX-fold-buffer
-      (kbd "z r") 'TeX-fold-clearout-buffer
-      (kbd "SPC") 'TeX-fold-dwim))
-
-  )
+(after 'tex-mode
+  (bind-keys
+    :map tex-mode-map
+    "M-P" 'flycheck-previous-error
+    "M-N" 'flycheck-next-error
+    "TAB" 'TeX-complete-symbol))
 
 (provide 'config-tex)
 
