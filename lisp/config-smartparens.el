@@ -37,8 +37,10 @@
 
 (smartparens-global-mode)
 (show-smartparens-global-mode +1)
-(add-hook 'prog-mode-hook 'smartparens-strict-mode)
+
+(add-hook 'prog-mode-hook       'smartparens-strict-mode)
 (add-hook 'cb:markup-modes-hook 'smartparens-strict-mode)
+(add-hook 'eshell-mode-hook     'smartparens-mode)
 
 (custom-set-variables
  '(sp-autoinsert-if-followed-by-word t)
@@ -319,6 +321,33 @@ Insert leading padding unless at start of line or after an open round paren."
   (sp-local-pair "{" "}" :post-handlers '(:add cbsp:external-padding)))
 
 ;;; Ruby
+
+(require 'smartparens-ruby)
+
+(after 'ruby-mode
+  (modify-syntax-entry ?@ "w" ruby-mode-syntax-table)
+  (modify-syntax-entry ?_ "w" ruby-mode-syntax-table)
+  (modify-syntax-entry ?! "w" ruby-mode-syntax-table)
+  (modify-syntax-entry ?? "w" ruby-mode-syntax-table))
+
+(defun sp-ruby-should-insert-pipe-close (_id _action _ctx)
+  "Test whether to insert the closing pipe for a lambda-binding pipe pair."
+  (thing-at-point-looking-at
+   (rx-to-string `(and (or "do" "{") (* space) "|"))))
+
+(defun sp-ruby-sp-hook-space-before (_id action _ctx)
+  "Move to point before ID and insert a space."
+  (when (equal 'insert action)
+    (save-excursion
+      (search-backward "|")
+      (just-one-space))))
+
+(defun sp-ruby-sp-hook-space-after (_id action _ctx)
+  "Move to point after ID and insert a space."
+  (when (equal 'insert action)
+    (save-excursion
+      (search-forward "|")
+      (just-one-space))))
 
 (sp-with-modes cb:ruby-modes
   (sp-local-pair "{" "}" :post-handlers '(:add cbsp:internal-and-external-padding))

@@ -28,7 +28,6 @@
 
 (require 'utils-common)
 (require 'config-flycheck)
-(require 'config-smartparens)
 (require 'super-smart-ops)
 (require 'config-insertion)
 

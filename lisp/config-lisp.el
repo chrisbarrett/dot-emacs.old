@@ -27,7 +27,6 @@
 ;;; Code:
 
 (require 'utils-common)
-(require 'smartparens)
 (require 'config-modegroups)
 
 (hook-fn 'cb:lisp-modes-hook

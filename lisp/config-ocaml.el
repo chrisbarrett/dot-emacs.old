@@ -29,7 +29,6 @@
 (require 'utils-common)
 (require 'config-modegroups)
 (require 'super-smart-ops)
-(require 'config-smartparens)
 
 (cb:declare-package-installer ocaml
   :match (rx ".ml" (? (any "y" "i" "l" "p")))

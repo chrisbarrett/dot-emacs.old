@@ -37,11 +37,6 @@
  '(geiser-repl-history-filename (f-join cb:tmp-dir "geiser-history"))
  '(geiser-active-implementations '(racket)))
 
-
-(after 'evil
-  (define-evil-doc-handler cb:scheme-modes
-    (call-interactively 'geiser-doc-symbol-at-point)))
-
 (after 'scheme
   (cb:install-package 'geiser))
 

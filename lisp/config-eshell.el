@@ -228,9 +228,6 @@ Otherwise call `find-file' on FILES."
           (t
            (user-error "Aborted")))))
 
-(after 'smartparens
-  (add-hook 'eshell-mode-hook 'smartparens-mode))
-
 (defun cb-eshell:format-buffer-name ()
   "Make a buffer name based on the current directory."
   (generate-new-buffer-name

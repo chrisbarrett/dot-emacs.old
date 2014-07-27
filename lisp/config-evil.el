@@ -313,17 +313,38 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
   (make-local-variable 'evil-surround-pairs-alist)
   (push '(?\` . ("`" . "'")) evil-surround-pairs-alist))
 
-(define-evil-doc-handler cb:elisp-modes
-    (let ((sym (symbol-at-point)))
-      (cond
-       ((symbol-function sym)
-        (describe-function sym))
-       ((and (boundp sym) (not (facep sym)))
-        (describe-variable sym))
-       ((facep sym)
-        (describe-face sym))
-       (t
-        (user-error "No documentation available")))))
+(defun cbevil:get-elisp-doc ()
+  (let ((sym (symbol-at-point)))
+    (cond
+     ((symbol-function sym)
+      (describe-function sym))
+     ((and (boundp sym) (not (facep sym)))
+      (describe-variable sym))
+     ((facep sym)
+      (describe-face sym))
+     (t
+      (user-error "No documentation available")))))
+
+(define-evil-doc-handler cb:elisp-modes (cbevil:get-elisp-doc))
+
+;;; Ruby
+
+(define-evil-doc-handler cb:ruby-modes (call-interactively 'robe-doc))
+
+;;; Clojure
+
+(define-evil-doc-handler cb:clojure-modes (call-interactively 'cider-doc))
+
+;;; Python
+
+(define-evil-doc-handler 'cb:python-modes (call-interactively 'rope-show-doc))
+
+(evil-define-key 'normal python-mode-map (kbd "M-.") 'rope-goto-definition)
+
+;;; Scheme
+
+(define-evil-doc-handler cb:scheme-modes
+    (call-interactively 'geiser-doc-symbol-at-point))
 
 ;;; Org
 
@@ -349,6 +370,9 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
   "<"   'org-metaleft ; out-dent
   ">"   'org-metaright ; indent
   )
+
+(hook-fn 'org-agenda-mode-hook
+  (smartparens-mode -1))
 
 ;;; Ledger
 

@@ -190,10 +190,6 @@ See `cb-org:show-agenda-idle-delay'.")
 (define-key org-agenda-mode-map (kbd "M-N") 'cb-org:agenda-next-section)
 (define-key org-agenda-mode-map (kbd "M-P") 'cb-org:agenda-prev-section)
 
-(after 'smartparens
-  (hook-fn 'org-agenda-mode-hook
-    (smartparens-mode -1)))
-
 (defun cb-org:agenda-auto-exclude (tag)
   "Hide drills."
   (when (equal "drill" tag)
