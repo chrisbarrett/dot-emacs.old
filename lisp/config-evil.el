@@ -395,6 +395,12 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
 (evil-define-key 'normal magit-commit-mode-map
   "q" 'magit-mode-quit-window)
 
+;;; Ediff
+
+(add-hook 'ediff-startup-hook 'turn-off-evil-mode)
+
+(evil-define-key 'normal diff-mode-map (kbd "q") 'cb-diff:close)
+
 ;;; Misc
 
 (evil-define-key 'normal Man-mode-map (kbd "q") 'Man-kill)

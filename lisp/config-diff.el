@@ -1,4 +1,4 @@
-;;; config-diff.el --- Configuration for diff-mode
+;;; config-diff.el --- Configuration for diff and ediff.
 
 ;; Copyright (C) 2014 Chris Barrett
 
@@ -22,27 +22,30 @@
 
 ;;; Commentary:
 
-;; Configuration for diff-mode
+;; Configuration for diff and ediff.
 
 ;;; Code:
 
 (require 'utils-common)
 (require 'config-evil)
 
-(setq diff-switches "-u"
-      ediff-window-setup-function 'ediff-setup-windows-plain)
+(custom-set-variables
+ '(diff-switches "-u")
+ '(ediff-window-setup-function 'ediff-setup-windows-plain))
 
 (defun cb-diff:close ()
   (interactive)
   (when (> (length (window-list)) 1)
     (kill-buffer-and-window)))
 
-(after 'diff-mode
-  (define-key diff-mode-map (kbd "q") 'cb-diff:close))
+(bind-key "q" 'cb-diff:close diff-mode-map)
 
-(after '(diff-mode evil)
-  (add-hook 'ediff-startup-hook 'turn-off-evil-mode)
-  (evil-define-key 'normal diff-mode-map (kbd "q") 'cb-diff:close))
+(defun cb-ediff:prepare-buffer ()
+  "Prepare the current buffer for ediff."
+  (cond ((derived-mode-p 'org-mode)
+         (visible-mode 1))))
+
+(add-hook 'ediff-prepare-buffer-hook 'cb-ediff:prepare-buffer)
 
 (provide 'config-diff)
 
