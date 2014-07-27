@@ -31,7 +31,7 @@
 
 (cb:install-package 'smartparens t)
 (require 'smartparens-config)
-(after 'tex (require 'smartparens-latex))
+(require 'smartparens-latex)
 
 ;;; Enable smartparens
 
@@ -60,14 +60,16 @@
 ;;; Move up and reformat parens when closing.
 
 (defun sp-insert-or-up (delim &optional arg)
-  "Insert a delimiter DELIM if inside a string, else move up."
+  "Insert a delimiter DELIM if inside a string, else move up.
+Prefix ARG is passed to `sp-up-sexp'."
   (interactive "sDelimiter:\nP")
-  (cond ((or (emr-looking-at-string?) (emr-looking-at-comment?))
-         (insert delim))
-        (smartparens-mode
-         (sp-up-sexp arg 'interactive))
-        (t
-         (insert delim))))
+  (let ((in-string-or-comment? (nth 8 (syntax-ppss))))
+    (cond (in-string-or-comment?
+           (insert delim))
+          (smartparens-mode
+           (sp-up-sexp arg 'interactive))
+          (t
+           (insert delim)))))
 
 (defun cbsp:hacky-set-sp-bindings ()
   (cl-loop for key in '(")" "]" "}")
@@ -94,20 +96,6 @@
       (let ((pt (point)))
         (join-line)
         (goto-char (1+ pt)))))))
-
-(defun sp-generic-leading-space (&optional id action ctx)
-  "Pad ID with a leading space unless point is either:
-1. at the start of a braced expression
-2. at indentation."
-  (when (and (equal 'insert action)
-             (sp-in-code-p id action ctx))
-    (save-excursion
-      (search-backward id)
-      (unless (s-matches?
-               (rx (or (group bol (* space))
-                       (any "(" "[" "{")) eol)
-               (buffer-substring (line-beginning-position) (point)))
-        (just-one-space)))))
 
 (defun cbsp:internal-and-external-padding (id action context)
   "Insert internal and external padding."
@@ -328,12 +316,12 @@ Insert leading padding unless at start of line or after an open round paren."
 ;;; Python
 
 (sp-with-modes cb:python-modes
-  (sp-local-pair "{" "}" :post-handlers '(:add sp-generic-leading-space)))
+  (sp-local-pair "{" "}" :post-handlers '(:add cbsp:external-padding)))
 
 ;;; Ruby
 
 (sp-with-modes cb:ruby-modes
-  (sp-local-pair "{" "}" :post-handlers '(:add sp-generic-leading-space))
+  (sp-local-pair "{" "}" :post-handlers '(:add cbsp:internal-and-external-padding))
   (sp-local-pair "[" "]" :pre-handlers '(sp-ruby-pre-handler))
 
   (sp-local-pair "%q{" "}" :when '(sp-in-code-p))
@@ -364,7 +352,7 @@ Insert leading padding unless at start of line or after an open round paren."
 
 ;;; C
 
-(defun cb-c:format-after-brace (_id action contexxt)
+(defun cb-c:format-after-brace (_id action context)
   "Apply formatting after a brace insertion."
   (when (and (equal action 'insert)
              (equal context 'code)
@@ -412,10 +400,8 @@ Insert leading padding unless at start of line or after an open round paren."
 (sp-pair "\"" "\"" :bind "M-\"")
 (sp-pair "`" "`"   :bind "M-`")
 
-(define-keys sp-keymap
-  (kbd "C-k")     'cb-sp:kill-blank-lines
-  "C-<backspace>" 'sp-backward-up-sexp
-  "DEL"           'sp-backward-delete-char)
+(define-key sp-keymap (kbd "C-k") 'cb-sp:kill-blank-lines)
+(define-key sp-keymap (kbd "DEL") 'sp-backward-delete-char)
 
 ;; Use bind-key for keys that tend to be overridden.
 (bind-key "C-M-," 'sp-backward-down-sexp sp-keymap)
