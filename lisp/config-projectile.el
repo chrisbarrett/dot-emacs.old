@@ -51,9 +51,13 @@
 (defun cb-projectile:eshell-project ()
   "Open an eshell buffer in the current project."
   (interactive)
-  (let ((default-directory (projectile-project-root))
-        (eshell-buffer-name (projectile-project-name)))
-    (cb:term-cycle)))
+  (cond
+   ((projectile-project-p)
+    (let ((default-directory (projectile-project-root))
+          (eshell-buffer-name (projectile-project-name)))
+      (cb:term-cycle)))
+   (t
+    (cb:term-cycle))))
 
 (setq projectile-switch-project-action
       (lambda () (call-interactively 'magit-status)))
