@@ -405,6 +405,58 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
 
 (evil-define-key 'normal diff-mode-map (kbd "q") 'cb-diff:close)
 
+;;; Smartparens
+
+(evil-global-set-key 'normal "(" 'sp-backward-up-sexp)
+(evil-global-set-key 'normal ")" 'sp-forward-sexp)
+
+(evil-define-state paren "Paren editing state."
+  :tag " <P> "
+  :message "-- PAREN --"
+  :suppress-keymap t
+  :cursor 'hollow)
+
+(hook-fn 'evil-paren-state-entry-hook
+  (when (equal last-command 'evil-end-of-line)
+    (forward-char)))
+
+;; Configure entry and exit from paren state.
+(evil-global-set-key 'normal (kbd ",") 'evil-paren-state)
+(define-key evil-paren-state-map (kbd "ESC") 'evil-normal-state)
+(define-key evil-paren-state-map (kbd "C-g") 'evil-normal-state)
+;; Define paren state keys.
+(evil-global-set-keys 'paren
+  "A" 'sp-add-to-previous-sexp
+  "a" 'sp-add-to-next-sexp
+  "B" 'sp-backward-barf-sexp
+  "b" 'sp-forward-barf-sexp
+  "M" 'sp-backward-slurp-sexp
+  "m" 'sp-forward-slurp-sexp
+  "c" 'sp-convolute-sexp
+  "D" 'sp-backward-kill-sexp
+  "d" 'sp-kill-sexp
+  "e" 'sp-emit-sexp
+  "G" 'sp-end-of-sexp
+  "g" 'sp-beginning-of-sexp
+  "j" 'sp-join-sexp
+  "K" 'sp-splice-sexp-killing-backward
+  "k" 'sp-splice-sexp-killing-forward
+  "n" 'sp-next-sexp
+  "p" 'sp-previous-sexp
+  "r" 'sp-raise-sexp
+  "s" 'sp-splice-sexp-killing-around
+  "t" 'sp-transpose-sexp
+  "U" 'sp-backward-unwrap-sexp
+  "u" 'sp-unwrap-sexp
+  "w" 'sp-rewrap-sexp
+  "x" 'sp-split-sexp
+  "Y" 'sp-backward-copy-sexp
+  "y" 'sp-copy-sexp
+  "," 'sp-previous-sexp
+  "." 'sp-next-sexp
+  "<" 'sp-backward-down-sexp
+  ">" 'sp-down-sexp)
+
 ;;; Misc
 
 (evil-define-key 'normal Man-mode-map (kbd "q") 'Man-kill)
