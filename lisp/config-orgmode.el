@@ -418,6 +418,14 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
 (hook-fn 'org-mode-hook
   (add-hook 'before-save-hook 'tidy-org-buffer nil t))
 
+(defun cb-org:copy-subtree-to ()
+  "Create a duplicate of the current subtree at the given heading."
+  (interactive "*")
+  (atomic-change-group
+    (org-copy-subtree)
+    (org-clone-subtree-with-time-shift 1 '(16))
+    (call-interactively 'org-refile)))
+
 (defface org-todo-next
   `((((background dark))
      (:foreground ,solarized-hl-orange :bold t))

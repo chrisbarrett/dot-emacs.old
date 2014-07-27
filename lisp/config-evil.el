@@ -314,12 +314,16 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
   "H"   'org-beginning-of-line ; smarter behaviour on headlines etc.
   "L"   'org-end-of-line ; smarter behaviour on headlines etc.
   "t"   'org-todo ; mark a TODO item as DONE
-  ",c"  'org-cycle
+  ",a"  'org-attach
+  ",c"  'cb-org:copy-subtree-to
+  ",d"  'org-cut-special
   ",e"  'org-export-dispatch
   ",n"  'outline-next-visible-heading
   ",p"  'outline-previous-visible-heading
+  ",r"  'org-refile
   ",t"  'org-set-tags-command
   ",u"  'outline-up-heading
+  ",y"  'org-paste-special
   "$"   'org-end-of-line ; smarter behaviour on headlines etc.
   "^"   'org-beginning-of-line ; ditto
   "-"   'org-ctrl-c-minus ; change bullet style
