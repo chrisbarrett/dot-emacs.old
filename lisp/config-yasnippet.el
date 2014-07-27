@@ -58,19 +58,11 @@
   (yas-recompile-all)
   (yas-reload-all))
 
-(defun cbyas:line-matches-up-to-point? (rx)
-  "Non-nil if the current line matches RX up to the start of the current word."
-  (let ((pt (save-restriction
-              (narrow-to-region (line-beginning-position) (point))
-              (save-excursion
-                (forward-word -1)
-                (point)))))
-
-    (s-matches? rx (buffer-substring (line-beginning-position) pt))))
-
 (defun cbyas:bol? ()
-  "Non-nil if point is on an empty line or at the first word."
-  (cbyas:line-matches-up-to-point? (rx bol (* space) (* word) eol)))
+  "Non-nil if point is on an empty line or at the first word.
+The rest of the line must be blank."
+  (s-matches? (rx bol (* space) (* word) (* space) eol)
+              (buffer-substring (line-beginning-position) (line-end-position))))
 
 (defun cbyas:msg (fmt &rest args)
   "Like `message', but returns the empty string.
