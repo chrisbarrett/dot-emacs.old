@@ -31,6 +31,7 @@
 (require 'config-evil)
 (require 'config-modegroups)
 (require 'super-smart-ops)
+(require 'config-insertion)
 
 (cb:declare-package-installer python
   :match "\\.py"
@@ -38,6 +39,12 @@
              python-info
              pyvenv
              virtualenvwrapper))
+
+(after 'python
+  (require 'pyvenv)
+  (require 'virtualenvwrapper)
+  (venv-initialize-eshell)
+  )
 
 (custom-set-variables
  '(ropemacs-use-pop-to-buffer t)
@@ -48,187 +55,178 @@
 (hook-fn 'python-mode-hook
   (run-hooks 'prog-mode-hook))
 
-(after 'python
-  (require 'pyvenv)
-  (require 'virtualenvwrapper)
+(after 'autoinsert
+  (define-auto-insert
+    '("\\.py$" . "Python skeleton")
+    '("Short description: "
+      "\"\"\"\n"
+      str
+      "\n\"\"\"\n\n"
+      _
+      "\n")))
 
-  (define-key python-mode-map (kbd ",") 'cb:comma-then-space)
-  (define-key inferior-python-mode-map (kbd ",") 'cb:comma-then-space)
+;;; Inferior python interaction
 
-  (after 'evil
-    (define-evil-doc-handler cb:python-modes
-      (call-interactively 'rope-show-doc)))
+(defun cb-py:restart-python ()
+  (save-window-excursion
+    (let (kill-buffer-query-functions
+          (buf (get-buffer "*Python*")))
+      (when buf (kill-buffer buf)))
+    (call-interactively 'run-python)))
 
-  (defun cb-py:restart-python ()
-    (save-window-excursion
-      (let (kill-buffer-query-functions
-            (buf (get-buffer "*Python*")))
-        (when buf (kill-buffer buf)))
-      (call-interactively 'run-python)))
+(defun cb:switch-to-python ()
+  "Switch to the last active Python buffer."
+  (interactive)
+  ;; Start inferior python if necessary.
+  (unless (->> (--first-buffer (derived-mode-p 'inferior-python-mode))
+            (get-buffer-process)
+            (processp))
+    (cb-py:restart-python))
 
-  (defun cb:switch-to-python ()
-    "Switch to the last active Python buffer."
-    (interactive)
-    ;; Start inferior python if necessary.
-    (unless (->> (--first-buffer (derived-mode-p 'inferior-python-mode))
-              (get-buffer-process)
-              (processp))
-      (cb-py:restart-python))
+  (if (derived-mode-p 'inferior-python-mode)
+      ;; Switch from inferior python to source file.
+      (switch-to-buffer-other-window
+       (--first-buffer (derived-mode-p 'python-mode)))
+    ;; Switch from source file to REPL.
+    ;; HACK: `switch-to-buffer-other-window' does not change window
+    ;; when switching to REPL buffer. Work around this.
+    (-when-let* ((buf (--first-buffer (derived-mode-p 'inferior-python-mode)))
+                 (win (or (--first-window (equal (get-buffer "*Python*")
+                                                 (window-buffer it)))
+                          (split-window-sensibly)
+                          (next-window))))
+      (set-window-buffer win buf)
+      (select-window win)
+      (goto-char (point-max))
+      (cb:maybe-evil-append-line 1))))
 
-    (if (derived-mode-p 'inferior-python-mode)
-        ;; Switch from inferior python to source file.
-        (switch-to-buffer-other-window
-         (--first-buffer (derived-mode-p 'python-mode)))
-      ;; Switch from source file to REPL.
-      ;; HACK: `switch-to-buffer-other-window' does not change window
-      ;; when switching to REPL buffer. Work around this.
-      (-when-let* ((buf (--first-buffer (derived-mode-p 'inferior-python-mode)))
-                   (win (or (--first-window (equal (get-buffer "*Python*")
-                                                   (window-buffer it)))
-                            (split-window-sensibly)
-                            (next-window))))
-        (set-window-buffer win buf)
-        (select-window win)
-        (goto-char (point-max))
-        (cb:maybe-evil-append-line 1))))
+(defun cb-py:eval-dwim (&optional arg)
+  (interactive "P")
+  (cond
+   ((region-active-p)
+    (python-shell-send-region (region-beginning) (region-end))
+    (deactivate-mark))
+   (t
+    (python-shell-send-defun arg))))
 
-  (define-key python-mode-map (kbd "C-c C-z") 'cb:switch-to-python)
-  (define-key inferior-python-mode-map (kbd "C-c C-z") 'cb:switch-to-python)
+;;; Smart operators
 
-  (defun cb-py:eval-dwim (&optional arg)
-    (interactive "P")
-    (cond
-     ((region-active-p)
-      (python-shell-send-region (region-beginning) (region-end))
-      (deactivate-mark))
-     (t
-      (python-shell-send-defun arg))))
+(defun cb-py:smart-equals ()
+  "Insert an '=' char padded by spaces, except in function arglists."
+  (interactive)
+  (if (s-matches? (rx (* space) "def" space) (current-line))
+      (insert "=")
+    (super-smart-ops-insert "=")))
 
-  (define-key python-mode-map (kbd "C-c C-c") 'cb-py:eval-dwim)
-
-  (defun cb-py:smart-equals ()
-    "Insert an '=' char padded by spaces, except in function arglists."
-    (interactive)
-    (if (s-matches? (rx (* space) "def" space) (current-line))
-        (insert "=")
-      (super-smart-ops-insert "=")))
-
-  (defun cb-py:smart-asterisk ()
-    "Insert an asterisk with padding unless we're in an arglist."
-    (interactive "*")
-    (cond
-     ((s-matches? (rx (* space) "def" space) (current-line))
-      (insert "*"))
-     ;; Collapse whitespace around exponentiation operator.
-     ((thing-at-point-looking-at (rx (* space) "*" (* space)))
-      (delete-horizontal-space)
-      (save-excursion
-        (search-backward "*")
-        (delete-horizontal-space))
-      (insert "*"))
-     (t
-      (super-smart-ops-insert "*"))))
-
-  (defun cb-py:smart-comma ()
-    "Insert a comma with padding."
-    (interactive "*")
-    (insert ",")
-    (just-one-space))
-
-  (defun cb-py:smart-colon ()
-    "Insert a colon with padding."
-    (interactive "*")
-    (insert ":")
-    (just-one-space))
-
-  (--each '(python-mode inferior-python-mode)
-    (super-smart-ops-configure-for-mode it
-      :add '("?" "$")
-      :custom
-      '(("," . cb-py:smart-comma)
-        ("*" . cb-py:smart-asterisk)
-        (":" . cb-py:smart-colon)
-        ("=" . cb-py:smart-equals))))
-
-  (after 'autoinsert
-    (define-auto-insert
-      '("\\.py$" . "Python skeleton")
-      '("Short description: "
-        "\"\"\"\n"
-        str
-        "\n\"\"\"\n\n"
-        _
-        "\n")))
-
-  (defun cb-py:split-arglist (arglist)
-    "Parse ARGLIST into a list of parameters.
-Each element is either a string or a cons of (var . default)."
-    (cl-loop
-     for arg in (s-split (rx ",") arglist t)
-     for (x . y)  = (s-split "=" arg)
-     for (_ name) = (s-match (rx (* (any "*")) (group (* (any "_" alnum)))) x)
-     for default  = (when y (car y))
-     when (not (s-blank? (s-trim name)))
-     collect (if default (cons name default) name)))
-
-  (defun cb-py:python-docstring (arglist)
-    "Format a docstring according to ARGLIST."
-    (let ((al (s-replace " " "" arglist)))
-      (if (s-blank? al)
-          ""
-        (cl-destructuring-bind (keywords formal)
-            (-separate 'listp (cb-py:split-arglist al))
-          (concat
-           (when (or formal keywords) "\n")
-           ;; Formal args
-           (when (and formal keywords) "    Formal arguments:\n")
-           (s-join "\n" (--map (format "    %s --" it) formal))
-           (when keywords "\n\n")
-           ;; Keyword args
-           (when (and formal keywords) "    Keyword arguments:\n")
-           (s-join "\n" (--map (format "    %s (default %s) --" (car it) (cdr it))
-                               keywords)))))))
-
-  (defun cb-py:arglist-for-function-at-point ()
-    "Return the arglist for the function at point, or nil if none."
+(defun cb-py:smart-asterisk ()
+  "Insert an asterisk with padding unless we're in an arglist."
+  (interactive "*")
+  (cond
+   ((s-matches? (rx (* space) "def" space) (current-line))
+    (insert "*"))
+   ;; Collapse whitespace around exponentiation operator.
+   ((thing-at-point-looking-at (rx (* space) "*" (* space)))
+    (delete-horizontal-space)
     (save-excursion
-      (when (beginning-of-defun)
-        (let ((start (search-forward "("))
-              (end (1- (search-forward ")"))))
-          (buffer-substring start end)))))
+      (search-backward "*")
+      (delete-horizontal-space))
+    (insert "*"))
+   (t
+    (super-smart-ops-insert "*"))))
 
-  (defun cb-py:insert-docstring ()
-    "Insert a docstring for the python function at point."
-    (interactive "*")
-    (-when-let (arglist (cb-py:arglist-for-function-at-point))
-      (when (beginning-of-defun)
-        (search-forward-regexp (rx ":" (* space) eol))
-        (newline)
-        (open-line 1)
-        (insert (concat "    \"\"\"\n"
-                        (cb-py:python-docstring arglist) "\n\n"
-                        "    Returns:\n\n"
-                        "    \"\"\"" ))
-        (message "Arglist inserted."))))
+(defun cb-py:smart-comma ()
+  "Insert a comma with padding."
+  (interactive "*")
+  (insert ",")
+  (just-one-space))
 
-  (add-to-list 'insertion-picker-options
-               '("d" "Docstring" cb-py:insert-docstring :modes (python-mode)))
+(defun cb-py:smart-colon ()
+  "Insert a colon with padding."
+  (interactive "*")
+  (insert ":")
+  (just-one-space))
 
-  (define-key python-mode-map (kbd "M-q") 'indent-dwim)
+(--each '(python-mode inferior-python-mode)
+  (super-smart-ops-configure-for-mode it
+    :add '("?" "$")
+    :custom
+    '(("," . cb-py:smart-comma)
+      ("*" . cb-py:smart-asterisk)
+      (":" . cb-py:smart-colon)
+      ("=" . cb-py:smart-equals))))
 
-  (venv-initialize-eshell)
+;;; Insert docstrings
 
-  (when (fboundp 'ropemacs-mode)
-    (add-hook 'python-mode-hook 'ropemacs-mode))
+(defun cb-py:split-arglist (arglist)
+  "Parse ARGLIST into a list of parameters.
+Each element is either a string or a cons of (var . default)."
+  (cl-loop
+   for arg in (s-split (rx ",") arglist t)
+   for (x . y)  = (s-split "=" arg)
+   for (_ name) = (s-match (rx (* (any "*")) (group (* (any "_" alnum)))) x)
+   for default  = (when y (car y))
+   when (not (s-blank? (s-trim name)))
+   collect (if default (cons name default) name)))
 
-  (after 'rope
-    (define-key python-mode-map (kbd "M-.") 'rope-goto-definition))
+(defun cb-py:python-docstring (arglist)
+  "Format a docstring according to ARGLIST."
+  (let ((al (s-replace " " "" arglist)))
+    (if (s-blank? al)
+        ""
+      (cl-destructuring-bind (keywords formal)
+          (-separate 'listp (cb-py:split-arglist al))
+        (concat
+         (when (or formal keywords) "\n")
+         ;; Formal args
+         (when (and formal keywords) "    Formal arguments:\n")
+         (s-join "\n" (--map (format "    %s --" it) formal))
+         (when keywords "\n\n")
+         ;; Keyword args
+         (when (and formal keywords) "    Keyword arguments:\n")
+         (s-join "\n" (--map (format "    %s (default %s) --" (car it) (cdr it))
+                             keywords)))))))
 
-  (after 'evil
-    (evil-define-key 'normal python-mode-map (kbd "M-.") 'rope-goto-definition))
+(defun cb-py:arglist-for-function-at-point ()
+  "Return the arglist for the function at point, or nil if none."
+  (save-excursion
+    (when (beginning-of-defun)
+      (let ((start (search-forward "("))
+            (end (1- (search-forward ")"))))
+        (buffer-substring start end)))))
 
+(defun cb-py:insert-docstring ()
+  "Insert a docstring for the python function at point."
+  (interactive "*")
+  (-when-let (arglist (cb-py:arglist-for-function-at-point))
+    (when (beginning-of-defun)
+      (search-forward-regexp (rx ":" (* space) eol))
+      (newline)
+      (open-line 1)
+      (insert (concat "    \"\"\"\n"
+                      (cb-py:python-docstring arglist) "\n\n"
+                      "    Returns:\n\n"
+                      "    \"\"\"" ))
+      (message "Arglist inserted."))))
+
+(add-to-list 'insertion-picker-options
+             '("d" "Docstring" cb-py:insert-docstring :modes (python-mode)))
+
+(add-hook 'python-mode-hook 'ropemacs-mode)
+
+;;; Key bindings
+
+(after 'python
+  (define-key python-mode-map (kbd "M-q")     'indent-dwim)
+  (define-key python-mode-map (kbd "C-c C-c") 'cb-py:eval-dwim)
+  (define-key python-mode-map (kbd "C-c C-z") 'cb:switch-to-python)
+  (define-key python-mode-map (kbd ",")       'cb:comma-then-space)
+  (define-key python-mode-map (kbd "M-.")     'rope-goto-definition)
   )
 
+(after 'inferior-python
+  (define-key inferior-python-mode-map (kbd ",")       'cb:comma-then-space)
+  (define-key inferior-python-mode-map (kbd "C-c C-z") 'cb:switch-to-python)
+  )
 
 (provide 'config-python)
 
