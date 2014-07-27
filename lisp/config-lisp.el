@@ -33,50 +33,6 @@
 (hook-fn 'cb:lisp-modes-hook
   (local-set-key (kbd "M-q") 'indent-dwim))
 
-(let ((ls (assoc 'interactive sp-navigate-reindent-after-up)))
-  (setcdr ls (-uniq (-concat (cdr ls) cb:lisp-modes))))
-
-(defun cblisp:just-inserted-double-quotes? (id action ctx)
-  (and (sp-in-string-p id action ctx)
-       (s-matches? (rx (not (any "\\")) "\"" eol)
-                   (buffer-substring (line-beginning-position) (point)))))
-
-(defun sp-lisp-just-one-space (id action ctx)
-  "Pad Lisp delimiters with spaces."
-  (when (and (equal 'insert action)
-             (or (sp-in-code-p id action ctx)
-                 (cblisp:just-inserted-double-quotes? id action ctx)))
-    ;; Insert a leading space, unless
-    ;; 1. this is a quoted form
-    ;; 2. this is the first position of another list
-    ;; 3. this form begins a new line.
-    (save-excursion
-      (search-backward id)
-      (unless (s-matches?
-               (rx (or (group bol (* space))
-                       (any "," "`" "'" "@" "#" "~" "(" "[" "{")
-                       ;; HACK: nREPL prompt
-                       (and (any alnum "." "/" "-") ">" (* space)))
-                   eol)
-               (buffer-substring (line-beginning-position) (point)))
-        (just-one-space)))
-    ;; Insert space after separator, unless
-    ;; 1. this form is at the end of another list.
-    ;; 2. this form is at the end of the line.
-    (save-excursion
-      (search-forward (sp-get-pair id :close))
-      (unless (s-matches? (rx (or (any ")" "]" "}")
-                                  eol))
-                          (buffer-substring (point) (1+ (point))))
-        (just-one-space)))))
-
-(sp-with-modes cb:lisp-modes
-  (sp-local-pair "\"" "\"" :post-handlers '(:add sp-lisp-just-one-space))
-  (sp-local-pair "{" "}" :post-handlers '(:add sp-lisp-just-one-space))
-  (sp-local-pair "[" "]" :post-handlers '(:add sp-lisp-just-one-space))
-  (sp-local-pair "(" ")" :post-handlers '(:add sp-lisp-just-one-space))
-  (sp-local-pair "'" nil :actions nil))
-
 (add-hook 'cb:lisp-modes-hook 'turn-on-eldoc-mode)
 
 (hook-fn 'eldoc-mode-hook
@@ -88,7 +44,6 @@
 
 (hook-fn 'redshank-mode-hook
   (diminish 'redshank-mode))
-
 
 (provide 'config-lisp)
 

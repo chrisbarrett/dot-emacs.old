@@ -34,18 +34,6 @@
   :match (rx ".fs" (? (any "i" "y" "l" "x")) eol)
   :packages (fsharp-mode))
 
-(sp-with-modes '(fsharp-mode)
-  (sp-local-pair "[|" "|]")
-  (sp-local-pair "[<" ">]")
-  (sp-local-pair "`" nil :actions nil))
-
-(sp-with-modes '(fsharp-mode)
-  (sp-local-pair "\"" "\"" :post-handlers '(:add sp-ocaml-just-one-space))
-  (sp-local-pair "{" "}" :post-handlers '(:add sp-ocaml-just-one-space))
-  (sp-local-pair "[" "]" :post-handlers '(:add sp-ocaml-just-one-space))
-  (sp-local-pair "(" ")" :post-handlers '(:add sp-ocaml-just-one-space))
-  (sp-local-pair "'" nil :actions nil))
-
 (hook-fns '(fsharp-mode)
   (add-hook 'post-self-insert-hook 'cb-ocaml:maybe-pad-parens nil t))
 

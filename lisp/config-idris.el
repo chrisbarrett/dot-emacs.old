@@ -43,10 +43,12 @@
   (setq-local evil-shift-width 2))
 
 (add-hook 'idris-mode-hook 'idris-indentation-mode)
+
 (after 'idris-indentation
   (diminish 'idris-indentation-mode))
 
 (defadvice idris-mode (before start-process activate)
+  "Automatically run an idris process."
   (unless idris-process
     (idris-run)))
 
@@ -197,18 +199,6 @@
                                     eol))
                             (buffer-substring (point) (1+ (point))))
           (just-one-space)))))
-
-  (sp-with-modes cb:idris-modes
-    ;; Pad delimiters with spaces.
-    (sp-local-pair "\"" "\"" :post-handlers '(:add sp-idris-just-one-space))
-    (sp-local-pair "{" "}" :post-handlers '(:add sp-idris-just-one-space))
-    (sp-local-pair "[" "]" :post-handlers '(:add sp-idris-just-one-space))
-    (sp-local-pair "(" ")" :post-handlers '(:add sp-idris-just-one-space))
-    (sp-local-pair "`" "`" :post-handlers '(:add sp-idris-just-one-space))
-    (sp-local-pair "'" nil :actions nil)
-    (sp-local-pair "[|" "|]" :post-handlers '(:add sp-idris-just-one-space)))
-  (sp-with-modes cb:idris-modes
-    (sp-local-pair "'" "'" :actions '(:rem insert)))
 
   (defun cbidris:get-docstring ()
     "Format a docstring for eldoc."

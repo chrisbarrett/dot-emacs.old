@@ -254,35 +254,6 @@ If this is the trailing colon for a hash key, insert padding."
         (search-forward "|")
         (just-one-space))))
 
-  (sp-with-modes '(ruby-mode inf-ruby-mode)
-
-    (sp-local-pair "{" "}"
-                   :post-handlers '(:add sp-generic-leading-space))
-
-    (sp-local-pair "[" "]"
-                   :pre-handlers '(sp-ruby-pre-handler))
-
-    (sp-local-pair "%q{" "}" :when '(sp-in-code-p))
-    (sp-local-pair "%Q{" "}" :when '(sp-in-code-p))
-    (sp-local-pair "%w{" "}" :when '(sp-in-code-p))
-    (sp-local-pair "%W{" "}" :when '(sp-in-code-p))
-    (sp-local-pair  "%(" ")" :when '(sp-in-code-p))
-    (sp-local-pair "%x(" ")" :when '(sp-in-code-p))
-    (sp-local-pair  "#{" "}" :when '(sp-in-string-p))
-
-    (sp-local-pair "|" "|"
-                   :when '(sp-ruby-should-insert-pipe-close)
-                   :unless '(sp-in-string-p)
-                   :pre-handlers '(sp-ruby-sp-hook-space-before)
-                   :post-handlers '(sp-ruby-sp-hook-space-after))
-
-    (sp-local-pair "case" "end"
-                   :when '(("SPC" "RET" "<evil-ret>"))
-                   :unless '(sp-ruby-in-string-or-word-p)
-                   :actions '(insert)
-                   :pre-handlers '(sp-ruby-pre-handler)
-                   :post-handlers '(sp-ruby-block-post-handler)))
-
   (hook-fn 'cb:ruby-modes-hook
     (local-set-key (kbd "C-c C-h") 'yari))
 

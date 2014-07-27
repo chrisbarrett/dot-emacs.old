@@ -184,13 +184,6 @@
   (define-key coq-mode-map (kbd "M-RET")   'cb-coq:meta-ret)
   (define-key coq-mode-map (kbd "C-c C-m") 'coq-insert-match))
 
-(sp-with-modes '(coq-mode)
-  (sp-local-pair "\"" "\"" :post-handlers '(:add sp-ocaml-just-one-space))
-  (sp-local-pair "{" "}" :post-handlers '(:add sp-ocaml-just-one-space))
-  (sp-local-pair "[" "]" :post-handlers '(:add sp-ocaml-just-one-space))
-  (sp-local-pair "(" ")" :post-handlers '(:add sp-ocaml-just-one-space))
-  (sp-local-pair "'" nil :actions nil))
-
 (after 'proof-script
   (define-key proof-mode-map (kbd "C-<return>") nil))
 

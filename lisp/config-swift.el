@@ -61,14 +61,6 @@
   '((":" . cb-swift:smart-colon)
     ("," . cb-swift:smart-comma)))
 
-
-;;; Smartparens
-
-
-(sp-with-modes '(swift-mode)
-  (sp-local-pair "{" "}" :post-handlers '(:add sp-generic-leading-space)))
-
-
 (provide 'config-swift)
 
 ;;; config-swift.el ends here

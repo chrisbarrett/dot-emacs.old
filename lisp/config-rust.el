@@ -35,7 +35,8 @@
 
 (super-smart-ops-configure-for-mode 'rust-mode
   :rem '("!" "~" "&")
-  :custom '((":" . cbrs:smart-colon)))
+  :custom '((":" . cbrs:smart-colon)
+            ("," . cb:comma-then-space)))
 
 (defun cbrs:smart-colon ()
   "Insert a colon as a smart operator.
@@ -60,10 +61,15 @@ Collapse spaces if this is a double-colon."
 (after 'rust-mode
   (define-key rust-mode-map (kbd "C-c <") 'cbrs:insert-type-brackets))
 
-(put 'rust :flycheck-command
-     '("rustc" "--crate-type" "lib" "--no-trans"
-       (option-list "-L" flycheck-rust-library-path s-prepend)
-       source-inplace))
+(defun cbrs:set-rust-library-path ()
+  "Set the search path for rust libraries."
+  (require 'flycheck)
+  (add-to-list 'flycheck-rust-library-path ".")
+  (when (projectile-project-p)
+    (add-to-list 'flycheck-rust-library-path (f-join (projectile-project-root) "src"))
+    (add-to-list 'flycheck-rust-library-path (f-join (projectile-project-root) "lib"))))
+
+(add-hook 'rust-mode-hook 'cbrs:set-rust-library-path)
 
 (defun cbrs:bol-or-after-accessibility-modifier? ()
   "Predicate for snippets"

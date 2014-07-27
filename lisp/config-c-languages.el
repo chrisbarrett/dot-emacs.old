@@ -307,72 +307,31 @@ then
 
   )
 
+;;; Insertion picker command for inserting c headers.
+
+(defun helm-insert-c-header ()
+  (interactive)
+  (helm :sources
+        `((name . "C Headers")
+          (candidates . ,(-concat emr-c:standard-headers
+                                  (emr-c:headers-in-project)))
+          (action .
+                  (lambda (c)
+                    (emr-c-insert-include
+                     (format (if (-contains? emr-c:standard-headers c)
+                                 "<%s>"
+                               "\"%s\"")
+                             c))
+                    (when (derived-mode-p 'bison-mode)
+                      (bison-format-buffer))))
+          (volatile))
+        :prompt "Header: "
+        :buffer "*Helm C Headers*"))
+
 (after '(cc-mode emr)
-
-  (defun helm-insert-c-header ()
-    (interactive)
-    (helm :sources
-          `((name . "C Headers")
-            (candidates . ,(-concat emr-c:standard-headers
-                                    (emr-c:headers-in-project)))
-            (action .
-                    (lambda (c)
-                      (emr-c-insert-include
-                       (format (if (-contains? emr-c:standard-headers c)
-                                   "<%s>"
-                                 "\"%s\"")
-                               c))
-                      (when (derived-mode-p 'bison-mode)
-                        (bison-format-buffer))))
-            (volatile))
-          :prompt "Header: "
-          :buffer "*Helm C Headers*"))
-
   (add-to-list 'insertion-picker-options
                '("i" "Header Include" helm-insert-c-header
                  :modes (c-mode c++-mode))))
-
-(after '(cc-mode smartparens)
-  (defun cb-c:format-after-brace (_id action contexxt)
-    "Apply formatting after a brace insertion."
-    (when (and (equal action 'insert)
-               (equal context 'code)
-               (save-excursion
-                 ;; Search backward for flow control keywords.
-                 (search-backward "{")
-                 (or (thing-at-point-looking-at
-                      (rx symbol-start (or "else" "do")))
-                     (progn
-                       (sp-previous-sexp)
-                       (thing-at-point-looking-at
-                        (rx symbol-start (or "if" "for" "while")))))))
-      ;; Insert a space for padding.
-      (save-excursion
-        (search-backward "{")
-        (just-one-space))
-      ;; Put braces on new line.
-      (newline)
-      (save-excursion (newline-and-indent))
-      (c-indent-line)))
-
-  (defun cb-c:format-after-paren (_id action context)
-    "Insert a space after flow control keywords."
-    (when (and (equal action 'insert)
-               (equal context 'code)
-               (save-excursion
-                 (search-backward "(")
-                 (thing-at-point-looking-at
-                  (rx symbol-start (or "=" "return" "if" "while" "for")
-                      (* space)))))
-      (save-excursion
-        (search-backward "(")
-        (just-one-space))))
-
-  (sp-with-modes '(c-mode cc-mode c++-mode)
-    (sp-local-pair "{" "}" :post-handlers '(:add cb-c:format-after-brace))
-    (sp-local-pair "(" ")" :post-handlers '(:add cb-c:format-after-paren))))
-
-
 
 (provide 'config-c-languages)
 

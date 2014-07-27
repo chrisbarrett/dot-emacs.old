@@ -83,53 +83,6 @@
 
   (define-key tuareg-mode-map (kbd "M-q") 'ocp-indent-dwim))
 
-(sp-with-modes '(tuareg-mode utop-mode)
-  (sp-local-pair "[|" "|]")
-  (sp-local-pair "{<" ">}")
-  (sp-local-pair "`" nil :actions nil))
-
-(defun cb-ocaml:just-inserted-double-quotes? (id action ctx)
-  (and (sp-in-string-p id action ctx)
-       (s-matches? (rx (not (any "\\")) "\"" eol)
-                   (buffer-substring (line-beginning-position) (point)))))
-
-(defun sp-ocaml-just-one-space (id action ctx)
-  "Pad delimiters with spaces."
-  (when (and (equal 'insert action)
-             (or (sp-in-code-p id action ctx)
-                 (cb-ocaml:just-inserted-double-quotes? id action ctx)))
-    ;; Insert a leading space, unless
-    ;; 1. this is the first position of another list
-    ;; 2. this form begins a new line.
-    ;; 3. this form is preceded by a `?`, as in a let binding.
-    ;; 4. this form is preceded by a `:`, as in a keyword argument
-    ;; 4. this form is preceded by a `.`, as in an array index expression
-    (save-excursion
-      (search-backward id)
-      (unless (s-matches?
-               (rx (or (group bol (* space))
-                       (any "." "," ":" "(" "[" "[|" "{" "?")
-                       ;; HACK: utop prompt
-                       (and "utop[" (+ digit) "]" ">" (* space)))
-                   eol)
-               (buffer-substring (line-beginning-position) (point)))
-        (just-one-space)))
-    ;; Insert space after separator, unless
-    ;; 1. this form is at the end of another list.
-    ;; 2. this form is at the end of the line.
-    (save-excursion
-      (search-forward (sp-get-pair id :close))
-      (unless (s-matches? (rx (or (any ")" "]" "|]" "}") eol))
-                          (char-to-string (char-after)))
-        (just-one-space)))))
-
-(sp-with-modes '(tuareg-mode utop-mode)
-  (sp-local-pair "\"" "\"" :post-handlers '(:add sp-ocaml-just-one-space))
-  (sp-local-pair "{" "}" :post-handlers '(:add sp-ocaml-just-one-space))
-  (sp-local-pair "[" "]" :post-handlers '(:add sp-ocaml-just-one-space))
-  (sp-local-pair "(" ")" :post-handlers '(:add sp-ocaml-just-one-space))
-  (sp-local-pair "'" nil :actions nil))
-
 (defun cb-ocaml:maybe-pad-parens ()
   (save-excursion
     (unless (equal (string-to-char " ") (char-before))

@@ -30,7 +30,6 @@
 (require 'utils-buffers)
 (require 'config-evil)
 (require 'config-modegroups)
-(require 'config-smartparens)
 (require 'super-smart-ops)
 
 (cb:declare-package-installer python
@@ -40,11 +39,12 @@
              pyvenv
              virtualenvwrapper))
 
-
 (custom-set-variables
  '(ropemacs-use-pop-to-buffer t)
  '(ropemacs-guess-project t))
 
+;; `python-mode' is not derived from `fundamental-mode'. Run prog-mode hooks
+;; manually.
 (hook-fn 'python-mode-hook
   (run-hooks 'prog-mode-hook))
 
@@ -149,9 +149,6 @@
         ("*" . cb-py:smart-asterisk)
         (":" . cb-py:smart-colon)
         ("=" . cb-py:smart-equals))))
-
-  (sp-with-modes cb:python-modes
-    (sp-local-pair "{" "}" :post-handlers '(:add sp-generic-leading-space)))
 
   (after 'autoinsert
     (define-auto-insert

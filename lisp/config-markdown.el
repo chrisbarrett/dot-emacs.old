@@ -51,10 +51,6 @@
   (set-face-attribute markdown-header-face-1 nil :height 1.3)
   (set-face-attribute markdown-header-face-2 nil :height 1.1))
 
-(after '(smartparens markdown-mode)
-  (sp-with-modes '(markdown-mode)
-    (sp-local-pair "```" "```")))
-
 (after '(evil markdown-mode)
   (evil-define-key 'normal markdown-mode-map
     (kbd "M-P") 'outline-previous-visible-heading

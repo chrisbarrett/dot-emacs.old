@@ -359,9 +359,11 @@ Changes the selected buffer."
 
 (defun cb:comma-then-space ()
   (interactive)
-  (atomic-change-group
-    (insert-char ?\,)
-    (just-one-space)))
+  (save-restriction
+    (narrow-to-region (line-beginning-position) (point))
+    (atomic-change-group
+      (insert-char ?\,)
+      (just-one-space))))
 
 ;;; Key bindings
 
