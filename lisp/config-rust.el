@@ -92,7 +92,8 @@ Collapse spaces if this is a double-colon."
 ;;; Key bindings
 
 (after 'rust-mode
-  (define-key rust-mode-map (kbd "C-c <") 'cbrs:insert-type-brackets))
+  (define-key rust-mode-map (kbd "C-c C-,") 'cbrs:insert-type-brackets)
+  )
 
 (provide 'config-rust)
 
