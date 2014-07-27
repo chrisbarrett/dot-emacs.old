@@ -33,10 +33,7 @@
   :match (rx ".rs" eol)
   :packages (rust-mode))
 
-(super-smart-ops-configure-for-mode 'rust-mode
-  :rem '("!" "~" "&")
-  :custom '((":" . cbrs:smart-colon)
-            ("," . cb:comma-then-space)))
+;;; Smart operators
 
 (defun cbrs:smart-colon ()
   "Insert a colon as a smart operator.
@@ -50,6 +47,11 @@ Collapse spaces if this is a double-colon."
       (search-backward "::")
       (delete-horizontal-space))))
 
+(super-smart-ops-configure-for-mode 'rust-mode
+  :rem '("!" "~" "&")
+  :custom '((":" . cbrs:smart-colon)
+            ("," . cb:comma-then-space)))
+
 (defun cbrs:insert-type-brackets ()
   (interactive)
   (save-restriction
@@ -58,8 +60,7 @@ Collapse spaces if this is a double-colon."
     (insert "<>")
     (forward-char -1)))
 
-(after 'rust-mode
-  (define-key rust-mode-map (kbd "C-c <") 'cbrs:insert-type-brackets))
+;;; Flychek
 
 (defun cbrs:set-rust-library-path ()
   "Set the search path for rust libraries."
@@ -71,6 +72,13 @@ Collapse spaces if this is a double-colon."
 
 (add-hook 'rust-mode-hook 'cbrs:set-rust-library-path)
 
+(put 'rust :flycheck-command
+     '("rustc" "--crate-type" "lib" "--no-trans"
+       (option-list "-L" flycheck-rust-library-path s-prepend)
+       source-inplace))
+
+;;; Snippet utilities
+
 (defun cbrs:bol-or-after-accessibility-modifier? ()
   "Predicate for snippets"
   (save-excursion
@@ -81,6 +89,10 @@ Collapse spaces if this is a double-colon."
       (narrow-to-region (point) (line-end-position))
       (cbyas:bol?))))
 
+;;; Key bindings
+
+(after 'rust-mode
+  (define-key rust-mode-map (kbd "C-c <") 'cbrs:insert-type-brackets))
 
 (provide 'config-rust)
 
