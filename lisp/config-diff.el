@@ -38,7 +38,8 @@
   (when (> (length (window-list)) 1)
     (kill-buffer-and-window)))
 
-(bind-key "q" 'cb-diff:close diff-mode-map)
+(after 'diff-mode
+  (define-key diff-mode-map (kbd "q") 'cb-diff:close))
 
 (defun cb-ediff:prepare-buffer ()
   "Prepare the current buffer for ediff."
