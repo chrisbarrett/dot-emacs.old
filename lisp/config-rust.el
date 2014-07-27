@@ -34,7 +34,20 @@
   :packages (rust-mode))
 
 (super-smart-ops-configure-for-mode 'rust-mode
-  :rem '("!" "~" "&"))
+  :rem '("!" "~" "&")
+  :custom '((":" . cbrs:smart-colon)))
+
+(defun cbrs:smart-colon ()
+  "Insert a colon as a smart operator.
+Collapse spaces if this is a double-colon."
+  (interactive "*")
+  (super-smart-ops-insert ":")
+  (save-excursion
+    (when (search-backward-regexp (rx (* space) ":" (* space) ":" (* space))
+                                  nil t)
+      (replace-match "::")
+      (search-backward "::")
+      (delete-horizontal-space))))
 
 (defun cbrs:insert-type-brackets ()
   (interactive)
