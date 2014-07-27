@@ -27,6 +27,7 @@
 ;;; Code:
 
 (require 'utils-common)
+(require 'config-modegroups)
 
 (cb:install-package 'evil t)
 (cb:install-package 'evil-numbers t)
@@ -302,9 +303,27 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
                 (?< . surround-read-tag)
                 (?f . surround-function)))
 
+;;; Elisp
+
+;; Make M-. work in normal state.
+(evil-define-key 'normal emacs-lisp-mode-map
+  (kbd "M-.") 'elisp-slime-nav-find-elisp-thing-at-point)
+
 (hook-fn 'cb:elisp-modes-hook
   (make-local-variable 'evil-surround-pairs-alist)
   (push '(?\` . ("`" . "'")) evil-surround-pairs-alist))
+
+(define-evil-doc-handler cb:elisp-modes
+    (let ((sym (symbol-at-point)))
+      (cond
+       ((symbol-function sym)
+        (describe-function sym))
+       ((and (boundp sym) (not (facep sym)))
+        (describe-variable sym))
+       ((facep sym)
+        (describe-face sym))
+       (t
+        (user-error "No documentation available")))))
 
 ;;; Org
 

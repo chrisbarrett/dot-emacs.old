@@ -29,11 +29,23 @@
 (require 'utils-common)
 (require 'config-modegroups)
 
-(add-to-list 'auto-mode-alist '("Cask$" . emacs-lisp-mode))
-(add-to-list 'auto-mode-alist '("Carton" . emacs-lisp-mode))
+(cb:install-package 'elisp-slime-nav)
+(cb:install-package 'cl-lib-highlight)
 
 (custom-set-variables
  '(flycheck-emacs-lisp-load-path (list cb:lib-dir "./")))
+
+(add-to-list 'auto-mode-alist '("Cask$" . emacs-lisp-mode))
+(add-to-list 'auto-mode-alist '("Carton" . emacs-lisp-mode))
+
+(add-hook 'cb:elisp-modes-hook 'elisp-slime-nav-mode)
+(add-hook 'emacs-lisp-mode 'cl-lib-highlight-initialize)
+(add-hook 'emacs-lisp-mode 'cl-lib-highlight-warn-cl-initialize)
+
+(hook-fn 'elisp-slime-nav-mode-hook
+  (diminish 'elisp-slime-nav-mode))
+
+;;; Flycheck
 
 (defun cb:special-elisp-buffer? ()
   (and (derived-mode-p 'emacs-lisp-mode)
@@ -61,8 +73,13 @@
 
 (add-hook 'flycheck-mode-hook 'cbel:configure-flycheck)
 
-(sp-local-pair (-difference cb:lisp-modes cb:elisp-modes)
-               "`" "`" :when '(sp-in-string-p))
+;;; Use paredit for `eval-expression'.
+
+(hook-fn 'minibuffer-setup-hook
+  (when (equal this-command 'eval-expression)
+    (paredit-mode +1)))
+
+;;; Snippet utils
 
 (defun cbel:find-identifier-prefix ()
   "Find the commonest identifier prefix in use in this buffer."
@@ -133,38 +150,7 @@ TEXT is the content of the docstring."
     (unless (s-blank? docs)
       (concat "\n\n" docs))))
 
-(hook-fn 'minibuffer-setup-hook
-  (when (equal this-command 'eval-expression)
-    (paredit-mode +1)))
-
-(cb:install-package 'elisp-slime-nav)
-
-(hook-fn 'cb:elisp-modes-hook
-  (elisp-slime-nav-mode +1)
-  (local-set-key (kbd "M-.") 'elisp-slime-nav-find-elisp-thing-at-point)
-
-  ;; Make M-. work in normal state.
-  (after 'evil
-    (evil-local-set-key 'normal (kbd "M-.")
-                        'elisp-slime-nav-find-elisp-thing-at-point)))
-
-(hook-fn 'elisp-slime-nav-mode-hook
-  (diminish 'elisp-slime-nav-mode))
-
-(cb:install-package 'cl-lib-highlight)
-(hook-fn 'emacs-lisp-mode
-  (cl-lib-highlight-initialize)
-  (cl-lib-highlight-warn-cl-initialize))
-
-(after 'lisp-mode
-  (define-key emacs-lisp-mode-map (kbd "C-c C-t") 'ert)
-  (define-key emacs-lisp-mode-map (kbd "C-c C-l")
-    'emacs-lisp-byte-compile-and-load))
-
-(after 'ielm
-  (define-keys ielm-map
-    "M-RET" 'newline-and-indent
-    "C-j" 'newline-and-indent))
+;;; IELM utils
 
 (defun switch-to-ielm ()
   "Start up or switch to an Inferior Emacs Lisp buffer."
@@ -179,11 +165,6 @@ TEXT is the content of the docstring."
   (interactive)
   (-when-let (buf (--first-buffer (derived-mode-p 'emacs-lisp-mode)))
     (switch-to-buffer-other-window buf)))
-
-(after 'lisp-mode
-  (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'switch-to-ielm))
-(after 'ielm
-  (define-key ielm-map (kbd "C-c C-z") 'switch-to-elisp))
 
 (defun send-to-ielm ()
   "Send the sexp at point to IELM."
@@ -207,25 +188,7 @@ TEXT is the content of the docstring."
   (recenter -1)
   (switch-to-elisp))
 
-(after 'lisp-mode
-  (define-keys emacs-lisp-mode-map
-    "C-c C-e" 'send-to-ielm
-    "C-c RET" 'eval-in-ielm))
-
-(after 'evil
-  (define-evil-doc-handler cb:elisp-modes
-    (let ((sym (symbol-at-point)))
-      (cond
-       ((symbol-function sym)
-        (describe-function sym))
-       ((and (boundp sym) (not (facep sym)))
-        (describe-variable sym))
-       ((facep sym)
-        (describe-face sym))
-       (t
-        (user-error "No documentation available"))))))
-
-(add-hook 'ielm-mode-hook 'smartparens-strict-mode)
+;;; Hideshow
 
 (after 'hideshow
   (add-to-list 'hs-special-modes-alist
@@ -234,6 +197,8 @@ TEXT is the content of the docstring."
 (add-hook 'ielm-mode-hook 'hs-minor-mode)
 
 (put 'ielm-mode 'comment-start ";")
+
+;;; Define intelligent M-RET command.
 
 (defconst cb-el:let-expression-re
   (regexp-opt '("(let" "(-if-let*" "(-when-let*"))
@@ -251,6 +216,7 @@ TEXT is the content of the docstring."
        (save-excursion
          (sp-backward-up-sexp 3)
          (thing-at-point-looking-at cb-el:let-expression-re))))
+
 (defun cb-el:M-RET ()
   "Perform context-sensitive newline behaviour."
   (interactive)
@@ -268,12 +234,7 @@ TEXT is the content of the docstring."
     (when (true? evil-mode)
       (evil-insert-state)))))
 
-(define-key emacs-lisp-mode-map (kbd "M-RET") 'cb-el:M-RET)
-
-(after 'lisp-mode
-  (define-key emacs-lisp-mode-map (kbd "C-c C-f") 'eval-buffer)
-  (define-key emacs-lisp-mode-map (kbd "C-c C-c") 'eval-defun)
-  (define-key emacs-lisp-mode-map (kbd "C-c C-r") 'eval-region))
+;;; Advice
 
 (defadvice eval-region (after region-evaluated-message activate)
   "Print feedback."
@@ -289,60 +250,78 @@ TEXT is the content of the docstring."
   (when (cb:special-elisp-buffer?) (setq-local no-byte-compile t))
   (add-hook 'after-save-hook 'check-parens nil t))
 
+;;; Font-lock
+
 (dash-enable-font-lock)
 
-(--each cb:elisp-modes
-  (font-lock-add-keywords
-   it
-   `(
-     ;; General keywords
-     (,(rx "(" (group (or "cl-destructuring-bind"
-                          "cl-case")
-                      symbol-end))
-      (1 font-lock-keyword-face))
-     ;; Macros and functions
-     (,(rx bol (* space) "("
-           (group-n 1 (or "cl-defun" "cl-defmacro"
-                          "cl-defstruct"
-                          "cl-defsubst"
-                          "cl-deftype"))
-           (+ space)
-           (group-n 2 (+? anything) symbol-end))
-      (1 font-lock-keyword-face)
-      (2 font-lock-function-name-face)))))
-
-(--each cb:elisp-modes
-  (font-lock-add-keywords
-   it
-   `(
-     ;; General keywords
-     (,(rx "(" (group (or "until"
-                          "hook-fn"
-                          "hook-fns"
-                          "lambda+"
-                          "after"
-                          "noflet"
-                          "ert-deftest"
-                          "ac-define-source"
-                          "evil-global-set-keys"
-                          "flycheck-declare-checker"
-                          "flycheck-define-checker")
-                      symbol-end))
-      (1 font-lock-keyword-face))
-
-     ;; definition forms
-     (,(rx bol (* space) "("
-           (group-n 1
-                    symbol-start
-                    (* (not space))
-                    (or "declare" "define" "extend" "gentest")
-                    (+ (not space))
-                    symbol-end)
-           (+ space)
-           (group-n 2 (+ (regex "\[^ )\n\]"))
+(font-lock-add-keywords
+ 'emacs-lisp-mode
+ `(
+   ;; Cl keywords
+   (,(rx "(" (group (or "cl-destructuring-bind"
+                        "cl-case")
                     symbol-end))
-      (1 font-lock-keyword-face)
-      (2 font-lock-function-name-face)))))
+    (1 font-lock-keyword-face))
+
+   ;; Macros and functions
+   (,(rx bol (* space) "("
+         (group-n 1 (or "cl-defun" "cl-defmacro"
+                        "cl-defstruct"
+                        "cl-defsubst"
+                        "cl-deftype"))
+         (+ space)
+         (group-n 2 (+? anything) symbol-end))
+    (1 font-lock-keyword-face)
+    (2 font-lock-function-name-face))
+
+   ;; General keywords
+   (,(rx "(" (group (or "until"
+                        "hook-fn"
+                        "hook-fns"
+                        "lambda+"
+                        "after"
+                        "noflet"
+                        "ert-deftest"
+                        "ac-define-source"
+                        "evil-global-set-keys"
+                        "flycheck-declare-checker"
+                        "flycheck-define-checker")
+                    symbol-end))
+    (1 font-lock-keyword-face))
+
+   ;; definition forms
+   (,(rx bol (* space) "("
+         (group-n 1
+                  symbol-start
+                  (* (not space))
+                  (or "declare" "define" "extend" "gentest")
+                  (+ (not space))
+                  symbol-end)
+         (+ space)
+         (group-n 2 (+ (regex "\[^ )\n\]"))
+                  symbol-end))
+    (1 font-lock-keyword-face)
+    (2 font-lock-function-name-face)))
+ )
+
+;;; Key bindings
+
+(define-key emacs-lisp-mode-map (kbd "M-.")     'elisp-slime-nav-find-elisp-thing-at-point)
+(define-key emacs-lisp-mode-map (kbd "C-c C-t") 'ert)
+(define-key emacs-lisp-mode-map (kbd "C-c C-z") 'switch-to-ielm)
+(define-key emacs-lisp-mode-map (kbd "C-c C-e") 'send-to-ielm)
+(define-key emacs-lisp-mode-map (kbd "C-c RET") 'eval-in-ielm)
+(define-key emacs-lisp-mode-map (kbd "M-RET")   'cb-el:M-RET)
+(define-key emacs-lisp-mode-map (kbd "C-c C-f") 'eval-buffer)
+(define-key emacs-lisp-mode-map (kbd "C-c C-c") 'eval-defun)
+(define-key emacs-lisp-mode-map (kbd "C-c C-r") 'eval-region)
+
+(after 'ielm
+  (define-key emacs-lisp-mode-map (kbd "M-RET") 'newline-and-indent)
+  (define-key emacs-lisp-mode-map (kbd "C-j") 'newline-and-indent)
+  (define-key emacs-lisp-mode-map (kbd "M-.") 'elisp-slime-nav-find-elisp-thing-at-point)
+  (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'switch-to-elisp)
+  )
 
 (provide 'config-elisp)
 

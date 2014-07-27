@@ -310,9 +310,15 @@ Insert leading padding unless at start of line or after an open round paren."
   (sp-local-pair "'" nil   :actions nil)
   )
 
+;; Define a backtick pair for all non-elisp modes.
+(sp-local-pair (-difference cb:lisp-modes cb:elisp-modes)
+               "`" "`" :when '(sp-in-string-p))
+
 ;; Extend `sp-navigate-reindent-after-up' to all lisps.
 (let ((ls (assoc 'interactive sp-navigate-reindent-after-up)))
   (setcdr ls (-uniq (-concat (cdr ls) cb:lisp-modes))))
+
+(add-hook 'ielm-mode-hook 'smartparens-strict-mode)
 
 ;;; Markdown
 
