@@ -65,6 +65,16 @@ Collapse spaces if this is a double-colon."
        (option-list "-L" flycheck-rust-library-path s-prepend)
        source-inplace))
 
+(defun cbrs:bol-or-after-accessibility-modifier? ()
+  "Predicate for snippets"
+  (save-excursion
+    (save-restriction
+      ;; Move past access modifier.
+      (goto-char (line-beginning-position))
+      (search-forward-regexp (rx bow "pub" eow (* space)) (line-end-position) t)
+      (narrow-to-region (point) (line-end-position))
+      (cbyas:bol?))))
+
 
 (provide 'config-rust)
 
