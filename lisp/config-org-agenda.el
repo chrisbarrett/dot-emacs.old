@@ -110,7 +110,8 @@
                        ((org-agenda-overriding-header "Media"))))
            ((org-agenda-tag-filter-preset
              '("-drill" "-gtd"))
-            (org-habit-show-habits nil)))
+            (org-habit-show-habits nil)
+            (org-agenda-include-inactive-timestamps t)))
           ("g" . "GTD contexts")
           ("gg" "Anywhere"
            ((tags-todo "@computer")
