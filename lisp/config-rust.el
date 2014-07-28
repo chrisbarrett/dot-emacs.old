@@ -89,6 +89,14 @@ Collapse spaces if this is a double-colon."
       (narrow-to-region (point) (line-end-position))
       (cbyas:bol?))))
 
+(defun cbrs:fmt-println-args (text)
+  "Format the contents of a call to `println!' based on the given format string."
+  (let ((n (s-count-matches (rx (? (not (any "\\")))
+                                "{")
+                            text)))
+    (s-repeat n (concat ",\n"
+                        (s-repeat (current-indentation) " ")))))
+
 ;;; Key bindings
 
 (after 'rust-mode

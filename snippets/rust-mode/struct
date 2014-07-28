@@ -1,8 +1,9 @@
 # -*- mode: snippet; require-final-newline: nil -*-
 # name: struct
-# key: st
+# key: s
+# binding: direct-keybinding
 # condition: (cbyas:bol?)
 # --
 struct ${1:Name} {
-    $0
+     $0
 }

@@ -1,6 +1,5 @@
-# -*- mode: snippet; require-final-newline: nil -*-
-# name: println!
 # key: p
+# name: println!
 # condition: (cbyas:bol?)
 # --
-println!($0);
+println!("$1"${1:$(cbrs:fmt-println-args yas/text)});
