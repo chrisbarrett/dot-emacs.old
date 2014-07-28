@@ -339,32 +339,6 @@ Signal an error of doing so would break date ordering."
      (,(rx bol "~" (* nonl)) . 'ledger-periodic-header)
      (,(rx bol "year" (+ space) (+ digit) (* space) eol) . 'ledger-year-line))))
 
-;;; Hideshow
-
-(defvar ledger--transaction-start-re (rx bol (any digit "~" "="))
-  "Regex matching the start of a transaction line.")
-
-(defun ledger--hs-forward (&optional n)
-  "Forward motion command for ledger-mode's hideshow support.
-Argument N is provided for compatibility and is not used."
-  (forward-line 1)
-  (or (when (search-forward-regexp ledger--transaction-start-re nil t)
-        (forward-line -1)
-        (goto-char (line-end-position))
-        t)
-      (goto-char (point-max))))
-
-(eval-after-load 'hideshow
-  '(add-to-list 'hs-special-modes-alist
-                `(ledger-mode
-                  ,ledger--transaction-start-re
-                  nil
-                  nil
-                  ledger--hs-forward
-                  nil)))
-
-(add-hook 'ledger-mode-hook 'hs-minor-mode)
-
 ;;; Key bindings
 
 (after 'ledger-mode
