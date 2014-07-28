@@ -49,3 +49,6 @@
 [submodule "lib/super-smart-ops"]
 	path = lib/super-smart-ops
 	url = git://github.com/chrisbarrett/super-smart-ops.git
+[submodule "lib/racer"]
+	path = lib/racer
+	url = https://github.com/phildawes/racer.git

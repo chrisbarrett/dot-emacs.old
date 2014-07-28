@@ -103,6 +103,20 @@ Collapse spaces if this is a double-colon."
         (match-string 1)
       "Name")))
 
+;;; Company
+
+(after 'rust-mode
+  (require 'racer)
+  (add-to-list 'company-backends '(racer-company-complete
+                                   :with company-dabbrev)))
+
+(defvar racer-cmd (f-join cb:lib-dir "racer" "bin" "racer"))
+(defvar rust-srcpath (f-join user-home-directory "src" "rust" "src"))
+
+;; HACK: Override company idle delay set by racer.
+(hook-fn 'rust-mode-hook
+  (run-with-timer 0.1 nil (lambda () (setq-local company-idle-delay 0.1))))
+
 ;;; Key bindings
 
 (after 'rust-mode

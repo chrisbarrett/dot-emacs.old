@@ -442,6 +442,11 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
 (evil-define-key 'normal magit-commit-mode-map
   "q" 'magit-mode-quit-window)
 
+;;; Rust
+
+(evil-define-key 'normal rust-mode-map
+  (kbd "M-.") 'racer-find-definition)
+
 ;;; Ediff
 
 (add-hook 'ediff-startup-hook 'turn-off-evil-mode)
