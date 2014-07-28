@@ -132,37 +132,18 @@ Insert leading padding unless at start of line or after an open round paren."
       (insert "  ")
       (forward-char -1))))
 
-;;; General language configuration
+;;; Remove apostrophe pair for some modes
 
-;; Define wrapping command for apostrophe pair.
-(sp-with-modes (-flatten (list cb:ruby-modes
-                               cb:python-modes
-                               'shell-script-mode
-                               'makefile-mode
-                               'conf-mode))
-  (sp-local-pair
-   "'" "'"
-   :bind "M-'"
-   :actions '(:add insert)
-   :when '(:add sp-in-code-p)
-   :unless '(:add sp-in-string-p)))
-
-;; Remove apostrophe pair for most modes.
-(sp-with-modes (-flatten
-                (list cb:haskell-modes
-                      cb:lisp-modes
-                      cb:idris-modes
-                      cb:prompt-modes
-                      'org-mode
-                      'tuareg-mode
-                      'minibuffer-inactive-mode
-                      'text-mode))
-  (sp-local-pair "'" "'" :actions '(:rem insert)))
+(sp-local-pair cb:prompt-modes           "'" "'" :actions '(:rem insert))
+(sp-local-pair 'org-mode                 "'" "'" :actions '(:rem insert))
+(sp-local-pair 'text-mode                "'" "'" :actions '(:rem insert))
+(sp-local-pair 'minibuffer-inactive-mode "'" "'" :actions '(:rem insert))
 
 ;;; Rust
 
 (sp-with-modes 'rust-mode
   (sp-local-pair "{" "}" :post-handlers '(:add cbsp:internal-and-external-padding))
+  (sp-local-pair "'" "'" :actions '(:rem insert))
   )
 
 ;;; Haskell
@@ -172,6 +153,7 @@ Insert leading padding unless at start of line or after an open round paren."
   (sp-local-pair "(" ")" :post-handlers '(:add cbsp:external-padding))
   (sp-local-pair "[" "]" :post-handlers '(:add cbsp:external-and-external-padding))
   (sp-local-pair "`" "`" :post-handlers '(:add cbsp:external-padding))
+  (sp-local-pair "'" "'" :actions '(:rem insert))
   )
 
 ;;; OCaml
@@ -218,8 +200,8 @@ Insert leading padding unless at start of line or after an open round paren."
   (sp-local-pair "(" ")"   :post-handlers '(:add sp-ocaml-just-one-space))
   (sp-local-pair "[|" "|]" :post-handlers '(:add sp-ocaml-just-one-space))
   (sp-local-pair "{<" ">}" :post-handlers '(:add sp-ocaml-just-one-space))
+  (sp-local-pair "'" "'"   :actions '(:rem insert))
   (sp-local-pair "`" nil   :actions nil)
-  (sp-local-pair "'" nil   :actions nil)
   )
 
 ;;; Coq
@@ -229,7 +211,7 @@ Insert leading padding unless at start of line or after an open round paren."
   (sp-local-pair "{" "}"   :post-handlers '(:add cbsp:internal-and-external-padding))
   (sp-local-pair "[" "]"   :post-handlers '(:add cbsp:internal-and-external-padding))
   (sp-local-pair "(" ")"   :post-handlers '(:add cbsp:external-padding))
-  (sp-local-pair "'" nil   :actions nil)
+  (sp-local-pair "'" "'"   :actions '(:rem insert))
   )
 
 ;;; F#
@@ -241,8 +223,8 @@ Insert leading padding unless at start of line or after an open round paren."
   (sp-local-pair "(" ")"   :post-handlers '(:add sp-ocaml-just-one-space))
   (sp-local-pair "[|" "|]" :post-handlers '(:add sp-ocaml-just-one-space))
   (sp-local-pair "[<" ">]" :post-handlers '(:add sp-ocaml-just-one-space))
+  (sp-local-pair "'" "'"   :actions '(:rem insert))
   (sp-local-pair "`" nil   :actions nil)
-  (sp-local-pair "'" nil   :actions nil)
   )
 
 ;;; Idris
@@ -377,7 +359,9 @@ Insert leading padding unless at start of line or after an open round paren."
 ;;; Swift
 
 (sp-with-modes '(swift-mode)
-  (sp-local-pair "{" "}" :post-handlers '(:add cbsp:internal-and-external-padding)))
+  (sp-local-pair "{" "}" :post-handlers '(:add cbsp:internal-and-external-padding))
+  (sp-local-pair "'" "'"   :actions '(:rem insert))
+  )
 
 ;;; C
 
