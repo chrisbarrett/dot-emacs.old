@@ -359,11 +359,14 @@ Changes the selected buffer."
 
 (defun cb:comma-then-space ()
   (interactive)
-  (save-restriction
-    (narrow-to-region (line-beginning-position) (point))
-    (atomic-change-group
-      (insert-char ?\,)
-      (just-one-space))))
+  (let ((in-string-or-comment? (nth 8 (syntax-ppss))))
+    (if in-string-or-comment?
+        (insert ",")
+      (save-restriction
+        (narrow-to-region (line-beginning-position) (point))
+        (atomic-change-group
+          (insert-char ?\,)
+          (just-one-space))))))
 
 ;;; Key bindings
 
