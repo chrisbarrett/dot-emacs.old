@@ -95,6 +95,14 @@ Collapse spaces if this is a double-colon."
         (pad (s-repeat (current-indentation) " ")))
     (s-repeat n (concat ",\n" pad))))
 
+(defun cbrs:previous-struct-def ()
+  "Search backward for the name of the last struct defined in this file."
+  (save-match-data
+    (if (search-backward-regexp (rx "struct" (+ space) (group (+ word)))
+                                nil t)
+        (match-string 1)
+      "Name")))
+
 ;;; Key bindings
 
 (after 'rust-mode

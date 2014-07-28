@@ -1,0 +1,5 @@
+# key: #d
+# name: deriving attribute
+# condition: (cbyas:bol?)
+# --
+#[deriving($0)]
