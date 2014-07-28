@@ -60,7 +60,7 @@ Collapse spaces if this is a double-colon."
     (insert "<>")
     (forward-char -1)))
 
-;;; Flychek
+;;; Flycheck
 
 (defun cbrs:set-rust-library-path ()
   "Set the search path for rust libraries."
