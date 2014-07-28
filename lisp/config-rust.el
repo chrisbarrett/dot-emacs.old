@@ -91,11 +91,9 @@ Collapse spaces if this is a double-colon."
 
 (defun cbrs:fmt-println-args (text)
   "Format the contents of a call to `println!' based on the given format string."
-  (let ((n (s-count-matches (rx (? (not (any "\\")))
-                                "{")
-                            text)))
-    (s-repeat n (concat ",\n"
-                        (s-repeat (current-indentation) " ")))))
+  (let ((n (s-count-matches "{" text))
+        (pad (s-repeat (current-indentation) " ")))
+    (s-repeat n (concat ",\n" pad))))
 
 ;;; Key bindings
 
