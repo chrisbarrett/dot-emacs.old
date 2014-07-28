@@ -66,7 +66,7 @@
                        ((org-agenda-overriding-header "Next Actions")))
             (agenda ""
                     ((org-agenda-ndays 14)))
-            (todo "AWAITING|ORGANISE_IN"
+            (todo "AWAITING|ORGANISE_IN|COLLECT"
                   ((org-agenda-overriding-header "Incoming")))
             (todo "TODO_OUT|READY|ORGANISE_OUT"
                   ((org-agenda-overriding-header "Outgoing")))
