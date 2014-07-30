@@ -1,9 +1,9 @@
 # -*- mode: snippet; require-final-newline: nil -*-
-# name: enum
-# key: e
+# name: trait
+# key: tr
 # binding: direct-keybinding
 # condition: (cbrs:bol-or-after-accessibility-modifier?)
 # --
-enum ${1:Name} {
+trait ${1:Name} {
     $0
 }

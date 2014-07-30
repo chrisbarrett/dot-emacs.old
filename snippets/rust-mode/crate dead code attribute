@@ -1,6 +1,4 @@
-# -*- mode: snippet; require-final-newline: nil -*-
-# name: crate dead code attribute
 # key: #!
-# binding: direct-keybinding
+# name: crate allow(dead_code)
 # --
 #![allow(dead_code)]

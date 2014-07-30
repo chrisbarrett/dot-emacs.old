@@ -1,7 +1,5 @@
-# -*- mode: snippet; require-final-newline: nil -*-
-# name: use
 # key: u
-# binding: direct-keybinding
+# name: use
 # condition: (cbyas:bol?)
 # --
-use ${1:alias} = ${2:ident};
+use ${1:ident};
