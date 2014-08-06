@@ -105,10 +105,10 @@ Collapse spaces if this is a double-colon."
 
 ;;; Company
 
-(after 'rust-mode
-  (require 'racer)
-  (add-to-list 'company-backends '(racer-company-complete
-                                   :with company-dabbrev)))
+;; (after 'rust-mode
+;;   (require 'racer)
+;;   (add-to-list 'company-backends '(racer-company-complete
+;;                                    :with company-dabbrev)))
 
 (defvar racer-cmd (f-join cb:lib-dir "racer" "bin" "racer"))
 (defvar rust-srcpath (f-join user-home-directory "src" "rust" "src"))
