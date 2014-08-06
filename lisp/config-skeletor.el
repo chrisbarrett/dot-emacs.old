@@ -30,6 +30,10 @@
 
 (cb:install-package 'skeletor)
 
+(custom-set-variables
+ '(skeletor-show-project-command 'magit-status)
+ )
+
 (skeletor-define-template "ocaml-project"
   :title "OCaml Project")
 
