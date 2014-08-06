@@ -27,6 +27,7 @@
 ;;; Code:
 
 (require 'utils-common)
+(require 'utils-commands)
 
 (cb:declare-package-installer javascript
   :match (rx ".js" eos)
@@ -57,6 +58,32 @@
   (-if-let (buf (--first-buffer (derived-mode-p 'js2-mode)))
       (pop-to-buffer buf)
     (user-error "No JavaScript buffers")))
+
+;;; Reindent braces on <return>
+
+(defun cb-js:ret ()
+  "Create a newline with appropriate formatting."
+  (interactive "*")
+  (let* ((sp (sp-get-enclosing-sexp))
+         (was-at-braces? (equal "{" (plist-get sp :op)))
+         (was-after-brace? (thing-at-point-looking-at (rx "{" (* space))))
+         )
+    (comment-indent-new-line)
+    ;; Align closing brace.
+    (when (and was-at-braces? was-after-brace?)
+      (save-excursion
+        (when (search-forward "}" (line-end-position) t)
+          (forward-char -1)
+          (comment-indent-new-line))))
+
+    (indent-for-tab-command)))
+
+;;; Key bindings
+
+(after 'skewer-mode
+  (define-key skewer-mode-map (kbd "C-c C-l") 'skewer-load-buffer)
+  (define-key skewer-mode-map (kbd "RET") 'cb-js:ret)
+  )
 
 (after 'skewer-repl
   (define-key skewer-repl-mode-map (kbd "C-c C-z") 'cb-js:switch-to-js))
