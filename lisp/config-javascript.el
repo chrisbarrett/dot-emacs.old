@@ -48,6 +48,7 @@
 ;;; Smart operators
 
 (super-smart-ops-configure-for-mode 'js2-mode
+  :rem '("!")
   :custom '(("," . cb:comma-then-space)))
 
 ;;; Switch from repl to code.
@@ -77,6 +78,17 @@
           (comment-indent-new-line))))
 
     (indent-for-tab-command)))
+
+;;; Use lambda symbol for anonymous functions.
+
+(defvar cb-js:function-rx
+  `((,(rx bow (group "function") eow (* space) "(")
+     (0 (progn (compose-region (match-beginning 1) (match-end 1)
+                               ,(string-to-char "λ") 'decompose-region)
+               nil)))))
+
+(font-lock-add-keywords 'js2-mode cb-js:function-rx)
+(font-lock-add-keywords 'skewer-repl-mode cb-js:function-rx)
 
 ;;; Key bindings
 
