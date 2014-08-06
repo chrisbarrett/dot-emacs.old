@@ -44,6 +44,11 @@
   (cb:install-package 'skewer-mode)
   (skewer-html-mode))
 
+;;; Smart operators
+
+(super-smart-ops-configure-for-mode 'js2-mode
+  :custom '(("," . cb:comma-then-space)))
+
 ;;; Switch from repl to code.
 
 (defun cb-js:switch-to-js ()
