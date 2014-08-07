@@ -101,7 +101,7 @@
   (-when-let (buf (--first-buffer (derived-mode-p 'haskell-mode)))
     (pop-to-buffer buf)))
 
-;;; Adivice
+;;; Advice
 
 (defadvice haskell-mode-after-save-handler (around ignore-warnings activate)
   "Prevent subprocess warnings from changing window state."
