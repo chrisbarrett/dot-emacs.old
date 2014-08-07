@@ -41,6 +41,10 @@
 (add-hook 'haskell-mode-hook 'paren-face-add-keyword)
 (add-hook 'inferior-haskell-mode-hook 'paren-face-add-keyword)
 
+;;; Coq
+
+(add-hook 'coq-mode-hook 'paren-face-add-keyword)
+
 (provide 'config-parenface)
 
 ;;; config-parenface.el ends here
