@@ -72,6 +72,8 @@
  '(proof-electric-terminator-enable t)
  '(coq-compile-before-require t))
 
+;;; Smart operators
+
 (defvar cb-coq:smart-operator-list
   '("!" "$" "%" "&" "*" "+" "-" "." "/" ":" "<" "=" ">" "?" "@" "^" "|" "~")
   "The list of operators in the Coq language.")
@@ -98,6 +100,8 @@
   (define-key coq-mode-map (kbd "|") 'cb-ocaml:smart-pipe))
 
 (after 'coq (cb-coq:set-keys))
+
+;;; Smart Meta-RET
 
 (defun cb-coq:case-start-col ()
   (save-excursion
@@ -179,6 +183,8 @@
 
   (when (true? evil-mode)
     (evil-insert-state)))
+
+;;; Key bindings
 
 (after 'coq
   (define-key coq-mode-map (kbd "M-RET")   'cb-coq:meta-ret)
