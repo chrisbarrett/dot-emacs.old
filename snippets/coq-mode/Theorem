@@ -3,8 +3,7 @@
 # expand-env: ((yas-indent-line (quote fixed)))
 # condition: (cbyas:bol?)
 # --
-Theorem ${1:name} : forall ${2:terms},
-  $0.
+Theorem ${1:name} : forall ${2:terms}, $0.
 Proof.
   intros ${2:$(cb-coq:get-vars-for-intros yas/text)}.
   reflexivity. Qed.
