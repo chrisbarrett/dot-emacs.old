@@ -202,6 +202,19 @@ TEXT is proof variables in the snippet."
 (hook-fn 'coq-mode-hook
   (setq-local compile-command (concat "coqc " (buffer-name))))
 
+;;; Font lock
+
+
+;; Use forall unicode symbol
+
+(defvar cb-coq:forall-rx
+  `((,(rx bow (group "forall") eow)
+     (0 (progn (compose-region (match-beginning 1) (match-end 1)
+                               ,(string-to-char "∀") 'decompose-region)
+               nil)))))
+
+(font-lock-add-keywords 'coq-mode cb-coq:forall-rx)
+
 (provide 'config-coq)
 
 ;;; config-coq.el ends here
