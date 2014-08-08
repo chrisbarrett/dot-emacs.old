@@ -34,8 +34,8 @@
 
 (custom-set-faces
  '(helm-selection
-   ((((background light)) (:background "white" :foreground "black")
-     ((background dark))  (:background "black" :foreground "white")))))
+   ((((background light)) :background "white" :foreground "black")
+    (((background dark))  :background "black" :foreground "white"))))
 
 (custom-set-variables
  '(helm-adaptive-history-file (f-join cb:tmp-dir "helm-adaptive-history"))

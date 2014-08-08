@@ -76,13 +76,13 @@
  '(proof-eager-annotation-face
    ((t (:inherit default :background nil :underline "darkgoldenrod"))))
  '(coq-cheat-face
-   ((((background light)) (:background "#fee8e5")
-     ((background dark))  (:background "#51202b"))))
+   ((((background light)) :background "#fee8e5")
+    (((background dark))  :background "#51202b")))
  '(proof-locked-face
    ((t (:background nil))))
  '(proof-error-face
-   ((((background light)) (:background "#fee8e5")
-     ((background dark))  (:background "#51202b")))))
+   ((((background light)) :background "#fee8e5")
+    (((background dark))  :background "#51202b"))))
 
 ;;; Smart operators
 
