@@ -505,6 +505,14 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
   "<" 'sp-backward-down-sexp
   ">" 'sp-down-sexp)
 
+;;; Helm
+
+(bind-key "C-SPC" 'helm-mini)
+(bind-key "C-x C-b" 'helm-buffers-list)
+
+(evil-global-set-key 'normal (kbd "C-e") 'helm-etags-select)
+(evil-global-set-key 'normal (kbd "C-t") 'helm-imenu)
+
 ;;; Misc
 
 (evil-define-key 'normal Man-mode-map (kbd "q") 'Man-kill)

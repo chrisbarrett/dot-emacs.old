@@ -30,39 +30,30 @@
 (require 'config-evil)
 
 (cb:install-package 'helm t)
+(cb:install-package 'helm-projectile)
 
 (custom-set-faces
  '(helm-selection
    ((((background light)) (:background "white" :foreground "black")
      ((background dark))  (:background "black" :foreground "white")))))
 
-(setq helm-adaptive-history-file (f-join cb:tmp-dir "helm-adaptive-history"))
+(custom-set-variables
+ '(helm-adaptive-history-file (f-join cb:tmp-dir "helm-adaptive-history"))
+ '(helm-ff-skip-boring-files t)
+ '(helm-boring-file-regexp-list '("\\.DS_Store" "\\.elc$")))
 
-(after 'evil
-  (bind-keys
-    :overriding? t
-    "C-SPC" 'helm-mini
-    "C-x C-b" 'helm-buffers-list
-    "M-b" 'helm-buffers-list)
+;;; Commands
 
-  (evil-global-set-key 'normal (kbd "C-e") 'helm-etags-select)
-  (evil-global-set-key 'normal (kbd "C-t") 'helm-imenu))
+(defun cb-helm:ff-tilde ()
+  (interactive)
+  (if (looking-back "/")
+      (helm-insert-in-minibuffer "~/" t)
+    (call-interactively 'self-insert-command)))
 
-(setq helm-ff-skip-boring-files t)
-(setq helm-boring-file-regexp-list '("\\.DS_Store" "\\.elc$"))
+;;; Key bindings
 
 (after 'helm-files
-  (define-key helm-find-files-map
-    (kbd "~")
-    (command
-     (if (looking-back "/")
-         (helm-insert-in-minibuffer "~/" t)
-       (call-interactively 'self-insert-command)))))
-
-(bind-key* "C-x SPC" 'helm-find-files)
-
-(cb:install-package 'helm-projectile)
-(bind-key "M-j" 'helm-projectile)
+  (define-key helm-find-files-map (kbd "~") 'cb-helm:ff-tilde))
 
 (provide 'config-helm)
 
