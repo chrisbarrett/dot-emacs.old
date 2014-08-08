@@ -214,6 +214,8 @@
 (unless (or noninteractive (true? after-init-time))
   (cb-colour:load-last-theme))
 
+;;; Highlight TODO keywords in all modes.
+
 (hook-fn 'prog-mode-hook
   (font-lock-add-keywords
    nil '(("\\<\\(FIX\\|TODO\\|FIXME\\|HACK\\|REFACTOR\\):"
