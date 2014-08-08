@@ -69,6 +69,14 @@
  '(shm-auto-insert-skeletons nil)
  )
 
+(custom-set-faces
+ '(shm-current-face
+   ((((background dark))  :background "#01304b")
+    (((background light)) :background "#e9f2c5")))
+ '(shm-quarantine-face
+   ((((background dark))  :background "#51202b")
+    (((background light)) :background "#fee8e5"))))
+
 (add-to-list 'completion-ignored-extensions ".hi")
 (add-hook 'haskell-mode-hook 'structured-haskell-mode)
 (add-hook 'haskell-mode-hook 'hi2-mode)

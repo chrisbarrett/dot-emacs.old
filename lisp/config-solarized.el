@@ -47,11 +47,7 @@
   (after 'org
     (set-face-background 'org-block-begin-line "#f8f1dc")
     (set-face-background 'org-block-end-line "#f8f1dc")
-    (set-face-background 'org-block-background "#f8f1dc"))
-
-  (after 'shm
-    (set-face-background 'shm-current-face  "#e9f2c5")
-    (set-face-background 'shm-quarantine-face  "#fee8e5")))
+    (set-face-background 'org-block-background "#f8f1dc")))
 
 (defun solarized-dark ()
   "Switch theme to solarized dark."
@@ -59,10 +55,6 @@
   (cbcl:save-theme-settings 'solarized-dark)
   (load-theme 'solarized-dark 'no-confirm)
   (cb-colour:common-setup)
-
-  (after 'shm
-    (set-face-background 'shm-current-face "#01304b")
-    (set-face-background 'shm-quarantine-face "#51202b"))
 
   (after 'org
     (set-face-background 'org-block-end-line "#11303b")
