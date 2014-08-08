@@ -57,10 +57,6 @@
     (set-face-background 'shm-current-face  "#e9f2c5")
     (set-face-background 'shm-quarantine-face  "#fee8e5"))
 
-  (after 'helm
-    (set-face-background  'helm-selection "white")
-    (set-face-foreground  'helm-selection "black"))
-
   (after 'parenface
     (set-face-foreground  'parenface-paren-face "grey80")))
 
@@ -70,10 +66,6 @@
   (cbcl:save-theme-settings 'solarized-dark)
   (load-theme 'solarized-dark 'no-confirm)
   (cb-colour:common-setup)
-
-  (after 'helm
-    (set-face-background  'helm-selection "black")
-    (set-face-foreground  'helm-selection "white"))
 
   (after 'ledger-fonts
     (set-face-background 'ledger-font-xact-highlight-face "#073642")

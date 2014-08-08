@@ -31,6 +31,11 @@
 
 (cb:install-package 'helm t)
 
+(custom-set-faces
+ '(helm-selection
+   ((((background light)) (:background "white" :foreground "black")
+     ((background dark))  (:background "black" :foreground "white")))))
+
 (setq helm-adaptive-history-file (f-join cb:tmp-dir "helm-adaptive-history"))
 
 (after 'evil
