@@ -32,15 +32,16 @@
 (cb:install-package 'helm t)
 (cb:install-package 'helm-projectile)
 
-(custom-set-faces
- '(helm-selection
-   ((((background light)) :background "white" :foreground "black")
-    (((background dark))  :background "black" :foreground "white"))))
-
 (custom-set-variables
  '(helm-adaptive-history-file (f-join cb:tmp-dir "helm-adaptive-history"))
  '(helm-ff-skip-boring-files t)
  '(helm-boring-file-regexp-list '("\\.DS_Store" "\\.elc$")))
+
+(custom-set-faces
+ '(helm-selection
+   ((((background light)) :background "white" :foreground "black")
+    (((background dark))  :background "black" :foreground "white")
+    ((t :underline nil)))))
 
 ;;; Commands
 
