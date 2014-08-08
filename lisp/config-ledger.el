@@ -57,6 +57,14 @@
      ("ledger-file" . ledger-report-ledger-file-format-specifier)
      ("value" . ledger-report-value-format-specifier))))
 
+(custom-set-faces
+ '(ledger-font-xact-highlight-face
+   ((((background dark))  :background "#073642")
+    (((background light)) :background "#eee8d5")))
+ '(ledger-occur-xact-face
+   ((((background dark))  :background "#073642")
+    (((background light)) :background "#eee8d5"))))
+
 ;;; Reading utilities
 
 (defmacro cbledger:with-ledger-buffer (&rest body)

@@ -49,10 +49,6 @@
     (set-face-background 'org-block-end-line "#f8f1dc")
     (set-face-background 'org-block-background "#f8f1dc"))
 
-  (after 'ledger-fonts
-    (set-face-background 'ledger-font-xact-highlight-face "#eee8d5")
-    (set-face-background 'ledger-occur-xact-face "#eee8d5"))
-
   (after 'shm
     (set-face-background 'shm-current-face  "#e9f2c5")
     (set-face-background 'shm-quarantine-face  "#fee8e5")))
@@ -63,10 +59,6 @@
   (cbcl:save-theme-settings 'solarized-dark)
   (load-theme 'solarized-dark 'no-confirm)
   (cb-colour:common-setup)
-
-  (after 'ledger-fonts
-    (set-face-background 'ledger-font-xact-highlight-face "#073642")
-    (set-face-background 'ledger-occur-xact-face "#073642"))
 
   (after 'shm
     (set-face-background 'shm-current-face "#01304b")
