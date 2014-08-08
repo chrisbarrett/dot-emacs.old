@@ -88,7 +88,7 @@
 
 (custom-set-faces
  '(org-hide ((t :background unspecified)))
- '(org-meta-line ((t :italic nil)))
+ '(org-meta-line ((t :italic nil :inherit font-lock-comment-face)))
  '(org-document-info-keyword ((t :foreground unspecified :inherit org-meta-line)))
 
  '(org-block-begin-line
