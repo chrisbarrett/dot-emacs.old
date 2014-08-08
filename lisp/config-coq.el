@@ -72,6 +72,10 @@
  '(proof-electric-terminator-enable t)
  '(coq-compile-before-require t))
 
+(custom-set-faces
+ '(proof-eager-annotation-face
+   ((t (:inherit default :background nil :underline "darkgoldenrod")))))
+
 ;;; Smart operators
 
 (defvar cb-coq:smart-operator-list
