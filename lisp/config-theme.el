@@ -116,10 +116,6 @@
     (set-face-background  'sp-show-pair-match-face "white")
     (set-face-bold        'sp-show-pair-match-face t))
 
-  (after 'iedit
-    (set-face-attribute 'iedit-occurrence nil :bold t)
-    (set-face-attribute 'iedit-occurrence nil :foreground solarized-hl-red))
-
   (after 'org
     (set-face-underline  'org-block-begin-line t)
     (set-face-attribute  'org-block-end-line nil :overline t)

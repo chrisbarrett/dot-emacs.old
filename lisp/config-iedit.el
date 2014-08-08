@@ -31,6 +31,9 @@
 
 (cb:install-package 'iedit)
 
+(custom-set-faces
+ '(iedit-occurrence ((t (:box "magenta")))))
+
 (bind-key "M-r" 'iedit-mode)
 
 (defun cbiedit:replace-read ()
