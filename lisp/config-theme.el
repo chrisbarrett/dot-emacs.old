@@ -29,7 +29,15 @@
 (require 'utils-common)
 (require 'config-solarized)
 
+;;; Compat
+
+(when (and (<= emacs-major-version 24)
+           (< emacs-minor-version 3))
+  (defalias 'set-face-bold 'set-face-bold-p))
+
 (setq font-lock-maximum-decoration t)
+
+;;; Advices
 
 (defadvice jit-lock-force-redisplay (around ignore-killed-buffers activate)
   "Do not attempt to run font lock on killed buffers."
@@ -40,6 +48,8 @@
 (defadvice set-face-font (around ignore-in-term activate)
   "Ignore attempts to change the font in terminals."
   (when (display-graphic-p) ad-do-it))
+
+;;; Font utilities
 
 (defun first-font (&rest fonts)
   "Return the first available font in FONTS."
@@ -60,15 +70,22 @@
                   "Ubuntu Mono Regular" "Courier")
       "Menlo"))
 
+;;; Force use of monospace font
+
 (set-frame-font (format "%s 11" (monospace-font)) t)
 
 (hook-fn 'after-make-frame-functions
   (set-frame-font (format "%s 11" (monospace-font)) t
                   (list (car (frame-list)))))
 
-(when (and (<= emacs-major-version 24)
-           (< emacs-minor-version 3))
-  (defalias 'set-face-bold 'set-face-bold-p))
+;;; Highlight TODO keywords in all modes.
+
+(hook-fn 'prog-mode-hook
+  (font-lock-add-keywords
+   nil '(("\\<\\(FIX\\|TODO\\|FIXME\\|HACK\\|REFACTOR\\):"
+          1 font-lock-warning-face t))))
+
+;;; Custom faces
 
 (defface intense-flash
   `((((class color) (background dark))
@@ -77,6 +94,8 @@
      (:bold t :background "#eee8d5" :foreground ,solarized-hl-cyan)))
   "Face for intense highlighted text."
   :group 'cb-faces)
+
+;;; Automatically load last theme.
 
 (defconst cbcl:saved-theme-file (f-join cb:tmp-dir "last-theme")
   "Filepath to a file containing the last selected colour theme.")

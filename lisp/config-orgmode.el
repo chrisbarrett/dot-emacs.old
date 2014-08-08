@@ -33,6 +33,7 @@
 (require 'config-theme)
 (require 'config-modegroups)
 (require 'config-darwin)
+(require 'config-theme)
 (require 'org)
 (autoload 'org-agenda-filter-apply "org-agenda")
 (autoload 'org-is-habit-p "org-habit")
@@ -84,6 +85,27 @@
      ("@phone" . 112)
      ("@work" . 119)
      (:endgroup))))
+
+(custom-set-faces
+ '(org-hide ((t :background unspecified)))
+ '(org-meta-line ((t :italic nil)))
+ '(org-document-info-keyword ((t :foreground unspecified :inherit org-meta-line)))
+
+ '(org-block-begin-line
+   ((((background light)) :background "#f8f1dc")
+    (((background dark))  :background "#11303b")
+    ((t :underline t))))
+ '(org-block-end-line
+   ((((background light)) :background "#f8f1dc")
+    (((background dark))  :background "#11303b")
+    ((t :overline t))))
+ '(org-block-background
+   ((((background light)) :background "#f8f1dc")
+    (((background dark))  :background "#11303b"))))
+
+(--each '(org-level-1 org-level-2 org-level-3 org-level-4 org-level-5 org-level-6 org-level-7 org-level-8)
+  (custom-set-faces
+   `(,it ((t :bold nil :font ,(monospace-font))))))
 
 (add-hook 'org-mode-hook 'auto-revert-mode)
 

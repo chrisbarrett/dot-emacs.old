@@ -41,46 +41,16 @@
   "Switch theme to solarized light."
   (interactive)
   (cbcl:save-theme-settings 'solarized-light)
-  (load-theme 'solarized-light 'no-confirm)
-  (cb-colour:common-setup)
-
-  (after 'org
-    (set-face-background 'org-block-begin-line "#f8f1dc")
-    (set-face-background 'org-block-end-line "#f8f1dc")
-    (set-face-background 'org-block-background "#f8f1dc")))
+  (load-theme 'solarized-light 'no-confirm))
 
 (defun solarized-dark ()
   "Switch theme to solarized dark."
   (interactive)
   (cbcl:save-theme-settings 'solarized-dark)
-  (load-theme 'solarized-dark 'no-confirm)
-  (cb-colour:common-setup)
-
-  (after 'org
-    (set-face-background 'org-block-end-line "#11303b")
-    (set-face-background 'org-block-begin-line "#11303b")
-    (set-face-background 'org-block-background "#11303b")))
+  (load-theme 'solarized-dark 'no-confirm))
 
 (defalias 'light 'solarized-light)
 (defalias 'dark 'solarized-dark)
-
-(defun cb-colour:common-setup ()
-  "Perform customisation common to all themes."
-
-  (after 'org
-    (set-face-underline  'org-block-begin-line t)
-    (set-face-attribute  'org-block-end-line nil :overline t)
-    (set-face-background 'org-hide 'unspecified)
-    (set-face-foreground 'org-document-info-keyword 'unspecified)
-    (set-face-italic 'org-meta-line nil)
-    (set-face-attribute 'org-document-info-keyword nil :inherit 'org-meta-line)
-    (--each (--filter-atoms (and (s-starts-with? "org-level-" (symbol-name it))
-                                 (facep it)))
-      (unless (equal 'org-level-1 it)
-        (set-face-bold it nil))
-      (set-face-font it (monospace-font)))))
-
-
 
 (provide 'config-solarized)
 
