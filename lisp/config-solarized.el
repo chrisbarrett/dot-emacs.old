@@ -67,14 +67,6 @@
 (defun cb-colour:common-setup ()
   "Perform customisation common to all themes."
 
-  (after 'helm
-    (set-face-underline   'helm-selection nil))
-
-  (after 'smartparens
-    (set-face-foreground  'sp-show-pair-match-face "#002b36")
-    (set-face-background  'sp-show-pair-match-face "white")
-    (set-face-bold        'sp-show-pair-match-face t))
-
   (after 'org
     (set-face-underline  'org-block-begin-line t)
     (set-face-attribute  'org-block-end-line nil :overline t)
