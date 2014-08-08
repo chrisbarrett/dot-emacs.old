@@ -32,6 +32,9 @@
 (when (display-graphic-p)
   (global-hl-line-mode t))
 
+(custom-set-faces
+ '(hl-line ((t (:underline nil)))))
+
 (make-variable-buffer-local 'global-hl-line-mode)
 
 (defun hl-line-disable ()

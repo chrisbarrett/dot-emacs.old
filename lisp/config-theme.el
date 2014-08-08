@@ -100,9 +100,6 @@
 (defun cb-colour:common-setup ()
   "Perform customisation common to all themes."
 
-  (when (featurep 'hl-line)
-    (set-face-underline 'hl-line nil))
-
   (set-face-font 'default (format "%s 11" (monospace-font)))
 
   (after 'eval-sexp-fu
