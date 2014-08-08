@@ -35,8 +35,6 @@
            (< emacs-minor-version 3))
   (defalias 'set-face-bold 'set-face-bold-p))
 
-(setq font-lock-maximum-decoration t)
-
 ;;; Advices
 
 (defadvice jit-lock-force-redisplay (around ignore-killed-buffers activate)
@@ -55,15 +53,6 @@
   "Return the first available font in FONTS."
   (--first (find-font (font-spec :name it)) fonts))
 
-(defun serif-font ()
-  "Retun the serif type-face name to use for this Emacs session."
-  (first-font "Palatino" "Cambria" "Times New Roman"))
-
-(defun sans-serif-font ()
-  "Retun the sans-serif type-face name to use for this Emacs session."
-  (first-font "Lucida Grande" "Ubuntu Regular" "Segoe UI"
-              "Helvetica Neue" "Calibri" "Helvetica" "Verdana" "Arial"))
-
 (defun monospace-font ()
   "Retun the monospace type-face name to use for this Emacs session."
   (or (first-font "Menlo" "Consolas" "Inconsolata" "DejaVu Sans Mono"
@@ -78,20 +67,11 @@
   (set-frame-font (format "%s 11" (monospace-font)) t
                   (list (car (frame-list)))))
 
-;;; Highlight TODO keywords in all modes.
-
-(hook-fn 'prog-mode-hook
-  (font-lock-add-keywords
-   nil '(("\\<\\(FIX\\|TODO\\|FIXME\\|HACK\\|REFACTOR\\):"
-          1 font-lock-warning-face t))))
-
 ;;; Custom faces
 
 (defface intense-flash
-  `((((class color) (background dark))
-     (:bold t :background "#073642" :foreground ,solarized-hl-cyan))
-    (((class color) (background light))
-     (:bold t :background "#eee8d5" :foreground ,solarized-hl-cyan)))
+  `((((class color) (background dark))  :background "#073642")
+    (((class color) (background light)) :background "#eee8d5" ))
   "Face for intense highlighted text."
   :group 'cb-faces)
 
@@ -117,7 +97,7 @@
 
 (hook-fn 'prog-mode-hook
   (font-lock-add-keywords
-   nil '(("\\<\\(FIX\\|TODO\\|FIXME\\|HACK\\|REFACTOR\\):"
+   nil `((,(rx bow (group (or "FIX" "TODO" "FIXME" "HACK" "REFACTOR")) ":")
           1 font-lock-warning-face t))))
 
 (provide 'config-theme)
