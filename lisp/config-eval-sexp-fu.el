@@ -28,7 +28,6 @@
 
 (require 'utils-common)
 (require 'config-theme)
-(require 'config-solarized)
 
 (cb:install-package 'eval-sexp-fu t)
 
