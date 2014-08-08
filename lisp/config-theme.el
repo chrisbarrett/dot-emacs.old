@@ -27,6 +27,7 @@
 ;;; Code:
 
 (require 'utils-common)
+(require 'config-solarized)
 
 (setq font-lock-maximum-decoration t)
 
@@ -69,15 +70,6 @@
            (< emacs-minor-version 3))
   (defalias 'set-face-bold 'set-face-bold-p))
 
-(defvar solarized-hl-yellow    "#b58900")
-(defvar solarized-hl-orange    "#cb4b16")
-(defvar solarized-hl-red       "#dc322f")
-(defvar solarized-hl-magenta   "#d33682")
-(defvar solarized-hl-violet    "#6c71c4")
-(defvar solarized-hl-blue      "#268bd2")
-(defvar solarized-hl-cyan      "#2aa198")
-(defvar solarized-hl-green     "#859900")
-
 (defface intense-flash
   `((((class color) (background dark))
      (:bold t :background "#073642" :foreground ,solarized-hl-cyan))
@@ -94,16 +86,10 @@
   (when after-init-time
     (f-write (format "(%s)" theme) 'utf-8 cbcl:saved-theme-file)))
 
-(unless noninteractive
-  (cb:install-package 'solarized-theme))
-
 (defun cb-colour:common-setup ()
   "Perform customisation common to all themes."
 
   (set-face-font 'default (format "%s 11" (monospace-font)))
-
-  (after 'eval-sexp-fu
-    (set-face-background 'eval-sexp-fu-flash-error solarized-hl-orange))
 
   (after 'helm
     (set-face-underline   'helm-selection nil))
@@ -125,63 +111,6 @@
       (unless (equal 'org-level-1 it)
         (set-face-bold it nil))
       (set-face-font it (monospace-font)))))
-
-(defun solarized-light ()
-  "Switch theme to solarized light."
-  (interactive)
-  (cbcl:save-theme-settings 'solarized-light)
-  (load-theme 'solarized-light 'no-confirm)
-  (cb-colour:common-setup)
-
-  (after 'org
-    (set-face-background 'org-block-begin-line "#f8f1dc")
-    (set-face-background 'org-block-end-line "#f8f1dc")
-    (set-face-background 'org-block-background "#f8f1dc"))
-
-  (after 'ledger-fonts
-    (set-face-background 'ledger-font-xact-highlight-face "#eee8d5")
-    (set-face-background 'ledger-occur-xact-face "#eee8d5"))
-
-  (after 'shm
-    (set-face-background 'shm-current-face  "#e9f2c5")
-    (set-face-background 'shm-quarantine-face  "#fee8e5"))
-
-  (after 'helm
-    (set-face-background  'helm-selection "white")
-    (set-face-foreground  'helm-selection "black"))
-
-  (after 'parenface
-    (set-face-foreground  'parenface-paren-face "grey80")))
-
-(defun solarized-dark ()
-  "Switch theme to solarized dark."
-  (interactive)
-  (cbcl:save-theme-settings 'solarized-dark)
-  (load-theme 'solarized-dark 'no-confirm)
-  (cb-colour:common-setup)
-
-  (after 'helm
-    (set-face-background  'helm-selection "black")
-    (set-face-foreground  'helm-selection "white"))
-
-  (after 'ledger-fonts
-    (set-face-background 'ledger-font-xact-highlight-face "#073642")
-    (set-face-background 'ledger-occur-xact-face "#073642"))
-
-  (after 'parenface
-    (set-face-foreground  'parenface-paren-face "#505070"))
-
-  (after 'shm
-    (set-face-background 'shm-current-face "#01304b")
-    (set-face-background 'shm-quarantine-face "#51202b"))
-
-  (after 'org
-    (set-face-background 'org-block-end-line "#11303b")
-    (set-face-background 'org-block-begin-line "#11303b")
-    (set-face-background 'org-block-background "#11303b")))
-
-(defalias 'light 'solarized-light)
-(defalias 'dark 'solarized-dark)
 
 (defun cb-colour:load-last-theme ()
   (condition-case _

@@ -28,11 +28,16 @@
 
 (require 'utils-common)
 (require 'config-theme)
+(require 'config-solarized)
 
 (cb:install-package 'eval-sexp-fu t)
 
 (custom-set-variables
  '(eval-sexp-fu-flash-duration 0.2))
+
+(custom-set-faces
+ `(eval-sexp-fu-flash-error
+   ((t (:background ,solarized-hl-orange)))))
 
 (add-hook 'cb:lisp-modes-hook 'turn-on-eval-sexp-fu-flash-mode)
 
