@@ -86,32 +86,6 @@
   (when after-init-time
     (f-write (format "(%s)" theme) 'utf-8 cbcl:saved-theme-file)))
 
-(defun cb-colour:common-setup ()
-  "Perform customisation common to all themes."
-
-  (set-face-font 'default (format "%s 11" (monospace-font)))
-
-  (after 'helm
-    (set-face-underline   'helm-selection nil))
-
-  (after 'smartparens
-    (set-face-foreground  'sp-show-pair-match-face "#002b36")
-    (set-face-background  'sp-show-pair-match-face "white")
-    (set-face-bold        'sp-show-pair-match-face t))
-
-  (after 'org
-    (set-face-underline  'org-block-begin-line t)
-    (set-face-attribute  'org-block-end-line nil :overline t)
-    (set-face-background 'org-hide 'unspecified)
-    (set-face-foreground 'org-document-info-keyword 'unspecified)
-    (set-face-italic 'org-meta-line nil)
-    (set-face-attribute 'org-document-info-keyword nil :inherit 'org-meta-line)
-    (--each (--filter-atoms (and (s-starts-with? "org-level-" (symbol-name it))
-                                 (facep it)))
-      (unless (equal 'org-level-1 it)
-        (set-face-bold it nil))
-      (set-face-font it (monospace-font)))))
-
 (defun cb-colour:load-last-theme ()
   (condition-case _
       (load cbcl:saved-theme-file nil t t)
