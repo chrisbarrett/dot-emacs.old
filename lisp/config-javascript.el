@@ -49,6 +49,12 @@
 
 (super-smart-ops-configure-for-mode 'js2-mode
   :rem '("!")
+  :add '("?")
+  :custom '(("," . cb:comma-then-space)))
+
+(super-smart-ops-configure-for-mode 'skewer-repl-mode
+  :rem '("!")
+  :add '("?")
   :custom '(("," . cb:comma-then-space)))
 
 ;;; Switch from repl to code.
