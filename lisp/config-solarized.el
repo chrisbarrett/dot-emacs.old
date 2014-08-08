@@ -55,10 +55,7 @@
 
   (after 'shm
     (set-face-background 'shm-current-face  "#e9f2c5")
-    (set-face-background 'shm-quarantine-face  "#fee8e5"))
-
-  (after 'parenface
-    (set-face-foreground  'parenface-paren-face "grey80")))
+    (set-face-background 'shm-quarantine-face  "#fee8e5")))
 
 (defun solarized-dark ()
   "Switch theme to solarized dark."
@@ -70,9 +67,6 @@
   (after 'ledger-fonts
     (set-face-background 'ledger-font-xact-highlight-face "#073642")
     (set-face-background 'ledger-occur-xact-face "#073642"))
-
-  (after 'parenface
-    (set-face-foreground  'parenface-paren-face "#505070"))
 
   (after 'shm
     (set-face-background 'shm-current-face "#01304b")

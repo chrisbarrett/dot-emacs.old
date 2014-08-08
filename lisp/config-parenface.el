@@ -28,13 +28,12 @@
 
 (require 'utils-common)
 
-(cb:install-package 'parenface)
+(cb:install-package 'parenface t)
 
-;; Work around issue loading parenface.
-(require 'parenface
-         (f-join
-          (--first (s-matches? "parenface" it) (f-directories package-user-dir))
-          "parenface.el"))
+(custom-set-faces
+ '(parenface-paren-face
+   ((((background light)) :foreground "grey80")
+    (((background dark))  :foreground "#505070"))))
 
 ;;; Haskell
 
