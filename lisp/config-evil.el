@@ -523,6 +523,14 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
 
 (add-hook 'yas-before-expand-snippet-hook 'cb:maybe-evil-insert-state)
 
+;;; BBDB
+
+(evil-define-key 'normal bbdb-mode-map
+  "j" 'bbdb-next-record
+  "k" 'bbdb-prev-record
+  "l" 'bbdb-next-field
+  "h" 'bbdb-prev-field)
+
 ;;; Misc
 
 (evil-define-key 'normal Man-mode-map (kbd "q") 'Man-kill)

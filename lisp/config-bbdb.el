@@ -57,12 +57,6 @@
 (add-hook 'gnus-startup-hook 'bbdb-insinuate-gnus)
 (add-hook 'message-mode-hook 'bbdb-insinuate-mail)
 
-(after '(bbdb evil)
-  (define-key bbdb-mode-map (kbd "j") 'bbdb-next-record)
-  (define-key bbdb-mode-map (kbd "k") 'bbdb-prev-record)
-  (define-key bbdb-mode-map (kbd "l") 'bbdb-next-field)
-  (define-key bbdb-mode-map (kbd "h") 'bbdb-prev-field))
-
 (provide 'config-bbdb)
 
 ;;; config-bbdb.el ends here
