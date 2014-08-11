@@ -45,190 +45,213 @@
    '(cc-default-compiler "clang")
    '(cc-default-compiler-options "-fno-color-diagnostics -g")))
 
-(after 'google-c-style
-  (add-hook 'c-mode-common-hook 'google-set-c-style)
-  (add-hook 'c-mode-common-hook 'google-make-newline-indent))
+;;; Configure google-c-style.
 
-(after 'cc-mode
-  (require 'google-c-style nil t)
+(autoload  'google-set-c-style "google-c-style")
+(autoload  'google-make-newline-indent "google-c-style")
+(add-hook 'c-mode-common-hook 'google-set-c-style)
+(add-hook 'c-mode-common-hook 'google-make-newline-indent)
 
-  (define-key c-mode-map (kbd "M-q")
-    (if (executable-find "clang-format")
-        'clang-format-region
-      'indent-dwim))
+;;; Utils
 
-  (defun cb-c:switch-between-header-and-impl ()
-    "Switch between a header file and its implementation."
-    (interactive)
-    (let* ((ext   (if (f-ext? (buffer-file-name) "h") "c" "h"))
-           (counterpart (format "%s.%s" (f-no-ext (buffer-file-name)) ext)))
-      (if (or (f-file? counterpart)
-              (y-or-n-p (format "%s does not exist.  Create it? " counterpart)))
-          (find-file counterpart)
-        (message "Aborted"))))
+(defun cb-c:looking-at-flow-control-header? ()
+  (thing-at-point-looking-at
+   (rx (* nonl) (? ";") (* space)
+       (or "if" "when" "while" "for")
+       (* nonl)
+       "("
+       (* (not (any ")"))))))
 
-  (define-key c-mode-map (kbd "C-c C-a") 'cb-c:switch-between-header-and-impl)
+(defun cb-c:looking-at-flow-control-keyword? ()
+  (thing-at-point-looking-at
+   (rx (or (group (or "if" "when" "while" "for") (or (+ space) "("))
+           (group (or "do" "else") (* space))))))
 
-  (defun cb-c:looking-at-flow-control-header? ()
+(defun cb-c:looking-at-assignment-right-side? ()
+  (save-excursion
     (thing-at-point-looking-at
-     (rx (* nonl) (? ";") (* space)
-         (or "if" "when" "while" "for")
-         (* nonl)
-         "("
-         (* (not (any ")"))))))
+     (rx "=" (* space)
+         ;; Optional casts
+         (? (group "(" (* nonl) ")"))
+         (* space)))))
 
-  (defun cb-c:looking-at-flow-control-keyword? ()
-    (thing-at-point-looking-at
-     (rx (or (group (or "if" "when" "while" "for") (or (+ space) "("))
-             (group (or "do" "else") (* space))))))
+(defun cb-c:looking-at-cast? ()
+  (let ((cast (rx
 
-  (defun cb-c:looking-at-assignment-right-side? ()
+               (or
+                "return"
+                (any
+                 ;; Operator
+                 "+" "-" "*" "/" "|" "&" ">" "<"
+                 ;; Expression delimiter
+                 ";" "[" "{" "(" ")" "="))
+
+               (* space)
+
+               ;; Cast and type
+               "(" (* nonl) ")"
+
+               (* space)))
+        )
+    (and (thing-at-point-looking-at cast)
+         (save-excursion
+           (search-backward-regexp cast)
+           (not (cb-c:looking-at-flow-control-keyword?))))))
+
+(defun cb-c:looking-at-struct-keyword? ()
+  (save-excursion
+    (beginning-of-sexp)
+    (thing-at-point-looking-at (rx (or "{" " " "(" ",") "."))))
+
+(cl-defun cb-c:header-guard-var (&optional (header-file (buffer-file-name)))
+  "Return the variable to use in a header guard for HEADER-FILE."
+  (format "_%s_H_" (s-upcase (f-filename (f-no-ext header-file)))))
+
+(defun cb-c:maybe-remove-spaces-after-insertion (pred-regex op-start-regex)
+  (when (thing-at-point-looking-at pred-regex)
     (save-excursion
-      (thing-at-point-looking-at
-       (rx "=" (* space)
-           ;; Optional casts
-           (? (group "(" (* nonl) ")"))
-           (* space)))))
+      (let ((back-limit (save-excursion
+                          (search-backward-regexp op-start-regex)
+                          (point))))
+        (while (search-backward-regexp (rx space) back-limit t)
+          (delete-horizontal-space)))
+      (indent-according-to-mode))))
 
-  (defun cb-c:looking-at-cast? ()
-    (let ((cast (rx
+(defun cb-c:just-one-space-after-semicolon ()
+  (save-excursion
+    (when (search-backward-regexp (rx ";" (* space)) (line-beginning-position) t)
+      (replace-match "; " nil))))
 
-                 (or
-                  "return"
-                  (any
-                   ;; Operator
-                   "+" "-" "*" "/" "|" "&" ">" "<"
-                   ;; Expression delimiter
-                   ";" "[" "{" "(" ")" "="))
+(defun cb-cc:delete-brace-contents ()
+  (cl-destructuring-bind (&optional &key beg end op &allow-other-keys)
+      (sp-get-enclosing-sexp)
+    (when (equal op "{")
+      (delete-region (1+ beg) (1- end))
+      (goto-char (1+ beg)))))
 
-                 (* space)
+(defun cb-cc:between-empty-braces-same-line? ()
+  (and (s-matches? (rx "{" (* space) eol)
+                   (buffer-substring (line-beginning-position) (point)))
+       (s-matches? (rx bol (* space) "}")
+                   (buffer-substring (point) (line-end-position)))))
 
-                 ;; Cast and type
-                 "(" (* nonl) ")"
+(defun cb-cc:between-empty-braces-any-lines? ()
+  (cl-destructuring-bind (&optional &key beg end op &allow-other-keys)
+      (sp-get-enclosing-sexp)
+    (when (equal op "{")
+      (s-matches? (rx bos (* (any space "\n")) eos)
+                  (buffer-substring (1+ beg) (1- end))))))
 
-                 (* space)))
-          )
-      (and (thing-at-point-looking-at cast)
-           (save-excursion
-             (search-backward-regexp cast)
-             (not (cb-c:looking-at-flow-control-keyword?))))))
+;;; Smart ops
 
-  (defun cb-c:looking-at-struct-keyword? ()
-    (save-excursion
-      (beginning-of-sexp)
-      (thing-at-point-looking-at (rx (or "{" " " "(" ",") "."))))
+(defun c-insert-smart-equals ()
+  "Insert an '=' with context-sensitive formatting."
+  (interactive)
+  (if (or (cb-c:looking-at-flow-control-header?)
+          (cb-c:looking-at-struct-keyword?))
+      (insert "=")
+    (super-smart-ops-insert "=")))
 
-  (cl-defun cb-c:header-guard-var (&optional (header-file (buffer-file-name)))
-    "Return the variable to use in a header guard for HEADER-FILE."
-    (format "_%s_H_" (s-upcase (f-filename (f-no-ext header-file)))))
+(defun c-insert-smart-star ()
+  "Insert a * with padding in multiplication contexts."
+  (interactive)
+  (cond
+   ((s-matches? (rx bol (* space) eol)
+                (buffer-substring (line-beginning-position) (point)))
+    (indent-according-to-mode)
+    (insert "*"))
+   ((thing-at-point-looking-at (rx (any "(" "{" "[") (* space)))
+    (insert "*"))
+   ((thing-at-point-looking-at (rx (any digit "*") (* space)))
+    (super-smart-ops-insert "*"))
+   (t
+    (just-one-space)
+    (insert "*"))))
 
-  (defun cb-c:maybe-remove-spaces-after-insertion (pred-regex op-start-regex)
-    (when (thing-at-point-looking-at pred-regex)
-      (save-excursion
-        (let ((back-limit (save-excursion
-                            (search-backward-regexp op-start-regex)
-                            (point))))
-          (while (search-backward-regexp (rx space) back-limit t)
-            (delete-horizontal-space)))
-        (indent-according-to-mode))))
+(defun c-insert-smart-minus ()
+  "Insert a minus with padding unless a unary minus is more appropriate."
+  (interactive)
+  (atomic-change-group
+    ;; Handle formatting for unary minus.
+    (if (thing-at-point-looking-at
+         (rx (or "return" "," "(" "[" "(" ";" "=") (* space)))
+        (insert "-")
+      (super-smart-ops-insert "-"))
+    ;; Collapse whitespace for decrement operator.
+    (cb-c:maybe-remove-spaces-after-insertion
+     (rx "-" (* space) "-" (* space))
+     (rx (not (any "-" space))))
+    (cb-c:just-one-space-after-semicolon)))
 
-  (defun cb-c:just-one-space-after-semicolon ()
-    (save-excursion
-      (when (search-backward-regexp (rx ";" (* space)) (line-beginning-position) t)
-        (replace-match "; " nil))))
-
-  (defun c-insert-smart-equals ()
-    "Insert an '=' with context-sensitive formatting."
-    (interactive)
-    (if (or (cb-c:looking-at-flow-control-header?)
-            (cb-c:looking-at-struct-keyword?))
-        (insert "=")
-      (super-smart-ops-insert "=")))
-
-  (defun c-insert-smart-star ()
-    "Insert a * with padding in multiplication contexts."
-    (interactive)
-    (cond
-     ((s-matches? (rx bol (* space) eol)
-                  (buffer-substring (line-beginning-position) (point)))
-      (indent-according-to-mode)
-      (insert "*"))
-     ((thing-at-point-looking-at (rx (any "(" "{" "[") (* space)))
-      (insert "*"))
-     ((thing-at-point-looking-at (rx (any digit "*") (* space)))
-      (super-smart-ops-insert "*"))
-     (t
-      (just-one-space)
-      (insert "*"))))
-
-  (defun c-insert-smart-minus ()
-    "Insert a minus with padding unless a unary minus is more appropriate."
-    (interactive)
-    (atomic-change-group
-      ;; Handle formatting for unary minus.
-      (if (thing-at-point-looking-at
-           (rx (or "return" "," "(" "[" "(" ";" "=") (* space)))
-          (insert "-")
-        (super-smart-ops-insert "-"))
-      ;; Collapse whitespace for decrement operator.
-      (cb-c:maybe-remove-spaces-after-insertion
-       (rx "-" (* space) "-" (* space))
-       (rx (not (any "-" space))))
-      (cb-c:just-one-space-after-semicolon)))
-
-  (defun c-insert-smart-gt ()
-    "Insert a > symbol with formatting.
+(defun c-insert-smart-gt ()
+  "Insert a > symbol with formatting.
 If the insertion creates an right arrow (->), remove surrounding whitespace.
 If the insertion creates a <>, move the cursor inside."
-    (interactive)
-    (super-smart-ops-insert ">")
-    (cb-c:maybe-remove-spaces-after-insertion
-     (rx (or "-" "<") (* space) ">" (* space))
-     (rx (not (any space "<" "-" ">"))))
-    (when (thing-at-point-looking-at "<>")
-      (forward-char -1)))
+  (interactive)
+  (super-smart-ops-insert ">")
+  (cb-c:maybe-remove-spaces-after-insertion
+   (rx (or "-" "<") (* space) ">" (* space))
+   (rx (not (any space "<" "-" ">"))))
+  (when (thing-at-point-looking-at "<>")
+    (forward-char -1)))
 
-  (defun c-insert-smart-plus ()
-    "Insert a + symbol with formatting.
+(defun c-insert-smart-plus ()
+  "Insert a + symbol with formatting.
 Remove horizontal whitespace if the insertion results in a ++."
-    (interactive)
-    (super-smart-ops-insert "+")
-    (cb-c:maybe-remove-spaces-after-insertion
-     (rx "+" (* space) "+" (* space))
-     (rx (not (any space "+"))))
-    (cb-c:just-one-space-after-semicolon))
+  (interactive)
+  (super-smart-ops-insert "+")
+  (cb-c:maybe-remove-spaces-after-insertion
+   (rx "+" (* space) "+" (* space))
+   (rx (not (any space "+"))))
+  (cb-c:just-one-space-after-semicolon))
 
-  (super-smart-ops-configure-for-mode 'c-mode
-    :add '("?")
-    :custom
-    '(("," . cb:comma-then-space)
-      ("=" . c-insert-smart-equals)
-      ("+" . c-insert-smart-plus)
-      (">" . c-insert-smart-gt)
-      ("-" . c-insert-smart-minus)
-      ("*" . c-insert-smart-star)))
+(super-smart-ops-configure-for-mode 'c-mode
+  :add '("?")
+  :custom
+  '(("," . cb:comma-then-space)
+    ("=" . c-insert-smart-equals)
+    ("+" . c-insert-smart-plus)
+    (">" . c-insert-smart-gt)
+    ("-" . c-insert-smart-minus)
+    ("*" . c-insert-smart-star)))
 
-  (defun cbclang:flyspell-verify ()
-    (not (s-matches? (rx bol (* space) "#include ") (current-line))))
+;;; Flyspell
 
-  (hook-fns '(c-mode-hook c++-mode-hook)
-    (setq-local flyspell-generic-check-word-predicate 'cbclang:flyspell-verify))
+(defun cbclang:flyspell-verify ()
+  (not (s-matches? (rx bol (* space) "#include ") (current-line))))
 
-  (defadvice c-inside-bracelist-p (around ignore-errors activate)
-    (ignore-errors ad-do-it))
+(put 'c-mode 'flyspell-generic-check-word-predicate 'cbclang:flyspell-verify)
+(put 'c++-mode 'flyspell-generic-check-word-predicate 'cbclang:flyspell-verify)
 
-  (add-hook 'c-mode-hook 'c-turn-on-eldoc-mode)
+(add-hook 'c-mode-hook 'flyspell-mode-off)
+(add-hook 'c-mode-hook 'c-turn-on-eldoc-mode)
 
-  (add-hook 'c-mode-hook 'flyspell-mode-off)
+;;; Advices
 
-  (defun cb-cc:between-empty-braces-same-line? ()
-    (and (s-matches? (rx "{" (* space) eol)
-                     (buffer-substring (line-beginning-position) (point)))
-         (s-matches? (rx bol (* space) "}")
-                     (buffer-substring (point) (line-end-position)))))
+(defadvice c-inside-bracelist-p (around ignore-errors activate)
+  (ignore-errors ad-do-it))
 
-  (defun cb-cc:newline-and-indent ()
-    "Insert newlines, performing context-specific formatting.
+;;; Commands
+
+(defun cb-c:format-buffer ()
+  "Format the buffer with clang-format, where available."
+  (interactive)
+  (if (executable-find "clang-format")
+      'clang-format-region
+    'indent-dwim))
+
+(defun cb-c:switch-between-header-and-impl ()
+  "Switch between a header file and its implementation."
+  (interactive)
+  (let* ((ext   (if (f-ext? (buffer-file-name) "h") "c" "h"))
+         (counterpart (format "%s.%s" (f-no-ext (buffer-file-name)) ext)))
+    (if (or (f-file? counterpart)
+            (y-or-n-p (format "%s does not exist.  Create it? " counterpart)))
+        (find-file counterpart)
+      (message "Aborted"))))
+
+(defun cb-cc:newline-and-indent ()
+  "Insert newlines, performing context-specific formatting.
 
 When point is between braces, insert an empty line between them so that
 
@@ -239,36 +262,21 @@ becomes
 {
   |
 }"
-    (interactive)
-    (when (cb-cc:between-empty-braces-same-line?)
-      (delete-horizontal-space)
+  (interactive)
+  (when (cb-cc:between-empty-braces-same-line?)
+    (delete-horizontal-space)
 
-      (save-excursion
-        (search-backward "{")
-        (unless (thing-at-point-looking-at (rx bol (* space) "{"))
-          (newline-and-indent)))
-
-      (save-excursion
+    (save-excursion
+      (search-backward "{")
+      (unless (thing-at-point-looking-at (rx bol (* space) "{"))
         (newline-and-indent)))
-    (call-interactively 'newline-and-indent))
 
+    (save-excursion
+      (newline-and-indent)))
+  (call-interactively 'newline-and-indent))
 
-  (defun cb-cc:delete-brace-contents ()
-    (cl-destructuring-bind (&optional &key beg end op &allow-other-keys)
-        (sp-get-enclosing-sexp)
-      (when (equal op "{")
-        (delete-region (1+ beg) (1- end))
-        (goto-char (1+ beg)))))
-
-  (defun cb-cc:between-empty-braces-any-lines? ()
-    (cl-destructuring-bind (&optional &key beg end op &allow-other-keys)
-        (sp-get-enclosing-sexp)
-      (when (equal op "{")
-        (s-matches? (rx bos (* (any space "\n")) eos)
-                    (buffer-substring (1+ beg) (1- end))))))
-
-  (defun cb-cc:backward-delete-char ()
-    "Delete backwards, performing context-specific formatting.
+(defun cb-cc:backward-delete-char ()
+  "Delete backwards, performing context-specific formatting.
 
 When point is between empty braces over any number of lines, collapse them:
 
@@ -283,55 +291,31 @@ becomes
 then
 
 {|}"
-    (interactive)
-    (cond
-     ((and (equal (char-before) ?{)
-           (equal (char-after) ?}))
-      (sp-backward-delete-char))
-
-     ((and (thing-at-point-looking-at (rx "{" (+ space) "}"))
-           (cb-cc:between-empty-braces-same-line?))
-      (delete-horizontal-space))
-
-     ((cb-cc:between-empty-braces-any-lines?)
-      (cb-cc:delete-brace-contents)
-      (insert "  ")
-      (forward-char -1))
-
-     (t
-      (sp-backward-delete-char))))
-
-  (--each (list c-mode-map c++-mode-map java-mode-map objc-mode-map)
-    (define-key it (kbd "RET") 'cb-cc:newline-and-indent)
-    (define-key it (kbd "<backspace>") 'cb-cc:backward-delete-char))
-
-  )
-
-;;; Insertion picker command for inserting c headers.
-
-(defun helm-insert-c-header ()
   (interactive)
-  (helm :sources
-        `((name . "C Headers")
-          (candidates . ,(-concat emr-c:standard-headers
-                                  (emr-c:headers-in-project)))
-          (action .
-                  (lambda (c)
-                    (emr-c-insert-include
-                     (format (if (-contains? emr-c:standard-headers c)
-                                 "<%s>"
-                               "\"%s\"")
-                             c))
-                    (when (derived-mode-p 'bison-mode)
-                      (bison-format-buffer))))
-          (volatile))
-        :prompt "Header: "
-        :buffer "*Helm C Headers*"))
+  (cond
+   ((and (equal (char-before) ?{)
+         (equal (char-after) ?}))
+    (sp-backward-delete-char))
 
-(after '(cc-mode emr)
-  (add-to-list 'insertion-picker-options
-               '("i" "Header Include" helm-insert-c-header
-                 :modes (c-mode c++-mode))))
+   ((and (thing-at-point-looking-at (rx "{" (+ space) "}"))
+         (cb-cc:between-empty-braces-same-line?))
+    (delete-horizontal-space))
+
+   ((cb-cc:between-empty-braces-any-lines?)
+    (cb-cc:delete-brace-contents)
+    (insert "  ")
+    (forward-char -1))
+
+   (t
+    (sp-backward-delete-char))))
+
+;;; Key bindings
+
+(after 'cc-mode
+  (define-key c-mode-map (kbd "C-c C-a")     'cb-c:switch-between-header-and-impl)
+  (define-key c-mode-map (kbd "M-q")         'cb-c:format-buffer)
+  (define-key c-mode-map (kbd "RET")         'cb-cc:newline-and-indent)
+  (define-key c-mode-map (kbd "<backspace>") 'cb-cc:backward-delete-char))
 
 (provide 'config-c-languages)
 
