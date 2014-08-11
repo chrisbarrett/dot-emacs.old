@@ -33,29 +33,22 @@
   :packages (markdown-mode
              markdown-toc))
 
-(add-to-list 'auto-mode-alist
-             (cons (rx "." (or "md" "markdown") eol) 'markdown-mode))
+(add-to-list 'auto-mode-alist (cons (rx "." (or "md" "markdown") eol) 'markdown-mode))
 
-(after 'markdown-mode
-  (put 'markdown-mode 'imenu-generic-expression
-       '(("title"  "^\\(.*\\)[\n]=+$" 1)
-         ("h2-"    "^\\(.*\\)[\n]-+$" 1)
-         ("h1"   "^# \\(.*\\)$" 1)
-         ("h2"   "^## \\(.*\\)$" 1)
-         ("h3"   "^### \\(.*\\)$" 1)
-         ("h4"   "^#### \\(.*\\)$" 1)
-         ("h5"   "^##### \\(.*\\)$" 1)
-         ("h6"   "^###### \\(.*\\)$" 1)
-         ("fn"   "^\\[\\^\\(.*\\)\\]" 1)))
+(custom-set-faces
+ '(markdown-header-face-1 ((t :height 1.3)))
+ '(markdown-header-face-2 ((t :height 1.1))))
 
-  (set-face-attribute markdown-header-face-1 nil :height 1.3)
-  (set-face-attribute markdown-header-face-2 nil :height 1.1))
-
-(after '(evil markdown-mode)
-  (evil-define-key 'normal markdown-mode-map
-    (kbd "M-P") 'outline-previous-visible-heading
-    (kbd "M-N") 'outline-next-visible-heading))
-
+(put 'markdown-mode 'imenu-generic-expression
+     '(("title"  "^\\(.*\\)[\n]=+$" 1)
+       ("h2-"    "^\\(.*\\)[\n]-+$" 1)
+       ("h1"   "^# \\(.*\\)$" 1)
+       ("h2"   "^## \\(.*\\)$" 1)
+       ("h3"   "^### \\(.*\\)$" 1)
+       ("h4"   "^#### \\(.*\\)$" 1)
+       ("h5"   "^##### \\(.*\\)$" 1)
+       ("h6"   "^###### \\(.*\\)$" 1)
+       ("fn"   "^\\[\\^\\(.*\\)\\]" 1)))
 
 (provide 'config-markdown)
 

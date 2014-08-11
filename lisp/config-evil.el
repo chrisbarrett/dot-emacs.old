@@ -593,6 +593,12 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
 (evil-set-initial-state 'circe-channel-mode 'insert)
 (evil-set-initial-state 'circe-chat-mode 'insert)
 
+;;; Markdown
+
+(evil-define-key 'normal markdown-mode-map
+  (kbd "M-P") 'outline-previous-visible-heading
+  (kbd "M-N") 'outline-next-visible-heading)
+
 ;;; Misc
 
 (evil-define-key 'normal Man-mode-map (kbd "q") 'Man-kill)
