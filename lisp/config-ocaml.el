@@ -30,6 +30,8 @@
 (require 'config-modegroups)
 (require 'super-smart-ops)
 
+(require 'ocp-indent (f-join cb:lib-dir "ocp-indent.el"))
+
 (cb:declare-package-installer ocaml
   :match (rx ".ml" (? (any "y" "i" "l" "p")))
   :packages (tuareg
@@ -38,49 +40,48 @@
 (custom-set-variables
  '(merlin-default-flags "-w @A-4-33-41-42-43-34-44"))
 
+(add-to-list 'face-remapping-alist '(merlin-type-face . intense-flash))
+
+(autoload 'utop "utop" "Toplevel for OCaml" t)
+(autoload 'utop-setup-ocaml-buffer "utop" "Toplevel for OCaml" t)
+
+(add-hook 'tuareg-mode-hook 'utop-setup-ocaml-buffer)
+(add-hook 'tuareg-mode-hook 'merlin-mode)
+
+;;; Set OPAM environment vars.
+
 (when (executable-find "opam")
-  (cl-loop with env = (read-from-string (%-string "opam config env --sexp"))
+  (cl-loop with env = (read-from-string (shell-command-to-string "opam config env --sexp"))
            for (var val) in (car env)
            do (setenv var val)))
 
-(when (fboundp 'cb:set-path-from-shell)
-  (cb:set-path-from-shell))
-
 (push (concat (getenv "OCAML_TOPLEVEL_PATH") "/../../share/emacs/site-lisp")
       load-path)
-(autoload 'utop "utop" "Toplevel for OCaml" t)
-(autoload 'utop-setup-ocaml-buffer "utop" "Toplevel for OCaml" t)
-(add-hook 'tuareg-mode-hook 'utop-setup-ocaml-buffer)
 
-(add-hook 'tuareg-mode-hook 'merlin-mode)
-(add-to-list 'face-remapping-alist '(merlin-type-face . intense-flash))
-
-(after '(tuareg merlin)
-  (define-key merlin-mode-map (kbd "M-N") 'merlin-error-next))
+;;; Snippet utils.
 
 (defun cb-ocaml:at-prompt-bol? ()
   (s-matches? (rx bol "utop[" (+ digit) "]>" (* space) (* word) eol)
               (buffer-substring (line-beginning-position) (point))))
 
-(after 'tuareg
-  (require 'ocp-indent (f-join cb:lib-dir "ocp-indent.el"))
+;;; Use OCP to indent buffer.
 
-  (defun ocp-indent-dwim ()
-    "Perform a context-sensitive indentation command."
-    (interactive)
-    (cond
-     ((region-active-p)
-      (call-interactively 'ocp-indent-region)
-      (message "ocp: Indented region"))
-     ((thing-at-point 'defun)
-      (ocp-indent-region (save-excursion (beginning-of-defun) (point))
-                         (save-excursion (end-of-defun) (point)))
-      (message "ocp: Indented defun"))
-     (t
-      (ocp-indent-region (point-min) (point-max))
-      (message "ocp: Indented buffer"))))
+(defun ocp-indent-dwim ()
+  "Perform a context-sensitive indentation command."
+  (interactive)
+  (cond
+   ((region-active-p)
+    (call-interactively 'ocp-indent-region)
+    (message "ocp: Indented region"))
+   ((thing-at-point 'defun)
+    (ocp-indent-region (save-excursion (beginning-of-defun) (point))
+                       (save-excursion (end-of-defun) (point)))
+    (message "ocp: Indented defun"))
+   (t
+    (ocp-indent-region (point-min) (point-max))
+    (message "ocp: Indented buffer"))))
 
-  (define-key tuareg-mode-map (kbd "M-q") 'ocp-indent-dwim))
+(after 'tuareg )
 
 (defun cb-ocaml:maybe-pad-parens ()
   (save-excursion
@@ -92,12 +93,7 @@
 (hook-fns '(tuareg-mode-hook utop-mode-hook)
   (add-hook 'post-self-insert-hook 'cb-ocaml:maybe-pad-parens nil t))
 
-(defconst cb-ocaml:smart-operator-list
-  (list "!" "$" "%" "&" "*" "+" "-" "." "/"
-        ":" "<" "=" ">" "?" "@" "^" "|" "~"))
-
-(--each '(tuareg-mode utop-mode)
-  (put it 'super-smart-ops-list cb-ocaml:smart-operator-list))
+;;; Define smart ops.
 
 (defun cb-ocaml:smart-dot ()
   "Smart period for OCaml."
@@ -164,37 +160,45 @@
         (t
          (super-smart-ops-insert "|"))))
 
-(defmacro cb-ocaml:define-smart-op-as-annotation (symbol op)
-  "Define a command for inserting a smart operator.
-This is for operators that also have special meanings in binding forms
-where they should not be padded."
-  `(defun ,symbol ()
-     "Auto-generated smart operator command for OCaml."
-     (interactive)
-     (super-smart-ops-insert ,op)
-     (when (thing-at-point-looking-at (rx space))
-       (delete-horizontal-space 'back))))
+(defun cb-ocaml:smart-tilde ()
+  "Tilde smart operator. Should not be padded in binding forms."
+  (interactive "*")
+  (super-smart-ops-insert "~")
+  (when (thing-at-point-looking-at (rx space))
+    (delete-horizontal-space 'back)))
 
-(cb-ocaml:define-smart-op-as-annotation cb-ocaml:smart-tilde "~")
-(cb-ocaml:define-smart-op-as-annotation cb-ocaml:smart-question "?")
+(defun cb-ocaml:smart-question ()
+  "Tilde smart operator. Should not be padded in binding forms."
+  (interactive "*")
+  (super-smart-ops-insert "?")
+  (when (thing-at-point-looking-at (rx space))
+    (delete-horizontal-space 'back)))
 
-(defun cb-ocaml:set-keys (keymap)
-  "Set smart operators for OCaml."
-  (--each cb-ocaml:smart-operator-list
-    (define-key keymap (kbd it)
-      (eval `(command (super-smart-ops-insert ,it)))))
+(super-smart-ops-configure-for-mode 'tuareg-mode
+  :add '("$" "@" "^")
+  :rem '("!")
+  :custom
+  '(("*" . 'cb-ocaml:smart-asterisk)
+    ("." . 'cb-ocaml:smart-dot)
+    ("|" . 'cb-ocaml:smart-pipe)
+    (":" . 'cb-ocaml:smart-colon)
+    (";" . 'cb-ocaml:smart-semicolon)
+    ("?" . 'cb-ocaml:smart-question)
+    ("~" . 'cb-ocaml:smart-tilde)))
 
-  (define-key keymap (kbd "!") nil)
-  (define-key keymap (kbd "*") 'cb-ocaml:smart-asterisk)
-  (define-key keymap (kbd ".") 'cb-ocaml:smart-dot)
-  (define-key keymap (kbd "|") 'cb-ocaml:smart-pipe)
-  (define-key keymap (kbd ":") 'cb-ocaml:smart-colon)
-  (define-key keymap (kbd ";") 'cb-ocaml:smart-semicolon)
-  (define-key keymap (kbd "?") 'cb-ocaml:smart-question)
-  (define-key keymap (kbd "~") 'cb-ocaml:smart-tilde))
+(super-smart-ops-configure-for-mode 'utop-mode
+  :add '("$" "@" "^")
+  :rem '("!")
+  :custom
+  '(("*" . 'cb-ocaml:smart-asterisk)
+    ("." . 'cb-ocaml:smart-dot)
+    ("|" . 'cb-ocaml:smart-pipe)
+    (":" . 'cb-ocaml:smart-colon)
+    (";" . 'cb-ocaml:smart-semicolon)
+    ("?" . 'cb-ocaml:smart-question)
+    ("~" . 'cb-ocaml:smart-tilde)))
 
-(after 'tuareg (cb-ocaml:set-keys tuareg-mode-map))
-(after 'utop   (cb-ocaml:set-keys utop-mode-map))
+;;; Smart M-RET
 
 (defun cb-ocaml:newline-and-insert-at-col (col str)
   "Insert STR on a new line at COL."
@@ -321,36 +325,39 @@ where they should not be padded."
   (when (true? evil-mode)
     (evil-insert-state)))
 
-(after 'tuareg (define-key tuareg-mode-map (kbd "M-RET") 'cb-ocaml:meta-ret))
-(after 'utop   (define-key utop-mode-map   (kbd "M-RET") 'cb-ocaml:meta-ret))
+;;; Repl switching
 
-(after 'tuareg
-  (define-key tuareg-mode-map (kbd "C-c C-f") 'tuareg-eval-buffer)
-  (define-key tuareg-mode-map (kbd "C-c C-r") 'tuareg-eval-region)
-  (define-key tuareg-mode-map (kbd "C-c C-c") 'tuareg-eval-phrase))
+(defun cb-ocaml:switch-to-utop ()
+  (interactive)
+  (unless (get-buffer "*utop*")
+    (save-window-excursion (utop)))
+  (pop-to-buffer "*utop*")
+  (goto-char (point-max))
+  (when (true? evil-mode)
+    (evil-insert-state)))
 
-(after 'tuareg
+(defun cb-ocaml:switch-to-src ()
+  (interactive)
+  (-if-let (buf (--first-buffer (derived-mode-p 'tuareg-mode)))
+      (pop-to-buffer buf)
+    (message "No active OCaml buffers")))
 
-  (defun cb-ocaml:switch-to-utop ()
-    (interactive)
-    (unless (get-buffer "*utop*")
-      (save-window-excursion (utop)))
-    (pop-to-buffer "*utop*")
-    (goto-char (point-max))
-    (when (true? evil-mode)
-      (evil-insert-state)))
+;;; Key bindings
 
-  (define-key tuareg-mode-map (kbd "C-c C-z") 'cb-ocaml:switch-to-utop))
+(after 'merlin
+  (define-key merlin-mode-map (kbd "M-N") 'merlin-error-next))
 
 (after 'utop
+  (define-key utop-mode-map (kbd "C-c C-z") 'cb-ocaml:switch-to-src)
+  (define-key utop-mode-map   (kbd "M-RET") 'cb-ocaml:meta-ret))
 
-  (defun cb-ocaml:switch-to-src ()
-    (interactive)
-    (-if-let (buf (--first-buffer (derived-mode-p 'tuareg-mode)))
-        (pop-to-buffer buf)
-      (message "No active OCaml buffers")))
-
-  (define-key utop-mode-map (kbd "C-c C-z") 'cb-ocaml:switch-to-src))
+(after 'tuareg
+  (define-key tuareg-mode-map (kbd "C-c C-z") 'cb-ocaml:switch-to-utop)
+  (define-key tuareg-mode-map (kbd "C-c C-f") 'tuareg-eval-buffer)
+  (define-key tuareg-mode-map (kbd "C-c C-r") 'tuareg-eval-region)
+  (define-key tuareg-mode-map (kbd "C-c C-c") 'tuareg-eval-phrase)
+  (define-key tuareg-mode-map (kbd "M-RET") 'cb-ocaml:meta-ret)
+  (define-key tuareg-mode-map (kbd "M-q") 'ocp-indent-dwim))
 
 (provide 'config-ocaml)
 
