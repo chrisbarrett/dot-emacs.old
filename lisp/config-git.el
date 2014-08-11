@@ -32,6 +32,21 @@
 (require 'config-evil)
 
 (cb:install-package 'magit t)
+(cb:install-package 'git-auto-commit-mode)
+(cb:install-package 'gist)
+(cb:install-package 'gitconfig-mode)
+(cb:install-package 'git-gutter+)
+(cb:install-package 'git-gutter-fringe+)
+(after 'git-gutter+ (require 'git-gutter-fringe+))
+
+(add-hook 'magit-mode-hook 'magit-load-config-extensions)
+
+(diminish 'magit-auto-revert-mode)
+(diminish 'git-gutter+-mode)
+
+(add-to-list 'safe-local-variable-values '(gac-automatically-push-p . t))
+
+;;; Modal views
 
 (declare-modal-executor magit-status
   :command (call-interactively 'magit-status)
@@ -44,62 +59,21 @@
 (declare-modal-view magit-diff-working-tree)
 (declare-modal-view magit-diff)
 
-(add-hook 'magit-mode-hook 'magit-load-config-extensions)
-
-(after '(magit evil)
-
-  (evil-global-set-keys 'normal
-    "g P" 'magit-key-mode-popup-pushing
-    "g c" 'magit-key-mode-popup-committing
-    "g l" 'magit-log
-    "g r" 'magit-reflog
-    "g D" 'magit-diff-working-tree
-    "g B" 'magit-blame-mode
-    "g b" (command
-           (with-window-restore
-             (magit-branch-manager)
-             (buffer-local-set-key (kbd "q") (command (restore))))))
-
-  (define-keys magit-diff-mode-map
-    "C-f" 'evil-scroll-page-down
-    "C-b" 'evil-scroll-page-up
-    "j"   'evil-next-line
-    "k"   'evil-previous-line
-    "/"   'evil-search-forward)
-
-  (hook-fn 'git-rebase-mode-hook
-    (when (true? evil-mode)
-      (evil-emacs-state)))
-
-  )
-
-(after 'dired
-  (define-key dired-mode-map (kbd "M-G") 'magit-status))
+;;; Update modeline after running git commands.
 
 (define-combined-hook cb:magit-command-hook
   (--filter-atoms (s-matches? "^magit-.*-command-hook$" (symbol-name it))))
 
-(hook-fn 'cb:magit-command-hook
-  (force-mode-line-update t))
+(hook-fn 'cb:magit-command-hook (force-mode-line-update t))
 
-(diminish 'magit-auto-revert-mode)
-
-(cb:install-package 'git-auto-commit-mode)
-
-(add-to-list 'safe-local-variable-values '(gac-automatically-push-p . t))
+;;; Configure git commit mode
 
 (add-hook 'git-commit-mode-hook 'turn-on-auto-fill)
 (put 'git-commit-mode 'fill-column 72)
 
-(add-hook 'git-commit-mode-hook 'cb:maybe-evil-insert-state)
+;;; Configure git gutter
 
-(cb:install-package 'gist)
-
-(cb:install-package 'gitconfig-mode)
-
-(cb:install-package 'git-gutter+)
-(unless noninteractive
-  (global-git-gutter+-mode +1))
+(global-git-gutter+-mode +1)
 
 (hook-fn 'after-save-hook
   (when (true? git-gutter+-mode)
@@ -112,10 +86,11 @@
                                  (when (true? git-gutter+-mode)
                                    (ignore-errors (git-gutter+-refresh)))))))
 
-(hook-fn 'git-gutter+-mode-hook
-  (diminish 'git-gutter+-mode))
+;;; Fix errors caused by funcalling non-existent var.
 
 (defvar magit-read-top-dir 'magit-read-top-dir)
+
+;;; Redefine function
 
 (after 'git-gutter+
   (defun git-gutter+-close-commit-edit-buffer ()
@@ -132,6 +107,8 @@
 
     (set-window-configuration git-gutter+-pre-commit-window-config)))
 
+;;; Commands
+
 (defun cb-git:add ()
   "Run 'git add' on the file for the current buffer."
   (interactive)
@@ -145,26 +122,6 @@
     (vc-git-register (list (buffer-file-name)))
     (message "Done.")))
   (git-gutter+-refresh))
-
-(after '(git-gutter+ evil)
-  (evil-global-set-keys 'normal
-    "g n" (lambda (arg)
-            (interactive "p")
-            (git-gutter+-refresh)
-            (git-gutter+-next-hunk arg))
-    "g p" (lambda (arg)
-            (interactive "p")
-            (git-gutter+-refresh)
-            (git-gutter+-previous-hunk arg))
-    "g h" 'git-gutter+-popup-hunk
-    "g x" 'git-gutter+-revert-hunk
-    "g s" 'git-gutter+-stage-hunks
-    "g a" 'cb-git:add)
-
-  (add-hook 'magit-commit-mode-hook 'cb:maybe-evil-insert-state))
-
-(cb:install-package 'git-gutter-fringe+)
-(after 'git-gutter+ (require 'git-gutter-fringe+))
 
 (provide 'config-git)
 

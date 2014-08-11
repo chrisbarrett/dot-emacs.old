@@ -52,6 +52,7 @@
 
 (evil-set-initial-state 'message-mode      'insert)
 (evil-set-initial-state 'magit-commit-mode 'normal)
+(evil-set-initial-state 'git-rebase-mode 'insert)
 (evil-set-initial-state 'eshell-mode       'insert)
 (evil-set-initial-state 'haskell-error-mode 'emacs)
 (evil-set-initial-state 'doc-view-mode     'normal)
@@ -344,7 +345,7 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
 ;;; Scheme
 
 (define-evil-doc-handler cb:scheme-modes
-    (call-interactively 'geiser-doc-symbol-at-point))
+  (call-interactively 'geiser-doc-symbol-at-point))
 
 ;;; Org
 
@@ -441,6 +442,40 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
 
 (evil-define-key 'normal magit-commit-mode-map
   "q" 'magit-mode-quit-window)
+
+(evil-global-set-keys 'normal
+  "g P" 'magit-key-mode-popup-pushing
+  "g c" 'magit-key-mode-popup-committing
+  "g l" 'magit-log
+  "g r" 'magit-reflog
+  "g D" 'magit-diff-working-tree
+  "g B" 'magit-blame-mode
+  "g b" (command
+         (with-window-restore
+           (magit-branch-manager)
+           (buffer-local-set-key (kbd "q") (command (restore))))))
+
+(after 'magit
+  (define-keys magit-diff-mode-map
+    "C-f" 'evil-scroll-page-down
+    "C-b" 'evil-scroll-page-up
+    "j"   'evil-next-line
+    "k"   'evil-previous-line
+    "/"   'evil-search-forward))
+
+(evil-global-set-keys 'normal
+  "g n" (lambda (arg)
+          (interactive "p")
+          (git-gutter+-refresh)
+          (git-gutter+-next-hunk arg))
+  "g p" (lambda (arg)
+          (interactive "p")
+          (git-gutter+-refresh)
+          (git-gutter+-previous-hunk arg))
+  "g h" 'git-gutter+-popup-hunk
+  "g x" 'git-gutter+-revert-hunk
+  "g s" 'git-gutter+-stage-hunks
+  "g a" 'cb-git:add)
 
 ;;; Rust
 
