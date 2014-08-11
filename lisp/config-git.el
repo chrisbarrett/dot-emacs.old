@@ -32,12 +32,11 @@
 (require 'config-evil)
 
 (cb:install-package 'magit t)
-(cb:install-package 'git-auto-commit-mode)
-(cb:install-package 'gist)
-(cb:install-package 'gitconfig-mode)
-(cb:install-package 'git-gutter+)
-(cb:install-package 'git-gutter-fringe+)
-(after 'git-gutter+ (require 'git-gutter-fringe+))
+(cb:install-package 'git-auto-commit-mode t)
+(cb:install-package 'gist t)
+(cb:install-package 'gitconfig-mode t)
+(cb:install-package 'git-gutter+ t)
+(cb:install-package 'git-gutter-fringe+ t)
 
 (add-hook 'magit-mode-hook 'magit-load-config-extensions)
 
