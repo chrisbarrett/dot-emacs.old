@@ -39,9 +39,8 @@
 
 (custom-set-faces
  '(helm-selection
-   ((((background light)) :background "white" :foreground "black")
-    (((background dark))  :background "black" :foreground "white")
-    ((t :underline nil)))))
+   ((((background light)) :background "gray90" :foreground "black" :underline nil)
+    (((background dark))  :background "black"  :foreground "white" :underline nil))))
 
 ;;; Commands
 
