@@ -64,10 +64,6 @@ Declares a hook NAME-hook that runs after any of MODES are initialized."
   '(emacs-lisp-mode
     inferior-emacs-lisp-mode))
 
-(define-mode-group cb:slime-modes
-  '(slime-mode
-    slime-repl-mode))
-
 (define-mode-group cb:lisp-modes
   `(cider-repl-mode
     clojure-mode
@@ -103,11 +99,6 @@ Declares a hook NAME-hook that runs after any of MODES are initialized."
   '(inf-ruby-mode
     ruby-mode))
 
-(define-mode-group cb:rails-modes
-  `(inf-ruby-mode
-    ruby-mode
-    erb-mode))
-
 (define-mode-group cb:xml-modes
   '(sgml-mode
     nxml-mode))
@@ -117,11 +108,6 @@ Declares a hook NAME-hook that runs after any of MODES are initialized."
     org-indent-mode
     orgstruct-mode
     orgstruct++-mode))
-
-(define-mode-group cb:conf-modes
-  '(conf-unix-mode
-    conf-windows-mode
-    conf-javaprop-mode))
 
 (define-mode-group cb:prompt-modes
   '(comint-mode
