@@ -37,7 +37,7 @@
  '(yas-snippet-dirs (list cb:yasnippet-dir))
  '(yas-prompt-functions '(yas-ido-prompt))
  '(yas-wrap-around-region t)
- '(yas-verbosity 1))
+ '(yas-verbosity 0))
 
 (custom-set-faces
  '(yas-field-highlight-face
@@ -47,14 +47,7 @@
 
 (add-hook 'prog-mode-hook 'yas-minor-mode)
 (add-hook 'text-mode-hook 'yas-minor-mode)
-
-;; Silently enable yasnippet
-(noflet ((message (&rest _) nil)) (yas-global-mode t))
-
-(defun cbyas:reload-all ()
-  (interactive)
-  (yas-recompile-all)
-  (yas-reload-all))
+(yas-global-mode t)
 
 ;;; Utilities
 
@@ -149,6 +142,11 @@ Embed in elisp blocks to trigger messages within snippets."
   (cbyas:maybe-goto-field-end))
 
 ;;; Commands
+
+(defun cbyas:reload-all ()
+  (interactive)
+  (yas-recompile-all)
+  (yas-reload-all))
 
 (defun cbyas:space ()
   "Clear and skip this field if it is unmodified. Otherwise insert a space."
