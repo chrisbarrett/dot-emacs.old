@@ -27,77 +27,59 @@
 ;;; Code:
 
 (require 'utils-common)
-(require 'config-evil)
 
-(setq dired-auto-revert-buffer t)
+(cb:install-package 'dired-details t)
+(dired-details-install)
+(require 'dired)
+(require 'dired-x)
 
-(after 'dired
+(custom-set-variables
+ '(dired-auto-revert-buffer t)
+ '(dired-listing-switches "-al --group-directories-first")
+ '(dired-compress-file-suffixes
+   '(("\\.zip\\'" ".zip" "unzip")
+     ("\\.gz\\'" "" "gunzip")
+     ("\\.tgz\\'" ".tar" "gunzip")
+     ("\\.Z\\'" "" "uncompress")
+     ("\\.z\\'" "" "gunzip")
+     ("\\.dz\\'" "" "dictunzip")
+     ("\\.tbz\\'" ".tar" "bunzip2")
+     ("\\.bz2\\'" "" "bunzip2")
+     ("\\.xz\\'" "" "unxz")
+     ("\\.tar\\'" ".tgz" nil)))
+ '(dired-bind-jump nil)
+ '(dired-omit-files
+   (regexp-opt
+    (list "^\\.?#" "^\\.$" "^\\.\\.$" "\\.DS_Store$" "\\$RECYCLE.BIN")))
+ '(dired-details-hidden-string "... "))
 
-  (setq dired-listing-switches "-al --group-directories-first")
+(add-hook 'dired-mode-hook 'dired-omit-mode)
 
-  (setq dired-compress-file-suffixes
-        '(("\\.zip\\'" ".zip" "unzip")
-          ("\\.gz\\'" "" "gunzip")
-          ("\\.tgz\\'" ".tar" "gunzip")
-          ("\\.Z\\'" "" "uncompress")
-          ("\\.z\\'" "" "gunzip")
-          ("\\.dz\\'" "" "dictunzip")
-          ("\\.tbz\\'" ".tar" "bunzip2")
-          ("\\.bz2\\'" "" "bunzip2")
-          ("\\.xz\\'" "" "unxz")
-          ("\\.tar\\'" ".tgz" nil)))
+(defun cb:line-is-dired-header? ()
+  (equal 'dired-header
+         (ignore-errors
+           (save-excursion
+             (move-to-column 3)
+             (face-at-point)))))
 
-  (setq dired-bind-jump nil)
+;;; Hl-line compat
 
-  (cb:install-package 'dired-details t)
-  (dired-details-install)
+(defadvice global-hl-line-highlight (around suppress-on-subdir-header activate)
+  "Do not highlight the line if looking at a dired header."
+  (if (and (derived-mode-p 'dired-mode) (cb:line-is-dired-header?))
+      (global-hl-line-unhighlight)
+    ad-do-it))
 
-  (setq-default dired-details-hidden-string "… ")
+(defadvice hl-line-highlight (around suppress-on-subdir-header activate)
+  "Do not highlight the line if looking at a dired header."
+  (if (and (derived-mode-p 'dired-mode) (cb:line-is-dired-header?))
+      (hl-line-unhighlight)
+    ad-do-it))
 
-  (require 'dired-x)
-  (add-hook 'dired-mode-hook 'dired-omit-mode)
+;;; Key bindings
 
-  (setq dired-omit-files
-        (regexp-opt (list "^\\.?#" "^\\.$" "^\\.\\.$"
-                          "\\.DS_Store$" "\\$RECYCLE.BIN")))
-
-  (defun cb:line-is-dired-header? ()
-    (equal 'dired-header
-           (ignore-errors
-             (save-excursion
-               (move-to-column 3)
-               (face-at-point)))))
-
-  (defadvice global-hl-line-highlight (around suppress-on-subdir-header activate)
-    "Do not highlight the line if looking at a dired header."
-    (if (and (derived-mode-p 'dired-mode) (cb:line-is-dired-header?))
-        (global-hl-line-unhighlight)
-      ad-do-it))
-
-  (defadvice hl-line-highlight (around suppress-on-subdir-header activate)
-    "Do not highlight the line if looking at a dired header."
-    (if (and (derived-mode-p 'dired-mode) (cb:line-is-dired-header?))
-        (hl-line-unhighlight)
-      ad-do-it))
-
-  (when (equal system-type 'darwin)
-    (-when-let (gls (executable-find "gls"))
-      (setq ls-lisp-use-insert-directory-program t
-            insert-directory-program gls)))
-
-  (define-key dired-mode-map (kbd "M-N") 'dired-next-subdir)
-  (define-key dired-mode-map (kbd "M-P") 'dired-prev-subdir)
-
-  )
-
-(after '(evil dired)
-  (evil-define-key 'normal dired-mode-map (kbd "SPC") 'dired-hide-subdir)
-  (evil-define-key 'normal dired-mode-map (kbd "TAB") 'dired-hide-subdir)
-  (evil-define-key 'normal dired-mode-map [backtab] 'dired-hide-all)
-  (evil-define-key 'normal dired-mode-map [backspace] 'dired-kill-subdir)
-
-  (bind-key* "M-d" 'dired-jump)
-  (bind-key* "M-D" 'dired-jump-other-window))
+(define-key dired-mode-map (kbd "M-N") 'dired-next-subdir)
+(define-key dired-mode-map (kbd "M-P") 'dired-prev-subdir)
 
 (provide 'config-dired)
 

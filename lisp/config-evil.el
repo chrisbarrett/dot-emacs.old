@@ -531,6 +531,16 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
   "l" 'bbdb-next-field
   "h" 'bbdb-prev-field)
 
+;;; Dired
+
+(evil-define-key 'normal dired-mode-map (kbd "SPC") 'dired-hide-subdir
+  (kbd "TAB") 'dired-hide-subdir
+  [backtab] 'dired-hide-all
+  [backspace] 'dired-kill-subdir)
+
+(bind-key* "M-d" 'dired-jump)
+(bind-key* "M-D" 'dired-jump-other-window)
+
 ;;; Misc
 
 (evil-define-key 'normal Man-mode-map (kbd "q") 'Man-kill)

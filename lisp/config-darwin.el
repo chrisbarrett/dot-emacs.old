@@ -32,6 +32,10 @@
 
 (autoload 'thing-at-point-url-at-point "thingatpt")
 
+(-when-let (gls (executable-find "gls"))
+  (setq ls-lisp-use-insert-directory-program t
+        insert-directory-program gls))
+
 (when (s-ends-with? "fish" (getenv "SHELL"))
   (custom-set-variables
    '(shell-file-name "/bin/bash")
