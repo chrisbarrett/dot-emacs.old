@@ -30,20 +30,21 @@
 
 (cb:install-package 'company)
 
-(setq company-idle-delay 0.1
-      company-tooltip-limit 10
-      company-minimum-prefix-length 3)
+(custom-set-variables
+ '(company-idle-delay 0.1)
+ '(company-tooltip-limit 10)
+ '(company-minimum-prefix-length 3))
 
-(unless noninteractive
-  (global-company-mode)
-  (diminish 'company-mode))
+(global-company-mode)
+(diminish 'company-mode)
+
+;;; Key bindings
 
 (after 'company
-  (let ((m company-active-map))
-    (define-key m (kbd "C-n") 'company-select-next)
-    (define-key m (kbd "C-p") 'company-select-previous)
-    (define-key m (kbd "C-h") 'company-show-doc-buffer)
-    (define-key m (kbd "C-w") nil)))
+  (define-key company-active-map (kbd "C-n") 'company-select-next)
+  (define-key company-active-map (kbd "C-p") 'company-select-previous)
+  (define-key company-active-map (kbd "C-h") 'company-show-doc-buffer)
+  (define-key company-active-map (kbd "C-w") nil))
 
 (provide 'config-company)
 
