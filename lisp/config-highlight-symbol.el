@@ -34,7 +34,7 @@
  '(highlight-symbol-idle-delay 0.5))
 
 (custom-set-faces
- '(highlight-symbol-face ((t :bold t))))
+ '(highlight-symbol-face ((t :foreground nil :italic t))))
 
 (add-hook 'prog-mode-hook 'highlight-symbol-mode)
 (add-hook 'sgml-mode-hook 'highlight-symbol-mode)
