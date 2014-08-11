@@ -99,8 +99,10 @@
 
 ;;; Key bindings
 
-(bind-key "C-c r" 'iedit-picker iedit-mode-keymap)
 (bind-key "M-r" 'iedit-mode)
+
+(after 'iedit-mode
+  (bind-key "C-c r" 'iedit-picker iedit-mode-keymap))
 
 (provide 'config-iedit)
 
