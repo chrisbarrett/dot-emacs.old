@@ -34,8 +34,6 @@
 (custom-set-variables
  '(csv-align-style 'auto))
 
-(add-hook 'csv-mode-hook 'csv-align-fields)
-
 (defvar-local cb-csv:aligned? nil)
 
 (defadvice csv-align-fields (after set-aligned activate)
@@ -49,8 +47,8 @@
 (defun cb-csv:toggle-field-alignment ()
   "Toggle field alignment in the current CSV buffer."
   (interactive)
-  (funcall (if cb-csv:aligned? 'csv-unalign-fields 'csv-align-fields)
-           t nil nil))
+  (call-interactively
+   (if cb-csv:aligned? 'csv-unalign-fields 'csv-align-fields)))
 
 (after 'csv-mode
   (define-key csv-mode-map (kbd "C-c C-t") 'cb-csv:toggle-field-alignment))
