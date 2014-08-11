@@ -32,6 +32,8 @@
 
 (autoload 'helm "helm")
 
+;;; Commands
+
 (defun insert-timestamp ()
   "Read a timestamp from the user and insert it at point."
   (interactive)
@@ -122,6 +124,8 @@ PARAGRAPH-LENGTH is one of short, medium, long or verylong."
               (search-forward "\n\n")
               (s-trim (buffer-substring (point) (point-max)))))))
 
+;;; Picker
+
 (define-command-picker insertion-picker
   :title "*Insert*"
   :options
@@ -132,6 +136,8 @@ PARAGRAPH-LENGTH is one of short, medium, long or verylong."
     ("U" "UUID" insert-uuid)
     ("V" "File Local Var" add-file-local-variable)
     ("P" "File Local Var (prop line)" add-file-local-variable-prop-line)))
+
+;;; Key bindings
 
 (bind-key* "C-c i" 'insertion-picker)
 
