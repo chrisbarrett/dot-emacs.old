@@ -31,11 +31,13 @@
 (cb:install-package 'flycheck)
 (global-flycheck-mode)
 
-(define-key flycheck-mode-map (kbd "M-N") 'flycheck-next-error)
-(define-key flycheck-mode-map (kbd "M-P") 'flycheck-previous-error)
-
 (cb:install-package 'flycheck-cask)
 (add-hook 'flycheck-mode-hook 'flycheck-cask-setup)
+
+;;; Key bindings
+
+(define-key flycheck-mode-map (kbd "M-N") 'flycheck-next-error)
+(define-key flycheck-mode-map (kbd "M-P") 'flycheck-previous-error)
 
 (provide 'config-flycheck)
 
