@@ -28,20 +28,19 @@
 
 (require 'utils-common)
 
-(cb:install-package 'highlight-symbol)
+(cb:install-package 'highlight-symbol t)
+
+(custom-set-variables
+ '(highlight-symbol-idle-delay 0.5))
+
+(custom-set-faces
+ '(highlight-symbol-face ((t :bold t))))
+
 (add-hook 'prog-mode-hook 'highlight-symbol-mode)
 (add-hook 'sgml-mode-hook 'highlight-symbol-mode)
 (add-hook 'nxml-mode-hook 'highlight-symbol-mode)
 
-(setq highlight-symbol-idle-delay 0.5)
-
-(defface highlight-symbol-face
-  '((t (:bold t)))
-  "Face used by `highlight-symbol-mode'."
-  :group 'highlight-symbol)
-
-(hook-fn 'highlight-symbol-mode-hook
-  (diminish 'highlight-symbol-mode))
+(diminish 'highlight-symbol-mode)
 
 (provide 'config-highlight-symbol)
 
