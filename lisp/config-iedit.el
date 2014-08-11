@@ -34,7 +34,7 @@
 (custom-set-faces
  '(iedit-occurrence ((t (:box "magenta")))))
 
-(bind-key "M-r" 'iedit-mode)
+;;; Commands
 
 (defun cbiedit:replace-read ()
   (iedit-replace-occurrences (read-string "Replace in buffer: ")))
@@ -48,6 +48,8 @@
 (defun cbiedit:replace-in-region ()
   (cbiedit:restrict-to-region)
   (cbiedit:replace-read))
+
+;;; Picker
 
 (define-command-picker iedit-picker
   :title "*iedit*"
@@ -95,9 +97,10 @@
     ("t" "Toggle at Point" iedit-toggle-selection)
     ("d" "Done" iedit-done)))
 
-(after 'iedit
-  (bind-key "C-c r" 'iedit-picker iedit-mode-keymap))
+;;; Key bindings
 
+(bind-key "C-c r" 'iedit-picker iedit-mode-keymap)
+(bind-key "M-r" 'iedit-mode)
 
 (provide 'config-iedit)
 
