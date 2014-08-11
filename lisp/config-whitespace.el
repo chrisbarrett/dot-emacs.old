@@ -28,27 +28,31 @@
 
 (require 'utils-common)
 
+(require 'whitespace)
+
+(custom-set-variables
+ '(whitespace-line-column 80)
+ '(whitespace-style '(face lines-tail)))
+
+(diminish 'whitespace-mode)
+
+;;; Enable `whitespace-mode' for most programming modes.
+
 (defun cb-ws:set-whitespace-mode ()
-  "Conditionally enable whitespace mode.
+   "Conditionally enable whitespace mode.
 In particular, disable for org src blocks so ws highlighting is not exported."
-  (if (or (true? org-src-mode)
-          (derived-mode-p 'haskell-mode)) ; Long lines are OK in Haskell
-      (whitespace-mode +1)
-    (whitespace-mode -1)))
+   (if (or (true? org-src-mode)
+           (derived-mode-p 'haskell-mode)) ; Long lines are OK in Haskell
+       (whitespace-mode +1)
+     (whitespace-mode -1)))
 
 (add-hook 'prog-mode-hook 'cb-ws:set-whitespace-mode)
-
-(setq whitespace-line-column 80
-      whitespace-style '(face lines-tail))
 
 (defadvice whitespace-turn-on (around ignore-errors activate)
   "Ignore void-function errors when starting whitespace mode."
   (condition-case _
       ad-do-it
     (void-function)))
-
-(hook-fn 'whitespace-mode-hook
-  (diminish 'whitespace-mode))
 
 (provide 'config-whitespace)
 
