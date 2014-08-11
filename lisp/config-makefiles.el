@@ -28,6 +28,8 @@
 
 (require 'utils-common)
 
+(put 'makfile-mode 'indent-tabs-mode t)
+
 (defun convert-leading-spaces-to-tabs ()
   "Convert sequences of spaces at the beginning of a line to tabs."
   (interactive)
@@ -37,7 +39,6 @@
       (replace-match "\t"))))
 
 (hook-fn 'makefile-mode-hook
-  (setq indent-tabs-mode t)
   (add-hook 'before-save-hook 'convert-leading-spaces-to-tabs nil t))
 
 (after 'make-mode
