@@ -38,6 +38,8 @@
  '(scala-indent:align-parameters t)
  '(scala-indent:default-run-on-strategy scala-indent:eager-strategy))
 
+;;; Snippet utils
+
 (defun cbscala:find-case-class-parent ()
   (save-excursion
     (if (search-backward-regexp
@@ -52,6 +54,8 @@
          nil t)
         (match-string 1)
       "")))
+
+;;; Smart ops
 
 (defun cbscala:equals ()
   (interactive)
@@ -92,6 +96,8 @@ Pad in normal expressions. Do not insert padding in variance annotations."
     ("+" . cbscala:plus)
     ("-" . cbscala:minus)))
 
+;;; Commands
+
 (defun cbscala:join-line ()
   "Adapt `scala-indent:join-line' to behave more like evil's line join.
 
@@ -113,11 +119,10 @@ point to the position of the join."
     (when join-pos
       (goto-char join-pos))))
 
+;;; Key bindings
+
 (after 'scala-mode2
   (define-key scala-mode-map (kbd ".") nil))
-
-(after '(evil scala-mode2)
-  (evil-define-key 'normal scala-mode-map "J" 'cbscala:join-line))
 
 (provide 'config-scala)
 

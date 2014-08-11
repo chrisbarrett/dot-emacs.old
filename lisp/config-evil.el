@@ -599,6 +599,10 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
   (kbd "M-P") 'outline-previous-visible-heading
   (kbd "M-N") 'outline-next-visible-heading)
 
+;;; Scala
+
+(evil-define-key 'normal scala-mode-map "J" 'cbscala:join-line)
+
 ;;; Misc
 
 (evil-define-key 'normal Man-mode-map (kbd "q") 'Man-kill)
