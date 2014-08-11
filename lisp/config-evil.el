@@ -50,12 +50,13 @@
 
 ;;; Set initial states
 
-(evil-set-initial-state 'message-mode      'insert)
+(evil-set-initial-state 'message-mode 'insert)
 (evil-set-initial-state 'magit-commit-mode 'normal)
 (evil-set-initial-state 'git-rebase-mode 'insert)
-(evil-set-initial-state 'eshell-mode       'insert)
+(evil-set-initial-state 'eshell-mode 'insert)
 (evil-set-initial-state 'haskell-error-mode 'emacs)
-(evil-set-initial-state 'doc-view-mode     'normal)
+(evil-set-initial-state 'doc-view-mode 'normal)
+(evil-set-initial-state 'idris-info-mode 'emacs)
 
 ;;; HJKL bindings
 
@@ -579,6 +580,18 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
 ;;; Discover
 
 (evil-set-initial-state 'makey-key-mode 'emacs)
+
+;;; Info
+
+(evil-define-key 'motion Info-mode-map
+  (kbd "l") 'Info-history-back
+  (kbd "r") 'Info-history-forward)
+
+;;; Circe
+
+(evil-set-initial-state 'circe-server-mode 'insert)
+(evil-set-initial-state 'circe-channel-mode 'insert)
+(evil-set-initial-state 'circe-chat-mode 'insert)
 
 ;;; Misc
 

@@ -28,18 +28,61 @@
 
 (require 'utils-common)
 (require 'utils-ui)
+(require 'config-theme)
 
 (cb:install-package 'circe)
 
-(setq lui-flyspell-p t)
-
-(after 'circe (require 'lui-autopaste))
-(add-hook 'circe-channel-mode-hook 'enable-lui-autopaste)
-
-(setq lui-time-stamp-position 'right-margin
-      lui-time-stamp-format "%H:%M")
+(custom-set-variables
+ '(lui-flyspell-p t)
+ '(lui-time-stamp-position 'right-margin)
+ '(lui-time-stamp-format "%H:%M")
+ '(circe-bot-list '("fsbot" "rudybot"))
+ '(circe-reduce-lurker-spam t)
+ '(lui-fill-type nil))
 
 (put 'lui-mode 'right-margin-width 5)
+(put 'lui-mode 'fringes-outside-margins t)
+(put 'lui-mode 'right-margin-width 5)
+(put 'lui-mode 'word-wrap t)
+(put 'lui-mode 'wrap-prefix "    ")
+
+(custom-set-faces
+ '(circe-server-face          ((t :inherit font-lock-comment-face)))
+ '(circe-fool-face            ((t :inherit font-lock-comment-face)))
+ '(lui-time-stamp-face        ((t :inherit font-lock-comment-face)))
+ `(circe-my-message-face      ((t :foreground ,solarized-hl-orange)))
+ `(lui-button-face            ((t :foreground ,solarized-hl-yellow)))
+ `(circe-originator-face      ((t :foreground ,solarized-hl-violet)))
+ `(circe-highlight-nick-face  ((t :foreground ,solarized-hl-cyan)))
+ `(circe-prompt-face          ((t :foreground ,solarized-hl-orange :background nil))))
+
+(after 'circe (require 'lui-autopaste))
+
+(add-hook 'circe-channel-mode-hook 'enable-lui-autopaste)
+(add-hook 'circe-message-option-functions 'cbcirce:message-option-bot)
+
+(defun cbcirce:message-option-bot (nick &rest ignored)
+  (when (member nick circe-bot-list)
+    '((text-properties . (face circe-fool-face lui-do-not-track t)))))
+
+;;; Prompt
+
+(defun cbcirce:set-prompt ()
+  (let ((prompt (propertize (format "%s: " (circe-server-nick))
+                            'face circe-prompt-face)))
+    (lui-set-prompt prompt)))
+
+(add-hook 'circe-nickserv-authenticated-hook 'cbcirce:set-prompt)
+(add-hook 'circe-server-connected-hook 'cbcirce:set-prompt)
+(add-hook 'circe-channel-mode-hook 'cbcirce:set-prompt)
+
+;;; Commands
+
+(defun cbcirce:del ()
+  "Delete command for Circe buffers that works with smartparens."
+  (interactive)
+  (call-interactively
+   (if (sp-get-sexp t) 'sp-backward-delete-char 'delete-backward-char)))
 
 (defun show-irc ()
   "Show all IRC buffers."
@@ -57,65 +100,7 @@
       ;; Set up restore bindings.
       (--each bufs (buffer-local-set-key (kbd "C-c C-k") (command (restore)))))))
 
-(setq lui-fill-type nil)
-
-(defun cbcirce:wrapping-setup ()
-  (setq
-   fringes-outside-margins t
-   right-margin-width 5
-   word-wrap t
-   wrap-prefix "    "))
-
-(add-hook 'lui-mode-hook 'cbcirce:wrapping-setup)
-
-(setq circe-bot-list '("fsbot" "rudybot"))
-
-(setq circe-reduce-lurker-spam t)
-
-(defun cbcirce:message-option-bot (nick &rest ignored)
-  (when (member nick circe-bot-list)
-    '((text-properties . (face circe-fool-face lui-do-not-track t)))))
-
-(add-hook 'circe-message-option-functions 'cbcirce:message-option-bot)
-
-(after 'circe
-  (set-face-foreground 'circe-server-face
-                       (face-foreground 'font-lock-comment-face))
-
-  (set-face-foreground 'circe-fool-face
-                       (face-foreground 'font-lock-comment-face))
-
-  (set-face-foreground 'lui-time-stamp-face
-                       (face-foreground 'font-lock-comment-face))
-
-  (set-face-foreground 'circe-my-message-face solarized-hl-orange)
-  (set-face-foreground 'lui-button-face solarized-hl-yellow)
-  (set-face-foreground 'circe-originator-face solarized-hl-violet)
-  (set-face-foreground 'circe-highlight-nick-face solarized-hl-cyan))
-
-(defun cbcirce:set-prompt ()
-  (let ((prompt (propertize (format "%s: " (circe-server-nick))
-                            'face circe-prompt-face)))
-    (lui-set-prompt prompt)))
-
-(add-hook 'circe-nickserv-authenticated-hook 'cbcirce:set-prompt)
-(add-hook 'circe-server-connected-hook 'cbcirce:set-prompt)
-(add-hook 'circe-channel-mode-hook 'cbcirce:set-prompt)
-
-(after 'circe
-  (set-face-foreground 'circe-prompt-face solarized-hl-orange)
-  (set-face-background 'circe-prompt-face nil))
-
-(after '(evil circe)
-  (add-hook 'circe-server-mode-hook 'evil-insert-state)
-  (add-hook 'circe-channel-mode-hook 'evil-insert-state)
-  (add-hook 'circe-chat-mode-hook 'evil-insert-state))
-
-(defun cbcirce:del ()
-  "Delete command for Circe buffers that works with smartparens."
-  (interactive)
-  (call-interactively
-   (if (sp-get-sexp t) 'sp-backward-delete-char 'delete-backward-char)))
+;;; Key bindings
 
 (after '(circe smartparens)
   (define-key circe-channel-mode-map (kbd "<backspace>") 'cbcirce:del))
