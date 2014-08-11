@@ -603,6 +603,13 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
 
 (evil-define-key 'normal scala-mode-map "J" 'cbscala:join-line)
 
+;;; Scheme
+
+(evil-define-key 'normal geiser-mode-map
+  (kbd "M-.") 'geiser-edit-symbol-at-point)
+
+(evil-set-initial-state 'geiser-repl-mode 'insert)
+
 ;;; Misc
 
 (evil-define-key 'normal Man-mode-map (kbd "q") 'Man-kill)

@@ -31,14 +31,18 @@
 (require 'config-modegroups)
 (require 'config-evil)
 
+(cb:declare-package-installer scheme
+  :match (rx "." (or "rkt" "ss" "stk" "sch" "oak"
+                     (and "scm" (and "." (* digit)))) eos)
+  :packages (geiser))
+
 (custom-set-variables
  '(geiser-mode-start-repl-p t)
  '(geiser-repl-startup-time 20000)
  '(geiser-repl-history-filename (f-join cb:tmp-dir "geiser-history"))
  '(geiser-active-implementations '(racket)))
 
-(after 'scheme
-  (cb:install-package 'geiser))
+;;; Re-define command
 
 (after 'geiser-mode
   (defun geiser-eval-buffer (&optional and-go raw nomsg)
@@ -62,25 +66,9 @@ With prefix, goes to the REPL buffer afterwards (as
                                  (and and-go 'geiser--go-to-repl)
                                  (not raw)
                                  nomsg)))
-
-  (define-key geiser-mode-map (kbd "C-c C-f") 'geiser-eval-buffer)
-  (define-key geiser-mode-map (kbd "C-c C-h") 'geiser-doc-look-up-manual)
-  (define-key geiser-repl-mode-map (kbd "C-c C-h") 'geiser-doc-look-up-manual)
-
-  (defadvice switch-to-geiser (after append-with-evil activate)
-    (when (derived-mode-p 'comint-mode)
-      (goto-char (point-max))))
-
-  (after 'evil
-    (evil-define-key 'normal geiser-mode-map
-      (kbd "M-.") 'geiser-edit-symbol-at-point))
-
-  (after 'evil
-    (defadvice switch-to-geiser (after append-with-evil activate)
-      (when (derived-mode-p 'comint-mode)
-        (cb:maybe-evil-insert-state))))
-
   )
+
+;;; Commands
 
 (defconst cbscm:scm-buf "*execute scheme*")
 
@@ -119,8 +107,7 @@ With prefix, goes to the REPL buffer afterwards (as
 
   (display-buffer-other-frame cbscm:scm-buf))
 
-(after 'scheme
-  (define-key scheme-mode-map (kbd "C-c C-c") 'cbscm:execute-buffer))
+;;; Indentation
 
 (after 'scheme
   (put 'begin                 'scheme-indent-function 0)
@@ -218,6 +205,8 @@ With prefix, goes to the REPL buffer afterwards (as
 
   (put 'nest                  'scheme-indent-function 1))
 
+;;; Font lock
+
 (after 'scheme
   (--each cb:scheme-modes
     (font-lock-add-keywords
@@ -292,6 +281,16 @@ With prefix, goes to the REPL buffer afterwards (as
      ;; Types for Typed Racket.
      `((,(rx bow upper (* (syntax word)) eow)
         (0 font-lock-type-face))))))
+
+;;; Key bindings
+
+(after 'geiser-mode
+  (define-key geiser-mode-map (kbd "C-c C-f") 'geiser-eval-buffer)
+  (define-key geiser-mode-map (kbd "C-c C-h") 'geiser-doc-look-up-manual)
+  (define-key geiser-repl-mode-map (kbd "C-c C-h") 'geiser-doc-look-up-manual))
+
+(after 'scheme
+  (define-key scheme-mode-map (kbd "C-c C-c") 'cbscm:execute-buffer))
 
 (provide 'config-scheme)
 
