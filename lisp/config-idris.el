@@ -38,341 +38,348 @@
 (custom-set-variables
  '(idris-warnings-printing 'warnings-repl))
 
-(hook-fn 'cb:idris-modes-hook
-  (setq-local tab-width 2)
-  (setq-local evil-shift-width 2))
+(put 'idris-mode 'tab-width 2)
+(put 'idris-mode 'evil-shift-width 2)
 
 (add-hook 'idris-mode-hook 'idris-indentation-mode)
 
 (after 'idris-indentation
   (diminish 'idris-indentation-mode))
 
+;;; Advices
+
 (defadvice idris-mode (before start-process activate)
   "Automatically run an idris process."
   (unless idris-process
     (idris-run)))
 
-(after 'idris-mode
+(defadvice idris-switch-to-output-buffer (after evil-append activate)
+  (cb:append-buffer))
 
-  (defun cb-idris:eldoc-fn ()
-    (ignore-errors
-      (noflet ((message (&rest _)))
-        (-when-let* ((name (idris-name-at-point))
-                     (str (car (idris-eval (list :type-of name)))))
-          (cl-destructuring-bind (_ ident type)
-              (s-match (rx (group (+ nonl)) ":" (group (+ nonl)) eol) str)
-            (format "%s:%s"
-                    (propertize ident 'face font-lock-function-name-face)
-                    (propertize type 'face font-lock-type-face)))))))
+;;; Smart ops
 
-  (hook-fn 'cb:idris-modes-hook
-    (setq-local eldoc-documentation-function 'cb-idris:eldoc-fn)
-    (turn-on-eldoc-mode))
+(defun cbidris:smart-colon ()
+  (interactive)
+  (cond
+   ((and (char-before) (equal (char-to-string (char-before)) " "))
+    (super-smart-ops-insert ":"))
+   ((and (char-after) (equal (char-to-string (char-after)) ")"))
+    (insert ":"))
+   (t
+    (super-smart-ops-insert ":"))))
 
-  (define-key idris-mode-map (kbd "C-c C-z") 'idris-switch-to-output-buffer)
+(defun cbidris:smart-comma ()
+  (interactive)
+  (cond
+   ((s-matches? (rx bol (* space) eol)
+                (buffer-substring (line-beginning-position) (point)))
+    (insert ", ")
+    (idris-indentation-indent-line))
+   (t
+    (insert ","))))
 
-  (defadvice idris-switch-to-output-buffer (after evil-append activate)
-    (cb:append-buffer))
-
-  (defun cbidris:smart-colon ()
-    (interactive)
+(defun cbidris:smart-pipe ()
+  "Insert a pipe operator. Add padding, unless we're inside a list."
+  (interactive)
+  (let ((in-empty-square-braces?
+         (save-excursion
+           (-when-let (pair (sp-backward-up-sexp))
+             (cl-destructuring-bind (&key op beg end &allow-other-keys) pair
+               (and (equal "[" op)
+                    (s-blank? (buffer-substring (1+ beg) (1- end)))))))))
     (cond
-     ((and (char-before) (equal (char-to-string (char-before)) " "))
-      (super-smart-ops-insert ":"))
-     ((and (char-after) (equal (char-to-string (char-after)) ")"))
-      (insert ":"))
+     (in-empty-square-braces?
+      (delete-horizontal-space)
+      (insert "| ")
+      (save-excursion
+        (insert " |"))
+      (message "Inserting idiom brackets"))
+
      (t
-      (super-smart-ops-insert ":"))))
+      (super-smart-ops-insert "|")))))
 
-  (defun cbidris:smart-comma ()
-    (interactive)
+(defun cbidris:smart-dot ()
+  "Insert a period with context-sensitive padding."
+  (interactive)
+  (let ((looking-at-module-or-constructor?
+         (-when-let (sym (thing-at-point 'symbol))
+           (s-uppercase? (substring sym 0 1)))))
     (cond
-     ((s-matches? (rx bol (* space) eol)
+     (looking-at-module-or-constructor?
+      (insert "."))
+     ((thing-at-point-looking-at (rx (or "(" "{" "[") (* space)))
+      (insert "."))
+     (t
+      (super-smart-ops-insert ".")))))
+
+(defun cbidris:smart-question-mark ()
+  "Insert a ? char as an operator, unless point is after an = sign."
+  (interactive)
+  (cond
+   ((s-matches? (rx "=" (* space) eol) (current-line))
+    (just-one-space)
+    (insert "?"))
+   (t
+    (super-smart-ops-insert "?"))))
+
+(super-smart-ops-configure-for-mode 'idris-mode
+  :add '("$")
+  :custom
+  '(("?" . cbidris:smart-question-mark)
+    ("|" . cbidris:smart-pipe)
+    ("." . cbidris:smart-dot)
+    ("," . cbidris:smart-comma)
+    (":" . cbidris:smart-colon)))
+
+(super-smart-ops-configure-for-mode 'idris-repl-mode
+  :add '("$")
+  :custom
+  '(("?" . cbidris:smart-question-mark)
+    ("|" . cbidris:smart-pipe)
+    ("." . cbidris:smart-dot)
+    ("," . cbidris:smart-comma)
+    (":" . cbidris:smart-colon)))
+
+;;; Font locking and faces
+
+(defun cbidris:apply-unicode ()
+  (font-lock-add-keywords
+   nil `(("\\s ?(?\\(\\\\\\)\\s *\\(\\w\\|_\\|(.*)\\).*?\\s *=>"
+          (0
+           (progn (compose-region (match-beginning 1) (match-end 1)
+                                  ?\λ 'decompose-region)
+                  nil))))))
+
+(add-to-list 'font-lock-keywords-alist
+             '(idris-mode
+               ((("^ *record\\>" . font-lock-keyword-face)))))
+
+(add-hook 'cb:idris-modes-hook 'cbidris:apply-unicode)
+
+(add-to-list 'face-remapping-alist '(idris-semantic-type-face     . font-lock-type-face))
+(add-to-list 'face-remapping-alist '(idris-semantic-data-face     . default))
+(add-to-list 'face-remapping-alist '(idris-semantic-function-face . font-lock-function-name-face))
+(add-to-list 'face-remapping-alist '(idris-semantic-bound-face    . font-lock-variable-name-face))
+(add-to-list 'face-remapping-alist '(idris-semantic-implicit-face . font-lock-comment-face))
+(add-to-list 'face-remapping-alist '(idris-repl-output-face       . compilation-info))
+
+;;; Commands
+
+(defun idris-switch-to-src ()
+  "Pop to the last idris source buffer."
+  (interactive)
+  (-if-let (buf (car (--filter-buffers (derived-mode-p 'idris-mode))))
+      (pop-to-buffer buf)
+    (error "No idris buffers")))
+
+(defun sp-idris-just-one-space (id action ctx)
+  "Pad parens with spaces."
+  (when (and (equal 'insert action)
+             (sp-in-code-p id action ctx))
+    ;; Insert a leading space, unless
+    ;; 1. this is a quoted form
+    ;; 2. this is the first position of another list
+    ;; 3. this form begins a new line.
+    (save-excursion
+      (search-backward id)
+      (unless (s-matches?
+               (rx (or (group bol (* space))
+                       (any "," "`" "@" "(" "[" "{")) eol)
+               (buffer-substring (line-beginning-position) (point)))
+        (just-one-space)))
+    ;; Insert space after separator, unless
+    ;; 1. this form is at the end of another list.
+    ;; 2. this form is at the end of the line.
+    (save-excursion
+      (search-forward (sp-get-pair id :close))
+      (unless (s-matches? (rx (or (any ")" "]" "}")
+                                  eol))
+                          (buffer-substring (point) (1+ (point))))
+        (just-one-space)))))
+
+;;; Eldoc
+
+(defun cbidris:get-docstring ()
+  "Format a docstring for eldoc."
+  (ignore-errors
+    (-when-let* ((name (car (idris-thing-at-point)))
+                 (s (idris-eval `(:type-of ,name))))
+      (nth 1 (s-match (rx (* (any "-" "\n" space)) (group (* anything)))
+                      s)))))
+
+(defun cb-idris:eldoc-fn ()
+  (ignore-errors
+    (noflet ((message (&rest _)))
+      (-when-let* ((name (idris-name-at-point))
+                   (str (car (idris-eval (list :type-of name)))))
+        (cl-destructuring-bind (_ ident type)
+            (s-match (rx (group (+ nonl)) ":" (group (+ nonl)) eol) str)
+          (format "%s:%s"
+                  (propertize ident 'face font-lock-function-name-face)
+                  (propertize type 'face font-lock-type-face)))))))
+
+(defun cbidris:configure-eldoc ()
+  "Set up eldoc for Idris."
+  (setq-local eldoc-documentation-function 'cbidris:get-docstring)
+  (eldoc-mode +1))
+
+(put 'idris-mode 'eldoc-documentation-function 'cb-idris:eldoc-fn)
+(put 'idris-repl-mode 'eldoc-documentation-function 'cb-idris:eldoc-fn)
+(add-hook 'cb:idris-modes-hook 'cbidris:configure-eldoc)
+
+;;; Smart M-RET
+
+(defun cbidris:data-start-pos ()
+  "Find the start position of the datatype declaration at point."
+  (save-excursion
+    (end-of-line)
+    (when (search-backward-regexp (rx bol (* space) (or "record" "data") eow) nil t)
+      (skip-chars-forward " \t")
+      (point))))
+
+(defun cbidris:data-end-pos ()
+  "Find the end position of the datatype declaration at point."
+  (save-excursion
+    (let ((start (point)))
+
+      (goto-char (cbidris:data-start-pos))
+      (forward-line)
+      (goto-char (line-beginning-position))
+
+      (let ((end
+             (when (search-forward-regexp
+                    (rx bol (or (and (* space) eol) (not (any space "|"))))
+                    nil t)
+               (forward-line -1)
+               (line-end-position))))
+        (if (and end (<= start end))
+            end
+          (point-max))))))
+
+(cl-defun cbidris:data-decl-at-pt ()
+  "Return the data declaration at point."
+  (-when-let* ((start (cbidris:data-start-pos))
+               (end (cbidris:data-end-pos)))
+    (buffer-substring-no-properties start end)))
+
+(defun cbidris:at-data-decl? ()
+  (-when-let (dd (cbidris:data-decl-at-pt))
+    (let ((lines (s-split "\n" dd)))
+      (or (equal 1 (length lines))
+          (->> (-drop 1 lines)
+            (-all? (~ s-matches? (rx bol (or space "|")))))))))
+
+(defun cbidris:function-name-at-pt ()
+  "Return the name of the function at point."
+  (save-excursion
+    (search-backward-regexp (rx bol (* space) (group (+ (not (any space ":"))))))
+    (let ((s (s-trim (match-string-no-properties 1))))
+      (unless (or (-contains? idris-keywords s)
+                  (s-blank? s))
+        s))))
+
+(defun idris-ret ()
+  "Indent and align on newline."
+  (interactive "*")
+  (if (s-matches? comment-start (current-line))
+      (comment-indent-new-line)
+
+    (cond
+
+     ((s-matches? (rx space "->" (* space))
                   (buffer-substring (line-beginning-position) (point)))
-      (insert ", ")
-      (idris-indentation-indent-line))
+      (newline)
+      (delete-horizontal-space)
+      (indent-for-tab-command))
+
+     ((s-matches? (rx bol (* space) eol) (current-line))
+      (delete-horizontal-space)
+      (newline))
+
      (t
-      (insert ","))))
+      (idris-newline-and-indent)))))
 
-  (defun cbidris:smart-pipe ()
-    "Insert a pipe operator. Add padding, unless we're inside a list."
-    (interactive)
-    (let ((in-empty-square-braces?
-           (save-excursion
-             (-when-let (pair (sp-backward-up-sexp))
-               (cl-destructuring-bind (&key op beg end &allow-other-keys) pair
-                 (and (equal "[" op)
-                      (s-blank? (buffer-substring (1+ beg) (1- end)))))))))
-      (cond
-       (in-empty-square-braces?
-        (delete-horizontal-space)
-        (insert "| ")
-        (save-excursion
-          (insert " |"))
-        (message "Inserting idiom brackets"))
-
-       (t
-        (super-smart-ops-insert "|")))))
-
-
-  (defun cbidris:smart-dot ()
-    "Insert a period with context-sensitive padding."
-    (interactive)
-    (let ((looking-at-module-or-constructor?
-           (-when-let (sym (thing-at-point 'symbol))
-             (s-uppercase? (substring sym 0 1)))))
-      (cond
-       (looking-at-module-or-constructor?
-        (insert "."))
-       ((thing-at-point-looking-at (rx (or "(" "{" "[") (* space)))
-        (insert "."))
-       (t
-        (super-smart-ops-insert ".")))))
-
-  (defun cbidris:smart-question-mark ()
-    "Insert a ? char as an operator, unless point is after an = sign."
-    (interactive)
-    (cond
-     ((s-matches? (rx "=" (* space) eol) (current-line))
-      (just-one-space)
-      (insert "?"))
-     (t
-      (super-smart-ops-insert "?"))))
-
-  (--each cb:idris-modes
-    (super-smart-ops-configure-for-mode it
-      :add '("$")
-      :custom
-      '(("?" . cbidris:smart-question-mark)
-        ("|" . cbidris:smart-pipe)
-        ("." . cbidris:smart-dot)
-        ("," . cbidris:smart-comma)
-        (":" . cbidris:smart-colon))))
-
-  (define-key idris-mode-map (kbd "<backspace>") 'sp-backward-delete-char)
-
-  (defun cbidris:apply-unicode ()
-    (font-lock-add-keywords
-     nil `(("\\s ?(?\\(\\\\\\)\\s *\\(\\w\\|_\\|(.*)\\).*?\\s *=>"
-            (0
-             (progn (compose-region (match-beginning 1) (match-end 1)
-                                    ?\λ 'decompose-region)
-                    nil))))))
-
-  (add-to-list 'font-lock-keywords-alist
-               '(idris-mode
-                 ((("^ *record\\>" . font-lock-keyword-face)))))
-
-  (add-hook 'cb:idris-modes-hook 'cbidris:apply-unicode)
-
-  (-each
-      '((idris-semantic-type-face     . font-lock-type-face)
-        (idris-semantic-data-face     . default)
-        (idris-semantic-function-face . font-lock-function-name-face)
-        (idris-semantic-bound-face    . font-lock-variable-name-face)
-        (idris-semantic-implicit-face . font-lock-comment-face)
-        (idris-repl-output-face       . compilation-info)
-        )
-    (~ add-to-list 'face-remapping-alist))
-
-  (defun sp-idris-just-one-space (id action ctx)
-    "Pad parens with spaces."
-    (when (and (equal 'insert action)
-               (sp-in-code-p id action ctx))
-      ;; Insert a leading space, unless
-      ;; 1. this is a quoted form
-      ;; 2. this is the first position of another list
-      ;; 3. this form begins a new line.
-      (save-excursion
-        (search-backward id)
-        (unless (s-matches?
-                 (rx (or (group bol (* space))
-                         (any "," "`" "@" "(" "[" "{")) eol)
-                 (buffer-substring (line-beginning-position) (point)))
-          (just-one-space)))
-      ;; Insert space after separator, unless
-      ;; 1. this form is at the end of another list.
-      ;; 2. this form is at the end of the line.
-      (save-excursion
-        (search-forward (sp-get-pair id :close))
-        (unless (s-matches? (rx (or (any ")" "]" "}")
-                                    eol))
-                            (buffer-substring (point) (1+ (point))))
-          (just-one-space)))))
-
-  (defun cbidris:get-docstring ()
-    "Format a docstring for eldoc."
-    (ignore-errors
-      (-when-let* ((name (car (idris-thing-at-point)))
-                   (s (idris-eval `(:type-of ,name))))
-        (nth 1 (s-match (rx (* (any "-" "\n" space)) (group (* anything)))
-                        s)))))
-
-  (defun cbidris:configure-eldoc ()
-    "Set up eldoc for Idris."
-    (setq-local eldoc-documentation-function 'cbidris:get-docstring)
-    (eldoc-mode +1))
-
-  (add-hook 'cb:idris-modes-hook 'cbidris:configure-eldoc)
-
-  (defun idris-switch-to-src ()
-    "Pop to the last idris source buffer."
-    (interactive)
-    (-if-let (buf (car (--filter-buffers (derived-mode-p 'idris-mode))))
-        (pop-to-buffer buf)
-      (error "No idris buffers")))
-
-  (after 'idris-repl
-    (define-key idris-repl-mode-map (kbd "C-c C-z") 'idris-switch-to-src))
-
-  (defun cbidris:data-start-pos ()
-    "Find the start position of the datatype declaration at point."
-    (save-excursion
-      (end-of-line)
-      (when (search-backward-regexp (rx bol (* space) (or "record" "data") eow) nil t)
-        (skip-chars-forward " \t")
-        (point))))
-
-  (defun cbidris:data-end-pos ()
-    "Find the end position of the datatype declaration at point."
-    (save-excursion
-      (let ((start (point)))
-
-        (goto-char (cbidris:data-start-pos))
-        (forward-line)
-        (goto-char (line-beginning-position))
-
-        (let ((end
-               (when (search-forward-regexp
-                      (rx bol (or (and (* space) eol) (not (any space "|"))))
-                      nil t)
-                 (forward-line -1)
-                 (line-end-position))))
-          (if (and end (<= start end))
-              end
-            (point-max))))))
-
-  (cl-defun cbidris:data-decl-at-pt ()
-    "Return the data declaration at point."
-    (-when-let* ((start (cbidris:data-start-pos))
-                 (end (cbidris:data-end-pos)))
-      (buffer-substring-no-properties start end)))
-
-  (defun cbidris:at-data-decl? ()
-    (-when-let (dd (cbidris:data-decl-at-pt))
-      (let ((lines (s-split "\n" dd)))
-        (or (equal 1 (length lines))
-            (->> (-drop 1 lines)
-              (-all? (~ s-matches? (rx bol (or space "|")))))))))
-
-  (defun cbidris:function-name-at-pt ()
-    "Return the name of the function at point."
-    (save-excursion
-      (search-backward-regexp (rx bol (* space) (group (+ (not (any space ":"))))))
-      (let ((s (s-trim (match-string-no-properties 1))))
-        (unless (or (-contains? idris-keywords s)
-                    (s-blank? s))
-          s))))
-
-  (defun idris-ret ()
-    "Indent and align on newline."
-    (interactive "*")
-    (if (s-matches? comment-start (current-line))
-        (comment-indent-new-line)
-
-      (cond
-
-       ((s-matches? (rx space "->" (* space))
-                    (buffer-substring (line-beginning-position) (point)))
-        (newline)
-        (delete-horizontal-space)
-        (indent-for-tab-command))
-
-       ((s-matches? (rx bol (* space) eol) (current-line))
-        (delete-horizontal-space)
-        (newline))
-
-       (t
-        (idris-newline-and-indent)))))
-
-  (defun idris-meta-ret ()
-    "Create a newline and perform a context-sensitive continuation.
+(defun idris-meta-ret ()
+  "Create a newline and perform a context-sensitive continuation.
 - At functions, create a new case for the function.
 - At types, add a 'where' statement if one does not exist.
 - At comments, fill paragraph and insert a newline."
-    (interactive)
-    (cond
+  (interactive)
+  (cond
 
-     ;; Insert new type decl case below the current one.
-     ((s-matches? (rx bol (* space) "|") (current-line))
-      (let ((col (save-excursion (back-to-indentation) (current-column))))
-        (goto-char (line-end-position))
-        (newline)
-        (indent-to col))
-
-      (insert "| ")
-      (message "New data case"))
-
-     ;; Insert new type decl case below the current one.
-     ((and (s-matches? (rx bol (* space) "data") (current-line))
-           (not (s-matches? "where" (current-line))))
-
-      (-if-let (col (save-excursion
-                      (goto-char (line-beginning-position))
-                      (search-forward "=" nil t)
-                      (current-column)))
-          (progn
-            (goto-char (line-end-position))
-            (newline)
-            (indent-to (1- col)))
-
-        (goto-char (line-end-position))
-        (idris-newline-and-indent))
-
-      (insert "| ")
-      (message "New data case"))
-
-     ;; Create new function case.
-     ((cbidris:function-name-at-pt)
+   ;; Insert new type decl case below the current one.
+   ((s-matches? (rx bol (* space) "|") (current-line))
+    (let ((col (save-excursion (back-to-indentation) (current-column))))
       (goto-char (line-end-position))
-      (let ((fn (cbidris:function-name-at-pt))
-            (col (save-excursion
-                   (back-to-indentation)
-                   (current-column))))
+      (newline)
+      (indent-to col))
 
-        (unless (s-matches? (rx bol (* space) eol) (current-line))
-          (newline))
+    (insert "| ")
+    (message "New data case"))
 
-        (indent-to-column col)
-        (insert fn)
-        (just-one-space)))
+   ;; Insert new type decl case below the current one.
+   ((and (s-matches? (rx bol (* space) "data") (current-line))
+         (not (s-matches? "where" (current-line))))
 
-     ;; Insert new line starting with comma.
-     ((s-matches? (rx bol (* space) ",") (current-line))
-      (cb-hs:newline-indent-to-same-col)
-      (insert ", ")
-      (message "New entry"))
+    (-if-let (col (save-excursion
+                    (goto-char (line-beginning-position))
+                    (search-forward "=" nil t)
+                    (current-column)))
+        (progn
+          (goto-char (line-end-position))
+          (newline)
+          (indent-to (1- col)))
 
-     ;; Create a new line in a comment.
-     ((s-matches? comment-start (current-line))
-      (fill-paragraph)
-      (comment-indent-new-line)
-      (message "New comment line"))
-
-     (t
       (goto-char (line-end-position))
-      (idris-ret)))
+      (idris-newline-and-indent))
 
-    (cb:maybe-evil-insert-state))
+    (insert "| ")
+    (message "New data case"))
 
-  (define-keys idris-mode-map
-    "<return>" 'idris-ret
-    "M-<return>" 'idris-meta-ret)
+   ;; Create new function case.
+   ((cbidris:function-name-at-pt)
+    (goto-char (line-end-position))
+    (let ((fn (cbidris:function-name-at-pt))
+          (col (save-excursion
+                 (back-to-indentation)
+                 (current-column))))
 
-  (after 'evil
-    (add-hook 'idris-info-mode-hook 'evil-emacs-state))
+      (unless (s-matches? (rx bol (* space) eol) (current-line))
+        (newline))
 
+      (indent-to-column col)
+      (insert fn)
+      (just-one-space)))
+
+   ;; Insert new line starting with comma.
+   ((s-matches? (rx bol (* space) ",") (current-line))
+    (cb-hs:newline-indent-to-same-col)
+    (insert ", ")
+    (message "New entry"))
+
+   ;; Create a new line in a comment.
+   ((s-matches? comment-start (current-line))
+    (fill-paragraph)
+    (comment-indent-new-line)
+    (message "New comment line"))
+
+   (t
+    (goto-char (line-end-position))
+    (idris-ret)))
+
+  (cb:maybe-evil-insert-state))
+
+;;; Key bindings
+
+(after 'idris-mode
+  (define-key idris-mode-map (kbd "RET") 'idris-ret)
+  (define-key idris-mode-map (kbd "M-RET") 'idris-meta-ret)
+  (define-key idris-mode-map (kbd "C-c C-z") 'idris-switch-to-output-buffer)
+  (define-key idris-mode-map (kbd "<backspace>") 'sp-backward-delete-char)
   )
+
+(after 'idris-repl
+  (define-key idris-repl-mode-map (kbd "C-c C-z") 'idris-switch-to-src))
 
 (provide 'config-idris)
 
