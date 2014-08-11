@@ -32,6 +32,8 @@
 
 (global-set-key (kbd "M-<up>") 'er/expand-region)
 (global-set-key (kbd "M-<down>") 'er/contract-region)
+(global-set-key (kbd "M-<left>") 'er/mark-sentence)
+(global-set-key (kbd "M-<right>") 'er/mark-paragraph)
 
 (provide 'config-expand-region)
 
