@@ -29,22 +29,21 @@
 (require 'utils-common)
 (require 'file-template)
 
-(add-hook 'find-file-not-found-hooks
-          'file-template-find-file-not-found-hook 'append)
-
-(setq file-template-insert-automatically t)
-
 (defvar cb:file-templates-dir (f-join user-emacs-directory "templates"))
-(setq file-template-paths (list cb:file-templates-dir))
 
-(setq file-template-mapping-alist
-      (->> (f-files cb:file-templates-dir)
-        (-map 'f-filename)
-        (--map (cons (format "\\.%s$" (f-ext it)) it))))
+(add-hook 'find-file-not-found-hooks 'file-template-find-file-not-found-hook 'append)
+
+(custom-set-variables
+ '(file-template-insert-automatically t)
+ '(file-template-paths (list cb:file-templates-dir))
+ '(file-template-mapping-alist
+   (->> (f-files cb:file-templates-dir)
+     (-map 'f-filename)
+     (--map (cons (format "\\.%s$" (f-ext it)) it)))))
 
 (hook-fn 'file-template-insert-hook
-  (setq buffer-undo-list nil
-        buffer-undo-tree nil))
+  (setq-local buffer-undo-list nil)
+  (setq-local buffer-undo-tree nil))
 
 (defun cbtmpl:org-skeleton-title (filename)
   "Format the title to use for the given FILENAME."
