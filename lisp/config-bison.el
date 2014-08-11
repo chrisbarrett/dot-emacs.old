@@ -32,6 +32,8 @@
 (autoload 'bison-mode "bison-mode")
 (add-to-list 'auto-mode-alist '("\\.y$" . bison-mode))
 
+;;; Commands
+
 (defun cb-bison:m-ret ()
   "Perform a context-sensitive newline action."
   (interactive)
@@ -63,12 +65,11 @@
 
   (bison-format-buffer))
 
-(after 'bison-mode
-  (define-key bison-mode-map (kbd "M-RET") 'cb-bison:m-ret))
+;;; Key bindings
 
 (after 'bison-mode
+  (define-key bison-mode-map (kbd "M-RET") 'cb-bison:m-ret)
   (define-key bison-mode-map (kbd "=") (make-smart-op "=")))
-
 
 (provide 'config-bison)
 
