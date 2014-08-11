@@ -31,32 +31,41 @@
 (require 'config-theme)
 (require 'utils-commands)
 
-(cb:install-package 'yasnippet)
-(require 'yasnippet)
+(cb:install-package 'yasnippet t)
+
+(custom-set-variables
+ '(yas-snippet-dirs (list cb:yasnippet-dir))
+ '(yas-prompt-functions '(yas-ido-prompt))
+ '(yas-wrap-around-region t)
+ '(yas-verbosity 1))
+
+(custom-set-faces
+ '(yas-field-highlight-face
+   ((t :background "lightgreen"))))
+
+(diminish 'yas-minor-mode)
 
 (add-hook 'prog-mode-hook 'yas-minor-mode)
 (add-hook 'text-mode-hook 'yas-minor-mode)
 
-(defface yas-field-highlight-face
-  `((t :underline ,solarized-hl-cyan
-       :italic t))
-  "The face used to highlight the currently active field of a snippet"
-  :group 'yasnippet)
-
-(setq-default yas-snippet-dirs (list cb:yasnippet-dir))
-
+;; Silently enable yasnippet
 (noflet ((message (&rest _) nil)) (yas-global-mode t))
-
-(setq yas-prompt-functions '(yas-ido-prompt)
-      yas-wrap-around-region t
-      yas-verbosity 1)
-
-(diminish 'yas-minor-mode)
 
 (defun cbyas:reload-all ()
   (interactive)
   (yas-recompile-all)
   (yas-reload-all))
+
+;;; Utilities
+
+(defmacro yas-with-field-restriction (&rest body)
+  "Narrow the buffer to the current active field and execute BODY.
+If no field is active, no narrowing will take place."
+  (declare (indent 0))
+  `(save-restriction
+     (when (cbyas:current-field)
+       (narrow-to-region (cbyas:beginning-of-field) (cbyas:end-of-field)))
+     ,@body))
 
 (defun cbyas:bol? ()
   "Non-nil if point is on an empty line or at the first word.
@@ -114,12 +123,6 @@ Embed in elisp blocks to trigger messages within snippets."
       (delete-region beg end)
       t)))
 
-(defadvice yas-next-field (before clear-blank-field activate)
-  (cbyas:clear-blank-field))
-
-(defadvice yas-prev-field (before clear-blank-field activate)
-  (cbyas:clear-blank-field))
-
 (defun cbyas:maybe-goto-field-end ()
   "Move to the end of the current field if it has been modified."
   (-when-let (field (cbyas:current-field))
@@ -127,11 +130,37 @@ Embed in elisp blocks to trigger messages within snippets."
                (yas--field-contains-point-p field))
       (goto-char (cbyas:end-of-field)))))
 
+;;; Advise editing commands.
+;;;
+;;; Pressing SPC in an unmodified field will clear it and switch to the next.
+;;;
+;;; Pressing S-TAB to go to last field will place point at the end of the field.
+
+(defadvice yas-next-field (before clear-blank-field activate)
+  (cbyas:clear-blank-field))
+
+(defadvice yas-prev-field (before clear-blank-field activate)
+  (cbyas:clear-blank-field))
+
 (defadvice yas-next-field (after goto-field-end activate)
   (cbyas:maybe-goto-field-end))
 
 (defadvice yas-prev-field (after goto-field-end activate)
   (cbyas:maybe-goto-field-end))
+
+;;; Commands
+
+(defun cbyas:space ()
+  "Clear and skip this field if it is unmodified. Otherwise insert a space."
+  (interactive "*")
+  (let ((field (cbyas:current-field)))
+    (cond ((and field
+                (not (yas--field-modified-p field))
+                (eq (point) (marker-position (yas--field-start field))))
+           (yas--skip-and-clear field)
+           (yas-next-field 1))
+          (t
+           (insert " ")))))
 
 (defun cbyas:backspace ()
   "Clear the current field if the current snippet is unmodified.
@@ -148,38 +177,10 @@ Otherwise delete backwards."
           (t
            (call-interactively 'backward-delete-char)))))
 
+;;; Key bindings
+
 (bind-key "<backspace>" 'cbyas:backspace yas-keymap)
-
-(defun cbyas:space ()
-  "Clear and skip this field if it is unmodified. Otherwise insert a space."
-  (interactive "*")
-  (let ((field (cbyas:current-field)))
-    (cond ((and field
-                (not (yas--field-modified-p field))
-                (eq (point) (marker-position (yas--field-start field))))
-           (yas--skip-and-clear field)
-           (yas-next-field 1))
-          (t
-           (insert " ")))))
-
 (bind-key "SPC" 'cbyas:space yas-keymap)
-
-(defmacro yas-with-field-restriction (&rest body)
-  "Narrow the buffer to the current active field and execute BODY.
-If no field is active, no narrowing will take place."
-  (declare (indent 0))
-  `(save-restriction
-     (when (cbyas:current-field)
-       (narrow-to-region (cbyas:beginning-of-field) (cbyas:end-of-field)))
-     ,@body))
-
-(defadvice yas-prev-field (after insert-state activate)
-  (cb:maybe-evil-insert-state))
-
-(defadvice yas-prev-field (after insert-state activate)
-  (cb:maybe-evil-insert-state))
-
-(add-hook 'yas-before-expand-snippet-hook 'cb:maybe-evil-insert-state)
 
 (provide 'config-yasnippet)
 

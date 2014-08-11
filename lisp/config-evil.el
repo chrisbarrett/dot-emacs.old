@@ -513,6 +513,16 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
 (evil-global-set-key 'normal (kbd "C-e") 'helm-etags-select)
 (evil-global-set-key 'normal (kbd "C-t") 'helm-imenu)
 
+;;; Yasnippet
+
+(defadvice yas-prev-field (after insert-state activate)
+  (cb:maybe-evil-insert-state))
+
+(defadvice yas-prev-field (after insert-state activate)
+  (cb:maybe-evil-insert-state))
+
+(add-hook 'yas-before-expand-snippet-hook 'cb:maybe-evil-insert-state)
+
 ;;; Misc
 
 (evil-define-key 'normal Man-mode-map (kbd "q") 'Man-kill)
