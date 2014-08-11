@@ -41,7 +41,8 @@
 
 (custom-set-faces
  '(yas-field-highlight-face
-   ((t :background "lightgreen"))))
+   ((((background light)) :background "lightgreen")
+    (((background dark)) :background "green4" :foreground "grey80"))))
 
 (diminish 'yas-minor-mode)
 
