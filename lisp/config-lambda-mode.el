@@ -36,7 +36,6 @@
 (add-hook 'lisp-mode-hook          'lambda-mode)
 (add-hook 'cb:elisp-modes-hook     'lambda-mode)
 (add-hook 'cb:python-modes-hook    'lambda-mode)
-(add-hook 'cb:slime-modes-hook     'lambda-mode)
 
 (hook-fn 'lambda-mode-hook
   (diminish 'lambda-mode))
