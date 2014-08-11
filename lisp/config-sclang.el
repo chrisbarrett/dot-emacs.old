@@ -26,11 +26,24 @@
 
 ;;; Code:
 
-(require 'super-smart-ops)
+(require 'utils-common)
+
+(cb:declare-package-installer sclang
+  :match (rx ".sc" eos)
+  :packages '(sclang-extensions))
 
 (autoload 'sclang-mode "sclang")
 (autoload 'sclang-start "sclang")
 (add-to-list 'auto-mode-alist '("\\.sc$" . sclang-mode))
+
+(custom-set-variables
+ '(sclang-auto-scroll-post-buffer t)
+ '(sclang-eval-line-forward nil)
+ '(sclang-show-workspace-on-startup nil))
+
+(add-hook 'sclang-mode-hook 'sclang-extensions-mode)
+
+;;; Commands
 
 (defun supercollider ()
   "Start SuperCollider and open the SC Workspace."
@@ -39,20 +52,14 @@
    (get-buffer-create "*sclang workspace*"))
   (sclang-mode))
 
-(custom-set-variables
- '(sclang-auto-scroll-post-buffer t)
- '(sclang-eval-line-forward nil)
- '(sclang-show-workspace-on-startup nil))
-
-(hook-fn 'sclang-mode-hook
-  (cb:install-package 'sclang-extensions)
-  (sclang-extensions-mode +1))
-
-(after 'sclang
-  (define-key sclang-mode-map (kbd ".") nil))
+;;; Smart ops
 
 (super-smart-ops-configure-for-mode 'sclang-mode :rem '("|"))
 
+;;; Key bindings
+
+(after 'sclang
+  (define-key sclang-mode-map (kbd ".") nil))
 
 (provide 'config-sclang)
 
