@@ -97,6 +97,8 @@ If this is the trailing colon for a hash key, insert padding."
     '(("," . (command (insert ",") (just-one-space)))
       (":" . cb-rb:smart-colon))))
 
+;;; Hideshow
+
 (after 'hideshow
   (add-to-list 'hs-special-modes-alist
                `(ruby-mode
