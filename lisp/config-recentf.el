@@ -29,44 +29,36 @@
 (require 'recentf)
 (require 'utils-common)
 
-(setq recentf-save-file (f-join cb:tmp-dir "recentf"))
-
-(setq recentf-max-saved-items 50
-      recentf-max-menu-items  10)
-
-(setq recentf-keep '(file-remote-p file-readable-p))
-
-(setq recentf-exclude '(
-                        ;; Filetypes
-                        "\\.elc$"
-                        "TAGS"
-                        "\\.gz$"
-                        "#$"
-                        ;; Special directories
-                        "/elpa/"
-                        "/tmp/"
-                        "/temp/"
-                        ".emacs.d/url/"
-                        "/\\.git/"
-                        "/Emacs.app/"
-                        "/var/folders/"
-                        ;; Tramp
-                        "^/?sudo"
-                        ;; Special files
-                        "\\.bbdb"
-                        "\\.newsrc"
-                        "/gnus$"
-                        "/gnus.eld$"
-                        "\\.ido\\.last"
-                        "\\.org-clock-save\\.el$"
-                        ))
+(custom-set-variables
+ '(recentf-save-file (f-join cb:tmp-dir "recentf"))
+ '(recentf-max-saved-items 50)
+ '(recentf-max-menu-items 10)
+ '(recentf-keep '(file-remote-p file-readable-p))
+ '(recentf-exclude
+   '("\\.elc$"
+     "TAGS"
+     "\\.gz$"
+     "#$"
+     "/elpa/"
+     "/tmp/"
+     "/temp/"
+     ".emacs.d/url/"
+     "/\\.git/"
+     "/Emacs.app/"
+     "/var/folders/"
+     "^/?sudo"
+     "\\.bbdb"
+     "\\.newsrc"
+     "/gnus$"
+     "/gnus.eld$"
+     "\\.ido\\.last"
+     "\\.org-clock-save\\.el$")))
 
 (defadvice recentf-cleanup (around hide-messages activate)
   "Do not message when cleaning up recentf list."
   (noflet ((message (&rest args))) ad-do-it))
 
 (recentf-mode +1)
-
 
 (provide 'config-recentf)
 
