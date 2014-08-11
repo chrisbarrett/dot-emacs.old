@@ -28,13 +28,29 @@
 
 (require 'utils-common)
 
-(defvar projectile-known-projects-file
-  (f-join cb:tmp-dir "projectile-bookmarks.eld"))
-
-(defvar projectile-cache-file (f-join cb:tmp-dir "projectile.cache"))
-
 (cb:install-package 'projectile t)
 (cb:install-package 'ack-and-a-half t)
+
+(custom-set-variables
+ '(projectile-known-projects-file (f-join cb:tmp-dir "projectile-bookmarks.eld"))
+ '(projectile-cache-file (f-join cb:tmp-dir "projectile.cache"))
+ '(projectile-ignored-projects '("/usr/local/"))
+ '(projectile-switch-project-action (lambda () (call-interactively 'magit-status)))
+ '(projectile-globally-ignored-directories
+   '(".cask"
+     ".cabal-sandbox"
+     "dist"
+     ".idea"
+     ".eunit"
+     ".git"
+     ".hg"
+     ".fslckout"
+     ".bzr"
+     "_darcs"
+     ".tox"
+     ".svn"
+     "build")))
+
 (projectile-global-mode +1)
 
 (diminish 'projectile-mode)
@@ -42,11 +58,15 @@
 (autoload 'projectile-project-root "projectile")
 (autoload 'projectile-project-p "projectile")
 
+;;; Set compilation dir to project root
+
 (defun cb-projectile:set-compilation-dir ()
   (when (projectile-project-p)
     (setq-local compilation-directory (projectile-project-root))))
 
 (add-hook 'find-file-hook 'cb-projectile:set-compilation-dir)
+
+;;; Commands
 
 (defun cb-projectile:eshell-project ()
   "Open an eshell buffer in the current project."
@@ -58,22 +78,6 @@
       (cb:term-cycle)))
    (t
     (cb:term-cycle))))
-
-(setq projectile-switch-project-action
-      (lambda () (call-interactively 'magit-status)))
-
-;; Ignored directories.
-(dolist (d '(
-             ;; Haskell
-             "dist"
-             ".cabal-sandbox"
-             ;; Elisp
-             ".cask"
-             ))
-  (add-to-list 'projectile-globally-ignored-directories d))
-
-;; Ignore /usr/local, which is initialised with a git repo by homebrew on OS X.
-(setq projectile-ignored-projects '("/usr/local/"))
 
 (defun projectile-delete-project (dir)
   "Delete the given project and remove it from the index."
