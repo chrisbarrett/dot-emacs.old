@@ -27,27 +27,21 @@
 ;;; Code:
 
 (require 'utils-common)
-(require 'config-evil)
 
-(setq Info-additional-directory-list
-      (-flatten (list cb:info-dir
-                      (f-join source-directory "info/")
-                      (f-directories cb:info-dir))))
+(custom-set-variables
+ '(Info-additional-directory-list
+   (-flatten (list cb:info-dir
+                   (f-join source-directory "info/")
+                   (f-directories cb:info-dir)))))
 
-(defun cbinfo:set-line-spacing ()
-  ;; NB: line spacing is measured in pixels.
-  (setq line-spacing 2))
+;; NB: line spacing is measured in pixels.
+(put 'Info-mode 'line-spacing 2)
 
-(add-hook 'Info-mode-hook 'cbinfo:set-line-spacing)
+;;; Key bindings
 
 (after 'info
   (define-key Info-mode-map (kbd "SPC") 'Info-scroll-up)
   (define-key Info-mode-map (kbd "S-SPC") 'Info-scroll-down))
-
-(after '(evil info)
-  (evil-define-key 'motion Info-mode-map
-    (kbd "l") 'Info-history-back
-    (kbd "r") 'Info-history-forward))
 
 (provide 'config-info)
 
