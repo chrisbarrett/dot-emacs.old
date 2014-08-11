@@ -30,48 +30,28 @@
 (require 'utils-ui)
 (autoload 'thing-at-point-url-at-point "thingatpt")
 
-(when (executable-find "w3m")
-  (cb:install-package 'w3m))
+(when (executable-find "w3m") (cb:install-package 'w3m))
 
-(after 'w3m
+(put 'w3m-mode 'line-spacing 5)
 
-  (hook-fn 'w3m-mode-hook (setq line-spacing 5))
+(declare-modal-executor w3m
+  :command w3m
+  :bind "M-W"
+  :restore-bindings '("M-W" "M-E"))
 
-  (declare-modal-executor w3m
-    :command w3m
-    :bind "M-W"
-    :restore-bindings '("M-W" "M-E"))
-
-  (defun w3m-browse-dwim (url)
-    "Browse to URL, ensuring it begins with http:// as required by w3m."
-    (interactive
-     (list
-      (read-string "Go to URL: "
-                   (thing-at-point-url-at-point)
-                   t)))
-    (with-window-restore
-      (w3m-browse-url
-       (if (s-starts-with? "http://" url)
-           url
-         (concat "http://" url)))
-      (local-set-key (kbd "q") (command (restore))))))
-
-(after '(w3m evil)
-  (bind-keys
-    :map w3m-mode-map
-    "z t" 'evil-scroll-line-to-top
-    "z b" 'evil-scroll-line-to-bottom
-    "z z" 'evil-scroll-line-to-center
-    "C-f" 'evil-scroll-page-down
-    "C-b" 'evil-scroll-page-up
-    "w"   'evil-forward-word-begin
-    "b"   'evil-backward-word-begin
-    "y"   'evil-yank
-    "p"   'evil-paste-after
-    "/"   'evil-search-forward
-    "?"   'evil-search-backward
-    "n"   'evil-search-next
-    "N"   'evil-search-previous))
+(defun w3m-browse-dwim (url)
+  "Browse to URL, ensuring it begins with http:// as required by w3m."
+  (interactive
+   (list
+    (read-string "Go to URL: "
+                 (thing-at-point-url-at-point)
+                 t)))
+  (with-window-restore
+    (w3m-browse-url
+     (if (s-starts-with? "http://" url)
+         url
+       (concat "http://" url)))
+    (local-set-key (kbd "q") (command (restore)))))
 
 (provide 'config-w3m)
 

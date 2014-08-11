@@ -610,6 +610,24 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
 
 (evil-set-initial-state 'geiser-repl-mode 'insert)
 
+;;; w3m
+
+(bind-keys
+  :map w3m-mode-map
+  "z t" 'evil-scroll-line-to-top
+  "z b" 'evil-scroll-line-to-bottom
+  "z z" 'evil-scroll-line-to-center
+  "C-f" 'evil-scroll-page-down
+  "C-b" 'evil-scroll-page-up
+  "w"   'evil-forward-word-begin
+  "b"   'evil-backward-word-begin
+  "y"   'evil-yank
+  "p"   'evil-paste-after
+  "/"   'evil-search-forward
+  "?"   'evil-search-backward
+  "n"   'evil-search-next
+  "N"   'evil-search-previous)
+
 ;;; Misc
 
 (evil-define-key 'normal Man-mode-map (kbd "q") 'Man-kill)
