@@ -30,6 +30,22 @@
 
 (require 'ido)
 (ido-mode +1)
+(cb:install-package 'ido-hacks t)
+(cb:install-package 'flx-ido t)
+(ido-hacks-mode +1)
+(flx-ido-mode +1)
+(cb:install-package 'ido-vertical-mode t)
+(noflet ((message (&rest _) nil)) (ido-vertical-mode +1))
+
+(custom-set-variables
+ '(ido-use-faces nil)
+ '(ido-enable-prefix nil)
+ '(ido-save-directory-list-file (f-join cb:tmp-dir "ido.last"))
+ '(ido-enable-flex-matching t)
+ '(ido-create-new-buffer 'always)
+ '(ido-use-filename-at-point 'guess)
+ '(ido-max-prospects 10)
+ '(ido-default-file-method 'selected-window))
 
 (defmacro declare-ido-wrapper (command)
   "Make COMMAND use ido for file and directory completions."
@@ -43,18 +59,16 @@
          (&rest args) (apply 'ido-read-buffer)))
        ad-do-it)))
 
-(setq ido-enable-prefix nil
-      ido-save-directory-list-file (f-join cb:tmp-dir "ido.last")
-      ido-enable-flex-matching t
-      ido-create-new-buffer 'always
-      ido-use-filename-at-point 'guess
-      ido-max-prospects 10
-      ido-default-file-method 'selected-window)
-
 (add-to-list 'ido-ignore-buffers "\\*helm.*")
 (add-to-list 'ido-ignore-buffers "\\*Minibuf.*")
 (add-to-list 'ido-ignore-files "\\.swp")
 (add-to-list 'ido-ignore-files "\\.DS_Store")
+
+;;; Insert spaces literally in ido
+
+(defalias 'ido-complete-space 'self-insert-command)
+
+;;; Key bindings
 
 (bind-keys
   "C-x C-f" 'ido-find-file
@@ -64,22 +78,7 @@
   "C-x k"   'ido-kill-buffer
   "C-x b"   'ido-switch-buffer)
 
-(hook-fn 'ido-setup-hook
-  (define-key ido-common-completion-map (kbd "~") (command (insert "~/"))))
-
-(defalias 'ido-complete-space 'self-insert-command)
-
-(cb:install-package 'ido-vertical-mode t)
-(noflet ((message (&rest _) nil)) (ido-vertical-mode +1))
-
-(cb:install-package 'ido-hacks t)
-(ido-hacks-mode +1)
-
-(cb:install-package 'flx-ido t)
-(flx-ido-mode +1)
-
-(setq ido-use-faces nil)
-
+(define-key ido-common-completion-map (kbd "~") (command (insert "~/")))
 
 (provide 'config-ido)
 
