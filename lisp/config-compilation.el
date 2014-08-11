@@ -28,16 +28,18 @@
 
 (require 'utils-common)
 
-(setq compilation-window-height    12
-      compilation-scroll-output    'first-error)
+(custom-set-variables
+ '(compilation-window-height 12)
+ '(compilation-scroll-output 'first-error))
 
-(bind-key "C-c b" 'compile)
-(bind-key "C-c C-b" 'recompile)
+;;; Colourise output.
 
 (defun cb:ansi-colourise-compilation ()
   (ansi-color-apply-on-region compilation-filter-start (point)))
 
 (add-hook 'compilation-filter-hook 'cb:ansi-colourise-compilation)
+
+;;; Automatically close compilation buffers.
 
 (defun cb:compile-autoclose (buf string)
   "Automatically close the compile window."
@@ -58,6 +60,11 @@
     (message "Compilation succeeded"))))
 
 (add-to-list 'compilation-finish-functions 'cb:compile-autoclose)
+
+;;; Key bindings
+
+(bind-key "C-c b" 'compile)
+(bind-key "C-c C-b" 'recompile)
 
 (provide 'config-compilation)
 
