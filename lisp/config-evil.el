@@ -541,6 +541,10 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
 (bind-key* "M-d" 'dired-jump)
 (bind-key* "M-D" 'dired-jump-other-window)
 
+;;; Discover
+
+(evil-set-initial-state 'makey-key-mode 'emacs)
+
 ;;; Misc
 
 (evil-define-key 'normal Man-mode-map (kbd "q") 'Man-kill)

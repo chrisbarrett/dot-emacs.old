@@ -31,9 +31,6 @@
 (cb:install-package 'discover t)
 (global-discover-mode +1)
 
-(after 'evil
-  (evil-set-initial-state 'makey-key-mode 'emacs))
-
 (defmacro search:fn-with-thing-at-point (binding &rest body)
   "Bind BINDING to the symbol at point around BODY forms."
   (declare (indent 1))
