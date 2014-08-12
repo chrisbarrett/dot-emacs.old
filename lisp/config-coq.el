@@ -211,7 +211,7 @@
 (defun cb-coq:get-vars-for-intros (text)
   "Get the variable names for an initial intros clause.
 TEXT is proof variables in the snippet."
-  (let ((match (s-match (rx (* "(")(group (+ nonl)) ":") text)))
+  (let ((match (s-match (rx (* "(") (group (+ (not (any ":"))))) text)))
     (s-trim (or (cadr match) "terms"))))
 
 (hook-fn 'coq-mode-hook
