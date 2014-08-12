@@ -86,12 +86,6 @@
 
 ;;; Smart operators
 
-(defvar cb-coq:smart-operator-list
-  '("!" "$" "%" "&" "*" "+" "-" "." "/" ":" "<" "=" ">" "?" "@" "^" "|" "~")
-  "The list of operators in the Coq language.")
-
-(put 'coq-mode 'smart-operator-alist cb-coq:smart-operator-list)
-
 (defun cb-coq:smart-pipe ()
   "Insert either the pipe chars in an array literal or a smart pipe."
   (interactive)
@@ -100,18 +94,14 @@
          (save-excursion
            (insert "|")))
         (t
-         (cb-coq:super-smart-ops-insert "|"))))
+         (super-smart-ops-insert "|"))))
 
-(defun cb-coq:set-keys ()
-  "Set smart operators for Coq."
-  (--each cb-coq:smart-operator-list
-    (define-key coq-mode-map (kbd it) (super-smart-ops-make-smart-op it)))
-
-  (define-key coq-mode-map (kbd "!") nil)
-  (define-key coq-mode-map (kbd ".") nil)
-  (define-key coq-mode-map (kbd "|") 'cb-ocaml:smart-pipe))
-
-(after 'coq (cb-coq:set-keys))
+(super-smart-ops-configure-for-mode 'coq-mode
+  :add '("$" "?" "@" "^" "~")
+  :custom
+  '(("|" . cb-coq:smart-pipe)
+    ("!" . self-insert-command)
+    ("." . self-insert-command)))
 
 ;;; Smart Meta-RET
 
