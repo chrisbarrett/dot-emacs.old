@@ -38,11 +38,11 @@
 (autoload 'org-agenda-filter-apply "org-agenda")
 (autoload 'org-is-habit-p "org-habit")
 
-(defvar org-init-notes-file org-default-notes-file
+(defvar org-init-notes-file (f-join org-directory "notes.org")
   "Captures the original value of the `org-default-notes-file'.")
 
 (custom-set-variables
- '(org-default-notes-file (f-join org-directory "notes.org"))
+ '(org-default-notes-file org-init-notes-file)
  '(org-M-RET-may-split-line nil)
  '(org-attach-directory (f-join org-directory "data"))
  '(org-blank-before-new-entry nil)
@@ -106,6 +106,9 @@
 (--each '(org-level-1 org-level-2 org-level-3 org-level-4 org-level-5 org-level-6 org-level-7 org-level-8)
   (custom-set-faces
    `(,it ((t :bold nil :font ,(monospace-font))))))
+
+(defvar org-init-notes-file org-default-notes-file
+  "Captures the original value of the `org-default-notes-file'.")
 
 (add-hook 'org-mode-hook 'auto-revert-mode)
 
