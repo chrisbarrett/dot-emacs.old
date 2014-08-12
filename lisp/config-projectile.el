@@ -28,9 +28,6 @@
 
 (require 'utils-common)
 
-(cb:install-package 'projectile t)
-(cb:install-package 'ack-and-a-half t)
-
 (custom-set-variables
  '(projectile-known-projects-file (f-join cb:tmp-dir "projectile-bookmarks.eld"))
  '(projectile-cache-file (f-join cb:tmp-dir "projectile.cache"))
@@ -50,6 +47,9 @@
      ".tox"
      ".svn"
      "build")))
+
+(cb:install-package 'projectile t)
+(cb:install-package 'ack-and-a-half t)
 
 (projectile-global-mode +1)
 
