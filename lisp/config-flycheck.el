@@ -34,6 +34,8 @@
 (cb:install-package 'flycheck-cask)
 (add-hook 'flycheck-mode-hook 'flycheck-cask-setup)
 
+(add-to-list 'safe-local-eval-forms '(flycheck-cask-setup))
+
 ;;; Key bindings
 
 (define-key flycheck-mode-map (kbd "M-N") 'flycheck-next-error)
