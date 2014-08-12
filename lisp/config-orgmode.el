@@ -107,9 +107,6 @@
   (custom-set-faces
    `(,it ((t :bold nil :font ,(monospace-font))))))
 
-(defvar org-init-notes-file org-default-notes-file
-  "Captures the original value of the `org-default-notes-file'.")
-
 (add-hook 'org-mode-hook 'auto-revert-mode)
 
 (add-hook 'org-mode-hook 'auto-fill-mode)
