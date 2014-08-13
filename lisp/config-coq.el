@@ -33,6 +33,23 @@
 (require 'proof-site (f-join cb:lib-dir "proofgeneral" "generic" "proof-site"))
 (add-to-list 'Info-directory-list (f-join cb:lib-dir "proofgeneral" "doc"))
 
+(custom-set-variables
+ '(proof-splash-enable nil)
+ '(proof-electric-terminator-enable t)
+ '(coq-compile-before-require t))
+
+(custom-set-faces
+ '(proof-eager-annotation-face
+   ((t (:inherit default :background nil :underline "darkgoldenrod"))))
+ '(coq-cheat-face
+   ((((background light)) :background "#fee8e5")
+    (((background dark))  :background "#51202b")))
+ '(proof-locked-face
+   ((t (:background nil))))
+ '(proof-error-face
+   ((((background light)) :background "#fee8e5")
+    (((background dark))  :background "#51202b"))))
+
 ;;; Redefine `proof-mode' to derive from `prog-mode'.
 
 (after 'proof-script
@@ -66,23 +83,6 @@
               'proof-script-set-visited-file-name nil t)
 
     (add-hook 'proof-activate-scripting-hook 'proof-cd-sync nil t)))
-
-(custom-set-variables
- '(proof-splash-enable nil)
- '(proof-electric-terminator-enable t)
- '(coq-compile-before-require t))
-
-(custom-set-faces
- '(proof-eager-annotation-face
-   ((t (:inherit default :background nil :underline "darkgoldenrod"))))
- '(coq-cheat-face
-   ((((background light)) :background "#fee8e5")
-    (((background dark))  :background "#51202b")))
- '(proof-locked-face
-   ((t (:background nil))))
- '(proof-error-face
-   ((((background light)) :background "#fee8e5")
-    (((background dark))  :background "#51202b"))))
 
 ;;; Smart operators
 
