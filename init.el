@@ -49,6 +49,7 @@
     (eval
      `(with-demoted-errors ,(concat (format "Init (%s):" feature) " %s")
         (unless (string-match-p "^flycheck_" (symbol-name feature))
+          (message "--> Loading %s..." feature)
           (require feature))))))
 
 (require 'custom)
