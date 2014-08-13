@@ -41,14 +41,19 @@
 (custom-set-faces
  '(proof-eager-annotation-face
    ((t (:inherit default :background nil :underline "darkgoldenrod"))))
+ '(proof-warning-face
+   ((((background dark))  :underline "orange2")
+    (((background light)) :underline "lemon chiffon")))
  '(coq-cheat-face
    ((((background light)) :background "#fee8e5")
     (((background dark))  :background "#51202b")))
  '(proof-locked-face
-   ((t (:background nil))))
- '(proof-error-face
-   ((((background light)) :background "#fee8e5")
-    (((background dark))  :background "#51202b"))))
+   ((t (:background nil)))))
+
+(add-to-list 'face-remapping-alist '(proof-warning-face . flycheck-warning))
+(add-to-list 'face-remapping-alist '(proof-error-face . flycheck-error))
+(add-to-list 'face-remapping-alist '(proof-script-sticky-error-face . flycheck-error))
+(add-to-list 'face-remapping-alist '(proof-script-highlight-error-face . flycheck-error))
 
 ;;; Redefine `proof-mode' to derive from `prog-mode'.
 
@@ -184,6 +189,17 @@
 
   (when (true? evil-mode)
     (evil-insert-state)))
+
+;;; Advices
+
+(defadvice coq-insert-match (after format-period activate)
+  "Delete trailing whitespace until we find a period character."
+  (save-excursion
+    (search-forward "end")
+    (when (search-forward-regexp (rx (group (* (or space eol)))
+                                     ".")
+                                 nil t)
+      (replace-match "" nil nil nil 1))))
 
 ;;; Key bindings
 
