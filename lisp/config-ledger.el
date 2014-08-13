@@ -71,9 +71,9 @@
   "Execute BODY forms in a ledger buffer.
 Use `ledger-buffer' if the current buffer is not in ledger-mode."
   (declare (indent 0))
-  `(with-current-buffer ,(if (derived-mode-p 'ledger-mode)
-                             (current-buffer)
-                           (find-file-noselect ledger-file))
+  `(with-current-buffer (if (derived-mode-p 'ledger-mode)
+                            (current-buffer)
+                          (find-file-noselect ledger-file))
      ,@body))
 
 (defun cbledger:read-date ()
@@ -81,7 +81,7 @@ Use `ledger-buffer' if the current buffer is not in ledger-mode."
 
 (defun cbledger:read-payee ()
   (cbledger:with-ledger-buffer
-    (ido-completing-read "Payee: " (ledger-payees-in-buffer))))
+   (ido-completing-read "Payee: " (ledger-payees-in-buffer))))
 
 (defun cbledger:read-clear-state ()
   (if (y-or-n-p "Transaction cleared? ") " * " " "))
@@ -92,14 +92,14 @@ Use `ledger-buffer' if the current buffer is not in ledger-mode."
 (defun cbledger:accounts ()
   "Find all accounts in the current ledger buffer, or in the `ledger-file'."
   (cbledger:with-ledger-buffer
-    (->> (s-match-strings-all
-          (rx bol (+ space) (group (+ (not space)) ":" (+? nonl))
-              (or eol "  "))
-          (buffer-string))
-      (-map 'cadr)
-      (-concat '("Income" "Assets" "Liabilities" "Expenses"))
-      (-uniq)
-      (-sort 'string<))))
+   (->> (s-match-strings-all
+         (rx bol (+ space) (group (+ (not space)) ":" (+? nonl))
+             (or eol "  "))
+         (buffer-string))
+     (-map 'cadr)
+     (-concat '("Income" "Assets" "Liabilities" "Expenses"))
+     (-uniq)
+     (-sort 'string<))))
 
 (cl-defun cbledger:read-account (&optional (prompt "Account: ") initial-input)
   (ido-completing-read prompt (cbledger:accounts) nil nil initial-input))
