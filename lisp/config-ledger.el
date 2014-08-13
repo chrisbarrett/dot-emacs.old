@@ -35,10 +35,7 @@
   :packages (ledger-mode flycheck-ledger))
 
 (add-to-list 'auto-mode-alist (cons "\\.ledger$" 'ledger-mode))
-
-(after '(ledger-mode flycheck)
-  (add-to-list 'flycheck-checkers 'ledger)
-  (require 'flycheck-ledger))
+(after 'flycheck (require 'flycheck-ledger))
 
 (custom-set-variables
  '(ledger-post-account-alignment-column 2)
@@ -64,6 +61,7 @@
  '(ledger-occur-xact-face
    ((((background dark))  :background "#073642")
     (((background light)) :background "#eee8d5"))))
+
 
 ;;; Reading utilities
 
