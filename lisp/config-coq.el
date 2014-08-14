@@ -35,7 +35,6 @@
 
 (custom-set-variables
  '(proof-splash-enable nil)
- '(proof-electric-terminator-enable t)
  '(coq-compile-before-require t))
 
 (custom-set-faces
