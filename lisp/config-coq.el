@@ -43,11 +43,14 @@
  '(coq-cheat-face
    ((((background light)) :background "#fee8e5")
     (((background dark))  :background "#51202b")))
+ `(coq-solve-tactics-face
+   ((t (:italic t :foreground ,solarized-hl-orange))))
+ '(proof-error-face
+   ((t (:background nil))))
  '(proof-locked-face
    ((t (:background nil)))))
 
 (add-to-list 'face-remapping-alist '(proof-warning-face . flycheck-warning))
-(add-to-list 'face-remapping-alist '(proof-error-face . flycheck-error))
 (add-to-list 'face-remapping-alist '(proof-script-sticky-error-face . flycheck-error))
 (add-to-list 'face-remapping-alist '(proof-script-highlight-error-face . flycheck-error))
 
