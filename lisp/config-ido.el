@@ -78,10 +78,6 @@
   "C-x k"   'ido-kill-buffer
   "C-x b"   'ido-switch-buffer)
 
-(defadvice ido-init-completion-maps (after set-keys activate)
-  "Manually set ido key bindings for completions."
-  (define-key ido-file-dir-completion-map (kbd "~") (command (insert "~/"))))
-
 (provide 'config-ido)
 
 ;;; config-ido.el ends here
