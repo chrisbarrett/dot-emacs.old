@@ -48,7 +48,8 @@
 
 (add-hook 'prog-mode-hook 'yas-minor-mode)
 (add-hook 'text-mode-hook 'yas-minor-mode)
-(yas-global-mode t)
+
+(noflet ((message (&rest _))) (yas-global-mode))
 
 ;;; Utilities
 
