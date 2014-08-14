@@ -28,7 +28,7 @@
 
 (require 'utils-common)
 (require 'org-pomodoro)
-(require 'config-darwin)
+(require 'platform-darwin)
 
 (bind-key* "<f5>" 'org-pomodoro)
 

@@ -37,10 +37,17 @@
   (package-refresh-contents))
 
 (add-to-list 'load-path (concat user-emacs-directory "lisp"))
+(add-to-list 'load-path (concat user-emacs-directory "platform"))
 
 (require 'utils-common)
 (require 'config-base)
 (require 'config-modeline)
+
+;; Load customisations for current platform.
+
+(pcase system-type
+  (darwin (require 'platform-darwin))
+  (linux  (require 'platform-linux)))
 
 ;; Load all files in lisp dir.
 ;; Ignore flycheck temp files.

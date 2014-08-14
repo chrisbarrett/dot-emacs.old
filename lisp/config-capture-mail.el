@@ -28,7 +28,7 @@
 
 (require 'utils-common)
 (require 'capture-mail)
-(require 'config-darwin)
+(require 'platform-darwin)
 (require 'config-orgmode)
 
 (defvar cm-archived-messages-dir nil)

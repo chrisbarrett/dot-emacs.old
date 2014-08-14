@@ -32,7 +32,7 @@
 (require 'utils-commands)
 (require 'config-theme)
 (require 'config-modegroups)
-(require 'config-darwin)
+(require 'platform-darwin)
 (require 'config-theme)
 (require 'org)
 (autoload 'org-agenda-filter-apply "org-agenda")

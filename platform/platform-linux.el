@@ -1,4 +1,4 @@
-;;; config-linux.el --- Configuration for linux hosts.
+;;; platform-linux.el --- Configuration for linux hosts.
 
 ;; Copyright (C) 2014 Chris Barrett
 
@@ -32,6 +32,6 @@
 
   (bind-key* "C-S-v" 'yank))
 
-(provide 'config-linux)
+(provide 'platform-linux)
 
-;;; config-linux.el ends here
+;;; platform-linux.el ends here

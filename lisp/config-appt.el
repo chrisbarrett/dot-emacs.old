@@ -28,7 +28,7 @@
 
 (require 'utils-common)
 (require 'appt)
-(require 'config-darwin)
+(require 'platform-darwin)
 
 (custom-set-variables
  '(appt-message-warning-time 60)
