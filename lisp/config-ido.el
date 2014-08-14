@@ -38,7 +38,6 @@
 (noflet ((message (&rest _) nil)) (ido-vertical-mode +1))
 
 (custom-set-variables
- '(ido-use-faces nil)
  '(ido-enable-prefix nil)
  '(ido-save-directory-list-file (f-join cb:tmp-dir "ido.last"))
  '(ido-enable-flex-matching t)
