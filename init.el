@@ -46,8 +46,9 @@
 ;; Load customisations for current platform.
 
 (pcase system-type
-  (darwin (require 'platform-darwin))
-  (linux  (require 'platform-linux)))
+  (`darwin  (require 'platform-darwin))
+  (`linux   (require 'platform-linux))
+  (platform (warn "Unknown platform: %s" platform)))
 
 ;; Load all files in lisp dir.
 ;; Ignore flycheck temp files.
