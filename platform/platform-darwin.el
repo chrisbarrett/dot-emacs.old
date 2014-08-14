@@ -28,12 +28,20 @@
 
 (require 'utils-common)
 (require 'utils-shell)
+(require 'osx-bbdb)
 
 (autoload 'thing-at-point-url-at-point "thingatpt")
 
-(-when-let (gls (executable-find "gls"))
-  (setq ls-lisp-use-insert-directory-program t
-        insert-directory-program gls))
+(custom-set-variables
+ '(trash-directory "~/.Trash/")
+ '(shell-command-switch "-lc")
+ '(insert-directory-program (or (executable-find "gls") "ls"))
+ '(starttls-gnutls-program (executable-find "gnutls-cli"))
+ '(starttls-use-gnutls t)
+ '(interprogram-cut-function 'cb:osx-copy)
+ '(interprogram-paste-function 'cb:osx-paste))
+
+;;; Use bash for shell command execution if Fish is the default.
 
 (when (s-ends-with? "fish" (getenv "SHELL"))
   (custom-set-variables
@@ -42,38 +50,12 @@
 
   (setenv "SHELL" shell-file-name))
 
-(when (equal system-type 'darwin)
-  (custom-set-variables
-   '(trash-directory "~/.Trash/"))
+;;; Copy $PATH from shell.
 
-  (cb:install-package 'exec-path-from-shell t)
-  (exec-path-from-shell-initialize)
+(cb:install-package 'exec-path-from-shell t)
+(exec-path-from-shell-initialize)
 
-  (bind-key* "s-p" 'ps-print-with-faces-dwim)
-
-  (after 'bbdb
-    (require 'osx-bbdb))
-
-  (let ((terminfo (expand-file-name "~/.terminfo")))
-    (unless (file-exists-p terminfo)
-      (start-process
-       "tic" " tic" "tic"
-       "-o" terminfo
-       "/Applications/Emacs.app/Contents/Resources/etc/e/eterm-color.ti")))
-
-  (after 'evil
-    (evil-global-set-key 'normal (kbd "g o") 'mac-open-dwim)
-    (evil-global-set-key 'normal (kbd "g O") 'mac-reveal-in-finder))
-
-  (custom-set-variables
-   '(shell-command-switch "-lc")
-   '(insert-directory-program (or (executable-find "gls") "ls"))
-   '(starttls-gnutls-program (executable-find "gnutls-cli"))
-   '(starttls-use-gnutls t)))
-
-(when (and (equal system-type 'darwin) (not window-system))
-  (setq interprogram-cut-function   'cb:osx-copy
-        interprogram-paste-function 'cb:osx-paste))
+;;; Print with faces using cmd+P
 
 (defun ps-print-with-faces-dwim ()
   "Perform a context-sensitive printing command."
@@ -82,6 +64,16 @@
    (if (region-active-p)
        'ps-print-region-with-faces
      'ps-print-buffer-with-faces)))
+
+(bind-key* "s-p" 'ps-print-with-faces-dwim)
+
+;;; Use GNU ls where available.
+
+(-when-let (gls (executable-find "gls"))
+  (setq ls-lisp-use-insert-directory-program t)
+  (setq insert-directory-program gls))
+
+;;; Utilities
 
 (defun osx-find-system-sound (name)
   "Find a system alert matching NAME."
@@ -94,6 +86,8 @@
     (-when-let (snd (osx-find-system-sound name))
       (start-process "appt alert" " appt alert" "afplay" snd))))
 
+;;; Copy/paste integration
+
 (defun cb:osx-paste ()
   (shell-command-to-string "pbpaste"))
 
@@ -102,6 +96,8 @@
     (let ((proc (start-process "pbcopy" "*Messages*" "pbcopy")))
       (process-send-string proc text)
       (process-send-eof proc))))
+
+;;; Open with default apps or in Finder.
 
 (defun mac-reveal-in-finder ()
   "Open the current directory in the Finder."
@@ -135,6 +131,12 @@ When used interactively, makes a guess at what to pass."
 
   (%-sh (format "open '%s'" open-arg)))
 
+(after 'evil
+  (evil-global-set-key 'normal (kbd "g o") 'mac-open-dwim)
+  (evil-global-set-key 'normal (kbd "g O") 'mac-reveal-in-finder))
+
+;;; Growl
+
 (defvar cb:growl-default-icon
   (-first 'f-exists?
           '("/Applications/Emacs.app/Contents/Resources/Emacs.icns"
@@ -160,6 +162,33 @@ The notification will have the given TITLE and MESSAGE."
           (process-send-eof proc))
       ;; Fall back to message.
       (message "%s. %s" title message))))
+
+;;; Org
+
+(hook-fn 'org-timer-start-hook (growl "Timer Started" "" org-unicorn-png))
+(hook-fn 'org-timer-done-hook  (growl "Timer Finished" "" org-unicorn-png))
+(hook-fn 'org-timer-done-hook  (osx-play-system-sound "glass"))
+
+;;; Appt
+
+(defadvice appt-display-message (around growl-with-sound activate)
+  "Play a sound and display a growl notification for appt alerts."
+  ;; Show notification.
+  (let ((title (-listify (ad-get-arg 0)))
+        (mins (-listify (ad-get-arg 1))))
+    (--each (-zip-with 'list title mins)
+      (growl (cond ((zerop mins) "Appointment (now)")
+                   ((= 1 mins)   "Appointment (1 min)")
+                   (t (format "Appointment (%s mins)" mins)))
+             (cl-destructuring-bind (whole time desc)
+                 (s-match (rx bol
+                              (group (+ digit) ":" (+ digit))
+                              (* space)
+                              (group (* nonl)))
+                          title)
+               desc))))
+  ;; Play sound.
+  (osx-play-system-sound "blow"))
 
 (provide 'platform-darwin)
 

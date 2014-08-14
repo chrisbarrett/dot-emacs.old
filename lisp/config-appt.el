@@ -28,7 +28,6 @@
 
 (require 'utils-common)
 (require 'appt)
-(require 'platform-darwin)
 
 (custom-set-variables
  '(appt-message-warning-time 60)
@@ -39,31 +38,6 @@
 
 (defvar cb-org:appt-update-timer
   (run-with-idle-timer 240 t 'org-agenda-to-appt t))
-
-(when (equal system-type 'darwin)
-
-  (defun cb-appt:growl (title mins)
-    (growl (cond ((zerop mins) "Appointment (now)")
-                 ((= 1 mins)   "Appointment (1 min)")
-                 (t (format "Appointment (%s mins)" mins)))
-           (cl-destructuring-bind (whole time desc)
-               (s-match (rx bol
-                            (group (+ digit) ":" (+ digit))
-                            (* space)
-                            (group (* nonl)))
-                        title)
-             desc)))
-
-  (defadvice appt-display-message (around growl-with-sound activate)
-    "Play a sound and display a growl notification for appt alerts."
-    ;; Show notification.
-    (let ((title (-listify (ad-get-arg 0)))
-          (mins (-listify (ad-get-arg 1))))
-      (-each (-zip-with 'list title mins)
-        (-applify 'cb-appt:growl)))
-    ;; Play sound.
-    (osx-play-system-sound "blow"))
-  )
 
 (provide 'config-appt)
 

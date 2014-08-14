@@ -32,7 +32,6 @@
 (require 'utils-commands)
 (require 'config-theme)
 (require 'config-modegroups)
-(require 'platform-darwin)
 (require 'config-theme)
 (require 'org)
 (autoload 'org-agenda-filter-apply "org-agenda")
@@ -590,11 +589,6 @@ Do not change habits, scheduled items or repeating todos."
 
 (defconst org-unicorn-png
   (f-join user-emacs-directory "assets" "org_unicorn.png"))
-
-(when (equal system-type 'darwin)
-  (hook-fn 'org-timer-start-hook (growl "Timer Started" "" org-unicorn-png))
-  (hook-fn 'org-timer-done-hook (growl "Timer Finished" "" org-unicorn-png))
-  (hook-fn 'org-timer-done-hook (osx-play-system-sound "glass")))
 
 (defvar cb-org:notes-save-idle-delay 60)
 
