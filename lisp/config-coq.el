@@ -41,9 +41,6 @@
 (custom-set-faces
  '(proof-eager-annotation-face
    ((t (:inherit default :background nil :underline "darkgoldenrod"))))
- '(proof-warning-face
-   ((((background dark))  :underline "orange2")
-    (((background light)) :underline "lemon chiffon")))
  '(coq-cheat-face
    ((((background light)) :background "#fee8e5")
     (((background dark))  :background "#51202b")))
