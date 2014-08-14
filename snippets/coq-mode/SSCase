@@ -1,9 +1,6 @@
-# -*- mode: snippet; require-final-newline: nil -*-
-# name: SSCase
 # key: ssc
-# binding: direct-keybinding
-# condition: (cbyas:bol?)
+# name: SSCase
 # expand-env: ((yas-indent-line (quote fixed)))
+# condition: (cbyas:bol?)
 # --
-SSCase "$1".
-  $0
+SSCase "$1". $0

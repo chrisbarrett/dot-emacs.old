@@ -6,4 +6,5 @@
 Lemma ${1:name} : forall ${2:terms}, $0.
 Proof.
   intros ${2:$(cb-coq:get-vars-for-intros yas/text)}.
-  reflexivity. Qed.
+  reflexivity.
+Qed.

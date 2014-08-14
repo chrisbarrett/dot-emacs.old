@@ -1,9 +1,6 @@
-# -*- mode: snippet; require-final-newline: nil -*-
-# name: Case
 # key: c
-# binding: direct-keybinding
-# condition: (cbyas:bol?)
+# name: Case
 # expand-env: ((yas-indent-line (quote fixed)))
+# condition: (cbyas:bol?)
 # --
-Case "$1".
-  $0
+Case "$1". $0

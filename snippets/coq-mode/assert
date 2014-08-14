@@ -1,11 +1,8 @@
-# -*- mode: snippet; require-final-newline: nil -*-
-# name: assert
 # key: as
-# binding: direct-keybinding
-# condition: (cbyas:bol?)
+# name: assert
 # expand-env: ((yas-indent-line (quote fixed)))
+# condition: (cbyas:bol?)
 # --
 assert (H: $1).
-  Case "Proof of assertion".
-  $0
+  Case "Proof of assertion". $0
 rewrite -> H.

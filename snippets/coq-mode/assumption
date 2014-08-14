@@ -1,5 +1,5 @@
 # -*- mode: snippet; require-final-newline: nil -*-
-# name: simpl
-# key: si
+# name: assumption
+# key: ass
 # --
-simpl. $0
+assumption. $0

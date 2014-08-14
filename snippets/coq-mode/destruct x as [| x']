@@ -1,6 +1,4 @@
-# -*- mode: snippet; require-final-newline: nil -*-
+# key: da
 # name: destruct x as [| x']
-# key: ds
-# binding: direct-keybinding
 # --
-destruct ${1:x} as [| $1'].
+destruct ${1:x} as [| $1']. $0
