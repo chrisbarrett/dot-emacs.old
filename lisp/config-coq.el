@@ -104,7 +104,8 @@
   :add '("$" "?" "@" "^" "~")
   :custom
   '(("|" . cb-coq:smart-pipe)
-    ("!" . self-insert-command)))
+    ("!" . self-insert-command)
+    ("," . cb:comma-then-space)))
 
 ;;; Smart Meta-RET
 
