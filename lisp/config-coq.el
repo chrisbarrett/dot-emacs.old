@@ -198,11 +198,11 @@
 (defadvice coq-insert-match (after format-period activate)
   "Delete trailing whitespace until we find a period character."
   (save-excursion
-    (search-forward "end")
-    (when (search-forward-regexp (rx (group (* (or space eol)))
-                                     ".")
-                                 nil t)
-      (replace-match "" nil nil nil 1))))
+    (when (search-forward "end" nil t)
+      (when (search-forward-regexp (rx (group (* (or space eol)))
+                                       ".")
+                                   nil t)
+        (replace-match "" nil nil nil 1)))))
 
 ;;; Key bindings
 
