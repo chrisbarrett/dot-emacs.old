@@ -101,7 +101,7 @@
          (super-smart-ops-insert "|"))))
 
 (super-smart-ops-configure-for-mode 'coq-mode
-  :add '("$" "?" "@" "^" "~")
+  :add '("$" "?" "^" "~")
   :custom
   '(("|" . cb-coq:smart-pipe)
     ("!" . self-insert-command)
