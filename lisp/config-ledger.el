@@ -55,13 +55,19 @@
      ("value" . ledger-report-value-format-specifier))))
 
 (custom-set-faces
- '(ledger-font-xact-highlight-face
-   ((((background dark))  :background "#073642")
-    (((background light)) :background "#eee8d5")))
  '(ledger-occur-xact-face
    ((((background dark))  :background "#073642")
-    (((background light)) :background "#eee8d5"))))
+    (((background light)) :background "#eee8d5")))
+ `(ledger-font-pending-face
+   ((t (:foreground ,solarized-hl-orange))))
+ `(ledger-font-payee-cleared-face
+   ((t (:foreground ,solarized-hl-green))))
+ `(ledger-font-payee-uncleared-face
+   ((t (:foreground ,solarized-hl-orange))))
+ `(ledger-font-posting-account-face
+   ((t (:foreground ,solarized-hl-blue)))))
 
+(add-to-list 'face-remapping-alist '(ledger-font-comment-face . font-lock-comment-face))
 
 ;;; Reading utilities
 
@@ -79,7 +85,7 @@ Use `ledger-buffer' if the current buffer is not in ledger-mode."
 
 (defun cbledger:read-payee ()
   (cbledger:with-ledger-buffer
-   (ido-completing-read "Payee: " (ledger-payees-in-buffer))))
+    (ido-completing-read "Payee: " (ledger-payees-in-buffer))))
 
 (defun cbledger:read-clear-state ()
   (if (y-or-n-p "Transaction cleared? ") " * " " "))
@@ -90,14 +96,14 @@ Use `ledger-buffer' if the current buffer is not in ledger-mode."
 (defun cbledger:accounts ()
   "Find all accounts in the current ledger buffer, or in the `ledger-file'."
   (cbledger:with-ledger-buffer
-   (->> (s-match-strings-all
-         (rx bol (+ space) (group (+ (not space)) ":" (+? nonl))
-             (or eol "  "))
-         (buffer-string))
-     (-map 'cadr)
-     (-concat '("Income" "Assets" "Liabilities" "Expenses"))
-     (-uniq)
-     (-sort 'string<))))
+    (->> (s-match-strings-all
+          (rx bol (+ space) (group (+ (not space)) ":" (+? nonl))
+              (or eol "  "))
+          (buffer-string))
+      (-map 'cadr)
+      (-concat '("Income" "Assets" "Liabilities" "Expenses"))
+      (-uniq)
+      (-sort 'string<))))
 
 (cl-defun cbledger:read-account (&optional (prompt "Account: ") initial-input)
   (ido-completing-read prompt (cbledger:accounts) nil nil initial-input))
@@ -328,22 +334,11 @@ Signal an error of doing so would break date ordering."
   "Face for year declarations."
   :group 'ledger-faces)
 
-(after 'ledger-mode
-  (set-face-background 'ledger-font-xact-highlight-face nil)
-  (set-face-foreground 'ledger-font-comment-face
-                       (face-foreground 'font-lock-comment-face))
-  (set-face-foreground 'ledger-font-posting-account-face
-                       (face-foreground 'default))
-
-  (set-face-foreground 'ledger-font-pending-face solarized-hl-orange)
-  (set-face-foreground 'ledger-font-payee-cleared-face solarized-hl-green)
-  (set-face-foreground 'ledger-font-payee-uncleared-face solarized-hl-orange)
-
-  (font-lock-add-keywords
-   'ledger-mode
-   `((,(rx bol (+ (any digit "=" "/"))) . 'ledger-date)
-     (,(rx bol "~" (* nonl)) . 'ledger-periodic-header)
-     (,(rx bol "year" (+ space) (+ digit) (* space) eol) . 'ledger-year-line))))
+(font-lock-add-keywords
+ 'ledger-mode
+ `((,(rx bol (+ (any digit "=" "/"))) . 'ledger-date)
+   (,(rx bol "~" (* nonl)) . 'ledger-periodic-header)
+   (,(rx bol "year" (+ space) (+ digit) (* space) eol) . 'ledger-year-line)))
 
 ;;; Key bindings
 
