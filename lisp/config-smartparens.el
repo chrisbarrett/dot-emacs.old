@@ -209,7 +209,7 @@ Insert leading padding unless at start of line or after an open round paren."
 (sp-with-modes 'coq-mode
   (sp-local-pair "\"" "\"" :post-handlers '(:add cbsp:external-padding))
   (sp-local-pair "{" "}"   :post-handlers '(:add cbsp:external-padding))
-  (sp-local-pair "[" "]"   :post-handlers '(:add cbsp:internal-and-external-padding))
+  (sp-local-pair "[" "]"   :post-handlers '(:add cbsp:external-padding))
   (sp-local-pair "(" ")"   :post-handlers '(:add cbsp:external-padding))
   (sp-local-pair "'" "'"   :actions '(:rem insert))
   )
