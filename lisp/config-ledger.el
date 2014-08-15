@@ -340,6 +340,18 @@ Signal an error of doing so would break date ordering."
    (,(rx bol "~" (* nonl)) . 'ledger-periodic-header)
    (,(rx bol "year" (+ space) (+ digit) (* space) eol) . 'ledger-year-line)))
 
+;;; Font locking for ledger reports
+
+(defface ledger-report-negative-amount
+  `((t (:foreground ,solarized-hl-red)))
+  "Face for negative amounts in ledger reports."
+  :group 'ledger-faces)
+
+(font-lock-add-keywords
+ 'ledger-report-mode
+ `((,(rx "$" (* space) "-" (+ digit) (? ".") (* digit)) . 'ledger-report-negative-amount)
+   (,(rx (+ digit) "-" (= 3 alpha) "-" (+ digit)) . 'ledger-date)))
+
 ;;; Key bindings
 
 (after 'ledger-mode
