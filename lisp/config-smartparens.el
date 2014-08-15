@@ -158,16 +158,16 @@ Insert leading padding unless at start of line or after an open round paren."
 
 ;;; OCaml
 
-(defun cb-ocaml:just-inserted-double-quotes? (id action ctx)
+(defun cb-ml:just-inserted-double-quotes? (id action ctx)
   (and (sp-in-string-p id action ctx)
        (s-matches? (rx (not (any "\\")) "\"" eol)
                    (buffer-substring (line-beginning-position) (point)))))
 
-(defun sp-ocaml-just-one-space (id action ctx)
+(defun cb-ml:just-one-space (id action ctx)
   "Pad delimiters with spaces."
   (when (and (equal 'insert action)
              (or (sp-in-code-p id action ctx)
-                 (cb-ocaml:just-inserted-double-quotes? id action ctx)))
+                 (cb-ml:just-inserted-double-quotes? id action ctx)))
     ;; Insert a leading space, unless
     ;; 1. this is the first position of another list
     ;; 2. this form begins a new line.
@@ -194,12 +194,12 @@ Insert leading padding unless at start of line or after an open round paren."
         (just-one-space)))))
 
 (sp-with-modes '(tuareg-mode utop-mode)
-  (sp-local-pair "\"" "\"" :post-handlers '(:add sp-ocaml-just-one-space))
-  (sp-local-pair "{" "}"   :post-handlers '(:add sp-ocaml-just-one-space))
-  (sp-local-pair "[" "]"   :post-handlers '(:add sp-ocaml-just-one-space))
-  (sp-local-pair "(" ")"   :post-handlers '(:add sp-ocaml-just-one-space))
-  (sp-local-pair "[|" "|]" :post-handlers '(:add sp-ocaml-just-one-space))
-  (sp-local-pair "{<" ">}" :post-handlers '(:add sp-ocaml-just-one-space))
+  (sp-local-pair "\"" "\"" :post-handlers '(:add cb-ml:just-one-space))
+  (sp-local-pair "{" "}"   :post-handlers '(:add cb-ml:just-one-space))
+  (sp-local-pair "[" "]"   :post-handlers '(:add cb-ml:just-one-space))
+  (sp-local-pair "(" ")"   :post-handlers '(:add cb-ml:just-one-space))
+  (sp-local-pair "[|" "|]" :post-handlers '(:add cb-ml:just-one-space))
+  (sp-local-pair "{<" ">}" :post-handlers '(:add cb-ml:just-one-space))
   (sp-local-pair "'" "'"   :actions '(:rem insert))
   (sp-local-pair "`" nil   :actions nil)
   )
@@ -217,12 +217,12 @@ Insert leading padding unless at start of line or after an open round paren."
 ;;; F#
 
 (sp-with-modes 'fsharp-mode
-  (sp-local-pair "\"" "\"" :post-handlers '(:add sp-ocaml-just-one-space))
-  (sp-local-pair "{" "}"   :post-handlers '(:add sp-ocaml-just-one-space))
-  (sp-local-pair "[" "]"   :post-handlers '(:add sp-ocaml-just-one-space))
-  (sp-local-pair "(" ")"   :post-handlers '(:add sp-ocaml-just-one-space))
-  (sp-local-pair "[|" "|]" :post-handlers '(:add sp-ocaml-just-one-space))
-  (sp-local-pair "[<" ">]" :post-handlers '(:add sp-ocaml-just-one-space))
+  (sp-local-pair "\"" "\"" :post-handlers '(:add cb-ml:just-one-space))
+  (sp-local-pair "{" "}"   :post-handlers '(:add cb-ml:just-one-space))
+  (sp-local-pair "[" "]"   :post-handlers '(:add cb-ml:just-one-space))
+  (sp-local-pair "(" ")"   :post-handlers '(:add cb-ml:just-one-space))
+  (sp-local-pair "[|" "|]" :post-handlers '(:add cb-ml:just-one-space))
+  (sp-local-pair "[<" ">]" :post-handlers '(:add cb-ml:just-one-space))
   (sp-local-pair "'" "'"   :actions '(:rem insert))
   (sp-local-pair "`" nil   :actions nil)
   )
