@@ -31,7 +31,9 @@
 
 (cb:declare-package-installer rust
   :match (rx ".rs" eol)
-  :packages (rust-mode))
+  :packages (rust-mode flycheck-rust))
+
+(after '(rust-mode flycheck) (add-hook 'flycheck-mode-hook 'flycheck-rust-setup))
 
 ;;; Smart operators
 
