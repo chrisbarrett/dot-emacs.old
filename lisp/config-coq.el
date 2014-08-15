@@ -117,7 +117,10 @@
 
 (defun cb-coq:newline-and-insert-at-col (col str)
   "Insert STR on a new line at COL."
-  (goto-char (line-end-position))
+  (if (search-forward "." (line-end-position) t)
+      (forward-char -1)
+    (goto-char (line-end-position)))
+
   (newline)
   (indent-to col)
   (insert str))
