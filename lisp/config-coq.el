@@ -54,6 +54,11 @@
 (add-to-list 'face-remapping-alist '(proof-script-sticky-error-face . flycheck-error))
 (add-to-list 'face-remapping-alist '(proof-script-highlight-error-face . flycheck-error))
 
+;;; Set coq compile command.
+
+(hook-fn 'coq-mode-hook
+  (setq-local compile-command (concat "coqc " (buffer-name))))
+
 ;;; Redefine `proof-mode' to derive from `prog-mode'.
 
 (after 'proof-script
@@ -193,6 +198,14 @@
   (when (true? evil-mode)
     (evil-insert-state)))
 
+;;; Snippet utils
+
+(defun cb-coq:get-vars-for-intros (text)
+  "Get the variable names for an initial intros clause.
+TEXT is proof variables in the snippet."
+  (let ((match (s-match (rx (* "(") (group (+ (not (any ":"))))) text)))
+    (s-trim (or (cadr match) "terms"))))
+
 ;;; Advices
 
 (defadvice coq-insert-match (after format-period activate)
@@ -215,15 +228,6 @@
 
 (after 'proof-script
   (define-key proof-mode-map (kbd "C-<return>") nil))
-
-(defun cb-coq:get-vars-for-intros (text)
-  "Get the variable names for an initial intros clause.
-TEXT is proof variables in the snippet."
-  (let ((match (s-match (rx (* "(") (group (+ (not (any ":"))))) text)))
-    (s-trim (or (cadr match) "terms"))))
-
-(hook-fn 'coq-mode-hook
-  (setq-local compile-command (concat "coqc " (buffer-name))))
 
 ;;; Font lock
 
