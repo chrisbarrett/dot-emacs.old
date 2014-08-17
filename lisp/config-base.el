@@ -241,20 +241,24 @@ Can indent backwards if there is only whitespace."
 
 (cb:install-package 'smooth-scrolling t)
 (cb:install-package 'dictionary t)
-(cb:install-package 'emr)
 
 ;;; Activate basic modes
 
 (winner-mode +1)
 (fringe-mode '(2 . 0))
 (auto-compression-mode +1)
-(add-hook 'prog-mode-hook 'emr-initialize)
 
 (condition-case _
     (savehist-mode +1)
   (void-variable
    (delete-file savehist-file)
    (savehist-mode +1)))
+
+;;; Load EMR
+
+(add-to-list 'load-path "~/Projects/emacs-refactor")
+(or (require 'emr nil t) (cb:install-package 'emr))
+(add-hook 'prog-mode-hook 'emr-initialize)
 
 ;;; Enable commands
 
