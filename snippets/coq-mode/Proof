@@ -2,4 +2,4 @@
 # name: Proof
 # condition: (cbyas:bol?)
 # --
-Proof. ${1:simpl}. ${2:reflexivity}. Qed.$0
+Proof. reflexivity. Qed.

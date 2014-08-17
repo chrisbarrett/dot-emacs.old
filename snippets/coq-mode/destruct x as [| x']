@@ -1,4 +1,0 @@
-# key: da
-# name: destruct x as [| x']
-# --
-destruct ${1:x} as [| $1']. $0

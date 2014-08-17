@@ -1,9 +1,7 @@
 # -*- mode: snippet; require-final-newline: nil -*-
 # name: if
 # key: i
-# binding: direct-keybinding
-# condition: (cbyas:bol?)
 # --
-if $1
-then $2
-else $0
+if ${1:test}
+then ${2:expr}
+else ${3:expr}

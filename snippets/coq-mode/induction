@@ -1,6 +1,4 @@
-# -*- mode: snippet; require-final-newline: nil -*-
+# key: ind
 # name: induction
-# key: in
-# binding: direct-keybinding
 # --
-induction ${1:n} as [| ${2:$1}'].
+induction ${1:n}. $0
