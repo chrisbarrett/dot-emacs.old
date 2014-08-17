@@ -174,19 +174,20 @@ The notification will have the given TITLE and MESSAGE."
 (defadvice appt-display-message (around growl-with-sound activate)
   "Play a sound and display a growl notification for appt alerts."
   ;; Show notification.
-  (let ((title (-listify (ad-get-arg 0)))
-        (mins (-listify (ad-get-arg 1))))
-    (--each (-zip-with 'list title mins)
-      (growl (cond ((zerop mins) "Appointment (now)")
-                   ((= 1 mins)   "Appointment (1 min)")
-                   (t (format "Appointment (%s mins)" mins)))
-             (cl-destructuring-bind (whole time desc)
-                 (s-match (rx bol
-                              (group (+ digit) ":" (+ digit))
-                              (* space)
-                              (group (* nonl)))
-                          title)
-               desc))))
+  (let ((titles (-listify (ad-get-arg 0)))
+        (times (-listify (ad-get-arg 1))))
+    (--each (-zip-with 'list titles times)
+      (cl-destructuring-bind (title mins) it
+        (growl (cond ((zerop mins) "Appointment (now)")
+                     ((= 1 mins)   "Appointment (1 min)")
+                     (t (format "Appointment (%s mins)" mins)))
+               (cl-destructuring-bind (whole time desc)
+                   (s-match (rx bol
+                                (group (+ digit) ":" (+ digit))
+                                (* space)
+                                (group (* nonl)))
+                            title)
+                 desc)))))
   ;; Play sound.
   (osx-play-system-sound "blow"))
 
