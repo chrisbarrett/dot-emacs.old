@@ -55,6 +55,11 @@
 (cb:install-package 'exec-path-from-shell t)
 (exec-path-from-shell-initialize)
 
+;;; Use vkill instead of proced
+
+(cb:install-package 'vkill t)
+(global-set-key (kbd "C-x p") 'vkill)
+
 ;;; Print with faces using cmd+P
 
 (defun ps-print-with-faces-dwim ()
