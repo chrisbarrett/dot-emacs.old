@@ -38,6 +38,8 @@
 
 (add-to-list 'load-path (concat user-emacs-directory "lisp"))
 (add-to-list 'load-path (concat user-emacs-directory "platform"))
+(add-to-list 'load-path (concat (getenv "HOME") "/Dropbox/"))
+(add-to-list 'load-path (concat user-emacs-directory "lib"))
 
 (require 'utils-common)
 (require 'config-base)

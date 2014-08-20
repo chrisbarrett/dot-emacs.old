@@ -45,12 +45,6 @@
 ;; Improve GC performance for flx.
 (setq gc-cons-threshold (* 1024 1024 20)) ; bytes
 
-;;; Adjust load path.
-
-(add-to-list 'load-path (concat (getenv "HOME") "/Dropbox/"))
-(add-to-list 'load-path (concat user-emacs-directory "lisp"))
-(add-to-list 'load-path (concat user-emacs-directory "lib"))
-
 ;;; Autoloads
 
 (autoload 'fringe-mode "fringe")
