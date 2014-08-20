@@ -1,7 +1,6 @@
-# -*- mode: snippet; require-final-newline: nil -*-
-# name: Example
 # key: ex
+# name: Example
 # condition: (cbyas:bol?)
 # --
-Example ${1:name}: $0.
+Example ${1:name} : $0.
 Proof. reflexivity. Qed.
