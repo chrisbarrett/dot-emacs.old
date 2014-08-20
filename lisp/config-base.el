@@ -74,7 +74,7 @@
  `(auto-save-file-name-transforms      '((".*" ,(concat cb:autosaves-dir "\\1") t)) )
  `(auto-save-list-file-name            (concat cb:autosaves-dir "autosave-list")    )
  `(backup-by-copying                   t                                            )
- `(backup-directory-alist              '(("." . ,cb:autosaves-dir))                 )
+ `(backup-directory-alist              '((".*" . ,cb:autosaves-dir))                 )
  `(bookmark-default-file               (f-join cb:tmp-dir "bookmarks")              )
  `(comint-prompt-read-only             t                                            )
  `(confirm-nonexistent-file-or-buffer  nil                                          )
