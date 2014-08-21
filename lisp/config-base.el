@@ -243,6 +243,7 @@ Can indent backwards if there is only whitespace."
 (auto-compression-mode +1)
 (global-auto-revert-mode)
 
+(require 'savehist)
 (condition-case _
     (savehist-mode +1)
   (void-variable
