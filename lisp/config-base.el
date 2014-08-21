@@ -241,6 +241,7 @@ Can indent backwards if there is only whitespace."
 (winner-mode +1)
 (fringe-mode '(2 . 0))
 (auto-compression-mode +1)
+(global-auto-revert-mode)
 
 (condition-case _
     (savehist-mode +1)
