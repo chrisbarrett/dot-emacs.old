@@ -37,9 +37,7 @@
  '(shell-command-switch "-lc")
  '(insert-directory-program (or (executable-find "gls") "ls"))
  '(starttls-gnutls-program (executable-find "gnutls-cli"))
- '(starttls-use-gnutls t)
- '(interprogram-cut-function 'cb:osx-copy)
- '(interprogram-paste-function 'cb:osx-paste))
+ '(starttls-use-gnutls t))
 
 ;;; Use bash for shell command execution if Fish is the default.
 
@@ -90,17 +88,6 @@
   (when (equal system-type 'darwin)
     (-when-let (snd (osx-find-system-sound name))
       (start-process "appt alert" " appt alert" "afplay" snd))))
-
-;;; Copy/paste integration
-
-(defun cb:osx-paste ()
-  (shell-command-to-string "pbpaste"))
-
-(defun cb:osx-copy (text &optional _push)
-  (let ((process-connection-type nil))
-    (let ((proc (start-process "pbcopy" "*Messages*" "pbcopy")))
-      (process-send-string proc text)
-      (process-send-eof proc))))
 
 ;;; Open with default apps or in Finder.
 
