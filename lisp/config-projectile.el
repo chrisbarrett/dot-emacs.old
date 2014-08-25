@@ -58,6 +58,8 @@
 (autoload 'projectile-project-root "projectile")
 (autoload 'projectile-project-p "projectile")
 
+(defalias 'ack 'ack-and-a-half)
+
 ;;; Set compilation dir to project root
 
 (defun cb-projectile:set-compilation-dir ()
