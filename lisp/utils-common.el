@@ -427,9 +427,11 @@ This directory tree will be added to the load path if ADD-PATH is non-nil."
 
 (defvar ledger-file (f-join org-directory "accounts.ledger"))
 
-(-each (->> (list cb:lib-dir cb:lisp-dir)
-         (--mapcat (f-directories it nil t)))
-  (~ add-to-list 'load-path))
+(dolist (dir (--mapcat (f-directories it
+                                      (lambda (d) (not (equal ".cask" (f-filename d))))
+                                      t)
+                       (list cb:lib-dir cb:lisp-dir)))
+  (add-to-list 'load-path dir))
 
 (add-to-list 'exec-path cb:scripts-dir)
 
