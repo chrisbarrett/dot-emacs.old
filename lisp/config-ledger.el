@@ -35,7 +35,11 @@
   :packages (ledger-mode flycheck-ledger))
 
 (add-to-list 'auto-mode-alist (cons "\\.ledger$" 'ledger-mode))
-(after 'flycheck (require 'flycheck-ledger))
+
+;; HACK: Work around issues loading `flycheck-ledger' package.
+(after '(flycheck ledger-mode)
+  (cb:install-package 'flycheck-ledger t)
+  (load-file (locate-library "flycheck-ledger")))
 
 (custom-set-variables
  '(ledger-post-account-alignment-column 2)
