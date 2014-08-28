@@ -31,6 +31,9 @@
 (cb:install-package 'flycheck)
 (global-flycheck-mode)
 
+(custom-set-variables
+ '(flycheck-disabled-checkers '(coq)))
+
 (cb:install-package 'flycheck-cask)
 (add-hook 'flycheck-mode-hook 'flycheck-cask-setup)
 
