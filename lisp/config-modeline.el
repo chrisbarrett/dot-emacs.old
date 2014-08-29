@@ -208,7 +208,8 @@
  `(
    ;; --------------------------------------------------------------------------
    ;; Line and column number.
-   (:propertize " %4l:" face mode-line-position)
+   (:propertize " L" face mode-line-minor-mode)
+   (:propertize "%l %p:" face mode-line-position)
    (:eval
     ;; Warn if over 80 columns.
     (propertize "%3c" 'face
