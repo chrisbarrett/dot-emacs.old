@@ -311,7 +311,7 @@
                                      (projectile-project-vcs))
                             (vc-after-save)
                             (force-mode-line-update)))))
-  "Timer that updates the modeline regularly.")
+  "Timer that updates the modeline to show current VC state.")
 
 
 (provide 'config-modeline)
