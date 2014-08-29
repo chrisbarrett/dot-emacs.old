@@ -304,8 +304,15 @@
    (global-mode-string global-mode-string)))
 
 (defvar cb:modeline-timer
-  (run-with-idle-timer 30 t 'force-mode-line-update t)
-  "Timer that updates the modeline once a minute.")
+  (run-with-timer 5 5 (lambda ()
+                        (dolist (_ (buffer-list))
+                          (when (and (buffer-file-name)
+                                     (projectile-project-p)
+                                     (projectile-project-vcs))
+                            (vc-after-save)
+                            (force-mode-line-update)))))
+  "Timer that updates the modeline regularly.")
+
 
 (provide 'config-modeline)
 
