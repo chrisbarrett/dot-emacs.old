@@ -115,7 +115,7 @@
   "Face for the current major mode indicator."
   :group 'modeline)
 
-(defface mode-line-minor-mode
+(defface mode-line-dim
   '((((background dark))
      (:foreground "gray40" :height 110))
     (((background light))
@@ -208,7 +208,7 @@
  `(
    ;; --------------------------------------------------------------------------
    ;; Line and column number.
-   (:propertize " L" face mode-line-minor-mode)
+   (:propertize " L" face mode-line-dim)
    (:propertize "%l %p:" face mode-line-position)
    (:eval
     ;; Warn if over 80 columns.
@@ -297,7 +297,7 @@
 
    ;; Minor modes.
    (:eval (propertize (format-mode-line minor-mode-alist)
-                      'face 'mode-line-minor-mode))
+                      'face 'mode-line-dim))
    (:propertize mode-line-process
                 face mode-line-process)
    " "
