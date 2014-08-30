@@ -95,7 +95,8 @@ DEFS are comprised of alternating string-symbol pairs."
   "SPC" 'evil-toggle-fold
   "K"   'cbevil:get-documentation
   "u"   'undo-tree-undo
-  "C-R" 'undo-tree-redo)
+  "C-R" 'undo-tree-redo
+  "C-S-P" 'evil-paste-pop-next)
 
 (define-key evil-insert-state-map (kbd "C-z") 'evil-undefine)
 (define-key evil-emacs-state-map  (kbd "M-z") 'evil-normal-state)
