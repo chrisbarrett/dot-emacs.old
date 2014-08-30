@@ -58,13 +58,6 @@
 (declare-modal-view magit-diff-working-tree)
 (declare-modal-view magit-diff)
 
-;;; Update modeline after running git commands.
-
-(define-combined-hook cb:magit-command-hook
-  (--filter-atoms (s-matches? "^magit-.*-command-hook$" (symbol-name it))))
-
-(hook-fn 'cb:magit-command-hook (force-mode-line-update t))
-
 ;;; Configure git commit mode
 
 (add-hook 'git-commit-mode-hook 'turn-on-auto-fill)
