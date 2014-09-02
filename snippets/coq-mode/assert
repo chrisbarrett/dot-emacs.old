@@ -4,5 +4,6 @@
 # condition: (cbyas:bol?)
 # --
 assert (H: $1).
-  Case "Proof of assertion". $0
-rewrite -> H.
+  Case "Proof of assertion".
+  $0
+rewrite H.

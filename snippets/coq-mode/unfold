@@ -1,6 +1,4 @@
-# -*- mode: snippet -*-
-# name: unfold
 # key: uf
-# condition: (cbyas:bol?)
+# name: unfold
 # --
 unfold $0.
