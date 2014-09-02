@@ -49,7 +49,7 @@
   (require 'w3m-haddock)
   (require 'company-ghc)
 
-  (add-to-list 'company-backends '(company-ghc :with company-dabbrev))
+  (add-to-list 'company-backends 'company-ghc)
 
   (add-hook 'w3m-display-hook 'w3m-haddock-display)
   )
@@ -850,6 +850,7 @@ See URL `http://www.haskell.org/ghc/'."
   (define-key shm-map (kbd "C-c C-s")    'shm/case-split)
   (define-key shm-map (kbd "C-<return>") 'shm/newline-indent)
 
+  (define-key shm-map (kbd "RET") nil)
   (define-key shm-map (kbd ",") nil)
   (define-key shm-map (kbd ":") nil)
   (define-key shm-map (kbd "#") nil)
