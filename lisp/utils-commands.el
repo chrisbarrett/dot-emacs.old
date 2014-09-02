@@ -368,6 +368,46 @@ Changes the selected buffer."
           (insert-char ?\,)
           (just-one-space))))))
 
+;;; Identifier style conversions
+
+(defun cb:bounds-of-region-or-current-symbol ()
+  (if (region-active-p)
+      (list (region-beginning) (region-end))
+    (let ((b (bounds-of-thing-at-point 'symbol)))
+      (list (car b) (cdr b)))))
+
+(defmacro cb:define-case-transform (name varname form)
+  "Define NAME as a command that transforms the symbol at point or current region.
+
+VARNAME is the name of the variable to bind in FORM. It is a list
+of strings representing the components of the symbol to be
+transformed.
+
+FORM is a form returning the string to insert."
+  (declare (indent 2))
+  `(defun ,name (beg end)
+     (interactive (cb:bounds-of-region-or-current-symbol))
+     (let ((,varname (-mapcat 's-split-words
+                              (s-split (rx (any "-" "_")) (buffer-substring beg end)))))
+       (save-excursion
+         (atomic-change-group
+           (goto-char beg)
+           (delete-region beg end)
+           (insert ,form))))))
+
+
+(cb:define-case-transform upper-camel-case words
+  (s-upper-camel-case (s-join " " words)))
+
+(cb:define-case-transform lower-camel-case words
+  (s-lower-camel-case (s-join " " words)))
+
+(cb:define-case-transform snake-case words
+  (s-snake-case (s-join " " words)))
+
+(cb:define-case-transform screaming-snake-case words
+  (s-upcase (s-snake-case (s-join " " words))))
+
 ;;; Key bindings
 
 (define-key prog-mode-map (kbd "M-q") 'indent-dwim)
