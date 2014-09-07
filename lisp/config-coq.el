@@ -248,8 +248,8 @@
     (cb:font-lock-replace-match (rx (or space eow) (group "~")   (or space eol bow)) 1 (string-to-char "¬"))
     (cb:font-lock-replace-match (rx (or space eow) (group "=>")  (or space eol bow)) 1 (string-to-char "⇒"))
     (cb:font-lock-replace-match (rx (or space eow) (group "<>")  (or space eol bow)) 1 (string-to-char "≠"))
-    (cb:font-lock-replace-match (rx (or space eow) (group ">=")  (or space eol bow)) 1 (string-to-char "≤"))
-    (cb:font-lock-replace-match (rx (or space eow) (group "<=")  (or space eol bow)) 1 (string-to-char "≥"))
+    (cb:font-lock-replace-match (rx (or space eow) (group ">=")  (or space eol bow)) 1 (string-to-char "≥"))
+    (cb:font-lock-replace-match (rx (or space eow) (group "<=")  (or space eol bow)) 1 (string-to-char "≤"))
     )))
 
 (provide 'config-coq)
