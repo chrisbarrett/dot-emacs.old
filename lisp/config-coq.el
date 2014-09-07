@@ -235,24 +235,22 @@
 
 ;;; Font lock
 
+(dolist (mode '(coq-mode coq-response-mode coq-goals-mode))
+  (font-lock-add-keywords
+   mode
+   `((,(rx bow (group "forall") eow)
+      (0 (progn (compose-region (match-beginning 1) (match-end 1)
+                                ,(string-to-char "∀") 'decompose-region)
+                nil)))
+     (,(rx (group "/\\"))
+      (0 (progn (compose-region (match-beginning 1) (match-end 1)
+                                ,(string-to-char "∧") 'decompose-region)
+                nil)))
 
-;; Use forall unicode symbol
-
-(font-lock-add-keywords
- 'coq-mode
- `((,(rx bow (group "forall") eow)
-    (0 (progn (compose-region (match-beginning 1) (match-end 1)
-                              ,(string-to-char "∀") 'decompose-region)
-              nil)))
-   (,(rx (group "/\\"))
-    (0 (progn (compose-region (match-beginning 1) (match-end 1)
-                              ,(string-to-char "∧") 'decompose-region)
-              nil)))
-
-   (,(rx (group "\\/"))
-    (0 (progn (compose-region (match-beginning 1) (match-end 1)
-                              ,(string-to-char "∨") 'decompose-region)
-              nil)))))
+     (,(rx (group "\\/"))
+      (0 (progn (compose-region (match-beginning 1) (match-end 1)
+                                ,(string-to-char "∨") 'decompose-region)
+                nil))))))
 
 (provide 'config-coq)
 
