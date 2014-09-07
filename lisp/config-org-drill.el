@@ -29,7 +29,11 @@
 (require 'utils-common)
 (require 'config-orgmode)
 
-(setq org-drill-save-buffers-after-drill-sessions-p nil)
+(when (cb:install-package 'org-drill-table t)
+  (add-hook 'org-ctrl-c-ctrl-c-hook 'org-drill-table-update))
+
+(custom-set-variables
+ '(org-drill-save-buffers-after-drill-sessions-p nil))
 
 (defadvice org-drill (after save-buffers activate)
   (org-save-all-org-buffers))
@@ -44,15 +48,6 @@
           org-drill-directory
           org-drill-again)
   (autoload it "org-drill" nil t))
-
-(cb:install-package 'org-drill-table t)
-(add-hook 'org-ctrl-c-ctrl-c-hook 'org-drill-table-update)
-
-(defun cb-org:drill-buffer? ()
-  "Non-nil if the current buffer contains any drill items."
-  (and
-   (derived-mode-p 'org-mode)
-   (s-matches? ":drill:" (buffer-string))))
 
 (provide 'config-org-drill)
 
