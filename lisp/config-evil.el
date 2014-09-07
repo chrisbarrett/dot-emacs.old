@@ -452,7 +452,7 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
 
 (evil-define-key 'normal ledger-report-mode-map
   "e" 'ledger-report-edit
-  "q" 'ledger-report-kill
+  "q" 'cb:go-away-buffer
   "r" 'ledger-report-redo
   "R" 'ledger-report-reverse-lines
   "s" 'ledger-report-save)

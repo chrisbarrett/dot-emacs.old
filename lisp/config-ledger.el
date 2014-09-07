@@ -370,6 +370,8 @@ Signal an error of doing so would break date ordering."
   (define-key ledger-mode-map (kbd "C-c C-.") 'cbledger:insert-timestamp)
   (define-key ledger-mode-map (kbd "C-c C-c") 'ledger-report)
   (define-key ledger-mode-map (kbd "M-RET") 'ledger-toggle-current-transaction)
+
+  (define-key ledger-report-mode-map (kbd "q") 'cb:go-away-buffer)
   )
 
 (provide 'config-ledger)
