@@ -105,10 +105,22 @@
         (t
          (super-smart-ops-insert "|"))))
 
+(defun cb-coq:smart-colon ()
+  "Insert a colon with context-sensitive formatting."
+  (interactive)
+  (cond
+   ((s-matches? (rx bow "eqn" (* space) eol)
+                (buffer-substring (line-beginning-position) (point)))
+    (delete-horizontal-space)
+    (insert ":"))
+   (t
+    (super-smart-ops-insert ":"))))
+
 (super-smart-ops-configure-for-mode 'coq-mode
   :add '("$" "?" "^" "~" "\\")
   :custom
   '(("|" . cb-coq:smart-pipe)
+    (":" . cb-coq:smart-colon)
     ("!" . self-insert-command)
     ("," . cb:comma-then-space)))
 
