@@ -162,7 +162,7 @@
   (cond
 
    ;; Insert case after match statement.
-   ((s-matches? (rx symbol-start "match" symbol-end) (current-line))
+   ((s-matches? (rx symbol-start "match" (not (syntax symbol-))) (current-line))
     (goto-char (line-end-position))
     (newline-and-indent)
     (goto-char (max (line-beginning-position) (- (point) 2)))
@@ -238,19 +238,17 @@
 (dolist (mode '(coq-mode coq-response-mode coq-goals-mode))
   (font-lock-add-keywords
    mode
-   `((,(rx bow (group "forall") eow)
-      (0 (progn (compose-region (match-beginning 1) (match-end 1)
-                                ,(string-to-char "∀") 'decompose-region)
-                nil)))
-     (,(rx (group "/\\"))
-      (0 (progn (compose-region (match-beginning 1) (match-end 1)
-                                ,(string-to-char "∧") 'decompose-region)
-                nil)))
-
-     (,(rx (group "\\/"))
-      (0 (progn (compose-region (match-beginning 1) (match-end 1)
-                                ,(string-to-char "∨") 'decompose-region)
-                nil))))))
+   (list
+    (cb:font-lock-replace-match (rx bow (group "forall") eow) 1 (string-to-char "∀"))
+    (cb:font-lock-replace-match (rx (group "/\\")) 1 (string-to-char "∧"))
+    (cb:font-lock-replace-match (rx (group "\\/")) 1 (string-to-char "∨"))
+    (cb:font-lock-replace-match (rx space (group "->") space)  1 (string-to-char "→"))
+    (cb:font-lock-replace-match (rx space (group "<->") space) 1 (string-to-char "↔"))
+    (cb:font-lock-replace-match (rx space (group "<-") space)  1 (string-to-char "←"))
+    (cb:font-lock-replace-match (rx (group "~"))   1 (string-to-char "¬"))
+    (cb:font-lock-replace-match (rx space (group "=>") space)  1 (string-to-char "⇒"))
+    (cb:font-lock-replace-match (rx (group "<>"))  1 (string-to-char "≠"))
+    )))
 
 (provide 'config-coq)
 

@@ -383,6 +383,19 @@ TO-N-LINES is the number of blank lines to insert afterwards."
     ;; Open a user-specified number of blanks.
     (open-line to-n-lines)))
 
+(defun cb:font-lock-replace-match (regex group replacement)
+  "Return a font-lock replacement spec for.
+
+REGEX surrounds the text to be replaced with a group.
+
+GROUP is the number of the group.
+
+REPLACEMENT is the string to substitute for the match in REGEX."
+  (list regex
+        `(0 (progn (compose-region (match-beginning ,group) (match-end ,group)
+                                   ,replacement 'decompose-region)
+                   nil))))
+
 (defconst user-home-directory    (concat (getenv "HOME") "/"))
 (defconst user-dropbox-directory (concat user-home-directory "Dropbox/"))
 (defconst user-mail-directory    (f-join user-home-directory "Mail"))
