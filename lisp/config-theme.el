@@ -55,7 +55,7 @@
 
 (defun monospace-font ()
   "Retun the monospace type-face name to use for this Emacs session."
-  (or (first-font "Menlo" "Consolas" "Inconsolata" "DejaVu Sans Mono"
+  (or (first-font "Source Code Pro" "Menlo" "Consolas" "Inconsolata" "DejaVu Sans Mono"
                   "Ubuntu Mono Regular" "Courier")
       "Menlo"))
 
