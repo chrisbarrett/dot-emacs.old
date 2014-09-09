@@ -90,11 +90,19 @@ If this is the trailing colon for a hash key, insert padding."
                     (buffer-substring (line-beginning-position) (point)))
     (just-one-space)))
 
+(defun cb-rb:smart-comma ()
+  "Insert a comma with context-sensitive formatting."
+  (interactive)
+  (delete-horizontal-space)
+  (insert ",")
+  (just-one-space))
+
 (--each cb:ruby-modes
   (super-smart-ops-configure-for-mode it
     :add '("~")
+    :rem '("!" "?")
     :custom
-    '(("," . (lambda () (interactive) (insert ",") (just-one-space)))
+    '(("," . cb-rb:smart-comma)
       (":" . cb-rb:smart-colon))))
 
 ;;; Hideshow
