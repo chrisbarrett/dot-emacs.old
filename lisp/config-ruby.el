@@ -94,7 +94,7 @@ If this is the trailing colon for a hash key, insert padding."
   (super-smart-ops-configure-for-mode it
     :add '("~")
     :custom
-    '(("," . (command (insert ",") (just-one-space)))
+    '(("," . (lambda () (interactive) (insert ",") (just-one-space)))
       (":" . cb-rb:smart-colon))))
 
 ;;; Hideshow
