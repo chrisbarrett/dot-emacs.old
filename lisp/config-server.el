@@ -33,6 +33,15 @@
   (unless (or noninteractive (server-running-p))
     (server-start)))
 
+(defun cb-server:set-color-theme (frame)
+  (select-frame frame)
+  (unless (window-system frame)
+    (-each custom-enabled-themes 'disable-theme)))
+
+(add-hook 'after-make-frame-functions 'cb-server:set-color-theme)
+(add-hook 'server-done-hook 'cb-colour:load-last-theme)
+(add-hook 'delete-frame-functions (lambda (&rest _) (cb-colour:load-last-theme)))
+
 (provide 'config-server)
 
 ;;; config-server.el ends here
