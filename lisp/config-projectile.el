@@ -70,14 +70,13 @@
 
 ;;; Commands
 
-(defun cb-projectile:eshell-project ()
-  "Open an eshell buffer in the current project."
+(defun cb-projectile:shell-project ()
+  "Open a shell buffer in the current project."
   (interactive)
   (cond
    ((projectile-project-p)
-    (let ((default-directory (projectile-project-root))
-          (eshell-buffer-name (projectile-project-name)))
-      (cb:term-cycle)))
+    (let ((default-directory (projectile-project-root)))
+      (cb:term-cycle (projectile-project-name))))
    (t
     (cb:term-cycle))))
 
@@ -102,7 +101,7 @@
 (bind-key* "s-d" 'projectile-find-dir)
 (bind-key* "s-l" 'projectile-switch-project)
 (bind-key* "s-a" 'projectile-ack)
-(bind-key* "s-t" 'cb-projectile:eshell-project)
+(bind-key* "s-t" 'cb-projectile:shell-project)
 
 
 (provide 'config-projectile)

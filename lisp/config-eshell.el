@@ -41,43 +41,6 @@
  '(eshell-prompt-regexp (rx bol (* space) (or "#" ":") space))
  '(eshell-prompt-function 'cb-eshell:format-prompt))
 
-(defun cb:term-cycle (&optional arg)
-  "Cycle through various terminal window states."
-  (interactive "P")
-  (cond
-   (arg
-    (eshell arg))
-
-   ((--none? (with-current-buffer it (derived-mode-p 'eshell-mode))
-             (buffer-list))
-    (eshell))
-
-   ;; If terminal is maximized, restore previous window config.
-   ((and (derived-mode-p 'eshell-mode)
-         (equal 1 (length (window-list))))
-    (or (ignore-errors (jump-to-register :term-fullscreen) t)
-        (bury-buffer)))
-
-   ;; If we're looking at the terminal, maximise it.
-   ((derived-mode-p 'eshell-mode)
-    (delete-other-windows))
-
-   ;; Otherwise show the terminal.
-   (t
-    ;; Hide the term window if it's visible.
-    (-when-let (win (--first
-                     (with-current-buffer (window-buffer it)
-                       (derived-mode-p 'eshell-mode))
-                     (window-list)))
-      (delete-window win))
-    ;; Save this configuration to a register so that it can be restored
-    ;; for later positions in the cycle.
-    (window-configuration-to-register :term-fullscreen)
-    ;; Show terminal.
-    (switch-to-buffer (--first-buffer (derived-mode-p 'eshell-mode))))))
-
-(bind-key* "<f1>" 'cb:term-cycle)
-
 (defun eshell/clear ()
   "Clear the eshell buffer."
   (interactive)
