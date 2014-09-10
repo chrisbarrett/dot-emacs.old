@@ -3,7 +3,9 @@
 # expand-env: ((yas-indent-line (quote fixed)))
 # condition: (cbyas:bol?)
 # --
-assert (H: $1).
-  Case "Proof of assertion".
+assert (${1:H} : $2).
+Case "Proof of assertion".
   $0
-rewrite H.
+
+Case "Assertion application".
+apply $1.

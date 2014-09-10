@@ -1,9 +1,8 @@
 # -*- mode: snippet; require-final-newline: nil -*-
-# name: class
-# key: cl
-# binding: direct-keybinding
+# name: module
+# key: mod
 # condition: (cbyas:bol?)
 # --
-class ${1:Name}
+module ${1:`(f-filename (f-no-ext (buffer-file-name)))`}
   $0
 end

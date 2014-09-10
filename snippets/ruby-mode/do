@@ -1,9 +1,8 @@
 # -*- mode: snippet; require-final-newline: nil -*-
-# name: class
-# key: cl
+# name: do
+# key: do
 # binding: direct-keybinding
-# condition: (cbyas:bol?)
 # --
-class ${1:Name}
+do ${1:|${2:args}|}
   $0
 end

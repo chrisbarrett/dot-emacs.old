@@ -1,9 +1,7 @@
 # -*- mode: snippet; require-final-newline: nil -*-
-# name: class
-# key: cl
+# name: require_relative
+# key: rr
 # binding: direct-keybinding
 # condition: (cbyas:bol?)
 # --
-class ${1:Name}
-  $0
-end
+require_relative '$0'
