@@ -28,18 +28,10 @@
 
 (require 'utils-common)
 
-(defun cb:term-cycle (&optional name)
+(defun cb:term-cycle (&optional project)
   "Cycle through various terminal window states."
   (interactive (list (format "*%s*" (f-filename shell-file-name))))
   (cond
-   (name
-    (ansi-term shell-file-name name))
-
-   ((--none? (with-current-buffer it (derived-mode-p 'term-mode))
-             (buffer-list))
-    (ansi-term shell-file-name)
-    )
-
    ;; If terminal is maximized, restore previous window config.
    ((and (derived-mode-p 'term-mode)
          (equal 1 (length (window-list))))
@@ -49,6 +41,16 @@
    ;; If we're looking at the terminal, maximise it.
    ((derived-mode-p 'term-mode)
     (delete-other-windows))
+
+   (project
+    (-if-let (bufs (--filter-buffers (and (derived-mode-p 'term-mode)
+                                          (s-contains? project default-directory))))
+        (switch-to-buffer (car bufs))
+      (ansi-term shell-file-name project)))
+
+   ((--none? (with-current-buffer it (derived-mode-p 'term-mode))
+             (buffer-list))
+    (ansi-term shell-file-name))
 
    ;; Otherwise show the terminal.
    (t
