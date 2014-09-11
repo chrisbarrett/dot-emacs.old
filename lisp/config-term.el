@@ -66,7 +66,7 @@
     ;; Show terminal.
     (switch-to-buffer (--first-buffer (derived-mode-p 'term-mode))))))
 
-(bind-key* "<f1>" 'cb:term-cycle)
+(add-hook 'term-mode-hook (lambda () (setq yas-dont-activate t)))
 
 (provide 'config-term)
 
