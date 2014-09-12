@@ -768,6 +768,25 @@ See URL `http://www.haskell.org/ghc/'."
 (font-lock-add-keywords 'haskell-c-mode cb-hs:font-lock-lambdas-form)
 (font-lock-add-keywords 'haskell-interactive-mode cb-hs:font-lock-lambdas-form)
 
+;;; Alignment
+
+(add-to-list 'align-rules-list
+             '(haskell-types
+               (regexp . "\\(\\s-+\\)\\(::\\|∷\\)\\s-+")
+               (modes quote (haskell-mode literate-haskell-mode))))
+(add-to-list 'align-rules-list
+             '(haskell-assignment
+               (regexp . "\\(\\s-+\\)=\\s-+")
+               (modes quote (haskell-mode literate-haskell-mode))))
+(add-to-list 'align-rules-list
+             '(haskell-arrows
+               (regexp . "\\(\\s-+\\)\\(->\\|→\\)\\s-+")
+               (modes quote (haskell-mode literate-haskell-mode))))
+(add-to-list 'align-rules-list
+             '(haskell-left-arrows
+               (regexp . "\\(\\s-+\\)\\(<-\\|←\\)\\s-+")
+               (modes quote (haskell-mode literate-haskell-mode))))
+
 ;;; Utilities for yasnippet.
 
 (defun cb-hs:file-name->module ()
