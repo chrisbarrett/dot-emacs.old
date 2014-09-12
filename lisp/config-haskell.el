@@ -64,7 +64,7 @@
  '(haskell-program-name "ghci")
  '(haskell-process-type 'cabal-repl)
  '(haskell-interactive-prompt "\nλ> ")
- '(company-ghc-show-info t)
+ '(company-ghc-show-info nil)
  '(company-ghc-show-module t)
  '(shm-auto-insert-skeletons nil)
  )
@@ -102,12 +102,6 @@
          (haskell-session-make "ghci")))))
   ;; Switch to window.
   (haskell-interactive-bring))
-
-(defun cb:switch-to-haskell ()
-  "Switch to the last active Haskell buffer."
-  (interactive)
-  (-when-let (buf (--first-buffer (derived-mode-p 'haskell-mode)))
-    (pop-to-buffer buf)))
 
 ;;; Advice
 
@@ -841,7 +835,6 @@ See URL `http://www.haskell.org/ghc/'."
   )
 
 (after 'haskell-interactive-mode
-  (define-key haskell-interactive-mode-map (kbd "C-c C-z") 'cb:switch-to-haskell)
   (define-key haskell-interactive-mode-map (kbd "C-c C-h") 'haskell-hoogle)
   )
 
