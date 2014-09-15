@@ -770,6 +770,7 @@ See URL `http://www.haskell.org/ghc/'."
 
 ;;; Alignment
 
+(require 'align)
 (add-to-list 'align-rules-list
              '(haskell-types
                (regexp . "\\(\\s-+\\)\\(::\\|∷\\)\\s-+")
