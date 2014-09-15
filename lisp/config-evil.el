@@ -520,7 +520,7 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
 (evil-global-set-keys 'normal
   "g P" 'magit-key-mode-popup-pushing
   "g c" 'magit-key-mode-popup-committing
-  "g l" 'magit-log
+  "g l" 'magit-key-mode-popup-logging
   "g r" 'magit-reflog
   "g D" 'magit-diff-working-tree
   "g B" 'magit-blame-mode
