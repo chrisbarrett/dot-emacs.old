@@ -44,7 +44,8 @@
 
 (custom-set-variables
  '(sp-autoinsert-if-followed-by-word t)
- '(sp-navigate-close-if-unbalanced t))
+ '(sp-navigate-close-if-unbalanced t)
+ '(sp-message-width nil))
 
 (diminish 'smartparens-mode)
 
