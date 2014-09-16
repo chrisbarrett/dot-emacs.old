@@ -196,6 +196,12 @@
    (if (buffer-file-name) (cb:propertize-file-directory) "")
    (propertize (buffer-name) 'face 'mode-line-filename)))
 
+(defun cbmd:mode-line-fill (reserve)
+  "Return empty space and leave RESERVE space on the right."
+  (when (and window-system (eq 'right (get-scroll-bar-mode)))
+    (setq reserve (- reserve 3)))
+  (propertize " " 'display `((space :align-to (- (+ right right-fringe right-margin) ,reserve)))))
+
 (setq-default
  mode-line-format
  `(
@@ -294,7 +300,17 @@
    (:propertize mode-line-process
                 face mode-line-process)
    " "
-   (global-mode-string global-mode-string)))
+   (global-mode-string global-mode-string)
+
+   ;; --------------------------------------------------------------------------
+   ;; Date and time
+
+   (:eval
+    (let ((ts (format-time-string " %R  %a %e %b ")))
+      (if (memq (frame-parameter nil 'fullscreen) '(fullscreen fullboth))
+          (concat (cbmd:mode-line-fill (length ts))
+                  (propertize ts 'face 'mode-line-process))
+        "")))))
 
 (defvar cb:modeline-timer
   (run-with-timer 5 5 (lambda ()
