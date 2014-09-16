@@ -44,6 +44,7 @@
 (custom-set-variables
  '(ledger-post-account-alignment-column 2)
  '(ledger-post-use-completion-engine :ido)
+ '(ledger-fontify-xact-state-overrides nil)
  '(ledger-reports
    '(("bal" "ledger -f %(ledger-file) bal")
      ("reg" "ledger -f %(ledger-file) reg")
