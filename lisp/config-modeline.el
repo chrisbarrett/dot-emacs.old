@@ -160,18 +160,11 @@
 
 (cl-defun cb:shorten-directory (dir &optional (max-length 30))
   "Show up to MAX-LENGTH characters of a directory name DIR."
-  (let ((path (reverse (split-string (abbreviate-file-name dir) "/")))
-        (output ""))
-    (when (and path (equal "" (car path)))
-      (setq path (cdr path)))
-    ;; Ellipsize the path if it is too long.
-    ;; `2` is the length of the path separator + ellipsis.
-    (while (and path (< (length output) (- max-length 2)))
-      (setq output (concat (car path) "/" output))
-      (setq path (cdr path)))
-    (when path
-      (setq output (concat "…/" output)))
-    output))
+  (if (< max-length (length dir))
+      dir
+    (->> (split-string (abbreviate-file-name dir) (f-path-separator))
+      (--map (-take 2 (string-to-list it)))
+      (s-join (f-path-separator)))))
 
 (autoload 'tramp-dissect-file-name "tramp")
 
