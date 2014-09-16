@@ -39,6 +39,8 @@
  '(starttls-gnutls-program (executable-find "gnutls-cli"))
  '(starttls-use-gnutls t))
 
+(global-set-key (kbd "<s-return>") 'toggle-frame-fullscreen)
+
 ;;; Use bash for shell command execution if Fish is the default.
 
 (when (s-ends-with? "fish" (getenv "SHELL"))
