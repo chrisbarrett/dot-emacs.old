@@ -46,7 +46,7 @@
     (-if-let (bufs (--filter-buffers (and (derived-mode-p 'term-mode)
                                           (s-contains? project default-directory))))
         (switch-to-buffer (car bufs))
-      (ansi-term shell-file-name project)))
+      (ansi-term shell-file-name (format "ansi-term: %s" project))))
 
    ((--none? (with-current-buffer it (derived-mode-p 'term-mode))
              (buffer-list))
