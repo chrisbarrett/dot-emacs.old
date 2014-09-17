@@ -202,115 +202,112 @@
     (setq reserve (- reserve 3)))
   (propertize " " 'display `((space :align-to (- (+ right right-fringe right-margin) ,reserve)))))
 
+(defun cbmd:rightmost-window? (win)
+  "Non-nil if WIN is the right-most window in this frame."
+  (let ((x-max (frame-width))
+        (y-max (- (frame-height) (window-height (minibuffer-window)))))
+    (equal win (window-at x-max y-max))))
+
+(defun cbmd:pomodoro-string ()
+  (cond
+   ;; Show the current pomodoro time and an indicator for the length of the
+   ;; next break.
+   ((and (true? org-pomodoro-mode-line)
+         (equal org-pomodoro-state :pomodoro))
+
+    (cl-destructuring-bind (bl s br)
+        org-pomodoro-mode-line
+      (let ((upcoming-long-break?
+             (and (plusp org-pomodoro-count) ; starts at 0
+                  (zerop (mod org-pomodoro-count
+                              org-pomodoro-long-break-frequency)))))
+        (concat bl s
+                " → " (if upcoming-long-break? "L" "S")
+                br
+                " "))))
+
+   ;; Show just the time when on a break.
+   ((and (true? org-pomodoro-mode-line)
+         (concat org-pomodoro-mode-line)))
+   (t
+    "")))
+
+(defun cbmd:date-and-time-string ()
+  (if (memq (frame-parameter nil 'fullscreen) '(fullscreen fullboth))
+      (propertize (format-time-string "%R  %a %e %b") 'face 'mode-line-process)
+    ""))
+
+(defun cbmd:file-status-string ()
+  (let ((blank "    "))
+    (cond
+     ;; Do not show status for special buffers.
+     ((and (s-starts-with? "*" (buffer-name))
+           (not (buffer-file-name)))
+      blank)
+
+     ;; Show read-only indicator.
+     (buffer-read-only
+      (propertize " RO " 'face 'mode-line-read-only))
+
+     ;; Show modified and vc status.
+     (t
+      (format " %s%s "
+              (if (ignore-errors (vc-git-root (buffer-file-name)))
+                  (cb:vc-state->letter)
+                " ")
+              (if (buffer-modified-p)
+                  (propertize "*" 'face 'mode-line-modified)
+                " "))))))
+
+(defun cbmd:column-number-string ()
+  (propertize "%3c" 'face
+              (if (>= (current-column) 80)
+                  'mode-line-80col
+                'mode-line-position)))
+
 (setq-default
  mode-line-format
  `(
-   ;; --------------------------------------------------------------------------
    ;; Line and column number.
    (:propertize " L" face mode-line-dim)
    (:propertize "%l %p:" face mode-line-position)
-   (:eval
-    ;; Warn if over 80 columns.
-    (propertize "%3c" 'face
-                (if (>= (current-column) 80)
-                    'mode-line-80col
-                  'mode-line-position)))
-
+   (:eval (cbmd:column-number-string))
    " "
-
    ;; Evil state
    (:eval
     (if (and (featurep 'evil) (true? evil-mode))
         evil-mode-line-tag
       ""))
 
-   ;; Work state
-   (:eval
-    (if (true? cb-org:at-work?)
-        (propertize "[@work]" 'face 'modeline-org-at-work)
-      ""))
-
-   ;; Pomodoro
-   ;;
-   (:eval
-    (cond
-
-     ;; Show the current pomodoro time and an indicator for the length of the
-     ;; next break.
-     ((and (true? org-pomodoro-mode-line)
-           (equal org-pomodoro-state :pomodoro))
-
-      (cl-destructuring-bind (bl s br)
-          org-pomodoro-mode-line
-        (let ((upcoming-long-break?
-               (and (plusp org-pomodoro-count) ; starts at 0
-                    (zerop (mod org-pomodoro-count
-                                org-pomodoro-long-break-frequency)))))
-          (concat bl s
-                  " → " (if upcoming-long-break? "L" "S")
-                  br))))
-
-     ;; Show just the time when on a break.
-     ((and (true? org-pomodoro-mode-line)
-           (concat org-pomodoro-mode-line)))
-     (t
-      "")))
-
-   ;; --------------------------------------------------------------------------
    ;; File status.
-   (:eval
-    (let ((blank "    "))
-      (cond
-       ;; Do not show status for special buffers.
-       ((and (s-starts-with? "*" (buffer-name))
-             (not (buffer-file-name)))
-        blank)
-
-       ;; Show read-only indicator.
-       (buffer-read-only
-        (propertize " RO " 'face 'mode-line-read-only))
-
-       ;; Show modified and vc status.
-       (t
-        (format " %s%s "
-                (if (ignore-errors (vc-git-root (buffer-file-name)))
-                    (cb:vc-state->letter)
-                  " ")
-                (if (buffer-modified-p)
-                    (propertize "*" 'face 'mode-line-modified)
-                  " "))))))
+   (:eval (cbmd:file-status-string))
    " "
-   ;; --------------------------------------------------------------------------
    ;; Buffer name and path.
    (:eval (cbmd:description))
 
-   ;; --------------------------------------------------------------------------
    ;; Narrowing
    " %n "
 
-   ;; --------------------------------------------------------------------------
-   ;; Mode details.
-
-   ;; Major mode.
+   ;; Major mode
    " %[" (:propertize mode-name face mode-line-mode) "%] "
+   ;; Minor modes
+   (:eval (propertize (format-mode-line minor-mode-alist) 'face 'mode-line-dim))
+   (:propertize mode-line-process face mode-line-process)
 
-   ;; Minor modes.
-   (:eval (propertize (format-mode-line minor-mode-alist)
-                      'face 'mode-line-dim))
-   (:propertize mode-line-process
-                face mode-line-process)
-   " "
-   (global-mode-string global-mode-string)
-
-   ;; --------------------------------------------------------------------------
-   ;; Date and time
+   ;; Right-side widgets
 
    (:eval
-    (let ((ts (format-time-string " %R  %a %e %b ")))
-      (if (memq (frame-parameter nil 'fullscreen) '(fullscreen fullboth))
-          (concat (cbmd:mode-line-fill (length ts))
-                  (propertize ts 'face 'mode-line-process))
-        "")))))
+    (if (cbmd:rightmost-window? (selected-window))
+        (let ((str (concat
+                    (s-join " " (-map 'eval global-mode-string))
+                    " "
+                    (cbmd:pomodoro-string)
+                    (cbmd:date-and-time-string)
+                    " ")))
+          (concat
+           (cbmd:mode-line-fill (length str))
+           str))
+      ""))))
 
 (defvar cb:modeline-timer
   (run-with-timer 5 5 (lambda ()
