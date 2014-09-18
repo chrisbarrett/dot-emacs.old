@@ -139,14 +139,6 @@
   "Face for the warning when point is past column 80."
   :group 'modeline)
 
-(defface modeline-org-at-work
-  `((t (:foreground
-        ,solarized-hl-magenta
-        :inherit
-        'mode-line-position)))
-  "Face for the indicator showing the work state."
-  :group 'modeline)
-
 (cl-defun cb:vc-state->letter (&optional (file (buffer-file-name)))
   "Return a single letter to represent the current version-control status."
   (cl-case (ignore-errors (vc-state file))
