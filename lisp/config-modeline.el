@@ -197,7 +197,7 @@
 (defun cbmd:rightmost-window? (win)
   "Non-nil if WIN is the right-most window in this frame."
   (let ((x-max (frame-width))
-        (y-max (- (frame-height) (window-height (minibuffer-window)))))
+        (y-max (- (frame-height) (window-height (minibuffer-window)) 1)))
     (equal win (window-at x-max y-max))))
 
 (defun cbmd:pomodoro-string ()
@@ -220,14 +220,15 @@
 
    ;; Show just the time when on a break.
    ((and (true? org-pomodoro-mode-line)
-         (concat org-pomodoro-mode-line)))
-   (t
-    "")))
+         (concat org-pomodoro-mode-line)))))
+
+(defun cbmd:frame-maximised? (&optional frame)
+  "Non-nil if FRAME is maximised."
+  (memq (frame-parameter frame 'fullscreen) '(fullscreen fullboth)))
 
 (defun cbmd:date-and-time-string ()
-  (if (memq (frame-parameter nil 'fullscreen) '(fullscreen fullboth))
-      (propertize (format-time-string "%R  %a %e %b") 'face 'mode-line-process)
-    ""))
+  (when (cbmd:frame-maximised?)
+    (propertize (format-time-string "%R  %a %e %b") 'face 'mode-line-process)))
 
 (defun cbmd:file-status-string ()
   (let ((blank "    "))
@@ -257,6 +258,22 @@
                   'mode-line-80col
                 'mode-line-position)))
 
+(defun cbmd:right-widgets ()
+  (let* ((gms (s-join " " (-map 'eval global-mode-string)))
+         (str (concat gms
+                      " "
+                      (cbmd:pomodoro-string)
+                      (when (cbmd:frame-maximised?) (cbmd:date-and-time-string))
+                      " "))
+         (str (concat (cbmd:mode-line-fill (length str)) str)))
+    (cond
+     ((and (cbmd:frame-maximised?) (cbmd:rightmost-window? (selected-window)))
+      str)
+
+     ((and (not (cbmd:frame-maximised?))
+           (cbmd:rightmost-window? (selected-window)))
+      str))))
+
 (setq-default
  mode-line-format
  `(
@@ -266,10 +283,7 @@
    (:eval (cbmd:column-number-string))
    " "
    ;; Evil state
-   (:eval
-    (if (and (featurep 'evil) (true? evil-mode))
-        evil-mode-line-tag
-      ""))
+   (:eval (if (and (featurep 'evil) (true? evil-mode)) evil-mode-line-tag ""))
 
    ;; File status.
    (:eval (cbmd:file-status-string))
@@ -282,24 +296,13 @@
 
    ;; Major mode
    " %[" (:propertize mode-name face mode-line-mode) "%] "
+
    ;; Minor modes
    (:eval (propertize (format-mode-line minor-mode-alist) 'face 'mode-line-dim))
    (:propertize mode-line-process face mode-line-process)
 
    ;; Right-side widgets
-
-   (:eval
-    (if (cbmd:rightmost-window? (selected-window))
-        (let ((str (concat
-                    (s-join " " (-map 'eval global-mode-string))
-                    " "
-                    (cbmd:pomodoro-string)
-                    (cbmd:date-and-time-string)
-                    " ")))
-          (concat
-           (cbmd:mode-line-fill (length str))
-           str))
-      ""))))
+   (:eval (cbmd:right-widgets))))
 
 (defvar cb:modeline-timer
   (run-with-timer 5 5 (lambda ()
