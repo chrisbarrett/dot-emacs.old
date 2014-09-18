@@ -183,7 +183,7 @@
        (face (cb:shorten-directory (or file filepath)) 'mode-line-directory)))))
 
 (defun cbmd:description ()
-  "Format the mode line description."
+  "Format the mode line description for this buffer."
   (concat
    (if (buffer-file-name) (cb:propertize-file-directory) "")
    (propertize (buffer-name) 'face 'mode-line-filename)))
@@ -201,6 +201,7 @@
     (equal win (window-at x-max y-max))))
 
 (defun cbmd:pomodoro-string ()
+  "Format the pomodoro string for the modeline."
   (cond
    ;; Show the current pomodoro time and an indicator for the length of the
    ;; next break.
@@ -227,10 +228,11 @@
   (memq (frame-parameter frame 'fullscreen) '(fullscreen fullboth)))
 
 (defun cbmd:date-and-time-string ()
-  (when (cbmd:frame-maximised?)
-    (propertize (format-time-string " %a %e %b %R") 'face 'mode-line-process)))
+  "Format date and time string for modeline."
+  (propertize (format-time-string " %a %e %b %R") 'face 'mode-line-process))
 
 (defun cbmd:file-status-string ()
+  "Format modeline VC state for current file."
   (let ((blank "    "))
     (cond
      ;; Do not show status for special buffers.
@@ -259,6 +261,7 @@
                 'mode-line-position)))
 
 (defun cbmd:right-widgets ()
+  "Make a string for widgets at the far right side of the modeline."
   (let* ((gms (s-join " " (-map 'eval global-mode-string)))
          (str (concat gms
                       " "
@@ -313,7 +316,6 @@
                             (vc-after-save)
                             (force-mode-line-update)))))
   "Timer that updates the modeline to show current VC state.")
-
 
 (provide 'config-modeline)
 
