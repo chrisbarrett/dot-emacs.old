@@ -228,7 +228,7 @@
 
 (defun cbmd:date-and-time-string ()
   (when (cbmd:frame-maximised?)
-    (propertize (format-time-string "%R  %a %e %b") 'face 'mode-line-process)))
+    (propertize (format-time-string " %a %e %b %R") 'face 'mode-line-process)))
 
 (defun cbmd:file-status-string ()
   (let ((blank "    "))
