@@ -74,8 +74,10 @@
                        ((org-agenda-overriding-header "Waiting"))))
            ((org-agenda-tag-filter-preset
              '("+@work"))
-            (org-agenda-files
-             (list org-work-file))
+            (org-agenda-files (list org-work-file))
+            (org-deadline-warning-days 0)
+            (org-agenda-todo-ignore-deadlines 'far)
+            (org-agenda-todo-ignore-scheduled 'all)
             (org-agenda-hide-tags-regexp
              (regexp-opt
               (list org-agenda-hide-tags-regexp "@work")))))
