@@ -408,6 +408,18 @@ FORM is a form returning the string to insert."
 (cb:define-case-transform screaming-snake-case words
   (s-upcase (s-snake-case (s-join " " words))))
 
+;;; Text scale
+
+(defun tsi (step)
+  "Increase text scale in all buffers my STEP."
+  (interactive "p")
+  (--map-buffers (text-scale-increase step)))
+
+(defun tsd (step)
+  "Decrease text scale in all buffers my STEP."
+  (interactive "p")
+  (--map-buffers (text-scale-decrease step)))
+
 ;;; Key bindings
 
 (define-key prog-mode-map (kbd "M-q") 'indent-dwim)

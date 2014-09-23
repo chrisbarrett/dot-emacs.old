@@ -295,8 +295,6 @@ Can indent backwards if there is only whitespace."
 (defalias 'qrr  'query-replace-regexp)
 (defalias 'rbf  'rename-file-and-buffer)
 (defalias 'rfb  'rename-file-and-buffer)
-(defalias 'tsd  'text-scale-decrease)
-(defalias 'tsi  'text-scale-increase)
 
 (defalias 'cal 'calendar)
 
