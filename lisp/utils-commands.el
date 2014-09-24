@@ -413,12 +413,12 @@ FORM is a form returning the string to insert."
 (defun tsi (step)
   "Increase text scale in all buffers my STEP."
   (interactive "p")
-  (--map-buffers (text-scale-increase step)))
+  (--map-buffers (unless (minibufferp) (text-scale-increase step))))
 
 (defun tsd (step)
   "Decrease text scale in all buffers my STEP."
   (interactive "p")
-  (--map-buffers (text-scale-decrease step)))
+  (--map-buffers (unless (minibufferp) (text-scale-decrease step))))
 
 ;;; Key bindings
 
