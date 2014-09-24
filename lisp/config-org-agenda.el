@@ -67,7 +67,7 @@
            ((tags-todo "-someday/NEXT"
                        ((org-agenda-overriding-header "Next Actions")))
             (agenda ""
-                    ((org-agenda-ndays 14)))
+                    ((org-agenda-span 'fortnight)))
             (todo "AWAITING|ORGANISE_IN|COLLECT"
                   ((org-agenda-overriding-header "Incoming")))
             (todo "TODO_OUT|READY|ORGANISE_OUT"
@@ -105,7 +105,8 @@
 
           ("r" "Weekly Review"
            ((agenda ""
-                    ((org-agenda-ndays 14)))
+                    ((org-agenda-ndays 21)
+                     (org-agenda-start-day "-7d")))
             (stuck "")
             (todo "WAITING"
                   ((org-agenda-overriding-header "Waiting")))
