@@ -51,7 +51,8 @@
  '(org-agenda-text-search-extra-files '(agenda-archives))
 
  '(org-agenda-custom-commands
-   (->> '(("A" "Agenda and next actions"
+   (->> '(
+          ("A" "Agenda and next actions"
            ((tags-todo "-someday-media/NEXT"
                        ((org-agenda-overriding-header "Next Actions")))
             (agenda "")
@@ -61,6 +62,7 @@
                        ((org-agenda-overriding-header "Media"))))
            ((org-agenda-tag-filter-preset
              '("-@work"))))
+
           ("w" "Agenda and work actions"
            ((tags-todo "-someday/NEXT"
                        ((org-agenda-overriding-header "Next Actions")))
@@ -81,9 +83,11 @@
             (org-agenda-hide-tags-regexp
              (regexp-opt
               (list org-agenda-hide-tags-regexp "@work")))))
+
           ("n" "Next actions"
            ((tags-todo "-someday/NEXT"))
            ((org-agenda-overriding-header "Next Actions")))
+
           ("g" . "GTD contexts")
           ("gg" "Anywhere"
            ((tags-todo "@computer")
@@ -98,6 +102,7 @@
           ("gw" "Work" tags-todo "@work")
           ("gh" "Home" tags-todo "@home")
           ("gl" "Leisure" tags-todo "@leisure")
+
           ("r" "Weekly Review"
            ((agenda ""
                     ((org-agenda-ndays 14)))
@@ -114,20 +119,7 @@
              '("-drill" "-gtd"))
             (org-habit-show-habits nil)
             (org-agenda-include-inactive-timestamps t)))
-          ("g" . "GTD contexts")
-          ("gg" "Anywhere"
-           ((tags-todo "@computer")
-            (tags-todo "@errand")
-            (tags-todo "@home")
-            (tags-todo "@leisure")
-            (tags-todo "@phone")
-            (tags-todo "@work")))
-          ("gc" "Computer" tags-todo "@computer")
-          ("ge" "Errands" tags-todo "@errand")
-          ("gp" "Phone" tags-todo "@phone")
-          ("gw" "Work" tags-todo "@work")
-          ("gh" "Home" tags-todo "@home")
-          ("gl" "Leisure" tags-todo "@leisure"))
+          )
      (--map-when
       (listp
        (cdr it))
