@@ -150,13 +150,14 @@
     ((ignored)              (propertize "-" 'face 'modeline-vc-unknown-face))
     (t                      (propertize "?" 'face 'modeline-vc-unknown-face))))
 
-(cl-defun cb:shorten-directory (dir &optional (max-length 30))
+(cl-defun cb:shorten-directory (dir &optional (max-length 15))
   "Show up to MAX-LENGTH characters of a directory name DIR."
-  (if (< max-length (length dir))
-      dir
-    (->> (split-string (abbreviate-file-name dir) (f-path-separator))
-      (--map (-take 2 (string-to-list it)))
-      (s-join (f-path-separator)))))
+  (let ((dir (abbreviate-file-name dir)))
+    (if (< (length dir) max-length)
+        dir
+      (->> (split-string dir (f-path-separator))
+        (--map (-take 2 (string-to-list it)))
+        (s-join (f-path-separator))))))
 
 (autoload 'tramp-dissect-file-name "tramp")
 
