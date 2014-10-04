@@ -240,7 +240,8 @@
   (font-lock-add-keywords
    mode
    (list
-    (cb:font-lock-replace-match (rx bow (group "forall") eow) 1 (string-to-char "∀"))
+    (cb:font-lock-replace-match (rx (and (or bol (any "," ":" "(" "[" ">")) (* space)) bow (group "forall") eow) 1 (string-to-char "∀"))
+    (cb:font-lock-replace-match (rx (and (or bol (any "," ":" "(" "[" ">")) (* space)) bow (group "exists") eow) 1 (string-to-char "∃"))
     (cb:font-lock-replace-match (rx (or space eow) (group "/\\") (or space eol bow)) 1 (string-to-char "∧"))
     (cb:font-lock-replace-match (rx (or space eow) (group "\\/") (or space eol bow)) 1 (string-to-char "∨"))
     (cb:font-lock-replace-match (rx (or space eow) (group "->")  (or space eol bow)) 1 (string-to-char "→"))
