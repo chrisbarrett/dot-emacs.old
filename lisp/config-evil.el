@@ -647,8 +647,8 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
   [backtab] 'dired-hide-all
   [backspace] 'dired-kill-subdir)
 
-(bind-key* "M-d" 'dired-jump)
-(bind-key* "M-D" 'dired-jump-other-window)
+(bind-key* "C-x d" 'dired-jump)
+(bind-key* "C-x D" 'dired-jump-other-window)
 
 ;;; Discover
 
