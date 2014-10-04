@@ -46,8 +46,9 @@
  '(ledger-post-use-completion-engine :ido)
  '(ledger-fontify-xact-state-overrides nil)
  '(ledger-reports
-   '(("bal" "ledger -f %(ledger-file) bal")
-     ("reg" "ledger -f %(ledger-file) reg")
+   '(("assets" "ledger -f %(ledger-file) bal assets")
+     ("balance" "ledger -f %(ledger-file) bal")
+     ("register" "ledger -f %(ledger-file) reg")
      ("payee" "ledger -f %(ledger-file) reg @%(payee)")
      ("account" "ledger -f %(ledger-file) reg %(account)")
      ("net worth" "ledger -f %(ledger-file) bal ^assets ^liabilities")
