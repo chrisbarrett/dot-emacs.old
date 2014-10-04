@@ -38,6 +38,7 @@
    (sh . t)
    (calc . t)
    (scala . t)
+   (sqlite . t)
    (emacs-lisp . t)
    (gnuplot . t)
    (ruby . t)
