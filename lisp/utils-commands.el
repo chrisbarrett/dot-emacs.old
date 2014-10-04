@@ -420,6 +420,11 @@ FORM is a form returning the string to insert."
   (interactive "p")
   (--map-buffers (unless (minibufferp) (text-scale-decrease step))))
 
+(defun tsr ()
+  "Reset text scale in all buffers."
+  (interactive)
+  (--map-buffers (unless (minibufferp) (text-scale-set 0))))
+
 ;;; Key bindings
 
 (define-key prog-mode-map (kbd "M-q") 'indent-dwim)
