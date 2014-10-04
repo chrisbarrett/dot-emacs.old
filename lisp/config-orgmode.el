@@ -90,14 +90,12 @@
  '(org-meta-line ((t :italic nil :inherit font-lock-comment-face)))
  '(org-document-info-keyword ((t :foreground unspecified :inherit org-meta-line)))
 
- '(org-block-begin-line
-   ((((background light)) :background "#f8f1dc")
-    (((background dark))  :background "#11303b")
-    ((t :underline t))))
- '(org-block-end-line
-   ((((background light)) :background "#f8f1dc")
-    (((background dark))  :background "#11303b")
-    ((t :overline t))))
+ `(org-block-begin-line
+   ((((background light)) :italic t :foreground ,solarized-hl-cyan)
+    (((background dark))  :italic t :foreground ,solarized-hl-cyan)))
+ `(org-block-end-line
+   ((((background light)) :italic t :foreground ,solarized-hl-cyan)
+    (((background dark))  :italic t :foreground ,solarized-hl-cyan)))
  '(org-block-background
    ((((background light)) :background "#f8f1dc")
     (((background dark))  :background "#11303b"))))
