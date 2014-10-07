@@ -45,7 +45,7 @@
   '("Dates" "Tasks")
   "Lists the titles of subheadings to create under each new project.")
 
-(defvar org-work-default-work-file (f-join org-directory "work.org")
+(defvar org-work-file (f-join org-directory "work.org")
   "Defines the path to file for work-related todos, etc.")
 
 (defvar org-work-persistence-file (f-join org-directory ".org-at-work")
@@ -288,7 +288,7 @@ Create the heading if it does not exist."
 
 (defun org-work-toggle-at-work (file)
   "Toggle whether I am currently at work.  FILE is the project file."
-  (interactive (list org-work-default-work-file))
+  (interactive (list org-work-file))
   (if org-work--at-work?
       (org-work-leave-work file)
     (org-work-start-work file))
@@ -297,7 +297,7 @@ Create the heading if it does not exist."
 (defun org-work-maybe-start-work ()
   "Set status to 'at-work' if the work persistence file exists."
   (when (f-exists? org-work-persistence-file)
-    (org-work-start-work org-work-default-work-file)))
+    (org-work-start-work org-work-file)))
 
 ;;; Minor mode
 

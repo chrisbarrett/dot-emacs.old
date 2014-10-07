@@ -332,7 +332,8 @@
      ("d" "Go to Diary"       cb-org:find-diary)
      ("g" "Go to Subtree"     ,(command (org-refile 'goto)))
      ("n" "Go to Notes"       cb-org:find-notes)
-     ("s" "Search"            org-search-view))
+     ("s" "Search"            org-search-view)
+     ("w" "Go to Work"       ,(command (find-file org-work-file))))
 
     ("Capture"
      ("k" "Capture"           makey-key-mode-popup-cb-org-capture)
