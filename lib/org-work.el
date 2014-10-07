@@ -222,7 +222,8 @@ Create the heading if it does not exist."
     (goto-char (point-min))
     (org-insert-heading-respect-content)
     (org-demote)
-    (insert "Tasks")))
+    (insert "Tasks")
+    (org-set-tags-to ":task:")))
 
 (defun org-work-add-task (title project)
   "Add a task with TITLE to PROJECT."
@@ -239,8 +240,6 @@ Create the heading if it does not exist."
   (org-insert-heading-respect-content)
   (org-demote)
   (insert (concat "TODO " title))
-  (org-set-tags-to ":task:")
-
   (goto-char (line-end-position))
   (newline))
 
