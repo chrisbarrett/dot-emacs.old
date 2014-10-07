@@ -317,7 +317,7 @@ Create the heading if it does not exist."
 (define-minor-mode org-work-mode
   "Minor mode for work-related org buffers."
   nil
-  " @Work"
+  " Work"
   org-work-mode-map)
 
 (defun maybe-enable-org-work-mode ()
