@@ -168,14 +168,14 @@ Return a list of the function's results."
   (save-excursion
     (org-back-to-heading)
     (let ((acc)
-          (level (org-current-level))
-          )
+          (level (org-current-level)))
+
       (outline-next-heading)
       (unless (equal level (org-current-level))
         (push (funcall fn) acc)
         (while (outline-get-next-sibling)
-
           (push (funcall fn) acc)))
+
       (nreverse acc))))
 
 (defun org-work-goto-create-project (name)
