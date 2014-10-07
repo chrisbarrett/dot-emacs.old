@@ -50,20 +50,19 @@
   "Capture STR with org-mode.
 TEMPLATE-NAME is a string matching the name of a capture
 template."
-  (let ((org-default-notes-file org-init-notes-file))
-    (save-excursion
-      (save-window-excursion
-        (when (boundp 'org-capture-templates)
-          (cl-destructuring-bind (&optional key name file tree template &rest rest)
-              (-first (C (~ equal template-name) s-downcase cadr)
-                      org-capture-templates)
-            (org-capture-goto-target (or key "n"))
-            ;; Prepare headline.
-            (end-of-line)
-            (org-insert-heading '(16))   ; 16 = at end of list
-            ;; Insert item.
-            (insert str)
-            (org-set-tags-to tags)))))))
+  (save-excursion
+    (save-window-excursion
+      (when (boundp 'org-capture-templates)
+        (cl-destructuring-bind (&optional key name file tree template &rest rest)
+            (-first (C (~ equal template-name) s-downcase cadr)
+                    org-capture-templates)
+          (org-capture-goto-target (or key "n"))
+          ;; Prepare headline.
+          (end-of-line)
+          (org-insert-heading '(16))   ; 16 = at end of list
+          ;; Insert item.
+          (insert str)
+          (org-set-tags-to tags))))))
 
 (setq cm-default-parser
       (list :type 'note
