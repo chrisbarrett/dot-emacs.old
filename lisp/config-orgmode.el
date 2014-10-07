@@ -356,21 +356,7 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
   (when (called-interactively-p nil)
     (message "Subtree written to %s" dest)))
 
-(defun cb-org:ctrl-c-ctrl-k (&optional n)
-  "Kill subtrees, unless we're in a special buffer where it should cancel."
-  (interactive "p")
-  (if (s-starts-with? "*Org" (buffer-name))
-      (org-kill-note-or-show-branches)
-    (org-cut-subtree n)))
-
-
-(defun cb-org:ctrl-c-ret ()
-  "Call `org-table-hline-and-move' or `org-insert-todo-heading' dep. on context."
-  (interactive)
-  (cond
-   ((org-at-table-p) (call-interactively 'org-table-hline-and-move))
-   (t (call-interactively 'org-insert-todo-heading))))
-
+;;; Tidy buffer before save
 
 (defun tidy-org-buffer ()
   "Perform cosmetic fixes to the current org buffer."
@@ -388,7 +374,7 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
 (hook-fn 'org-mode-hook
   (add-hook 'before-save-hook 'tidy-org-buffer nil t))
 
-(defun cb-org:copy-subtree-to ()
+(defun org-copy-subtree-to ()
   "Create a duplicate of the current subtree at the given heading."
   (interactive "*")
   (atomic-change-group
@@ -445,6 +431,22 @@ Do not change habits, scheduled items or repeating todos."
   (let ((r (buffer-substring beg end)))
     (delete-region (region-beginning) (region-end))
     (insert (format "@@latex:%s@@" r))))
+
+;;; Custom keyboard commands
+
+(defun cb-org:ctrl-c-ctrl-k (&optional n)
+  "Kill subtrees, unless we're in a special buffer where it should cancel."
+  (interactive "p")
+  (if (s-starts-with? "*Org" (buffer-name))
+      (org-kill-note-or-show-branches)
+    (org-cut-subtree n)))
+
+(defun cb-org:ctrl-c-ret ()
+  "Call `org-table-hline-and-move' or `org-insert-todo-heading' dep. on context."
+  (interactive)
+  (cond
+   ((org-at-table-p) (call-interactively 'org-table-hline-and-move))
+   (t (call-interactively 'org-insert-todo-heading))))
 
 ;;; Key bindings
 

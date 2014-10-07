@@ -360,7 +360,7 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
   "L"   'org-end-of-line ; smarter behaviour on headlines etc.
   "t"   'org-todo ; mark a TODO item as DONE
   ",a"  'org-attach
-  ",c"  'cb-org:copy-subtree-to
+  ",c"  'org-copy-subtree-to
   ",d"  'org-cut-special
   ",e"  'org-export-dispatch
   ",n"  'outline-next-visible-heading
