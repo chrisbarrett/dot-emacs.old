@@ -168,13 +168,18 @@ Return a list of the function's results."
   (save-excursion
     (org-back-to-heading)
     (let ((acc)
-          (level (org-current-level)))
+          (parent-level (org-current-level)))
 
       (outline-next-heading)
-      (unless (equal level (org-current-level))
-        (push (funcall fn) acc)
-        (while (outline-get-next-sibling)
-          (push (funcall fn) acc)))
+      (let ((child-level (org-current-level)))
+        ;; If the next heading is not a child, there are no child headings.
+        (unless (equal parent-level child-level)
+          (push (funcall fn) acc)
+          ;; Continue to walk headings at this level.
+          (while (let ((start (point)))
+                   (org-forward-heading-same-level nil t)
+                   (not (equal start (point))))
+            (push (funcall fn) acc))))
 
       (nreverse acc))))
 
