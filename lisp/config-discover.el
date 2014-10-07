@@ -304,6 +304,8 @@
 
 ;;; Org
 
+(require 'config-orgmode)
+
 (discover-add-context-menu
  :bind "<f7>"
  :context-menu

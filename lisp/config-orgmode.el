@@ -34,6 +34,8 @@
 (require 'config-modegroups)
 (require 'config-theme)
 (require 'org)
+(require 'org-capture)
+(require 'org-work)
 (autoload 'org-agenda-filter-apply "org-agenda")
 (autoload 'org-is-habit-p "org-habit")
 
@@ -209,7 +211,7 @@
     (ignore-errors (diminish it))))
 
 (declare-modal-executor org-agenda-fullscreen
-  :command (if (true? cb-org:at-work?)
+  :command (if (true? org-work-at-work?)
                (org-agenda current-prefix-arg "w")
              (org-agenda current-prefix-arg "A")))
 
@@ -239,6 +241,8 @@
   "If the minibuffer is active, exit before prompting for a note."
   (when (minibufferp (window-buffer (selected-window)))
     (other-window 1)))
+
+;;; Utilities
 
 (defun cb-org:project? ()
   "Any task with a todo keyword subtask"
@@ -272,22 +276,6 @@
             (setq has-subtask t))))
       (and is-a-task (not has-subtask)))))
 
-(defun cb-org:mark-next-parent-tasks-todo ()
-  "Visit each parent task and change state to TODO"
-  (let ((mystate (or (and (fboundp 'org-state)
-                          state)
-                     (nth 2 (org-heading-components)))))
-    (when mystate
-      (save-excursion
-        (while (org-up-heading-safe)
-          (when (-contains? '("NEXT" "WAITING" "MAYBE")
-                            (nth 2 (org-heading-components)))
-            (org-todo "TODO")))))))
-
-(hook-fns '(org-after-todo-state-change-hook org-clock-in-hook)
-  :append t
-  (cb-org:mark-next-parent-tasks-todo))
-
 ;;; Work
 
 (defun cb-org:refresh-agenda-when-toggling-work ()
@@ -295,7 +283,8 @@
   (when (derived-mode-p 'org-agenda-mode)
     (executor:org-agenda-fullscreen)))
 
-(add-hook 'cow-state-changed-hook 'cb-org:refresh-agenda-when-toggling-work)
+(add-hook 'org-work-state-changed-hook 'cb-org:refresh-agenda-when-toggling-work)
+(add-hook 'after-init-hook 'org-work-maybe-start-work)
 
 ;;; Attachments
 
@@ -334,6 +323,26 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
           (dired attach-dir)
         (message "File \"%s\" is now a task attachment." basename)))))
 
+;;; Tidy buffer before save
+
+(defun tidy-org-buffer ()
+  "Perform cosmetic fixes to the current org buffer."
+  (save-restriction
+    (org-table-map-tables 'org-table-align 'quiet)
+    ;; Realign tags.
+    (org-set-tags 4 t)
+    ;; Remove empty properties drawers.
+    (save-excursion
+      (goto-char (point-min))
+      (while (search-forward-regexp ":PROPERTIES:" nil t)
+        (save-excursion
+          (org-remove-empty-drawer-at "PROPERTIES" (match-beginning 0)))))))
+
+(hook-fn 'org-mode-hook
+  (add-hook 'before-save-hook 'tidy-org-buffer nil t))
+
+;;; Tree editing
+
 (defun org-narrow-to-subtree-content ()
   "Narrow to the content of the subtree.  Excludes the heading line."
   (widen)
@@ -356,24 +365,6 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
   (when (called-interactively-p nil)
     (message "Subtree written to %s" dest)))
 
-;;; Tidy buffer before save
-
-(defun tidy-org-buffer ()
-  "Perform cosmetic fixes to the current org buffer."
-  (save-restriction
-    (org-table-map-tables 'org-table-align 'quiet)
-    ;; Realign tags.
-    (org-set-tags 4 t)
-    ;; Remove empty properties drawers.
-    (save-excursion
-      (goto-char (point-min))
-      (while (search-forward-regexp ":PROPERTIES:" nil t)
-        (save-excursion
-          (org-remove-empty-drawer-at "PROPERTIES" (match-beginning 0)))))))
-
-(hook-fn 'org-mode-hook
-  (add-hook 'before-save-hook 'tidy-org-buffer nil t))
-
 (defun org-copy-subtree-to ()
   "Create a duplicate of the current subtree at the given heading."
   (interactive "*")
@@ -381,11 +372,6 @@ METHOD may be `cp', `mv', `ln', or `lns' default taken from
     (org-copy-subtree)
     (org-clone-subtree-with-time-shift 1 '(16))
     (call-interactively 'org-refile)))
-
-(hook-fn 'org-after-todo-statistics-hook
-  :arglist (n-done n-not-done)
-  (let (org-log-done org-log-states) ; turn off logging
-    (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
 
 ;;; Cascade TODO state changes.
 
@@ -403,6 +389,28 @@ Do not change habits, scheduled items or repeating todos."
           (org-todo "NEXT"))))))
 
 (add-hook 'org-after-todo-state-change-hook 'cb-org:set-next-todo-state)
+
+(defun cb-org:children-done-parent-done (n-done n-todo)
+  "Mark the parent task as done when all children are completed."
+  (let (org-log-done org-log-states) ; turn off logging
+    (org-todo (if (zerop n-todo) "DONE" "TODO"))))
+
+(add-hook 'org-after-todo-statistics-hook 'cb-org:children-done-parent-done)
+
+(defun cb-org:mark-next-parent-tasks-todo ()
+  "Visit each parent task and change state to TODO."
+  (let ((mystate (or (and (fboundp 'org-state)
+                          state)
+                     (nth 2 (org-heading-components)))))
+    (when mystate
+      (save-excursion
+        (while (org-up-heading-safe)
+          (when (-contains? '("NEXT" "WAITING" "MAYBE")
+                            (nth 2 (org-heading-components)))
+            (org-todo "TODO")))))))
+
+(add-hook 'org-after-todo-state-change-hook 'cb-org:mark-next-parent-tasks-todo nil t)
+(add-hook 'org-clock-in-hook 'cb-org:mark-next-parent-tasks-todo nil t)
 
 ;;; Show images in org buffers
 
@@ -452,11 +460,10 @@ Do not change habits, scheduled items or repeating todos."
 
 (bind-key* "C-c a" 'org-agenda)
 (bind-key* "C-c l" 'org-store-link)
-(bind-key* "<f9>" 'executor:org-agenda-fullscreen)
-(bind-key* "<f12>" 'cb-org:toggle-at-work)
+(bind-key* "<f9>"  'executor:org-agenda-fullscreen)
+(bind-key* "<f12>" 'org-work-toggle-at-work)
 
 (define-key org-mode-map (kbd "C-c C-.") 'org-time-stamp-inactive)
-(define-key org-mode-map (kbd "C-c o")   'org-attach-open)
 (define-key org-mode-map (kbd "M-p")     'org-metaup)
 (define-key org-mode-map (kbd "M-n")     'org-metadown)
 (define-key org-mode-map (kbd "C-c c")   'org-columns)
