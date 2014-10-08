@@ -211,7 +211,7 @@
     (ignore-errors (diminish it))))
 
 (declare-modal-executor org-agenda-fullscreen
-  :command (if (true? org-work-at-work?)
+  :command (if (true? org-work--at-work?)
                (org-agenda current-prefix-arg "w")
              (org-agenda current-prefix-arg "A")))
 
