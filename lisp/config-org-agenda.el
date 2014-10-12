@@ -137,16 +137,6 @@
 (hook-fn 'org-agenda-mode-hook
   (run-hooks 'org-agenda-customise-window-hook))
 
-(defvar cb-org:show-agenda-idle-delay (* 30 60)
-  "The delay in seconds after which to pop up today's agenda.")
-
-(defvar cb-org:show-agenda-idle-timer
-  (unless noninteractive
-    (run-with-idle-timer cb-org:show-agenda-idle-delay t
-                         'executor:org-agenda-fullscreen))
-  "Idle timer that will display today's org agenda.
-See `cb-org:show-agenda-idle-delay'.")
-
 (defun cb-org:exclude-tasks-on-hold (tag)
   (and (equal tag "hold") (concat "-" tag)))
 

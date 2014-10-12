@@ -36,8 +36,14 @@
 (save-window-excursion
   (appt-activate +1))
 
+(defun cb-org:check-appt ()
+  "Synchronise org appointments with appt the next time Emacs is idle."
+  (run-with-idle-timer 5 nil (lambda ()
+                               (org-agenda-to-appt t)
+                               (appt-check))))
+
 (defvar cb-org:appt-update-timer
-  (run-with-idle-timer 240 t 'org-agenda-to-appt t))
+  (run-with-timer 240 t 'cb-org:check-appt))
 
 (provide 'config-appt)
 
