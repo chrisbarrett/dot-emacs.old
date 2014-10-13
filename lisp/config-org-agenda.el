@@ -68,12 +68,12 @@
                        ((org-agenda-overriding-header "Next Actions")))
             (agenda ""
                     ((org-agenda-span 'fortnight)))
-            (todo "AWAITING|ORGANISE_IN|COLLECT"
-                  ((org-agenda-overriding-header "Incoming")))
+            (todo "WAITING|ORGANISE_IN|COLLECT"
+                  ((org-agenda-overriding-header "Incoming/Waiting")))
             (todo "TODO_OUT|READY|ORGANISE_OUT"
                   ((org-agenda-overriding-header "Outgoing")))
-            (tags-todo "-someday/WAITING"
-                       ((org-agenda-overriding-header "Waiting"))))
+            (stuck "")
+            )
            ((org-agenda-tag-filter-preset
              '("+@work"))
             (org-agenda-files (list org-work-file))

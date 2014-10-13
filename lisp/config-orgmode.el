@@ -76,7 +76,7 @@
  '(org-reverse-note-order nil)
  '(org-startup-indented t)
  '(org-startup-with-inline-images t)
- '(org-stuck-projects '("+project&TODO={.+}/-DONE-CANCELLED" ("NEXT" "TODO") nil "\\<IGNORE\\>"))
+ '(org-stuck-projects '("+TODO={TODO_OUT}/-MAYBE-DONE-CANCELLED-RECEIVED" ("NEXT") nil "\\<IGNORE\\>"))
  '(org-support-shift-select t)
  '(org-todo-keywords '((type "MAYBE(m)" "TODO(t)" "NEXT(n)" "WAITING(w@/!)" "|" "DONE(d!)" "CANCELLED(c@)" "DELEGATED(D@)")))
  '(org-hierarchical-todo-statistics nil)
