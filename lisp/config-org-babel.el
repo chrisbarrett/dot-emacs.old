@@ -35,6 +35,7 @@
    (ledger . t)
    (C . t)
    (ditaa . t)
+   (java . t)
    (sh . t)
    (calc . t)
    (scala . t)

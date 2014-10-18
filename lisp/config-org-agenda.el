@@ -58,6 +58,7 @@
             (agenda "")
             (todo "WAITING"
                   ((org-agenda-overriding-header "Waiting")))
+            (stuck "")
             (tags-todo "media/NEXT"
                        ((org-agenda-overriding-header "Media"))))
            ((org-agenda-tag-filter-preset
@@ -75,7 +76,7 @@
             (stuck "")
             )
            ((org-agenda-tag-filter-preset
-             '("+@work"))
+             '("+@work" "-ignore"))
             (org-agenda-files (list org-work-file))
             (org-deadline-warning-days 0)
             (org-agenda-todo-ignore-deadlines 'far)
