@@ -1,6 +1,5 @@
-# -*- mode: snippet; require-final-newline: nil -*-
+# key: sqlite
 # name: src sqlite
-# key: sql
 # condition: (cbyas:bol?)
 # --
 #+header: :db ${1:name} :header :csv :nullvalue NULL
