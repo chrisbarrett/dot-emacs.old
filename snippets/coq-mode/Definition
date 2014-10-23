@@ -1,7 +1,7 @@
 # key: d
 # name: Definition
+# expand-env: ((yas-indent-line (quote fixed)))
 # condition: (cbyas:bol?)
-# expand-env: ((yas-indent-line 'fixed))
 # --
-Definition ${1:fname} ${2:params} : ${3:T} :=
+Definition ${1:name and params} : ${3:T} :=
   $0.

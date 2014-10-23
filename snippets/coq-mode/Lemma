@@ -3,7 +3,8 @@
 # expand-env: ((yas-indent-line (quote fixed)))
 # condition: (cbyas:bol?)
 # --
-Lemma ${1:name} : forall $0.
+Lemma ${1:name} :
+  forall $0.
 Proof.
   intros.
   reflexivity.
