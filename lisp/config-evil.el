@@ -59,6 +59,7 @@
 (evil-set-initial-state 'doc-view-mode 'normal)
 (evil-set-initial-state 'idris-info-mode 'emacs)
 (evil-set-initial-state 'vkill-mode 'emacs)
+(evil-set-initial-state 'eww-mode 'emacs)
 
 ;;; HJKL bindings
 
@@ -66,6 +67,7 @@
 (evil-add-hjkl-bindings occur-mode-map)
 (evil-add-hjkl-bindings archive-mode-map)
 (evil-add-hjkl-bindings package-menu-mode-map)
+(evil-add-hjkl-bindings eww-mode-map)
 
 ;;; Configure evil-numbers
 
