@@ -27,9 +27,6 @@
 ;;; Code:
 
 (require 'utils-common)
-
-(cb:install-package 'dired-details t)
-(dired-details-install)
 (require 'dired)
 (require 'dired-x)
 
@@ -54,6 +51,7 @@
  '(dired-details-hidden-string "... "))
 
 (add-hook 'dired-mode-hook 'dired-omit-mode)
+(add-hook 'dired-mode-hook 'dired-hide-details-mode)
 
 (defun cb:line-is-dired-header? ()
   (equal 'dired-header
