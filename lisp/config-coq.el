@@ -35,7 +35,8 @@
 
 (custom-set-variables
  '(proof-splash-enable nil)
- '(coq-compile-before-require t))
+ '(coq-compile-before-require t)
+ '(coq-load-path '("src")))
 
 (custom-set-faces
  '(proof-eager-annotation-face
