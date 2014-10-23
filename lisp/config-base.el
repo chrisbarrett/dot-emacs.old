@@ -282,6 +282,9 @@ Can indent backwards if there is only whitespace."
 (bind-key*  "M-/"            'hippie-expand)
 (bind-key*  "S-SPC"          'execute-extended-command)
 
+(when (fboundp 'cycle-spacing)
+  (global-set-key (kbd "M-SPC") 'cycle-spacing))
+
 ;;; Convenience aliases
 
 (defalias 'bb   'bury-buffer)
