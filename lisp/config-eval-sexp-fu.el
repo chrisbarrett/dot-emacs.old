@@ -34,13 +34,10 @@
 (custom-set-variables
  '(eval-sexp-fu-flash-duration 0.2))
 
-(custom-set-faces
- `(eval-sexp-fu-flash-error
-   ((t (:background ,solarized-hl-orange)))))
-
 (add-hook 'cb:lisp-modes-hook 'turn-on-eval-sexp-fu-flash-mode)
 
-(add-to-list 'face-remapping-alist '(eval-sexp-fu-flash . intense-flash))
+(add-to-list 'face-remapping-alist '(eval-sexp-fu-flash . cb:bg-flash))
+(add-to-list 'face-remapping-alist '(eval-sexp-fu-flash-error . cb:bg-flash-red))
 
 (provide 'config-eval-sexp-fu)
 

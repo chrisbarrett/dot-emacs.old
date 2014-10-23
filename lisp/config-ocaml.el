@@ -40,7 +40,7 @@
 (custom-set-variables
  '(merlin-default-flags "-w @A-4-33-41-42-43-34-44"))
 
-(add-to-list 'face-remapping-alist '(merlin-type-face . intense-flash))
+(add-to-list 'face-remapping-alist '(merlin-type-face . cb:bg-flash))
 
 (autoload 'utop "utop" "Toplevel for OCaml" t)
 (autoload 'utop-setup-ocaml-buffer "utop" "Toplevel for OCaml" t)

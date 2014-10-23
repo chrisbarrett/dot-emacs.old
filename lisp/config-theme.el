@@ -69,10 +69,17 @@
 
 ;;; Custom faces
 
-(defface intense-flash
-  `((((class color) (background dark))  :background "#073642")
-    (((class color) (background light)) :background "#eee8d5" ))
-  "Face for intense highlighted text."
+(defface cb:bg-flash
+  '((((class color) (background light))
+     :background "darkseagreen2")
+    (((class color) (background dark))
+     :background "royalblue4"))
+  "Face for flashing with a green background."
+  :group 'cb-faces)
+
+(defface cb:bg-flash-red
+  '((t (:background "rosybrown1")))
+  "Face for flashing with a red background."
   :group 'cb-faces)
 
 ;;; Automatically load last theme.
