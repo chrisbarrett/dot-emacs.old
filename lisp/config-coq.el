@@ -171,7 +171,7 @@
     (yas-insert-first-snippet (C (~ equal "match-case") yas--template-name)))
 
    ;; Insert new case below the current type decl.
-   ((s-matches? (rx bol (* space) "Inductive") (current-line))
+   ((s-matches? (rx bol (* space) (? "Co") "Inductive") (current-line))
     (cb-coq:newline-and-insert-at-col
      (save-excursion
        (goto-char (line-beginning-position))
