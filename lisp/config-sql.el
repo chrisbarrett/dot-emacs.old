@@ -40,8 +40,7 @@
   "Produce a regexp matching SQL keywords for the current SQL product."
   (-map 'car
         (or (true? sql-mode-font-lock-keywords)
-            (sql-add-product-keywords (or (true? sql-product) 'ansi)
-                                      '()))))
+            (sql-add-product-keywords (or (true? sql-product) 'ansi) nil))))
 
 (defun cb-sql:after-sql-keyword? ()
   "Non-nil if point is after an SQL keyword."
