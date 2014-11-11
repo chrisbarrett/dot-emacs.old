@@ -59,11 +59,22 @@
            (upcase-word -1))))
   (insert " "))
 
+;;; Interactive buffer
+
+(defun cb-sql:switch-back-to-sql ()
+  "Switch to the last SQL buffer."
+  (interactive)
+  (-when-let (buf (--first-buffer (derived-mode-p 'sql-mode)))
+    (pop-to-buffer buf)))
+
 ;;; Set key bindings
 
 (after 'sql
   (define-key sql-mode-map (kbd "SPC") 'cb-sql:electric-space)
   (define-key sql-interactive-mode-map (kbd "SPC") 'cb-sql:electric-space)
+
+  (define-key sql-mode-map (kbd "C-c C-z") 'sql-product-interactive)
+  (define-key sql-interactive-mode-map (kbd "C-c C-z") 'cb-sql:switch-back-to-sql)
   )
 
 (provide 'config-sql)
