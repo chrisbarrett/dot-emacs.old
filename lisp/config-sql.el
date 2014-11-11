@@ -76,6 +76,8 @@
 
   (define-key sql-mode-map (kbd "C-c C-z") 'sql-product-interactive)
   (define-key sql-interactive-mode-map (kbd "C-c C-z") 'cb-sql:switch-back-to-sql)
+
+  (define-key sql-interactive-mode-map (kbd "<backspace>") 'sp-backward-delete-char)
   )
 
 (provide 'config-sql)
