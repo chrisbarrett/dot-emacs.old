@@ -51,14 +51,24 @@
             (rx-to-string `(and (regexp ,opts) (* space)))))
          (cb-sql:keywords)))
 
-(defun cb-sql:electric-space ()
-  "Upcase the preceding SQL keyword."
-  (interactive)
+(defun cb-sql:upcase-preceding-keyword ()
+  "Upcase the preceding SQL keyword unless point is in a string or comment."
   (let ((in-string-or-comment? (nth 8 (syntax-ppss))))
     (cond (in-string-or-comment?)
           ((cb-sql:after-sql-keyword?)
-           (upcase-word -1))))
+           (upcase-word -1)))))
+
+(defun cb-sql:electric-space ()
+  "Upcase the preceding SQL keyword and insert a space."
+  (interactive)
+  (cb-sql:upcase-preceding-keyword)
   (insert " "))
+
+(defun cb-sql:comment-indent-newline ()
+  "Upcase the preceding SQL keyword and insert a new line."
+  (interactive)
+  (cb-sql:upcase-preceding-keyword)
+  (comment-indent-new-line))
 
 ;;; Interactive buffer
 
@@ -73,6 +83,7 @@
 (after 'sql
   (define-key sql-mode-map (kbd "SPC") 'cb-sql:electric-space)
   (define-key sql-interactive-mode-map (kbd "SPC") 'cb-sql:electric-space)
+  (define-key sql-mode-map (kbd "RET") 'cb-sql:comment-indent-newline)
 
   (define-key sql-mode-map (kbd "C-c C-z") 'sql-product-interactive)
   (define-key sql-interactive-mode-map (kbd "C-c C-z") 'cb-sql:switch-back-to-sql)
