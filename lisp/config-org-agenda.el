@@ -79,7 +79,7 @@
              '("+@work" "-ignore"))
             (org-agenda-files (list org-work-file))
             (org-deadline-warning-days 0)
-            (org-agenda-todo-ignore-deadlines 'far)
+            (org-agenda-todo-ignore-deadlines 14)
             (org-agenda-todo-ignore-scheduled 'all)
             (org-agenda-hide-tags-regexp
              (regexp-opt
