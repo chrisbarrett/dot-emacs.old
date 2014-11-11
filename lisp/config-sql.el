@@ -28,12 +28,43 @@
 
 (require 'utils-common)
 
-(cb:declare-package-installer sql
-  :match (rx ".sql" eos)
-  :packages (sqlup-mode))
+;;; Configure smart operators
 
-(add-hook 'sql-mode-hook 'sqlup-mode)
-(add-hook 'sql-interactive-mode-hook 'sqlup-mode)
+(super-smart-ops-configure-for-mode 'sql-mode
+  :custom '(("," . cb:comma-then-space)))
+
+
+;;; Automatically upcase SQL keywords on SPC
+
+(defun cb-sql:keywords ()
+  "Produce a regexp matching SQL keywords for the current SQL product."
+  (-map 'car
+        (or (true? sql-mode-font-lock-keywords)
+            (sql-add-product-keywords (or (true? sql-product) 'ansi)
+                                      '()))))
+
+(defun cb-sql:after-sql-keyword? ()
+  "Non-nil if point is after an SQL keyword."
+  (-any? (lambda (opts)
+           (thing-at-point-looking-at
+            (rx-to-string `(and (regexp ,opts) (* space)))))
+         (cb-sql:keywords)))
+
+(defun cb-sql:electric-space ()
+  "Upcase the preceding SQL keyword."
+  (interactive)
+  (let ((in-string-or-comment? (nth 8 (syntax-ppss))))
+    (cond (in-string-or-comment?)
+          ((cb-sql:after-sql-keyword?)
+           (upcase-word -1))))
+  (insert " "))
+
+;;; Set key bindings
+
+(after 'sql
+  (define-key sql-mode-map (kbd "SPC") 'cb-sql:electric-space)
+  (define-key sql-interactive-mode-map (kbd "SPC") 'cb-sql:electric-space)
+  )
 
 (provide 'config-sql)
 
