@@ -33,6 +33,8 @@
 (super-smart-ops-configure-for-mode 'sql-mode
   :custom '(("," . cb:comma-then-space)))
 
+(super-smart-ops-configure-for-mode 'sql-interactive-mode
+  :custom '(("," . cb:comma-then-space)))
 
 ;;; Automatically upcase SQL keywords on SPC
 
