@@ -270,6 +270,7 @@ TEXT is the content of the docstring."
                         "cl-defsubst"
                         "cl-deftype"))
          (+ space)
+         (? "(")
          (group-n 2 (+? anything) symbol-end))
     (1 font-lock-keyword-face)
     (2 font-lock-function-name-face))
