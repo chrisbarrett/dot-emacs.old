@@ -371,6 +371,8 @@ Changes the selected buffer."
       (save-restriction
         (narrow-to-region (line-beginning-position) (point))
         (atomic-change-group
+          (when (thing-at-point-looking-at (rx (not space) (* space)))
+            (delete-horizontal-space t))
           (insert-char ?\,)
           (just-one-space))))))
 
