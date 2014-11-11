@@ -78,8 +78,7 @@
  '(org-startup-with-inline-images t)
  '(org-stuck-projects '("-ignore+TODO={TODO_OUT\\|PROJECT}/-MAYBE-DONE-CANCELLED" ("NEXT") nil "\\<IGNORE\\>"))
  '(org-support-shift-select t)
- '(org-todo-keywords '((type "MAYBE(m)" "TODO(t)" "NEXT(n)" "|" "DONE(d!)" "CANCELLED(c@)")
-                       (type "WAITING(w@/!)")
+ '(org-todo-keywords '((type "MAYBE(m)" "TODO(t)" "NEXT(n)" "WAITING(w@/!)" "|" "DONE(d!)" "CANCELLED(c@)")
                        (type "PROJECT(p)")))
  '(org-hierarchical-todo-statistics nil)
  '(org-checkbox-hierarchical-statistics t)
@@ -175,32 +174,13 @@
 
 ;;; Special faces
 
-(defface org-todo-next
-  `((((background dark))
-     (:foreground ,solarized-hl-orange :bold t))
-    (((background light))
-     (:foreground ,solarized-hl-orange :bold t))
-    (t
-     (:inherit org-todo)))
-  "Face for todos with the NEXT label."
-  :group 'org-faces)
-
-(defface org-todo-out
-  `((t (:foreground ,solarized-hl-orange :bold t :inherit org-todo)))
-  "Face for TODO_OUT keyword."
-  :group 'org-faces)
-
-(defface org-todo-ready
-  `((t (:foreground ,solarized-hl-blue :bold t :inherit org-todo)))
-  "Face for TODO_OUT keyword."
-  :group 'org-faces)
-
 (setq org-todo-keyword-faces
-      '(("NEXT" . org-todo-next)
-        ("ORGANISE_IN" . org-todo-next)
-        ("ORGANISE_OUT" . org-todo-next)
-        ("TODO_OUT" . org-todo-out)
-        ("READY" . org-todo-ready)))
+      `(("NEXT" . ,solarized-hl-orange)
+        ("ORGANISE_IN" . ,solarized-hl-orange)
+        ("ORGANISE_OUT" . ,solarized-hl-orange)
+        ("TODO_OUT" . ,solarized-hl-orange)
+        ("READY" . ,solarized-hl-blue)
+        ("WAITING" . ,solarized-hl-magenta)))
 
 ;;; Auxiliary modes
 
