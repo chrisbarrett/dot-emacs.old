@@ -1,0 +1,8 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: right outer join
+# key: roj
+# binding: direct-keybinding
+# expand-env: ((yas-indent-line 'fixed) (yas-wrap-around-region 't))
+# --
+RIGHT OUTER JOIN ${1:rel}
+  $0

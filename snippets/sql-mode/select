@@ -1,0 +1,7 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: select
+# key: s
+# binding: direct-keybinding
+# --
+SELECT ${1:attrs}
+FROM $0
