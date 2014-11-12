@@ -48,7 +48,7 @@
   "Non-nil if point is after an SQL keyword."
   (-any? (lambda (opts)
            (thing-at-point-looking-at
-            (rx-to-string `(and (regexp ,opts) (* space)))))
+            (rx-to-string `(and symbol-start (regexp ,opts) symbol-end (* space)))))
          (cb-sql:keywords)))
 
 (defun cb-sql:upcase-preceding-keyword ()
