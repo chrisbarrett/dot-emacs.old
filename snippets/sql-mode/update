@@ -1,7 +1,7 @@
 # -*- mode: snippet; require-final-newline: nil -*-
-# name: left outer join
-# key: loj
+# name: update
+# key: up
 # binding: direct-keybinding
 # --
-LEFT OUTER JOIN ${1:rel}
-$0
+UPDATE ${1:table}
+SET ${2:row} = $0

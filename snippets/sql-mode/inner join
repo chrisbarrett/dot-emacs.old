@@ -2,8 +2,6 @@
 # name: inner join
 # key: ij
 # binding: direct-keybinding
-# condition: (cbyas:bol?)
-# expand-env: ((yas-indent-line 'fixed) (yas-wrap-around-region 't))
 # --
 INNER JOIN ${1:rel}
   $0

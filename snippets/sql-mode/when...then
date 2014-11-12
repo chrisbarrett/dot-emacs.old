@@ -1,7 +1,6 @@
 # -*- mode: snippet; require-final-newline: nil -*-
-# name: left outer join
-# key: loj
+# name: when...then
+# key: wh
 # binding: direct-keybinding
 # --
-LEFT OUTER JOIN ${1:rel}
-$0
+WHEN ${1:test} THEN $0
