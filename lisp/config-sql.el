@@ -27,6 +27,7 @@
 ;;; Code:
 
 (require 'utils-common)
+(require 'utils-buffers)
 
 ;;; Configure smart operators
 
