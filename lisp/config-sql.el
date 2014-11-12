@@ -28,6 +28,7 @@
 
 (require 'utils-common)
 (require 'utils-buffers)
+(require 'sql-indentation)
 
 ;;; Configure smart operators
 
