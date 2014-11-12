@@ -48,10 +48,12 @@
 
 (defun cb-sql:after-sql-keyword? ()
   "Non-nil if point is after an SQL keyword."
-  (-any? (lambda (opts)
-           (thing-at-point-looking-at
-            (rx-to-string `(and symbol-start (regexp ,opts) symbol-end (* space)))))
-         (cb-sql:keywords)))
+  (save-restriction
+    (narrow-to-region (line-beginning-position) (point))
+    (-any? (lambda (opts)
+             (thing-at-point-looking-at
+              (rx-to-string `(and symbol-start (regexp ,opts) symbol-end (* space)))))
+           (cb-sql:keywords))))
 
 (defun cb-sql:upcase-preceding-keyword ()
   "Upcase the preceding SQL keyword unless point is in a string or comment."
