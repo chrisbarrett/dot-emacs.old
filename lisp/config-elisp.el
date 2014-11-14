@@ -294,7 +294,7 @@ TEXT is the content of the docstring."
    (,(rx bol (* space) "("
          (group-n 1
                   symbol-start
-                  (* (not space))
+                  (* (not (any "(" space)))
                   (or "declare" "define" "extend" "gentest")
                   (+ (not space))
                   symbol-end)
