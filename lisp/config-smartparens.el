@@ -95,6 +95,13 @@ Prefix ARG is passed to `sp-up-sexp'."
     (kill-whole-line))
    (t
     (call-interactively 'sp-kill-sexp)
+
+    ;; Delete extra spaces backwards.
+    (when (s-matches? (rx (not space))
+                      (buffer-substring (line-beginning-position) (point)))
+      (delete-horizontal-space t))
+
+    ;; Join lines cleanly.
     (when (s-blank? (s-trim (current-line)))
       (let ((pt (point)))
         (join-line)
