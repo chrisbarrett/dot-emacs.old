@@ -147,6 +147,11 @@ Insert leading padding unless at start of line or after an open round paren."
 (sp-local-pair 'text-mode                "'" "'" :actions '(:rem insert))
 (sp-local-pair 'minibuffer-inactive-mode "'" "'" :actions '(:rem insert))
 
+;;; Org
+
+(hook-fn 'org-agenda-mode-hook
+  (smartparens-mode -1))
+
 ;;; Rust
 
 (sp-with-modes 'rust-mode

@@ -378,9 +378,6 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
   ">"   'org-metaright ; indent
   )
 
-(hook-fn 'org-agenda-mode-hook
-  (smartparens-mode -1))
-
 (add-hook 'org-capture-mode-hook 'cb:maybe-evil-insert-state)
 
 (hook-fn 'org-mode-hook
