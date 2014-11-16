@@ -1,8 +1,8 @@
 # -*- mode: snippet; require-final-newline: nil -*-
-# name: update
-# key: up
+# name: foreign key constraint
+# key: fk
 # binding: direct-keybinding
 # expand-env: ((yas-indent-line 'fixed) (yas-wrap-around-region 't))
 # --
-UPDATE ${1:table}
-SET ${2:row} = $0
+CONSTRAINT fk_$1 FOREIGN KEY (${1:col})
+  REFERENCES ${2:f_table} (${3:f_col})

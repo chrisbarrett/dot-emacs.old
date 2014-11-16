@@ -1,8 +1,9 @@
 # -*- mode: snippet; require-final-newline: nil -*-
-# name: update
-# key: up
+# name: create table
+# key: ct
 # binding: direct-keybinding
 # expand-env: ((yas-indent-line 'fixed) (yas-wrap-around-region 't))
 # --
-UPDATE ${1:table}
-SET ${2:row} = $0
+CREATE TABLE ${1:name} (
+  $0
+);
