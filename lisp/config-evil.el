@@ -58,6 +58,7 @@
 (evil-set-initial-state 'haskell-error-mode 'emacs)
 (evil-set-initial-state 'doc-view-mode 'normal)
 (evil-set-initial-state 'idris-info-mode 'emacs)
+(evil-set-initial-state 'idris-prover-script-mode 'emacs)
 (evil-set-initial-state 'vkill-mode 'emacs)
 (evil-set-initial-state 'eww-mode 'emacs)
 
