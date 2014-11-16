@@ -41,10 +41,8 @@
 (put 'idris-mode 'tab-width 2)
 (put 'idris-mode 'evil-shift-width 2)
 
-(add-hook 'idris-mode-hook 'idris-indentation-mode)
-
-(after 'idris-indentation
-  (diminish 'idris-indentation-mode))
+(after 'idris-simple-indent
+  (diminish 'idris-simple-indent-mode))
 
 ;;; Advices
 
