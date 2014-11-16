@@ -120,23 +120,25 @@
    (t
     (super-smart-ops-insert "?"))))
 
-(super-smart-ops-configure-for-mode 'idris-mode
-  :add '("$")
-  :custom
-  '(("?" . cbidris:smart-question-mark)
-    ("|" . cbidris:smart-pipe)
-    ("." . cbidris:smart-dot)
-    ("," . cbidris:smart-comma)
-    (":" . cbidris:smart-colon)))
+(after 'idris-mode
+  (super-smart-ops-configure-for-mode 'idris-mode
+    :add '("$")
+    :custom
+    '(("?" . cbidris:smart-question-mark)
+      ("|" . cbidris:smart-pipe)
+      ("." . cbidris:smart-dot)
+      ("," . cbidris:smart-comma)
+      (":" . cbidris:smart-colon))))
 
-(super-smart-ops-configure-for-mode 'idris-repl-mode
-  :add '("$")
-  :custom
-  '(("?" . cbidris:smart-question-mark)
-    ("|" . cbidris:smart-pipe)
-    ("." . cbidris:smart-dot)
-    ("," . cbidris:smart-comma)
-    (":" . cbidris:smart-colon)))
+(after 'idris-repl
+  (super-smart-ops-configure-for-mode 'idris-repl-mode
+    :add '("$")
+    :custom
+    '(("?" . cbidris:smart-question-mark)
+      ("|" . cbidris:smart-pipe)
+      ("." . cbidris:smart-dot)
+      ("," . cbidris:smart-comma)
+      (":" . cbidris:smart-colon))))
 
 ;;; Font locking and faces
 
