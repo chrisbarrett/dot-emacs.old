@@ -36,7 +36,9 @@
 (add-to-list 'completion-ignored-extensions ".ibc")
 
 (custom-set-variables
- '(idris-warnings-printing 'warnings-repl))
+ '(idris-warnings-printing 'warnings-repl)
+ '(idris-repl-animate nil)
+ '(idris-repl-prompt-style 'long))
 
 (put 'idris-mode 'tab-width 2)
 (put 'idris-mode 'evil-shift-width 2)
