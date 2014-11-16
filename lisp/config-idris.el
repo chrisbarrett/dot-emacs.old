@@ -44,6 +44,18 @@
 (after 'idris-simple-indent
   (diminish 'idris-simple-indent-mode))
 
+(defvar idris-mode-hook
+  '(turn-on-idris-simple-indent
+    idris-enable-clickable-imports
+    turn-on-eldoc-mode
+    idris-define-loading-keys
+    idris-define-docs-keys
+    idris-define-editing-keys
+    idris-define-general-keys
+    idris-define-ipkg-keys
+    idris-define-ipkg-opening-keys
+    idris-define-evil-keys))
+
 ;;; Advices
 
 (defadvice idris-mode (before start-process activate)
@@ -114,31 +126,29 @@
   "Insert a ? char as an operator, unless point is after an = sign."
   (interactive)
   (cond
-   ((s-matches? (rx "=" (* space) eol) (current-line))
+   ((s-matches? (rx "=" (* space) eol) (buffer-substring (line-beginning-position) (point)))
     (just-one-space)
     (insert "?"))
    (t
     (super-smart-ops-insert "?"))))
 
-(after 'idris-mode
-  (super-smart-ops-configure-for-mode 'idris-mode
-    :add '("$")
-    :custom
-    '(("?" . cbidris:smart-question-mark)
-      ("|" . cbidris:smart-pipe)
-      ("." . cbidris:smart-dot)
-      ("," . cbidris:smart-comma)
-      (":" . cbidris:smart-colon))))
+(super-smart-ops-configure-for-mode 'idris-mode
+  :add '("$")
+  :custom
+  '(("?" . cbidris:smart-question-mark)
+    ("|" . cbidris:smart-pipe)
+    ("." . cbidris:smart-dot)
+    ("," . cbidris:smart-comma)
+    (":" . cbidris:smart-colon)))
 
-(after 'idris-repl
-  (super-smart-ops-configure-for-mode 'idris-repl-mode
-    :add '("$")
-    :custom
-    '(("?" . cbidris:smart-question-mark)
-      ("|" . cbidris:smart-pipe)
-      ("." . cbidris:smart-dot)
-      ("," . cbidris:smart-comma)
-      (":" . cbidris:smart-colon))))
+(super-smart-ops-configure-for-mode 'idris-repl-mode
+  :add '("$")
+  :custom
+  '(("?" . cbidris:smart-question-mark)
+    ("|" . cbidris:smart-pipe)
+    ("." . cbidris:smart-dot)
+    ("," . cbidris:smart-comma)
+    (":" . cbidris:smart-colon)))
 
 ;;; Font locking and faces
 
