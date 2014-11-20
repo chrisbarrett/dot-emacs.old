@@ -58,6 +58,7 @@
 
 (evil-set-initial-state 'term-mode 'emacs)
 (evil-set-initial-state 'message-mode 'insert)
+(evil-set-initial-state 'git-commit-mode 'insert)
 (evil-set-initial-state 'magit-commit-mode 'normal)
 (evil-set-initial-state 'git-rebase-mode 'insert)
 (evil-set-initial-state 'eshell-mode 'insert)
