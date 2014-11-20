@@ -32,8 +32,14 @@
 (cb:install-package 'evil t)
 (cb:install-package 'evil-numbers t)
 (cb:install-package 'evil-surround t)
+(cb:install-package 'evil-leader t)
+(global-evil-leader-mode)
 (evil-mode +1)
 (global-evil-surround-mode +1)
+
+;;; Evil-leader
+
+(evil-leader/set-leader ",")
 
 ;;; Autoloads
 
@@ -567,22 +573,7 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
 (evil-global-set-key 'normal "(" 'sp-backward-up-sexp)
 (evil-global-set-key 'normal ")" 'sp-forward-sexp)
 
-(evil-define-state paren "Paren editing state."
-  :tag " <P> "
-  :message "-- PAREN --"
-  :suppress-keymap t
-  :cursor 'hollow)
-
-(hook-fn 'evil-paren-state-entry-hook
-  (when (equal last-command 'evil-end-of-line)
-    (forward-char)))
-
-;; Configure entry and exit from paren state.
-(evil-global-set-key 'normal (kbd ",") 'evil-paren-state)
-(define-key evil-paren-state-map (kbd "ESC") 'evil-normal-state)
-(define-key evil-paren-state-map (kbd "C-g") 'evil-normal-state)
-;; Define paren state keys.
-(evil-global-set-keys 'paren
+(evil-leader/set-key
   "A" 'sp-add-to-previous-sexp
   "a" 'sp-add-to-next-sexp
   "B" 'sp-backward-barf-sexp
@@ -593,8 +584,8 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
   "D" 'sp-backward-kill-sexp
   "d" 'sp-kill-sexp
   "e" 'sp-emit-sexp
-  "G" 'sp-end-of-sexp
-  "g" 'sp-beginning-of-sexp
+  "l" 'sp-end-of-sexp
+  "h" 'sp-beginning-of-sexp
   "j" 'sp-join-sexp
   "K" 'sp-splice-sexp-killing-backward
   "k" 'sp-splice-sexp-killing-forward
