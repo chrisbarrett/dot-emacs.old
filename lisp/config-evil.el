@@ -79,8 +79,9 @@
 
 ;;; Configure evil-numbers
 
-(define-key evil-normal-state-map (kbd "C-A")   'evil-numbers/inc-at-pt)
-(define-key evil-normal-state-map (kbd "C-S-A") 'evil-numbers/dec-at-pt)
+(evil-leader/set-key
+  "+" 'evil-numbers/inc-at-pt
+  "-" 'evil-numbers/dec-at-pt)
 
 ;;; Configure general key bindings
 
