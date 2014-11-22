@@ -1,6 +1,7 @@
-# -*- mode: snippet -*-
-# name: data
 # key: d
+# name: data
 # condition: (cbyas:bol?)
+# expand-env: ((yas-indent-line 'fixed) (yas-wrap-around-region 't))
 # --
-data ${1:Name} = $0
+data ${1:Name} = ${2:$1} $0
+  ${3:deriving (${4:Show, Eq})}

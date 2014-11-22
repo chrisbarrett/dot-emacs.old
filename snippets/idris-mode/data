@@ -1,6 +1,5 @@
-# -*- mode: snippet -*-
-# name: data
 # key: d
+# name: data
 # condition: (cbyas:bol?)
 # --
-data $0
+data ${1:ident} = ${2:Mk$1} $0

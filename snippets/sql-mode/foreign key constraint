@@ -1,8 +1,6 @@
-# -*- mode: snippet; require-final-newline: nil -*-
-# name: foreign key constraint
 # key: fk
-# binding: direct-keybinding
-# expand-env: ((yas-indent-line 'fixed) (yas-wrap-around-region 't))
+# name: foreign key constraint
+# expand-env: ((yas-indent-line (quote fixed)) (yas-wrap-around-region (quote t)))
 # --
-CONSTRAINT fk_$1 FOREIGN KEY (${1:col})
+CONSTRAINT FK_$1 FOREIGN KEY (${1:col})
   REFERENCES ${2:f_table} (${3:f_col})
