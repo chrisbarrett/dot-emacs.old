@@ -1,6 +1,6 @@
 # key: df
 # name: defface
-# condition: (cbel:bol-for-snippet?)
+# condition: (cbyas:bol?)
 # --
 (defface $1
   '((t

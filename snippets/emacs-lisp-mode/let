@@ -1,5 +1,5 @@
 # key: l
 # name: let
-# condition: (cbel:bol-for-snippet?)
+# condition: (cbyas:bol?)
 # --
 (let (($0)))

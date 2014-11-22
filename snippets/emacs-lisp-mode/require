@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: require
 # key: r
-# condition: (cbel:bol-for-snippet?)
+# condition: (cbyas:bol?)
 # --
 (require '$0)

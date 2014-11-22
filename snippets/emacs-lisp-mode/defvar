@@ -1,5 +1,5 @@
 # key: v
 # name: defvar
-# condition: (cbel:bol-for-snippet?)
+# condition: (cbyas:bol?)
 # --
 (defvar `(cbel:find-identifier-prefix)`$0)

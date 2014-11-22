@@ -110,8 +110,6 @@ falling back to the file name sans extension."
                   (buffer-string)))
    (f-no-ext (f-filename buffer-file-name))))
 
-(define-obsolete-function-alias 'cbel:bol-for-snippet? 'cbyas:bol?)
-
 (defun cbel:simplify-arglist (text)
   "Return a simplified docstring of arglist TEXT."
   (->> (ignore-errors
