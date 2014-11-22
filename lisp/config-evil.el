@@ -1,4 +1,4 @@
-;;; config-evil.el --- Configuration for evil
+;;; config-evil.el --- Configuration for evil  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2014 Chris Barrett
 
@@ -105,7 +105,6 @@ DEFS are comprised of alternating string-symbol pairs."
   "TAB" 'indent-according-to-mode
   "<backtab>" 'outdent
   "SPC" 'evil-toggle-fold
-  "K"   'cbevil:get-documentation
   "u"   'undo-tree-undo
   "C-R" 'undo-tree-redo
   "C-S-P" 'evil-paste-pop-next)
@@ -217,37 +216,10 @@ errors forward of POS."
 (autoload 'Man-getpage-in-background "man")
 (autoload 'woman-file-name-all-completions "woman")
 
-(defvar evil-find-doc-hook nil
-  "Hook run when finding documentation for the symbol at point.
-Each handler should take the search string as an argument.")
-
-(defmacro define-evil-doc-handler (modes &rest body)
-  "Register a doc lookup function for MODES.
-
-- MODES is a quoted symbol or list of symbols representing the
-  modes in which this handler will be used.
-
-- BODY are the forms to execute to show documentation."
-  (let* ((modes (-listify (eval modes)))
-         (fname (intern (format "cbevil:doc-search-%s" (car modes)))))
-    (cl-assert modes nil "Must provide a mode or list of modes")
-    (cl-assert (-all? 'symbolp modes))
-    `(progn
-
-       (defun ,fname ()
-         ,(concat "Documentation search function for the following modes:"
-                  "\n\n  - "
-                  (s-join "\n\n  - " (-map 'symbol-name modes)))
-
-         (when (apply 'derived-mode-p ',modes)
-           ,@body
-           major-mode))
-
-       (add-hook 'evil-find-doc-hook ',fname))))
-
-(defun get-manpage (candidate)
+(defun get-manpage (&optional candidate)
   "Show the manpage for CANDIDATE."
-  (let ((wfiles (mapcar 'car (woman-file-name-all-completions candidate))))
+  (let* ((candidate (or candidate (thing-at-point 'symbol)))
+         (wfiles (mapcar 'car (woman-file-name-all-completions candidate))))
     (condition-case _
         (if (> (length wfiles) 1)
             (woman-find-file
@@ -260,15 +232,14 @@ Each handler should take the search string as an argument.")
        (Man-getpage-in-background candidate)))
     t))
 
-(defun cbevil:get-documentation ()
-  "Get documentation for string CANDIDATE.
-Runs each handler added to `evil-find-doc-hook' until one of them returns non-nil."
-  (interactive)
-  (condition-case-unless-debug _
-      (or (run-hook-with-args-until-success 'evil-find-doc-hook)
-          (get-manpage (thing-at-point 'symbol)))
-    (error
-     (user-error "No documentation available"))))
+(make-variable-buffer-local 'evil-lookup-func)
+(setq-default evil-lookup-func 'get-manpage)
+
+(defun cbevil:set-lookup-function-on (fn &rest hooks)
+  "Set the appropriate evil lookup function to FN on each hook in HOOKS."
+  (dolist (h hooks)
+    (add-hook h (lambda ()
+                  (setq-local evil-lookup-func fn)))))
 
 ;;; Make window management work for all modes
 
@@ -341,26 +312,38 @@ Runs each handler added to `evil-find-doc-hook' until one of them returns non-ni
      (t
       (user-error "No documentation available")))))
 
-(define-evil-doc-handler cb:elisp-modes (cbevil:get-elisp-doc))
+(cbevil:set-lookup-function-on 'cbevil:get-elisp-doc
+                            'help-mode-hook 'cb:elisp-modes-hook)
 
 ;;; Ruby
 
-(define-evil-doc-handler cb:ruby-modes (call-interactively 'robe-doc))
+(defun cbevil:get-ruby-doc ()
+  (call-interactively 'robe-doc))
+
+(cbevil:set-lookup-function-on 'cbevil:get-ruby-doc 'cb:ruby-modes-hook)
 
 ;;; Clojure
 
-(define-evil-doc-handler cb:clojure-modes (call-interactively 'cider-doc))
+(defun cbevil:get-clojure-doc ()
+  (call-interactively 'cider-doc))
+
+(cbevil:set-lookup-function-on 'cbevil:get-clojure-doc 'cb:clojure-modes-hook)
 
 ;;; Python
 
-(define-evil-doc-handler 'cb:python-modes (call-interactively 'rope-show-doc))
+(defun cbevil:get-python-doc ()
+  (call-interactively 'rope-show-doc))
+
+(cbevil:set-lookup-function-on 'cbevil:get-python-doc 'cb:python-modes-hook)
 
 (evil-define-key 'normal python-mode-map (kbd "M-.") 'rope-goto-definition)
 
 ;;; Scheme
 
-(define-evil-doc-handler cb:scheme-modes
+(defun cbevil:get-scheme-doc ()
   (call-interactively 'geiser-doc-symbol-at-point))
+
+(cbevil:set-lookup-function-on 'cbevil:get-scheme-doc 'cb:scheme-modes-hook)
 
 ;;; Org
 
