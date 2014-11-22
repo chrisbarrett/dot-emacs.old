@@ -28,6 +28,7 @@
 
 (require 'utils-common)
 (require 'config-modegroups)
+(require 'eval-sexp-fu)
 
 (cb:install-package 'elisp-slime-nav)
 (cb:install-package 'cl-lib-highlight)
@@ -232,12 +233,45 @@ TEXT is the content of the docstring."
     (when (true? evil-mode)
       (evil-insert-state)))))
 
-;;; Advice
+;;; C-c C-c eval command
 
-(defadvice eval-region (after region-evaluated-message activate)
-  "Print feedback."
-  (when (called-interactively-p nil)
-    (message "Region evaluated.")))
+(defun cbel:thing-for-eval ()
+  (cond
+   ((region-active-p)
+    (call-interactively 'eval-region)
+    (list :beg (region-beginning)
+          :end (region-end)))
+
+   ((thing-at-point 'defun)
+    (save-excursion
+      (beginning-of-defun)
+      (call-interactively 'eval-defun)
+      (list :beg (point)
+            :end (save-excursion (end-of-defun) (point)))))
+
+   ((ignore-errors (preceding-sexp))
+    (call-interactively 'eval-last-sexp)
+    (cl-destructuring-bind (beg . end)
+        (save-excursion
+          (backward-char)
+          (bounds-of-thing-at-point 'sexp))
+      (list :beg beg :end end)))))
+
+(defun cbel:eval-dwim ()
+  "Perform a context-sensitive eval command.
+Return the bounds of the evaluated form."
+  (interactive)
+  (-if-let (thing (cbel:thing-for-eval))
+      (cl-destructuring-bind (&key beg end &allow-other-keys) thing
+        (eval-region beg end))
+    (user-error "Nothing to evaluate")))
+
+(define-eval-sexp-fu-flash-command cbel:eval-dwim
+  (eval-sexp-fu-flash
+   (cl-destructuring-bind (&key beg end &allow-other-keys) (cbel:thing-for-eval)
+     (cons beg end))))
+
+;;; Advice
 
 (defadvice eval-buffer (after buffer-evaluated-feedback activate)
   "Print feedback."
@@ -312,8 +346,8 @@ TEXT is the content of the docstring."
 (define-key emacs-lisp-mode-map (kbd "C-c RET") 'eval-in-ielm)
 (define-key emacs-lisp-mode-map (kbd "M-RET")   'cb-el:M-RET)
 (define-key emacs-lisp-mode-map (kbd "C-c C-f") 'eval-buffer)
-(define-key emacs-lisp-mode-map (kbd "C-c C-c") 'eval-defun)
-(define-key emacs-lisp-mode-map (kbd "C-c C-r") 'eval-region)
+(define-key emacs-lisp-mode-map (kbd "C-c C-b") 'eval-buffer)
+(define-key emacs-lisp-mode-map (kbd "C-c C-c") 'cbel:eval-dwim)
 
 (after 'ielm
   (define-key emacs-lisp-mode-map (kbd "M-RET") 'newline-and-indent)
