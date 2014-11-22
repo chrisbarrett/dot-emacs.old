@@ -211,7 +211,13 @@ Each element is either a string or a cons of (var . default)."
 (add-to-list 'insertion-picker-options
              '("d" "Docstring" cb-py:insert-docstring :modes (python-mode)))
 
-(add-hook 'python-mode-hook 'ropemacs-mode)
+
+(defun cb-py:maybe-enable-ropemacs ()
+  "Enable ropemacs if it is available."
+  (when (require 'ropemacs-mode nil t)
+    (ropemacs-mode +1)))
+
+(add-hook 'python-mode-hook 'cb-py:maybe-enable-ropemacs)
 
 ;;; Key bindings
 
