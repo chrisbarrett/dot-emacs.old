@@ -1,4 +1,4 @@
-;;; config-yasnippet.el --- Configuration for yasnippet
+;;; config-yasnippet.el --- Configuration for yasnippet  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2014 Chris Barrett
 
@@ -32,6 +32,7 @@
 (require 'utils-commands)
 
 (cb:install-package 'yasnippet t)
+(require 'yasnippet)
 
 (custom-set-variables
  '(yas-snippet-dirs (list cb:yasnippet-dir))
@@ -51,23 +52,66 @@
 
 (noflet ((message (&rest _))) (yas-global-mode))
 
-;;; Workaround for errors when finalising existing snippets
-;;;
-;;; Editing and reloading an existing snippet often raises an internal error in
-;;; yasnippet, aborting the load and throwing the file back to the default major
-;;; mode. Work around this annoyance by forcing the file to be reloaded in
-;;; snippet mode and inhibiting whitespace cleanup.
+;;; FIX: yasnippet often errors when trying to save existing snippets.
 
-(defun cbyas:maybe-enable-snippet-mode ()
-  "Enable snippet editing mode if this file is in a known snippet dir."
-  (when (--any? (f-parent-of? it default-directory)
-                yas-snippet-dirs)
-    (snippet-mode)))
+(defun cbyas:other-buffer-major-mode ()
+  "Guess the mode to use for a snippet.
+Use the mode of the last editing buffer."
+  (with-current-buffer (-first (-not 'minibufferp) (cdr (buffer-list)))
+    major-mode))
 
-(add-hook 'find-file-hook 'cbyas:maybe-enable-snippet-mode)
+(defun cbyas:new-snippet? (template)
+  "Return whether TEMPLATE should be saved as a new snippet.
 
-(hook-fn 'snippet-mode-hook
-  (remove-hook 'before-save-hook  'delete-trailing-whitespace t))
+Only offer to save this if it looks like a library or new
+snippet (loaded from elisp, from a dir in `yas-snippet-dirs'which
+is not the first, or from an unwritable file)."
+  (or (not (yas--template-file template))
+      (not (f-writable? (yas--template-file template)))
+      (and (listp yas-snippet-dirs)
+           (< 1 (length yas-snippet-dirs))
+           (not (f-child-of? (yas--template-file template)
+                             (car yas-snippet-dirs))))))
+
+(defun cbyas:create-dir-for-template (template)
+  (-when-let* ((snippet-dirs (yas--guess-snippet-directories (yas--template-table template))))
+    (yas--make-directory-maybe (car snippet-dirs))))
+
+(defun cbyas:snippet-file-name (template)
+  (-if-let (file (yas--template-file template))
+      (f-filename file)
+    (yas--template-name template)))
+
+(defun cbyas:maybe-write-new-template (template)
+  (cl-assert template () "Attempting to access null yas template")
+  (when (cbyas:new-snippet? template)
+    (-when-let* ((snippet-dir (cbyas:create-dir-for-template template))
+                 (file-name (cbyas:snippet-file-name template)))
+      (write-file (f-join snippet-dir file-name))
+      (setf (yas--template-file template) (buffer-file-name)))))
+
+(after 'yasnippet
+  (defun yas--read-table ()
+    "Ask user for a snippet table, help with some guessing."
+    (let ((modes (-distinct (-snoc (yas--compute-major-mode-and-parents (buffer-file-name))
+                                   (cbyas:other-buffer-major-mode)))))
+      (intern (completing-read "Choose or enter a mode: " modes))))
+
+  (defun yas-load-snippet-buffer-and-close (table &optional _)
+    "Load the snippet with `yas-load-snippet-buffer', possibly
+  save, then `quit-window' if saved.
+
+If the snippet is new, ask the user whether (and where) to save
+it. If the snippet already has a file, just save it.
+
+Don't use this from a Lisp program, call `yas-load-snippet-buffer'
+and `kill-buffer' instead."
+    (interactive (list (yas--read-table) nil))
+    (yas-load-snippet-buffer table t)
+    (noflet ((whitespace-cleanup (&rest _)))
+      (cbyas:maybe-write-new-template yas--editing-template)
+      (save-buffer)
+      (quit-window t))))
 
 ;;; Utilities
 
