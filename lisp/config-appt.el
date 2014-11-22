@@ -43,7 +43,7 @@
                                (appt-check))))
 
 (defvar cb-org:appt-update-timer
-  (run-with-timer 240 t 'cb-org:check-appt))
+  (run-with-timer 240 240 'cb-org:check-appt))
 
 (provide 'config-appt)
 
