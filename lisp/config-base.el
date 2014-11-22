@@ -259,6 +259,7 @@ Can indent backwards if there is only whitespace."
 ;;; Enable commands
 
 (put 'downcase-region  'disabled nil)
+(put 'upcase-region    'disabled nil)
 (put 'erase-buffer     'disabled nil)
 (put 'narrow-to-defun  'disabled nil)
 (put 'narrow-to-page   'disabled nil)
