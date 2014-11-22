@@ -49,10 +49,25 @@
 (add-hook 'prog-mode-hook 'yas-minor-mode)
 (add-hook 'text-mode-hook 'yas-minor-mode)
 
+(noflet ((message (&rest _))) (yas-global-mode))
+
+;;; Workaround for errors when finalising existing snippets
+;;;
+;;; Editing and reloading an existing snippet often raises an internal error in
+;;; yasnippet, aborting the load and throwing the file back to the default major
+;;; mode. Work around this annoyance by forcing the file to be reloaded in
+;;; snippet mode and inhibiting whitespace cleanup.
+
+(defun cbyas:maybe-enable-snippet-mode ()
+  "Enable snippet editing mode if this file is in a known snippet dir."
+  (when (--any? (f-parent-of? it default-directory)
+                yas-snippet-dirs)
+    (snippet-mode)))
+
+(add-hook 'find-file-hook 'cbyas:maybe-enable-snippet-mode)
+
 (hook-fn 'snippet-mode-hook
   (remove-hook 'before-save-hook  'delete-trailing-whitespace t))
-
-(noflet ((message (&rest _))) (yas-global-mode))
 
 ;;; Utilities
 
