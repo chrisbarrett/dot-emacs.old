@@ -49,6 +49,9 @@
 (add-hook 'prog-mode-hook 'yas-minor-mode)
 (add-hook 'text-mode-hook 'yas-minor-mode)
 
+(hook-fn 'snippet-mode-hook
+  (remove-hook 'before-save-hook  'delete-trailing-whitespace t))
+
 (noflet ((message (&rest _))) (yas-global-mode))
 
 ;;; Utilities
