@@ -101,7 +101,7 @@
 
 (bind-key "M-r" 'iedit-mode)
 
-(after 'iedit-mode
+(after 'iedit
   (bind-key "C-c r" 'iedit-picker iedit-mode-keymap))
 
 (provide 'config-iedit)
