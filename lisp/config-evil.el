@@ -218,7 +218,7 @@ errors forward of POS."
 
 (defun get-manpage (&optional candidate)
   "Show the manpage for CANDIDATE."
-  (let* ((candidate (or candidate (thing-at-point 'symbol)))
+  (let* ((candidate (or candidate (thing-at-point 'symbol) ""))
          (wfiles (mapcar 'car (woman-file-name-all-completions candidate))))
     (condition-case _
         (if (> (length wfiles) 1)
