@@ -64,7 +64,7 @@
 ;;; Key bindings
 
 (bind-key "C-c b" 'compile)
-(bind-key "C-c C-b" 'recompile)
+(bind-key "C-c m" 'recompile)
 
 (provide 'config-compilation)
 
