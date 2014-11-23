@@ -37,7 +37,9 @@
 ;;; Commands
 
 (defun cbiedit:replace-read ()
-  (iedit-replace-occurrences (read-string "Replace in buffer: ")))
+  (save-excursion
+    (iedit-goto-first-occurrence)
+    (iedit-replace-occurrences (read-string "Replace in buffer: "))))
 
 (defun cbiedit:restrict-to-region ()
   (iedit-restrict-region (region-beginning) (region-end)))
@@ -54,40 +56,17 @@
 (define-command-picker iedit-picker
   :title "*iedit*"
   :options
-  '(("e" "Expand"
-     iedit-expand-by-a-line
-     :unless region-active-p)
+  '(("g" "First occurrence" iedit-goto-first-occurrence)
+    ("G" "Last occurrence" iedit-goto-last-occurrence)
+    ("p" "Previous occurrence" iedit-prev-occurrence)
+    ("n" "Next occurrence" iedit-next-occurrence)
+    ("r" "Replace" cbiedit:replace-read)
+    ("k" "Delete Matches" iedit-delete-occurrences)
 
-    ("p" "Expand (up)"
-     iedit-expand-up-a-line
-     :unless region-active-p)
-
-    ("n" "Expand (down)"
-     iedit-expand-down-a-line
-     :unless region-active-p)
-
-    ("r" "Replace"
-     cbiedit:replace-read
-     :unless region-active-p)
-
-    ("k" "Delete Matches"
-     iedit-delete-occurrences
-     :unless region-active-p)
-
-    ("l" "Restrict (line)"
-     iedit-restrict-current-line
-     :unless region-active-p)
-
-    ("R" "Restrict (region)"
-     cbiedit:restrict-to-region
-     :when region-active-p)
-
-    ("x" "Remove (region)"
-     cbiedit:remove-region
-     :when region-active-p)
-    ("f" "Restrict (function)"
-     iedit-restrict-function
-     :when (lambda () (thing-at-point 'defun)))
+    ("l" "Restrict (line)" iedit-restrict-current-line)
+    ("R" "Restrict (region)" cbiedit:restrict-to-region :when region-active-p)
+    ("x" "Remove (region)" cbiedit:remove-region :when region-active-p)
+    ("f" "Restrict (function)" iedit-restrict-function :when (lambda () (thing-at-point 'defun)))
 
     ("c" "Toggle Case-Sensitivity" iedit-toggle-case-sensitive)
     ("t" "Toggle at Point" iedit-toggle-selection)
