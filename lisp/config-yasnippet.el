@@ -52,6 +52,9 @@
 
 (noflet ((message (&rest _))) (yas-global-mode))
 
+(hook-fn 'snippet-mode-hook
+  (setq-local require-final-newline nil))
+
 ;;; FIX: yasnippet often errors when trying to save existing snippets.
 
 (defun cbyas:other-buffer-major-mode ()
