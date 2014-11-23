@@ -1,4 +1,4 @@
-;;; %b --- %[Short Description: %]
+;;; %b --- %[Short Description: %]  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) %Y %U
 
