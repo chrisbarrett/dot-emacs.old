@@ -66,10 +66,6 @@
      iedit-expand-down-a-line
      :unless region-active-p)
 
-    ("r" "Replace (in region)"
-     cbiedit:replace-in-region
-     :when region-active-p)
-
     ("r" "Replace"
      cbiedit:replace-read
      :unless region-active-p)
