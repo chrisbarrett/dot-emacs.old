@@ -178,25 +178,25 @@
   :add '("$" "@" "^")
   :rem '("!")
   :custom
-  '(("*" . 'cb-ocaml:smart-asterisk)
-    ("." . 'cb-ocaml:smart-dot)
-    ("|" . 'cb-ocaml:smart-pipe)
-    (":" . 'cb-ocaml:smart-colon)
-    (";" . 'cb-ocaml:smart-semicolon)
-    ("?" . 'cb-ocaml:smart-question)
-    ("~" . 'cb-ocaml:smart-tilde)))
+  '(("*" . cb-ocaml:smart-asterisk)
+    ("." . cb-ocaml:smart-dot)
+    ("|" . cb-ocaml:smart-pipe)
+    (":" . cb-ocaml:smart-colon)
+    (";" . cb-ocaml:smart-semicolon)
+    ("?" . cb-ocaml:smart-question)
+    ("~" . cb-ocaml:smart-tilde)))
 
 (super-smart-ops-configure-for-mode 'utop-mode
   :add '("$" "@" "^")
   :rem '("!")
   :custom
-  '(("*" . 'cb-ocaml:smart-asterisk)
-    ("." . 'cb-ocaml:smart-dot)
-    ("|" . 'cb-ocaml:smart-pipe)
-    (":" . 'cb-ocaml:smart-colon)
-    (";" . 'cb-ocaml:smart-semicolon)
-    ("?" . 'cb-ocaml:smart-question)
-    ("~" . 'cb-ocaml:smart-tilde)))
+  '(("*" . cb-ocaml:smart-asterisk)
+    ("." . cb-ocaml:smart-dot)
+    ("|" . cb-ocaml:smart-pipe)
+    (":" . cb-ocaml:smart-colon)
+    (";" . cb-ocaml:smart-semicolon)
+    ("?" . cb-ocaml:smart-question)
+    ("~" . cb-ocaml:smart-tilde)))
 
 ;;; Smart M-RET
 
