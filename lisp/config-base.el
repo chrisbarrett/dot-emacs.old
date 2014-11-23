@@ -98,7 +98,6 @@
  `(truncate-partial-width-windows      nil)
  `(version-control                     t)
  `(x-select-enable-clipboard           t)
- `(completing-read-function            'ido-completing-read)
  `(hippie-expand-try-functions-list    '(try-expand-dabbrev
                                          try-expand-dabbrev-all-buffers
                                          try-expand-dabbrev-from-kill
