@@ -331,6 +331,7 @@ Return the bounds of the evaluated form."
                   (+ (not space))
                   symbol-end)
          (+ space)
+         (* (any "("))
          (group-n 2 (+ (regex "\[^ )\n\]"))
                   symbol-end))
     (1 font-lock-keyword-face)
