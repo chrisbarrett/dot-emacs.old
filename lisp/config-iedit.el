@@ -32,7 +32,10 @@
 (cb:install-package 'iedit)
 
 (custom-set-faces
- '(iedit-occurrence ((t (:box "magenta")))))
+ `(iedit-occurrence ((t (:background
+                         ,solarized-hl-orange
+                         :foreground
+                         "white")))))
 
 ;;; Commands
 
