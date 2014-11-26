@@ -286,6 +286,7 @@ With prefix, goes to the REPL buffer afterwards (as
 
 (after 'geiser-mode
   (define-key geiser-mode-map (kbd "C-c C-f") 'geiser-eval-buffer)
+  (define-key geiser-mode-map (kbd "C-c C-l") 'geiser-load-current-buffer)
   (define-key geiser-mode-map (kbd "C-c C-h") 'geiser-doc-look-up-manual)
   (define-key geiser-repl-mode-map (kbd "C-c C-h") 'geiser-doc-look-up-manual))
 
