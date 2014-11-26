@@ -347,6 +347,18 @@ errors forward of POS."
 
 ;;; Org
 
+(defun cbevil:org-shift-left-or-metaleft ()
+  "Metaleft when at a heading, otherwise shift left."
+  (interactive)
+  (call-interactively
+   (if (org-at-heading-or-item-p) 'org-metaleft 'evil-shift-left)))
+
+(defun cbevil:org-shift-right-or-metaright ()
+  "Metaright when at a heading, otherwise shift right."
+  (interactive)
+  (call-interactively
+   (if (org-at-heading-or-item-p) 'org-metaright 'evil-shift-right)))
+
 (evil-declare-key 'normal org-mode-map
   "gk"  'outline-up-heading
   "gj"  'outline-next-visible-heading
@@ -366,8 +378,8 @@ errors forward of POS."
   "$"   'org-end-of-line ; smarter behaviour on headlines etc.
   "^"   'org-beginning-of-line ; ditto
   "-"   'org-ctrl-c-minus ; change bullet style
-  "<"   'org-metaleft ; out-dent
-  ">"   'org-metaright ; indent
+  "<"   'cbevil:org-shift-left-or-metaleft ; out-dent
+  ">"   'cbevil:org-shift-right-or-metaright ; indent
   )
 
 (add-hook 'org-capture-mode-hook 'cb:maybe-evil-insert-state)
