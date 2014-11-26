@@ -39,8 +39,9 @@
 (defun cb-org:check-appt ()
   "Synchronise org appointments with appt the next time Emacs is idle."
   (run-with-idle-timer 5 nil (lambda ()
-                               (org-agenda-to-appt t)
-                               (appt-check))))
+                               (noflet ((message (&rest _))) (org-agenda-to-appt t))
+                               (appt-check)
+                               )))
 
 (defvar cb-org:appt-update-timer
   (run-with-timer 240 240 'cb-org:check-appt))
