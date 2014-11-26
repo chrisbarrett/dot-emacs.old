@@ -1,5 +1,5 @@
-# key: d
+# key: l
 # name: let (top-level)
-# condition: (cbyas:bol?)
+# condition: (zerop (current-indentation))
 # --
 let ${1:binding} = $0

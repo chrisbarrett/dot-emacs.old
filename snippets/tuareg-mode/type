@@ -2,4 +2,4 @@
 # name: type
 # condition: (cbyas:bol?)
 # --
-type $0
+type ${1:indent} = $0

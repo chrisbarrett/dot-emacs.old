@@ -1,6 +1,6 @@
-# -*- mode: snippet -*-
-# name: cond
 # key: cond
+# name: cond
 # --
-cond ($1)
-     (else $0)
+(cond
+  ($1)
+  (else $0))

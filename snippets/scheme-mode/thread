@@ -1,5 +1,5 @@
 # key: thread
 # name: thread
 # --
-thread (lambda ()
-         $0)
+(thread (lambda ()
+         $0))

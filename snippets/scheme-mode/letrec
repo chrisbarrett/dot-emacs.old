@@ -1,6 +1,5 @@
-# -*- mode: snippet -*-
+# key: lr
 # name: letrec
-# key: letrec
 # --
-letrec (($1))
-  $0
+(letrec (($1))
+  $0)

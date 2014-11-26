@@ -1,5 +1,4 @@
-# -*- mode: snippet -*-
+# key: \
 # name: lambda
-# key: lambda
 # --
-lambda ($1) $0
+(lambda ($1) $0)

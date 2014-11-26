@@ -4,8 +4,5 @@
 # condition: (cbyas:bol?)
 # --
 assert (${1:H} : $2).
-Case "Proof of assertion".
-  $0
-
-Case "Assertion application".
-apply $1.
++ $0
++ apply $1.
