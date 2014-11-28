@@ -325,7 +325,7 @@ Changes the selected buffer."
   "Remove line endings in a paragraph."
   (interactive)
   (let ((fill-column (point-max)))
-    (fill-paragraph nil)))
+    (call-interactively 'fill-paragraph)))
 
 (defun move-line-up ()
   "Move the current line up."
