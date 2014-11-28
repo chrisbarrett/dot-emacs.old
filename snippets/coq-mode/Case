@@ -1,6 +1,0 @@
-# key: c
-# name: Case
-# expand-env: ((yas-indent-line (quote fixed)))
-# condition: (cbyas:bol?)
-# --
-Case "$1". $0

@@ -1,6 +1,0 @@
-# key: ssc
-# name: SSCase
-# expand-env: ((yas-indent-line (quote fixed)))
-# condition: (cbyas:bol?)
-# --
-SSCase "$1". $0
