@@ -4,5 +4,5 @@
 # condition: (cbyas:bol?)
 # --
 assert (${1:H} : $2).
-+ $0
-+ apply $1.
+- $0
+- rewrite $1.

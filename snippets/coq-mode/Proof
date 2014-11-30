@@ -2,7 +2,4 @@
 # name: Proof
 # condition: (cbyas:bol?)
 # --
-Proof.
-  $0
-  reflexivity.
-Qed.
+Proof. reflexivity. Qed.

@@ -230,6 +230,7 @@
   (define-key coq-mode-map (kbd "C-c C-m") 'coq-insert-match)
   (define-key coq-mode-map (kbd "M-N")     'proof-assert-next-command-interactive)
   (define-key coq-mode-map (kbd "M-P")     'proof-undo-last-successful-command)
+  (define-key coq-mode-map (kbd "RET")     'newline-and-indent)
   )
 
 (after 'proof-script
