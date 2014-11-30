@@ -1,4 +1,4 @@
-;;; config-parenface.el --- Configure parenface
+;;; config-paren-face.el --- Configure parenface
 
 ;; Copyright (C) 2014 Chris Barrett
 
@@ -28,26 +28,20 @@
 
 (require 'utils-common)
 
-(cb:install-package 'parenface t)
+(cb:install-package 'paren-face t)
 
 (custom-set-faces
- '(parenface-paren-face
+ '(parenthesis
    ((((background light)) :foreground "grey80")
     (((background dark))  :foreground "#505070"))))
 
-;;; Haskell
+(add-to-list 'paren-face-modes 'haskell-mode)
+(add-to-list 'paren-face-modes 'inferior-haskell-mode)
+(add-to-list 'paren-face-modes 'idris-mode)
+(add-to-list 'paren-face-modes 'coq-mode)
 
-(add-hook 'haskell-mode-hook 'paren-face-add-keyword)
-(add-hook 'inferior-haskell-mode-hook 'paren-face-add-keyword)
-
-;;; Idris
-
-(add-hook 'idris-mode-hook 'paren-face-add-keyword)
-
-;;; Coq
-
-(add-hook 'coq-mode-hook 'paren-face-add-keyword)
+(global-paren-face-mode)
 
 (provide 'config-parenface)
 
-;;; config-parenface.el ends here
+;;; config-paren-face.el ends here
